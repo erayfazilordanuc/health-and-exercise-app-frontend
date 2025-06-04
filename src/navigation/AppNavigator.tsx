@@ -1,0 +1,149 @@
+import * as React from 'react';
+import {
+  DefaultTheme,
+  NavigationContainer,
+  NavigatorScreenParams,
+} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import Launch from '../screens/launch/Launch';
+import Login from '../screens/login/Login';
+import Notes from '../screens/groups/Groups';
+import CustomHeader from '../components/CustomHeader';
+import Options from '../screens/profile/settings/Settings';
+import {BottomNavigator} from './BottomNavigation';
+import Settings from '../screens/profile/settings/Settings';
+import icons from '../constants/icons';
+import Security from '../screens/profile/settings/Security';
+import Notifications from '../screens/notifications/Reminders';
+import Language from '../screens/profile/settings/Language';
+import Preferences from '../screens/profile/settings/Preferences';
+import {useTheme} from '../themes/ThemeProvider';
+import {themes} from '../themes/themes';
+import {StatusBar} from 'react-native';
+import Home from '../screens/home/Home';
+import Profile from '../screens/profile/Profile';
+import Groups from '../screens/groups/Groups';
+import Exercises from '../screens/exercises/Exercises';
+
+const RootNativeStack = createNativeStackNavigator<RootStackParamList>();
+const AppNativeStack = createNativeStackNavigator<AppStackParamList>(); // This one works
+// const Stack = createStackNavigator<RootStackParamList>(); // This one not works
+
+function RootStack() {
+  return (
+    <RootNativeStack.Navigator
+      screenOptions={{
+        animation: 'fade',
+      }}
+      initialRouteName="Home">
+      <RootNativeStack.Screen
+        name="Home"
+        component={Home}
+        options={{
+          header: () => <CustomHeader title={'Home'} />,
+        }}
+      />
+      <RootNativeStack.Screen
+        name="Profile"
+        component={Profile}
+        options={{
+          // title: 'To Do',
+          // headerStyle: {
+          //   backgroundColor: '#b6f982',
+          // },
+          header: () => <CustomHeader title={'Profile'} />,
+        }}
+      />
+      <RootNativeStack.Screen
+        name="Groups"
+        component={Groups}
+        options={{
+          // title: 'To Do',
+          // headerStyle: {
+          //   backgroundColor: '#b6f982',
+          // },
+          header: () => <CustomHeader title={'Groups'} />,
+        }}
+      />
+      <RootNativeStack.Screen
+        name="Exercises"
+        component={Exercises}
+        options={{
+          // title: 'To Do',
+          // headerStyle: {
+          //   backgroundColor: '#b6f982',
+          // },
+          header: () => <CustomHeader title={'Exercises'} />,
+        }}
+      />
+      <RootNativeStack.Screen
+        name="Notifications"
+        component={Notifications}
+        options={{
+          // headerStyle: {
+          //   backgroundColor: '#ff6751',
+          // },
+          header: () => <CustomHeader title={'Notifications'} />,
+        }}
+      />
+    </RootNativeStack.Navigator>
+  );
+}
+
+function AppStack() {
+  return (
+    <AppNativeStack.Navigator
+      initialRouteName="Launch"
+      screenOptions={{
+        animation: 'slide_from_bottom',
+      }}>
+      <AppNativeStack.Screen
+        name="Launch"
+        component={Launch}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <AppNativeStack.Screen
+        name="Login"
+        component={Login}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <AppNativeStack.Screen
+        name="App"
+        component={BottomNavigator}
+        options={{
+          headerShown: false,
+        }}
+      />
+    </AppNativeStack.Navigator>
+  );
+}
+
+export default function AppNavigator() {
+  const {theme, colors} = useTheme();
+
+  const navTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: colors.background.secondary, // flick yok!
+      card: colors.background.primary,
+      text: colors.text.primary,
+      border: colors.background.primary,
+      notification: colors.primary[300],
+    },
+  };
+
+  return (
+    <NavigationContainer theme={navTheme}>
+      <StatusBar
+        backgroundColor={colors.background.secondary}
+        barStyle={theme.name === 'Light' ? 'dark-content' : 'light-content'}
+      />
+      <AppStack />
+    </NavigationContainer>
+  );
+}
