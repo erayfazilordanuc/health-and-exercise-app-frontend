@@ -1,6 +1,15 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import React from 'react';
-import {Image, ImageSourcePropType, Text, View} from 'react-native';
+import React, {useRef} from 'react';
+import {
+  Animated,
+  Image,
+  ImageSourcePropType,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import icons from '../constants/icons';
 import CustomHeader from '../components/CustomHeader';
 import Settings from '../screens/profile/settings/Settings';
@@ -457,6 +466,9 @@ export function BottomNavigator() {
           tabBarIcon: ({focused}) => (
             <TabIcon focused={focused} icon={icons.peopleV3} title="Gruplar" />
           ),
+          tabBarButton: props => (
+            <Pressable {...props} android_ripple={{color: 'transparent'}} />
+          ),
         }}
       />
       <Tab.Screen
@@ -480,6 +492,55 @@ export function BottomNavigator() {
           tabBarIcon: ({focused}) => (
             <TabIcon focused={focused} icon={icons.gym} title="Egzersiz" />
           ),
+          tabBarButton: props => {
+            const scale = useRef(new Animated.Value(1)).current;
+
+            const handlePressIn = () => {
+              Animated.spring(scale, {
+                toValue: 0.95,
+                useNativeDriver: true,
+                speed: 20,
+                bounciness: 10,
+              }).start();
+            };
+
+            const handlePressOut = () => {
+              Animated.spring(scale, {
+                toValue: 1,
+                useNativeDriver: true,
+                speed: 20,
+                bounciness: 10,
+              }).start();
+            };
+
+            return (
+              <Animated.View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: [{scale}],
+                }}>
+                <Pressable
+                  onPressIn={handlePressIn}
+                  onPressOut={handlePressOut}
+                  android_ripple={{
+                    color: 'rgba(255, 255, 255, 0.12)', // Açık mavi ve yumuşak ripple
+                    borderless: true,
+                    radius: 35, // Ripple boyutunu sınırla
+                  }}
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: 35,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  {...props}
+                />
+              </Animated.View>
+            );
+          },
         }}
       />
       <Tab.Screen
@@ -495,6 +556,55 @@ export function BottomNavigator() {
           tabBarIcon: ({focused}) => (
             <TabIcon focused={focused} icon={icons.home} title="Home" />
           ),
+          tabBarButton: props => {
+            const scale = useRef(new Animated.Value(1)).current;
+
+            const handlePressIn = () => {
+              Animated.spring(scale, {
+                toValue: 0.95,
+                useNativeDriver: true,
+                speed: 20,
+                bounciness: 10,
+              }).start();
+            };
+
+            const handlePressOut = () => {
+              Animated.spring(scale, {
+                toValue: 1,
+                useNativeDriver: true,
+                speed: 20,
+                bounciness: 10,
+              }).start();
+            };
+
+            return (
+              <Animated.View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: [{scale}],
+                }}>
+                <Pressable
+                  onPressIn={handlePressIn}
+                  onPressOut={handlePressOut}
+                  android_ripple={{
+                    color: 'rgba(255, 255, 255, 0.12)', // Açık mavi ve yumuşak ripple
+                    borderless: true,
+                    radius: 35, // Ripple boyutunu sınırla
+                  }}
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: 35,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  {...props}
+                />
+              </Animated.View>
+            );
+          },
         }}
       />
       <Tab.Screen
@@ -510,6 +620,55 @@ export function BottomNavigator() {
           tabBarIcon: ({focused}) => (
             <TabIcon focused={focused} icon={icons.bell} title="Bildirimler" />
           ),
+          tabBarButton: props => {
+            const scale = useRef(new Animated.Value(1)).current;
+
+            const handlePressIn = () => {
+              Animated.spring(scale, {
+                toValue: 0.95,
+                useNativeDriver: true,
+                speed: 20,
+                bounciness: 10,
+              }).start();
+            };
+
+            const handlePressOut = () => {
+              Animated.spring(scale, {
+                toValue: 1,
+                useNativeDriver: true,
+                speed: 20,
+                bounciness: 10,
+              }).start();
+            };
+
+            return (
+              <Animated.View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: [{scale}],
+                }}>
+                <Pressable
+                  onPressIn={handlePressIn}
+                  onPressOut={handlePressOut}
+                  android_ripple={{
+                    color: 'rgba(255, 255, 255, 0.12)', // Açık mavi ve yumuşak ripple
+                    borderless: true,
+                    radius: 35, // Ripple boyutunu sınırla
+                  }}
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: 35,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  {...props}
+                />
+              </Animated.View>
+            );
+          },
         }}
       />
       <Tab.Screen
@@ -529,6 +688,55 @@ export function BottomNavigator() {
           tabBarIcon: ({focused}) => (
             <TabIcon focused={focused} icon={icons.person} title="Profil" />
           ),
+          tabBarButton: props => {
+            const scale = useRef(new Animated.Value(1)).current;
+
+            const handlePressIn = () => {
+              Animated.spring(scale, {
+                toValue: 0.95,
+                useNativeDriver: true,
+                speed: 20,
+                bounciness: 10,
+              }).start();
+            };
+
+            const handlePressOut = () => {
+              Animated.spring(scale, {
+                toValue: 1,
+                useNativeDriver: true,
+                speed: 20,
+                bounciness: 10,
+              }).start();
+            };
+
+            return (
+              <Animated.View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: [{scale}],
+                }}>
+                <Pressable
+                  onPressIn={handlePressIn}
+                  onPressOut={handlePressOut}
+                  android_ripple={{
+                    color: 'rgba(255, 255, 255, 0.12)', // Açık mavi ve yumuşak ripple
+                    borderless: true,
+                    radius: 100, // Ripple boyutunu sınırla
+                  }}
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: 100,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  {...props}
+                />
+              </Animated.View>
+            );
+          },
         }}
       />
     </Tab.Navigator>

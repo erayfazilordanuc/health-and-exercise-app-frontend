@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "heath_connect_test",
+      withModuleName: "health_connect_test",
       in: window,
       launchOptions: launchOptions
     )

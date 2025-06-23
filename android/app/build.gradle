@@ -77,9 +77,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.heath_connect_test"
+    namespace "com.health_connect_test"
     defaultConfig {
-        applicationId "com.heath_connect_test"
+        applicationId "com.health_connect_test"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

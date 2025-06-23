@@ -26,11 +26,17 @@ export const colors = {
 export const colorScheme = {
   primary: {
     100: '#0061FF0A',
+    150: '#0061FF0A',
     200: '#0090FF',
     250: '#0080ff',
     300: '#0061FF',
   },
-  background: {primary: '#555555', secondary: '3b3b3b', third: '#e6f0ed', fourth: ''},
+  background: {
+    primary: '#555555',
+    secondary: '3b3b3b',
+    third: '#e6f0ed',
+    fourth: '',
+  },
   text: {
     primary: 'white',
     secondary: 'white',

@@ -1,10 +1,23 @@
-import apiClient from './apiClient';
+import apiClient from '../axios/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Keys can be used for cleaning the code
 // const USER_KEY = 'user';
 
 export const login = async (credentials: LoginRequestPayload) => {
+  const response = await apiClient.post('/auth/login', credentials);
+  const user = response.data.user as User;
+  const accessToken = response.data.accessToken;
+  const refreshToken = response.data.refreshToken;
+
+  await AsyncStorage.setItem('accessToken', accessToken);
+  await AsyncStorage.setItem('refreshToken', refreshToken);
+  await AsyncStorage.setItem('user', JSON.stringify(user));
+
+  return response;
+};
+
+export const localLogin = async (credentials: LoginRequestPayload) => {
   const response = await apiClient.post('/auth/login', credentials);
   const user = response.data.user as User;
   const accessToken = response.data.accessToken;
@@ -63,9 +76,10 @@ export const register = async (userData: RegisterRequestPayload) => {
   const response = await apiClient.post('/auth/register', userData);
   const user = response.data.user as User;
   const accessToken = response.data.accessToken;
+  const refreshToken = response.data.refreshToken;
 
   await AsyncStorage.setItem('accessToken', accessToken);
-  // await AsyncStorage.setItem('refreshToken', token);
+  await AsyncStorage.setItem('refreshToken', refreshToken);
   await AsyncStorage.setItem('user', JSON.stringify(user));
 
   return response;
@@ -73,6 +87,6 @@ export const register = async (userData: RegisterRequestPayload) => {
 
 export const logout = async () => {
   await AsyncStorage.removeItem('accessToken');
-  // await AsyncStorage.removeItem('refershToken');
+  await AsyncStorage.removeItem('refreshToken');
   await AsyncStorage.removeItem('user');
 };

@@ -17,6 +17,7 @@ import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
+import {getUser} from '../../api/user/userService';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -36,8 +37,7 @@ const Home = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const userData = await AsyncStorage.getItem('user');
-      const user: User = JSON.parse(userData!);
+      const user: User = await getUser();
       setUser(user);
     };
 

@@ -1,4 +1,4 @@
-package com.heath_connect_test
+package com.health_connect_test
 
 import android.app.Application
 import com.facebook.react.PackageList

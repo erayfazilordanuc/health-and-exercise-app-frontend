@@ -2,7 +2,17 @@ type User = {
   id?: number;
   username: string;
   email: string;
-  
+};
+
+type LoginRequestPayload = {
+  username?: string;
+  password: string;
+};
+
+type RegisterRequestPayload = {
+  username: string;
+  email?: string;
+  password: string;
 };
 
 type Note = {
@@ -24,18 +34,6 @@ type ToDo = {
   isFavorited?: boolean;
   createdAt?: Date | null;
   updatedAt?: Date | null;
-};
-
-type LoginRequestPayload = {
-  username?: string;
-  email?: string;
-  password: string;
-};
-
-type RegisterRequestPayload = {
-  username: string;
-  email: string;
-  password: string;
 };
 
 type GuestUser = {

@@ -1,4 +1,4 @@
-package com.heath_connect_test
+package com.health_connect_test
 
 import android.os.Bundle
 import android.webkit.WebResourceRequest

@@ -13,19 +13,16 @@ import {CommonActions, useNavigation} from '@react-navigation/native';
 import {useEffect, useState} from 'react';
 import icons from '../../constants/icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {guestLogin, login, register} from '../../api/async_storage/authService';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNetInfo} from '@react-native-community/netinfo';
 import {useTheme} from '../../themes/ThemeProvider';
+import {login, register} from '../../api/auth/authService';
 
 function Login() {
   const navigation = useNavigation<RootScreenNavigationProp>();
-
   const {theme, colors, setTheme} = useTheme();
-
-  const [versatileError, setVersatileError] = useState('');
-
+  const netInfo = useNetInfo();
   const [loading, setLoading] = useState(false);
 
   enum LoginMethod {
@@ -33,56 +30,37 @@ function Login() {
     'registration',
     'guest',
   }
-
   const [loginMethod, setLoginMethod] = useState<LoginMethod>(
     LoginMethod.default,
   );
 
-  const [multipleCredential, setMultipleCredential] = useState('');
-
   const [username, setUsername] = useState('');
-
-  const [email, setEmail] = useState('');
-
   const [password, setPassword] = useState('');
-
   const [showPassword, setShowPassword] = useState(false);
-
-  const netInfo = useNetInfo();
 
   const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const clearInputs = () => {
+    setUsername('');
+    setPassword('');
+  };
 
   const handleGoogleLogin = async () => {};
 
   const handleLogin = async () => {
     try {
       setLoading(true);
-      setMultipleCredential(multipleCredential.trim());
 
-      if (!(multipleCredential && password)) {
+      if (!(username && password)) {
         // Alert
         ToastAndroid.show('Lütfen tüm alanları doldurunuz', ToastAndroid.SHORT);
         return;
       }
 
-      if (
-        !usernameRegex.test(multipleCredential) &&
-        !emailRegex.test(multipleCredential)
-      ) {
-        ToastAndroid.show(
-          'Lütfen kullanıcı adı ya da e-postanızı uygun formatta giriniz',
-          ToastAndroid.SHORT,
-        );
-        return;
-      }
-
-      const isEmailLogin = emailRegex.test(multipleCredential);
-
       const loginPayload: LoginRequestPayload = {
-        username: isEmailLogin ? undefined : multipleCredential,
-        email: isEmailLogin ? multipleCredential : undefined,
-        password,
+        username: username.trim(),
+        password: password.trim(),
       };
 
       const loginResponse = await login(loginPayload);
@@ -94,29 +72,51 @@ function Login() {
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{name: 'Home'}],
+            routes: [{name: 'App'}],
           }),
         );
         // TO DO burada App e user bilgileri AsyncStorage üzerinden taşınabilir
       }
     } catch (error) {
-      console.error('Error occured while login: ', error);
-      ToastAndroid.show(
-        error instanceof Error ? error.message : 'Bir hata oluştu',
-        ToastAndroid.SHORT,
-      );
+      if (axios.isAxiosError(error)) {
+        console.log('Axios hatası yakalandı');
+
+        const status = error.response?.status;
+        let message = error.response?.data?.message || error.message;
+
+        console.log('Status:', status);
+        console.log('Message:', message);
+
+        if (status === 403) message = 'Kullanıcı adı veya şifre hatalı';
+        ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
+      } else if (error instanceof Error) {
+        console.log('Genel hata yakalandı:', error.message);
+
+        ToastAndroid.show(error.message, ToastAndroid.SHORT);
+      } else {
+        console.log('Bilinmeyen hata:', error);
+
+        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // const handleLogin = async () => {
+  //   const loginPayload: LoginRequestPayload = {
+  //     username: 'string',
+  //     email: 'string',
+  //     password: 'string',
+  //   };
+  //   const response = await login(loginPayload);
+  // };
+
   const handleCreateAccount = async () => {
     try {
       setLoading(true);
-      setEmail(email.trim());
-      setUsername(username.trim());
 
-      if (!(username && email && password)) {
+      if (!(username && password)) {
         ToastAndroid.show('Lütfen tüm alanları doldurunuz', ToastAndroid.SHORT);
         return;
       }
@@ -124,14 +124,6 @@ function Login() {
       if (!usernameRegex.test(username)) {
         ToastAndroid.show(
           'Lütfen kullanıcı adını uygun formatta giriniz',
-          ToastAndroid.SHORT,
-        );
-        return;
-      }
-
-      if (!emailRegex.test(email)) {
-        ToastAndroid.show(
-          'Lütfen e-postanızı adını uygun formatta giriniz',
           ToastAndroid.SHORT,
         );
         return;
@@ -146,9 +138,9 @@ function Login() {
       }
 
       const registerPayload: RegisterRequestPayload = {
-        username: username,
-        email: email,
-        password: password,
+        username: username.trim(),
+        email: 'ostensible@gmail.com',
+        password: password.trim(),
       };
 
       const registerResponse = await register(registerPayload);
@@ -164,63 +156,42 @@ function Login() {
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{name: 'Home'}],
+            routes: [{name: 'App'}],
           }),
         );
         // TO DO burada App e user bilgileri AsyncStorage üzerinden taşınabilir
       }
     } catch (error) {
-      console.error('Error occured while login: ', error);
+      if (axios.isAxiosError(error)) {
+        console.log('Axios hatası yakalandı');
 
-      ToastAndroid.show(
-        error instanceof Error ? error.message : 'Bir hata oluştu',
-        ToastAndroid.SHORT,
-      );
+        const status = error.response?.status;
+        let message = error.response?.data?.message || error.message;
+
+        console.log('Status:', status);
+        console.log('Message:', message);
+
+        if (status === 500) message = 'Bu kullanıcı adı zaten alınmış';
+        ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
+      } else if (error instanceof Error) {
+        console.log('Genel hata yakalandı:', error.message);
+
+        ToastAndroid.show(error.message, ToastAndroid.SHORT);
+      } else {
+        console.log('Bilinmeyen hata:', error);
+
+        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGuestLogin = async () => {
-    try {
-      // TO DO guest login için local username password ikilisi alınsın
-      if (username && password) {
-        await guestLogin(username, password);
-        // TO DO MİSAFİR OLARAK DEVAM ET DENDİĞİNDE İSİM GİRME KISMI OLSUN
-        navigation.navigate('App');
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{name: 'Home'}], // It is not working
-          }),
-        );
-      } else {
-        ToastAndroid.show(
-          'Lütfen tüm alanları doldurunuz ',
-          ToastAndroid.SHORT,
-        );
-      }
-    } catch (error) {
-      console.error('Error occured while login: ', error);
-      ToastAndroid.show(
-        error instanceof Error ? error.message : 'Bir hata oluştu',
-        ToastAndroid.SHORT,
-      );
-    }
-  };
-
-  const clearInputs = () => {
-    setMultipleCredential('');
-    setUsername('');
-    setEmail('');
-    setPassword('');
   };
 
   return (
     <SafeAreaView
       className="h-full"
       style={{backgroundColor: colors.background.secondary}}>
-      <ScrollView contentContainerClassName="pb-12 pt-16">
+      <ScrollView contentContainerClassName="pb-12 pt-32">
         <View
           className={`px-10 mt-${
             loginMethod === LoginMethod.registration ? '' : '16'
@@ -234,77 +205,29 @@ function Login() {
             </Text>
           </Text>
           <Text
-            className={`text-3xl font-rubik-medium text-center ${
-              loginMethod === LoginMethod.default ? 'mb-4 mt-6' : 'mb-2 mt-8'
-            }`}
+            className={`text-3xl font-rubik-medium text-center mb-2 mt-8`}
             style={{color: colors.text.primary}}>
             {loginMethod === LoginMethod.default && 'Giriş'}
             {loginMethod === LoginMethod.registration && 'Hesap Oluştur'}
-            {loginMethod === LoginMethod.guest && 'Misafir Girişi'}
           </Text>
 
-          {loginMethod === LoginMethod.default && (
-            <View
-              className="flex flex-row items-center justify-start z-50 rounded-full py-1"
-              style={{
-                backgroundColor: colors.background.primary,
-              }}>
-              {/* Email pattern check is essential */}
-              <TextInput
-                placeholderTextColor={'gray'}
-                selectionColor={'#7AADFF'}
-                value={multipleCredential}
-                onChangeText={(value: string) => {
-                  setMultipleCredential(value);
-                }}
-                placeholder="Kullanıcı adı veya e-posta"
-                className="text-lg font-rubik ml-5 flex-1"
-                style={{color: colors.text.primary}}
-              />
-            </View>
-          )}
-          {(loginMethod === LoginMethod.registration ||
-            loginMethod === LoginMethod.guest) && (
-            <View
-              className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
-              style={{
-                backgroundColor: colors.background.primary,
-              }}>
-              <TextInput
-                placeholderTextColor={'gray'}
-                selectionColor={'#7AADFF'}
-                value={username}
-                onChangeText={(value: string) => {
-                  setUsername(value);
-                }}
-                placeholder="Kullanıcı adı"
-                className="text-lg font-rubik ml-5 flex-1"
-                style={{color: colors.text.primary}}
-              />
-            </View>
-          )}
-          {loginMethod === LoginMethod.registration && (
-            <View>
-              <View
-                className="flex flex-row items-center justify-start z-50 rounded-full py-1 mt-2"
-                style={{
-                  backgroundColor: colors.background.primary,
-                }}>
-                {/* Email pattern check is essential */}
-                <TextInput
-                  placeholderTextColor={'gray'}
-                  selectionColor={'#7AADFF'}
-                  value={email}
-                  onChangeText={(value: string) => {
-                    setEmail(value);
-                  }}
-                  placeholder="E-posta"
-                  className="text-lg font-rubik ml-5 flex-1"
-                  style={{color: colors.text.primary}}
-                />
-              </View>
-            </View>
-          )}
+          <View
+            className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
+            style={{
+              backgroundColor: colors.background.primary,
+            }}>
+            <TextInput
+              placeholderTextColor={'gray'}
+              selectionColor={'#7AADFF'}
+              value={username}
+              onChangeText={(value: string) => {
+                setUsername(value);
+              }}
+              placeholder="Kullanıcı adı"
+              className="text-lg font-rubik ml-5 flex-1"
+              style={{color: colors.text.primary}}
+            />
+          </View>
           <View
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
@@ -342,7 +265,7 @@ function Login() {
                 className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
                 style={{backgroundColor: colors.background.primary}}>
                 <Text
-                  className="text-xl font-rubik text-center mt-1"
+                  className="text-xl font-rubik text-center py-1"
                   style={{color: colors.text.primary}}>
                   Giriş Yap
                 </Text>
@@ -356,23 +279,9 @@ function Login() {
                 className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
                 style={{backgroundColor: colors.background.primary}}>
                 <Text
-                  className="text-xl font-rubik text-center mt-1"
+                  className="text-xl font-rubik text-center py-1"
                   style={{color: colors.text.primary}}>
                   Hesap Oluştur
-                </Text>
-              </TouchableOpacity>
-            )}
-            {loginMethod === LoginMethod.guest && (
-              <TouchableOpacity
-                onPress={() => {
-                  handleGuestLogin();
-                }}
-                className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
-                style={{backgroundColor: colors.background.primary}}>
-                <Text
-                  className="text-xl font-rubik text-center mt-1"
-                  style={{color: colors.text.primary}}>
-                  Giriş Yap
                 </Text>
               </TouchableOpacity>
             )}
@@ -414,12 +323,7 @@ function Login() {
               </TouchableOpacity>
             </Text>
           )}
-          <Text
-            className="text-lg font-rubik text-center mt-1"
-            style={{color: colors.text.third}}>
-            ya da
-          </Text>
-          <View className="flex flex-row justify-center">
+          {/* <View className="flex flex-row justify-center">
             <TouchableOpacity
               onPress={handleGoogleLogin}
               className="shadow-md shadow-zinc-350 rounded-full w-5/6 py-4 mt-2"
@@ -437,33 +341,7 @@ function Login() {
                 </Text>
               </View>
             </TouchableOpacity>
-          </View>
-          {loginMethod !== LoginMethod.guest && (
-            <View>
-              <Text className="text-lg font-rubik text-black-200 text-center mt-2">
-                ayrıca
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  clearInputs();
-                  setLoginMethod(LoginMethod.guest);
-                }}>
-                <Text
-                  className="text-xl font-rubik text-center"
-                  style={{
-                    color: colors.text.primary,
-                    textDecorationLine: 'underline',
-                  }}>
-                  Misafir olarak devam et
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          <Text
-            className="text-lg font-rubik text-center mt-2"
-            style={{color: colors.text.third}}>
-            seçeneklerini{'\n'}tercih edebilirsiniz
-          </Text>
+          </View> */}
         </View>
       </ScrollView>
     </SafeAreaView>

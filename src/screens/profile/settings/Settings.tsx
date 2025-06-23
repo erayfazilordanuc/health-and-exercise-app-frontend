@@ -90,6 +90,7 @@ const Settings = () => {
   const handleLogout = async () => {
     await AsyncStorage.removeItem(`${user?.username}-main-theme`);
     await logout();
+    appNavigation.navigate('Launch');
     appNavigation.dispatch(
       CommonActions.reset({
         index: 0,

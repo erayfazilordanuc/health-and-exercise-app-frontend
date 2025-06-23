@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient from '../axios/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const getUser = async (): Promise<User | null> => {

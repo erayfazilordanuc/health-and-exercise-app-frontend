@@ -1,4 +1,7 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "terminal.integrated.defaultProfile.windows": "PowerShell"
+    // "java.jdt.ls.java.home": "C:\\Program Files\\Java\\jdk-17",
+    // "kotlin.java.home": "C:\\Program Files\\Java\\jdk-17",
 }
