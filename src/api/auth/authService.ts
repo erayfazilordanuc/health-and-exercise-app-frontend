@@ -16,7 +16,7 @@ export const login = async (credentials: LoginRequestPayload) => {
 
 export const register = async (credentials: RegisterRequestPayload) => {
   const response = await apiClient.post('/auth/register', credentials);
-  console.log('register', response.data);
+  console.log('register', response);
   const user = response.data.user as User;
   const accessToken = response.data.accessToken;
   const refreshToken = response.data.refreshToken;
@@ -30,15 +30,14 @@ export const refreshAccessToken = async () => {
   const refreshToken = await AsyncStorage.getItem('refreshToken');
 
   if (refreshToken) {
-    const response = await apiClient.post(
-      `/auth/refresh-token?refreshToken=${encodeURIComponent(refreshToken)}`,
-    );
+    const response = await apiClient.post('/auth/refresh-token', null, {
+      headers: {
+        Authorization: `${refreshToken}`,
+      },
+    });
 
     const newAccessToken = response.data.accessToken;
-    const newRefreshToken = response.data.refreshToken.replace(
-      /^Bearer\s+/,
-      '',
-    );
+    const newRefreshToken = response.data.refreshToken;
     console.log('newAccessToken', newAccessToken);
     console.log('newRefreshToken', newRefreshToken);
     await AsyncStorage.setItem('accessToken', newAccessToken);

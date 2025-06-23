@@ -45,26 +45,27 @@ const Security = () => {
   const [IPv4, setIPv4] = useState('');
 
   const [log, setLog] = useState('');
+  const [log2, setLog2] = useState('');
+
+  const fetchUser = async () => {
+    const user: User = await getUser();
+    setUser(user);
+  };
+
+  const fetchTokens = async () => {
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
+    if (accessToken && refreshToken) {
+      const accessTokenTimeLeft = getTokenTimeLeft(accessToken);
+      const refreshTokenTimeLeft = getTokenTimeLeft(refreshToken);
+      setAccessToken(accessToken);
+      setRefreshToken(refreshToken);
+      setAccessTokenTimeLeft(accessTokenTimeLeft);
+      setRefreshTokenTimeLeft(refreshTokenTimeLeft);
+    }
+  };
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const user: User = await getUser();
-      setUser(user);
-    };
-
-    const fetchTokens = async () => {
-      const accessToken = await AsyncStorage.getItem('accessToken');
-      const refreshToken = await AsyncStorage.getItem('refreshToken');
-      if (accessToken && refreshToken) {
-        const accessTokenTimeLeft = getTokenTimeLeft(accessToken);
-        const refreshTokenTimeLeft = getTokenTimeLeft(refreshToken);
-        setAccessToken(accessToken);
-        setRefreshToken(refreshToken);
-        setAccessTokenTimeLeft(accessTokenTimeLeft);
-        setRefreshTokenTimeLeft(refreshTokenTimeLeft);
-      }
-    };
-
     fetchUser();
     fetchTokens();
   }, []);
@@ -81,18 +82,18 @@ const Security = () => {
     fetchApiBaseUrl();
   }, []);
 
-  const checkTokenValidity = async () => {
+  const testRefreshToken = async () => {
     try {
-      const tokenResponse = await apiClient.post(
-        `/auth/refresh-token?refreshToken=${encodeURIComponent(refreshToken!)}`,
-      );
-      const userResponse = await apiClient.get('/user');
+      console.log(refreshToken);
+      const tokenResponse = await apiClient.post('/auth/refresh-token', null, {
+        headers: {
+          Authorization: `${refreshToken}`,
+        },
+      });
 
       const tokenData = JSON.stringify(tokenResponse.data, null, 2);
-      const userData = JSON.stringify(userResponse.data, null, 2);
       console.log('tokenData', tokenData);
-      console.log('userData', userData);
-      setLog(`Token Response:\n${tokenData}\n\nUser Response:\n${userData}`);
+      setLog(`Token Response:\n${tokenData}`);
     } catch (error) {
       if (error instanceof AxiosError) {
         console.log(error.response);
@@ -105,6 +106,31 @@ const Security = () => {
         setLog(`Generic Error: ${error.message}`);
       } else {
         setLog('Unknown error occurred.');
+      }
+    }
+  };
+
+  const testGetUser = async () => {
+    try {
+      const userResponse = await apiClient.get('/user');
+
+      const userData = JSON.stringify(userResponse.data, null, 2);
+      console.log('userData', userData);
+      setLog2(`User Response:\n${userData}`);
+      fetchTokens();
+      fetchUser();
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.log(error.response);
+        setLog2(
+          `Axios Error: ${JSON.stringify(
+            error.response?.data || error.message,
+          )}`,
+        );
+      } else if (error instanceof Error) {
+        setLog2(`Generic Error: ${error.message}`);
+      } else {
+        setLog2('Unknown error occurred.');
       }
     }
   };
@@ -286,53 +312,109 @@ const Security = () => {
           </Text>
         </View>
 
-        <TouchableOpacity
-          className="mb-2 p-4 rounded-2xl"
+        <View
+          className="p-3 rounded-2xl"
           style={{
             backgroundColor: colors.background.primary,
-          }}
-          onPress={checkTokenValidity}>
-          <MaskedView
-            maskElement={
-              <Text
-                className="text-lg font-rubik-medium"
-                style={{
-                  backgroundColor: 'transparent',
-                }}>
-                Fetch Test
-              </Text>
-            }>
-            <LinearGradient
-              colors={[colors.primary[300], '#40E0D0']} // mavi → turkuaz
-              start={{x: 0, y: 0}}
-              end={{x: 0.2, y: 0}}>
-              <Text
-                className="text-lg font-rubik-medium"
-                style={{
-                  opacity: 0, // metni sadece maskeye çevirdik
-                }}>
-                Fetch Test
-              </Text>
-            </LinearGradient>
-          </MaskedView>
-        </TouchableOpacity>
-        <View
-          className="mb-2 p-4 rounded-2xl"
-          style={{backgroundColor: colors.background.primary}}>
-          <Text
-            selectable
-            className="text-md font-rubik-medium"
-            style={{color: colors.text.primary}}>
-            Log:
-          </Text>
-          {log !== '' && (
+          }}>
+          <TouchableOpacity
+            className="p-2 rounded-2xl "
+            style={{
+              backgroundColor: colors.background.secondary,
+            }}
+            onPress={testRefreshToken}>
+            <MaskedView
+              maskElement={
+                <Text
+                  className="text-lg font-rubik-medium ml-2"
+                  style={{
+                    backgroundColor: 'transparent',
+                  }}>
+                  Refresh Token Test
+                </Text>
+              }>
+              <LinearGradient
+                colors={[colors.primary[300], '#40E0D0']} // mavi → turkuaz
+                start={{x: 0, y: 0}}
+                end={{x: 0.2, y: 0}}>
+                <Text
+                  className="text-lg font-rubik-medium"
+                  style={{
+                    opacity: 0, // metni sadece maskeye çevirdik
+                  }}>
+                  Fetch Test
+                </Text>
+              </LinearGradient>
+            </MaskedView>
+          </TouchableOpacity>
+          <View className="p-4 rounded-2xl">
             <Text
               selectable
-              className="text-md font-rubik mt-1"
+              className="text-md font-rubik-medium"
               style={{color: colors.text.primary}}>
-              {log}
+              Log:
             </Text>
-          )}
+            {log !== '' && (
+              <Text
+                selectable
+                className="text-md font-rubik mt-1"
+                style={{color: colors.text.primary}}>
+                {log}
+              </Text>
+            )}
+          </View>
+        </View>
+        <View
+          className="p-3 my-2 rounded-2xl"
+          style={{
+            backgroundColor: colors.background.primary,
+          }}>
+          <TouchableOpacity
+            className="p-2 rounded-2xl "
+            style={{
+              backgroundColor: colors.background.secondary,
+            }}
+            onPress={testGetUser}>
+            <MaskedView
+              maskElement={
+                <Text
+                  className="text-lg font-rubik-medium ml-2"
+                  style={{
+                    backgroundColor: 'transparent',
+                  }}>
+                  Get User Test
+                </Text>
+              }>
+              <LinearGradient
+                colors={[colors.primary[300], '#40E0D0']} // mavi → turkuaz
+                start={{x: 0, y: 0}}
+                end={{x: 0.2, y: 0}}>
+                <Text
+                  className="text-lg font-rubik-medium"
+                  style={{
+                    opacity: 0, // metni sadece maskeye çevirdik
+                  }}>
+                  Fetch Test
+                </Text>
+              </LinearGradient>
+            </MaskedView>
+          </TouchableOpacity>
+          <View className="p-4 rounded-2xl">
+            <Text
+              selectable
+              className="text-md font-rubik-medium"
+              style={{color: colors.text.primary}}>
+              Log:
+            </Text>
+            {log2 !== '' && (
+              <Text
+                selectable
+                className="text-md font-rubik mt-1"
+                style={{color: colors.text.primary}}>
+                {log2}
+              </Text>
+            )}
+          </View>
         </View>
       </ScrollView>
     </View>

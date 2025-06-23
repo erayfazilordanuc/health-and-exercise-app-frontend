@@ -26,7 +26,12 @@ const getIPv4 = async () => {
   return IPv4;
 };
 
-const noAuthRequired = ['/auth/login', '/auth/register', '/auth/guest'];
+const noAuthRequired = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/refresh-token',
+  '/auth/guest',
+];
 
 // Interceptor örneği
 // apiClient.interceptors.request.use(
@@ -71,7 +76,9 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     if (
-      (error.response?.status === 401 || error.response?.status === 403) &&
+      (error.response?.status === 500 ||
+        error.response?.status === 401 ||
+        error.response?.status === 403) &&
       !originalRequest._retry &&
       !noAuthRequired.some(url => originalRequest.url?.includes(url))
     ) {

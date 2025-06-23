@@ -466,9 +466,55 @@ export function BottomNavigator() {
           tabBarIcon: ({focused}) => (
             <TabIcon focused={focused} icon={icons.peopleV3} title="Gruplar" />
           ),
-          tabBarButton: props => (
-            <Pressable {...props} android_ripple={{color: 'transparent'}} />
-          ),
+          tabBarButton: props => {
+            const scale = useRef(new Animated.Value(1)).current;
+
+            const handlePressIn = () => {
+              Animated.spring(scale, {
+                toValue: 0.95,
+                useNativeDriver: true,
+                speed: 20,
+                bounciness: 10,
+              }).start();
+            };
+
+            const handlePressOut = () => {
+              Animated.spring(scale, {
+                toValue: 1,
+                useNativeDriver: true,
+                speed: 20,
+                bounciness: 10,
+              }).start();
+            };
+
+            return (
+              <Animated.View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: [{scale}],
+                }}>
+                <Pressable
+                  onPressIn={handlePressIn}
+                  onPressOut={handlePressOut}
+                  android_ripple={{
+                    color: 'transparent', // Açık mavi ve yumuşak ripple
+                    borderless: true,
+                    radius: 35, // Ripple boyutunu sınırla
+                  }}
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: 35,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  {...props}
+                />
+              </Animated.View>
+            );
+          },
         }}
       />
       <Tab.Screen
@@ -525,7 +571,7 @@ export function BottomNavigator() {
                   onPressIn={handlePressIn}
                   onPressOut={handlePressOut}
                   android_ripple={{
-                    color: 'rgba(255, 255, 255, 0.12)', // Açık mavi ve yumuşak ripple
+                    color: 'transparent', // Açık mavi ve yumuşak ripple için -> 'rgba(255, 255, 255, 0.12)'
                     borderless: true,
                     radius: 35, // Ripple boyutunu sınırla
                   }}
@@ -589,7 +635,7 @@ export function BottomNavigator() {
                   onPressIn={handlePressIn}
                   onPressOut={handlePressOut}
                   android_ripple={{
-                    color: 'rgba(255, 255, 255, 0.12)', // Açık mavi ve yumuşak ripple
+                    color: 'transparent', // Açık mavi ve yumuşak ripple
                     borderless: true,
                     radius: 35, // Ripple boyutunu sınırla
                   }}
@@ -653,7 +699,7 @@ export function BottomNavigator() {
                   onPressIn={handlePressIn}
                   onPressOut={handlePressOut}
                   android_ripple={{
-                    color: 'rgba(255, 255, 255, 0.12)', // Açık mavi ve yumuşak ripple
+                    color: 'transparent', // Açık mavi ve yumuşak ripple
                     borderless: true,
                     radius: 35, // Ripple boyutunu sınırla
                   }}
@@ -721,7 +767,7 @@ export function BottomNavigator() {
                   onPressIn={handlePressIn}
                   onPressOut={handlePressOut}
                   android_ripple={{
-                    color: 'rgba(255, 255, 255, 0.12)', // Açık mavi ve yumuşak ripple
+                    color: 'transparent', // Açık mavi ve yumuşak ripple
                     borderless: true,
                     radius: 100, // Ripple boyutunu sınırla
                   }}
