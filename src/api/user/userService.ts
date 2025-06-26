@@ -3,11 +3,11 @@ import apiClient from '../axios/axios';
 
 export const getUser = async () => {
   const userJson = await AsyncStorage.getItem('user');
-  let user;
+  let user: User;
   if (userJson) {
     user = JSON.parse(userJson);
   } else {
-    const response = await apiClient.get('/user');
+    const response = await apiClient.get('/users/me');
     user = response.data;
     console.log('user', response);
     AsyncStorage.setItem('user', JSON.stringify(user));

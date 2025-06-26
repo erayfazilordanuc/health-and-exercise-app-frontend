@@ -18,6 +18,7 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
 import {getUser} from '../../api/user/userService';
+import GradientText from '../../components/GradientText';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -121,29 +122,13 @@ const Home = () => {
               }}>
               {user?.username}
             </Text> */}
-            <MaskedView
-              maskElement={
-                <Text
-                  className="pl-2 text-2xl font-rubik-medium text-center mb-1"
-                  style={{
-                    backgroundColor: 'transparent',
-                  }}>
-                  {user?.username}
-                </Text>
-              }>
-              <LinearGradient
-                colors={[colors.primary[300], '#40E0D0']} // mavi → turkuaz
-                start={{x: 0, y: 0}}
-                end={{x: 1, y: 0}}>
-                <Text
-                  className="pl-2 text-2xl font-rubik-medium text-center mb-1"
-                  style={{
-                    opacity: 0, // metni sadece maskeye çevirdik
-                  }}>
-                  {user?.username}
-                </Text>
-              </LinearGradient>
-            </MaskedView>
+            <GradientText
+              className="pl-2 text-2xl font-rubik-medium text-center mb-1"
+              start={{x: 0, y: 0}}
+              end={{x: 0.7, y: 0}}
+              colors={[colors.primary[300], '#40E0D0']}>
+              {user?.fullName}
+            </GradientText>
             <View className="flex flex-row">
               <Image
                 source={icons.badge1_colorful_bordered}

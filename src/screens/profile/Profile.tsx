@@ -21,13 +21,14 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
 import LanPortScanner, {LSScanConfig} from 'react-native-lan-port-scanner';
 import {
-  getAggreagtedActiveCaloriesBurned,
-  getAggreagtedSteps,
+  getAggregatedActiveCaloriesBurned,
+  getAggregatedSteps,
+  getAllData,
   getAllSleepSessions,
   getHeartRate,
   getTotalCaloriesBurned,
   getTotalSleepHours,
-} from '../../health/healthConnectService';
+} from '../../api/health/healthConnectService';
 import {RecordType} from 'react-native-health-connect';
 import {Picker} from '@react-native-picker/picker';
 import ProgressBar from '../../components/ProgressBar';
@@ -35,6 +36,9 @@ import HeartRateSimpleChart from './chart';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
 import {getUser} from '../../api/user/userService';
+import GradientText from '../../components/GradientText';
+import {HealthService} from '../../api/health/abstraction/healthService';
+import {upsertSymptomsByDate} from '../../api/symptoms/symptomsService';
 
 const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -48,15 +52,14 @@ const Profile = () => {
 
   const [logs, setLogs] = useState('');
 
-  const [recordType, setRecordType] = useState<RecordType>('Steps');
   const [heartRate, setHeartRate] = useState(0);
   const [steps, setSteps] = useState(0);
-  const [totalCalories, setTotalCalories] = useState(0);
-  const [activeCalories, setActiveCalories] = useState(0);
+  const [totalCaloriesBurned, setTotalCaloriesBurned] = useState(0);
+  const [activeCaloriesBurned, setActiveCaloriesBurned] = useState(0);
   const [totalSleepHours, setTotalSleepHours] = useState(0);
-  const [sleepSessions, setSleepSessions] = useState<
-    {start: string; end: string; durationHours: number}[]
-  >([]);
+  const [sleepSessions, setSleepSessions] = useState<String[]>([]);
+
+  const today = new Date();
 
   // TO DO There should be a favorite color pair to use it on username
 
@@ -69,27 +72,16 @@ const Profile = () => {
     fetchUser();
   }, []);
 
-  const fetchAll = async () => {
-    try {
-      const [hr, as, tc, aac, sh, ss] = await Promise.all([
-        getHeartRate(),
-        // getSteps(),
-        getAggreagtedSteps(),
-        getTotalCaloriesBurned(),
-        // getActiveCaloriesBurned(),
-        getAggreagtedActiveCaloriesBurned(),
-        getTotalSleepHours(),
-        getAllSleepSessions(),
-        // getMockSleepSessions(),
-      ]);
-      setHeartRate(hr);
-      setSteps(as);
-      setTotalCalories(tc);
-      setActiveCalories(Math.floor(aac));
-      setTotalSleepHours(sh);
-      setSleepSessions(ss.reverse());
-    } catch (e) {
-      console.warn('HealthConnect fetch error', e);
+  const fetchAndUpsertAll = async () => {
+    const symptoms: Symptoms = await getAllData();
+
+    if (symptoms) {
+      setHeartRate(symptoms.pulse ?? 0);
+      setSteps(symptoms.steps ?? 0);
+      setActiveCaloriesBurned(symptoms.activeCaloriesBurned ?? 0);
+      setTotalSleepHours(symptoms.sleepHours ?? 0);
+      if (symptoms.sleepSessions)
+        setSleepSessions(symptoms.sleepSessions.reverse());
     }
   };
 
@@ -105,46 +97,15 @@ const Profile = () => {
         backAction,
       );
 
-      return () => backHandler.remove(); // Ekrandan çıkınca event listener'ı kaldır
+      return () => backHandler.remove();
     }, []),
   );
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     setRefreshing(true);
-  //     const timeout = setTimeout(() => {
-  //       fetchAll().finally(() => setRefreshing(false));
-  //     }, 300); // 300ms bekletmek UI'yı rahatlatır
-  //     return () => clearTimeout(timeout);
-  //   }, []),
-  // );
 
   useFocusEffect(
-    // useCallback(() => {
-    //   const task = InteractionManager.runAfterInteractions(() => {
-    //     fetchAll();
-    //   });
-    //   return () => task.cancel();
-    // }, []),
     useCallback(() => {
-      fetchAll();
+      fetchAndUpsertAll();
     }, []),
   );
-
-  // useEffect(() => {
-  //   const task = InteractionManager.runAfterInteractions(() => {
-  //     const unsubscribe = navigation.addListener('focus', () => {
-  //       fetchAll();
-  //     });
-
-  //     return unsubscribe;
-  //   });
-  //   return () => task.cancel();
-  // }, [navigation]);
-
-  // useEffect(() => {
-  //   fetchAll();
-  // }, []);
 
   return (
     <>
@@ -191,7 +152,7 @@ const Profile = () => {
               refreshing={refreshing}
               onRefresh={() => {
                 setRefreshing(true);
-                fetchAll();
+                fetchAndUpsertAll();
                 setRefreshing(false);
               }}
               progressBackgroundColor={colors.background.secondary}
@@ -204,29 +165,13 @@ const Profile = () => {
             style={{backgroundColor: colors.background.primary}}>
             <View className="flex flex-col justify-center pl-5 pr-4 py-3">
               <View className="flex flex-row justify-between">
-                <MaskedView
-                  maskElement={
-                    <Text
-                      className="font-rubik-medium text-2xl"
-                      style={{
-                        backgroundColor: 'transparent',
-                      }}>
-                      {user?.username}
-                    </Text>
-                  }>
-                  <LinearGradient
-                    colors={[colors.primary[300], '#40E0D0']} // mavi → turkuaz
-                    start={{x: 0, y: 0}}
-                    end={{x: 1, y: 0}}>
-                    <Text
-                      className="font-rubik-medium text-2xl"
-                      style={{
-                        opacity: 0, // metni sadece maskeye çevirdik
-                      }}>
-                      {user?.username}
-                    </Text>
-                  </LinearGradient>
-                </MaskedView>
+                <GradientText
+                  className="font-rubik-medium text-2xl"
+                  start={{x: 0, y: 0}}
+                  end={{x: 0.7, y: 0}}
+                  colors={[colors.primary[300], '#40E0D0']}>
+                  {user?.fullName}
+                </GradientText>
                 <View className="flex flex-row">
                   <Image
                     source={icons.badge1_colorful_bordered}
@@ -285,7 +230,7 @@ const Profile = () => {
             iconSource={icons.blood_pressure}
             color="#FF9900"></ProgressBar> FDEF22*/}
             <ProgressBar
-              value={activeCalories}
+              value={activeCaloriesBurned}
               label="Yakılan Kalori"
               iconSource={icons.kcal}
               color="#FF9900"></ProgressBar>
@@ -311,18 +256,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik text-lg"
                   style={{color: colors.text.primary}}>
-                  💤 Başlangıç:{' '}
-                  {new Date(session.start).toLocaleString('tr-TR')}
-                </Text>
-                <Text
-                  className="font-rubik text-lg"
-                  style={{color: colors.text.primary}}>
-                  🌅 Bitiş: {new Date(session.end).toLocaleString('tr-TR')}
-                </Text>
-                <Text
-                  className="font-rubik text-lg"
-                  style={{color: colors.text.primary}}>
-                  ⏱ Süre: {session.durationHours} saat
+                  💤 Başlangıç: {session}
                 </Text>
               </View>
             ))}

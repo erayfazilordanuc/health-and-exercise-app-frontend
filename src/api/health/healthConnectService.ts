@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   initialize,
   requestPermission,
@@ -6,8 +7,86 @@ import {
   RecordType,
   aggregateRecord,
 } from 'react-native-health-connect';
+import {upsertSymptomsByDate} from '../symptoms/symptomsService';
 
 // TO DO Burada aggregated olmayan fonksiyonların dizi dönmesi lazım
+
+const todayStart = () => new Date().setHours(0, 0, 0, 0);
+const todayEnd = () => new Date().setHours(23, 59, 59, 999);
+const keyPrefix = 'symptoms_';
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const todayKey = () => keyPrefix + todayStr();
+
+let isInitialized = false;
+
+const initializeService = async () => {
+  if (isInitialized) return true;
+  isInitialized = await initialize();
+  console.log('[HC] initialized →', isInitialized);
+  return isInitialized;
+};
+
+const requestReadPermission = async (recordTypes: RecordType[]) => {
+  if (!(await initializeService())) return false;
+  const granted = await requestPermission(
+    recordTypes.map(rt => ({accessType: 'read', recordType: rt})),
+  );
+  console.log('[HC] granted →', granted);
+  return granted.length === recordTypes.length;
+};
+
+export const readSampleData = async (
+  recordType: RecordType,
+  // If there is no date given, todays begin and end date are selected
+  startTime: Date = new Date(todayStart()),
+  endTime: Date = new Date(todayEnd()),
+) => {
+  // initialize the client
+  if (!(await initializeService())) return;
+
+  // request permissions
+  if (!(await requestReadPermission([recordType]))) return;
+
+  const result = await readRecords(recordType, {
+    timeRangeFilter: {
+      operator: 'between',
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+    },
+  });
+
+  console.log('Result ' + recordType, result);
+
+  return result;
+};
+
+export const aggregatedSampleData = async (
+  // recordType: RecordType,
+  startTime: Date = new Date(todayStart()),
+  endTime: Date = new Date(todayEnd()),
+) => {
+  let recordType: RecordType = 'ActiveCaloriesBurned';
+  // initialize the client
+  if (!(await initializeService())) return;
+
+  // request permissions
+  if (!(await requestReadPermission([recordType]))) return;
+
+  const currentDate = new Date();
+
+  const result = await aggregateRecord({
+    recordType,
+    timeRangeFilter: {
+      operator: 'between',
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+    },
+  });
+
+  console.log('Aggregated Result ' + recordType, result);
+
+  return result;
+};
 
 export const getHeartRate = async () => {
   const result: any = await readSampleData('HeartRate');
@@ -35,14 +114,14 @@ export const getSteps = async () => {
   return count;
 };
 
-export const getAggreagtedSteps = async () => {
+export const getAggregatedSteps = async () => {
   const recordType: RecordType = 'Steps';
   const result: any = await aggregateRecord({
     recordType,
     timeRangeFilter: {
       operator: 'between',
-      startTime: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-      endTime: new Date(new Date().setHours(23, 59, 59, 999)).toISOString(),
+      startTime: new Date(todayStart()).toISOString(),
+      endTime: new Date(todayEnd()).toISOString(),
     },
   });
 
@@ -67,14 +146,14 @@ export const getActiveCaloriesBurned = async () => {
   return Math.floor(activeKcal);
 };
 
-export const getAggreagtedActiveCaloriesBurned = async () => {
+export const getAggregatedActiveCaloriesBurned = async () => {
   const recordType: RecordType = 'ActiveCaloriesBurned';
   const result: any = await aggregateRecord({
     recordType,
     timeRangeFilter: {
       operator: 'between',
       startTime: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-      endTime: new Date(new Date().setHours(23, 59, 59, 999)).toISOString(),
+      endTime: new Date(todayEnd()).toISOString(),
     },
   });
 
@@ -165,69 +244,46 @@ export const getAllSleepSessions = async () => {
   return sessions;
 };
 
-export const readSampleData = async (
-  recordType: RecordType,
-  // If there is no date given, todays begin and end date are selected
-  startTime: Date = new Date(new Date().setHours(0, 0, 0, 0)),
-  endTime: Date = new Date(new Date().setHours(23, 59, 59, 999)),
-) => {
-  // initialize the client
-  const isInitialized = await initialize();
-  console.log('Init:', isInitialized);
-  if (!isInitialized) return;
-
-  // request permissions
-  const grantedPermissions = await requestPermission([
-    {accessType: 'read', recordType: recordType},
-  ]);
-  console.log('Granted:', grantedPermissions);
-  // check if granted
-  if (grantedPermissions.length <= 0) return;
-
-  const result = await readRecords(recordType, {
-    timeRangeFilter: {
-      operator: 'between',
-      startTime: startTime.toISOString(),
-      endTime: endTime.toISOString(),
-    },
-  });
-
-  console.log('Result ' + recordType, result);
-
-  return result;
+const saveData = async (key: string, symptoms: Symptoms) => {
+  await AsyncStorage.setItem(key, JSON.stringify(symptoms));
+  const response = await upsertSymptomsByDate(new Date(), symptoms);
 };
 
-export const aggregatedSampleData = async (
-  // recordType: RecordType,
-  startTime: Date = new Date(new Date().setHours(0, 0, 0, 0)),
-  endTime: Date = new Date(new Date().setHours(23, 59, 59, 999)),
-) => {
-  let recordType: RecordType = 'ActiveCaloriesBurned';
-  // initialize the client
-  const isInitialized = await initialize();
-  console.log('Init:', isInitialized);
-  if (!isInitialized) return;
+export const getAllData = async () => {
+  const heartRate = await getHeartRate();
+  const aggregatedSteps = await getAggregatedSteps();
+  const activeCaloriesBurned = await getActiveCaloriesBurned();
+  const totalSleepHours = await getTotalSleepHours();
+  const sleepSessions = await getAllSleepSessions();
 
-  // request permissions
-  const grantedPermissions = await requestPermission([
-    {accessType: 'read', recordType: recordType},
-  ]);
-  console.log('Granted:', grantedPermissions);
-  // check if granted
-  if (grantedPermissions.length <= 0) return;
+  const symptoms = {
+    pulse: heartRate,
+    steps: aggregatedSteps,
+    activeCaloriesBurned: activeCaloriesBurned,
+    sleepHours: totalSleepHours,
+    sleepSessions: sleepSessions,
+  } as Symptoms;
+  console.log('symptoms', symptoms);
 
-  const currentDate = new Date();
+  const key = todayKey();
+  console.log('key', key);
 
-  const result = await aggregateRecord({
-    recordType,
-    timeRangeFilter: {
-      operator: 'between',
-      startTime: startTime.toISOString(),
-      endTime: endTime.toISOString(),
-    },
-  });
+  const allKeys = await AsyncStorage.getAllKeys();
+  if (allKeys) {
+    const outdated = allKeys.filter(k => k.startsWith(keyPrefix) && k !== key);
+    if (outdated.length) await AsyncStorage.multiRemove(outdated);
+  }
 
-  console.log('Aggregated Result ' + recordType, result);
+  const localData = await AsyncStorage.getItem(key);
+  console.log('localData', localData);
+  if (localData) {
+    const symptomsJson = JSON.stringify(symptoms);
+    if (symptomsJson !== localData) {
+      saveData(key, symptoms);
+    }
+  } else {
+    saveData(key, symptoms);
+  }
 
-  return result;
+  return symptoms;
 };

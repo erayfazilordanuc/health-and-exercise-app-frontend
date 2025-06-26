@@ -1,6 +1,7 @@
 type User = {
   id?: number;
   username: string;
+  fullName: string;
   email: string;
 };
 
@@ -12,28 +13,8 @@ type LoginRequestPayload = {
 type RegisterRequestPayload = {
   username: string;
   email?: string;
+  fullName: string;
   password: string;
-};
-
-type Note = {
-  id: number;
-  title: string;
-  content: string;
-  authorId?: number;
-  isFavorited?: boolean;
-  createdAt?: Date | null;
-  updatedAt?: Date | null;
-};
-
-type ToDo = {
-  id: number;
-  title: string;
-  content: string;
-  isDone: boolean;
-  authorId?: number;
-  isFavorited?: boolean;
-  createdAt?: Date | null;
-  updatedAt?: Date | null;
 };
 
 type GuestUser = {
@@ -42,19 +23,23 @@ type GuestUser = {
   password: string;
 };
 
-type NoteRequestPayload = {
-  title: string;
-  content: string;
-  authorId?: number;
-  isFavorited?: boolean;
+type Symptoms = {
+  id?: number;
+  pulse?: number;
+  steps?: number;
+  activeCaloriesBurned?: number;
+  sleepHours?: number;
+  sleepSessions?: string[];
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
 };
 
-type ToDoRequestPayload = {
-  title: string;
-  content: string;
-  authorId?: number;
-  isDone: boolean;
-  isFavorited?: boolean;
+type UpdateSymptomsDTO = {
+  pulse?: number;
+  steps?: number;
+  activeCaloriesBurned?: number;
+  sleepHours?: number;
+  sleepSessions?: string[];
 };
 
 type Label = {

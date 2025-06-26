@@ -35,6 +35,8 @@ function Login() {
   );
 
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -140,6 +142,7 @@ function Login() {
       const registerPayload: RegisterRequestPayload = {
         username: username.trim(),
         email: 'ostensible@gmail.com',
+        fullName: fullName.trim(),
         password: password.trim(),
       };
 
@@ -211,6 +214,25 @@ function Login() {
             {loginMethod === LoginMethod.registration && 'Hesap Oluştur'}
           </Text>
 
+          {loginMethod === LoginMethod.registration && (
+            <View
+              className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
+              style={{
+                backgroundColor: colors.background.primary,
+              }}>
+              <TextInput
+                placeholderTextColor={'gray'}
+                selectionColor={'#7AADFF'}
+                value={fullName}
+                onChangeText={(value: string) => {
+                  setFullName(value);
+                }}
+                placeholder="Ad Soyad"
+                className="text-lg font-rubik ml-5 flex-1"
+                style={{color: colors.text.primary}}
+              />
+            </View>
+          )}
           <View
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{

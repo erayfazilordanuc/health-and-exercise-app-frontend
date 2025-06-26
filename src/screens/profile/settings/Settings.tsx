@@ -13,14 +13,13 @@ import {
   useFocusEffect,
   useNavigation,
 } from '@react-navigation/native';
-import {logout} from '../../../api/async_storage/authService';
-import {getUser} from '../../../api/async_storage/userService';
 import icons from '../../../constants/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Avatar} from 'react-native-elements';
 import CustomAvatar from '../../../components/CustomAvatar';
 import {useTheme} from '../../../themes/ThemeProvider';
 import CustomAlert from '../../../components/CustomAlert';
+import {logout} from '../../../api/auth/authService';
 
 interface SettingsItemProps {
   icon: ImageSourcePropType;

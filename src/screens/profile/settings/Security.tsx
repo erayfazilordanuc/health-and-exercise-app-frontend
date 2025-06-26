@@ -22,6 +22,12 @@ import {getUser} from '../../../api/user/userService';
 import {AxiosError} from 'axios';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
+import GradientText from '../../../components/GradientText';
+import {
+  getAllSymptoms,
+  getAllSymptomsByDate,
+  getSymptomsById,
+} from '../../../api/symptoms/symptomsService';
 
 const Security = () => {
   const insets = useSafeAreaInsets();
@@ -46,6 +52,11 @@ const Security = () => {
 
   const [log, setLog] = useState('');
   const [log2, setLog2] = useState('');
+  const [log3, setLog3] = useState('');
+  const [log4, setLog4] = useState('');
+  const [log5, setLog5] = useState('');
+
+  const today = new Date();
 
   const fetchUser = async () => {
     const user: User = await getUser();
@@ -82,18 +93,15 @@ const Security = () => {
     fetchApiBaseUrl();
   }, []);
 
-  const testRefreshToken = async () => {
+  const testGetUser = async () => {
     try {
-      console.log(refreshToken);
-      const tokenResponse = await apiClient.post('/auth/refresh-token', null, {
-        headers: {
-          Authorization: `${refreshToken}`,
-        },
-      });
+      const userResponse = await apiClient.get('/users/me');
 
-      const tokenData = JSON.stringify(tokenResponse.data, null, 2);
-      console.log('tokenData', tokenData);
-      setLog(`Token Response:\n${tokenData}`);
+      const userData = JSON.stringify(userResponse.data, null, 2);
+      console.log('userData', userData);
+      setLog(`User Response:\n${userData}`);
+      fetchTokens();
+      fetchUser();
     } catch (error) {
       if (error instanceof AxiosError) {
         console.log(error.response);
@@ -110,15 +118,18 @@ const Security = () => {
     }
   };
 
-  const testGetUser = async () => {
+  const testRefreshToken = async () => {
     try {
-      const userResponse = await apiClient.get('/user');
+      console.log(refreshToken);
+      const tokenResponse = await apiClient.post('/auth/refresh-token', null, {
+        headers: {
+          Authorization: `${refreshToken}`,
+        },
+      });
 
-      const userData = JSON.stringify(userResponse.data, null, 2);
-      console.log('userData', userData);
-      setLog2(`User Response:\n${userData}`);
-      fetchTokens();
-      fetchUser();
+      const tokenData = JSON.stringify(tokenResponse.data, null, 2);
+      console.log('tokenData', tokenData);
+      setLog2(`Token Response:\n${tokenData}`);
     } catch (error) {
       if (error instanceof AxiosError) {
         console.log(error.response);
@@ -131,6 +142,81 @@ const Security = () => {
         setLog2(`Generic Error: ${error.message}`);
       } else {
         setLog2('Unknown error occurred.');
+      }
+    }
+  };
+
+  const testGetSymptomsById = async () => {
+    try {
+      const symptomsResponse = await getSymptomsById(1);
+
+      const symptomsData = JSON.stringify(symptomsResponse.data, null, 2);
+      console.log('symptomsData', symptomsData);
+      setLog3(`Symptoms Response:\n${symptomsData}`);
+      fetchTokens();
+      fetchUser();
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.log(error.response);
+        setLog3(
+          `Axios Error: ${JSON.stringify(
+            error.response?.data || error.message,
+          )}`,
+        );
+      } else if (error instanceof Error) {
+        setLog3(`Generic Error: ${error.message}`);
+      } else {
+        setLog3('Unknown error occurred.');
+      }
+    }
+  };
+
+  const testGetAllSymptoms = async () => {
+    try {
+      const symptomsResponse = await getAllSymptoms();
+
+      const symptomsData = JSON.stringify(symptomsResponse.data, null, 2);
+      console.log('symptomsData', symptomsData);
+      setLog4(`Symptoms Response:\n${symptomsData}`);
+      fetchTokens();
+      fetchUser();
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.log(error.response);
+        setLog4(
+          `Axios Error: ${JSON.stringify(
+            error.response?.data || error.message,
+          )}`,
+        );
+      } else if (error instanceof Error) {
+        setLog4(`Generic Error: ${error.message}`);
+      } else {
+        setLog4('Unknown error occurred.');
+      }
+    }
+  };
+
+  const testGetAllSymptomsByDate = async () => {
+    try {
+      const symptomsResponse = await getAllSymptomsByDate(today);
+
+      const symptomsData = JSON.stringify(symptomsResponse.data, null, 2);
+      console.log('symptomsData', symptomsData);
+      setLog5(`Symptoms Response:\n${symptomsData}`);
+      fetchTokens();
+      fetchUser();
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.log(error.response);
+        setLog5(
+          `Axios Error: ${JSON.stringify(
+            error.response?.data || error.message,
+          )}`,
+        );
+      } else if (error instanceof Error) {
+        setLog5(`Generic Error: ${error.message}`);
+      } else {
+        setLog5('Unknown error occurred.');
       }
     }
   };
@@ -169,6 +255,22 @@ const Security = () => {
             className="text-lg font-rubik"
             style={{color: colors.text.primary}}>
             {user?.username || 'N/A'}
+          </Text>
+        </View>
+
+        <View
+          className="flex flex-row justify-start items-center pb-3 mb-2 p-4 rounded-2xl"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="text-lg font-rubik-medium"
+            style={{color: colors.text.primary}}>
+            Full Name:{'  '}
+          </Text>
+          <Text
+            selectable
+            className="text-lg font-rubik"
+            style={{color: colors.text.primary}}>
+            {user?.fullName || 'N/A'}
           </Text>
         </View>
 
@@ -296,7 +398,7 @@ const Security = () => {
           </Text>
         </View>
 
-        <View
+        {/* <View
           className="mb-2 p-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
           <Text
@@ -310,10 +412,10 @@ const Security = () => {
             style={{color: colors.text.primary}}>
             {JSON.stringify(user, null, 2)}
           </Text>
-        </View>
+        </View> */}
 
         <View
-          className="p-3 rounded-2xl"
+          className="p-3 mb-1 rounded-2xl"
           style={{
             backgroundColor: colors.background.primary,
           }}>
@@ -322,30 +424,14 @@ const Security = () => {
             style={{
               backgroundColor: colors.background.secondary,
             }}
-            onPress={testRefreshToken}>
-            <MaskedView
-              maskElement={
-                <Text
-                  className="text-lg font-rubik-medium ml-2"
-                  style={{
-                    backgroundColor: 'transparent',
-                  }}>
-                  Refresh Token Test
-                </Text>
-              }>
-              <LinearGradient
-                colors={[colors.primary[300], '#40E0D0']} // mavi → turkuaz
-                start={{x: 0, y: 0}}
-                end={{x: 0.2, y: 0}}>
-                <Text
-                  className="text-lg font-rubik-medium"
-                  style={{
-                    opacity: 0, // metni sadece maskeye çevirdik
-                  }}>
-                  Fetch Test
-                </Text>
-              </LinearGradient>
-            </MaskedView>
+            onPress={testGetUser}>
+            <GradientText
+              className="text-lg font-rubik-medium ml-2"
+              start={{x: 0, y: 0}}
+              end={{x: 0.3, y: 0}}
+              colors={[colors.primary[300], '#40E0D0']}>
+              Get User Test
+            </GradientText>
           </TouchableOpacity>
           <View className="p-4 rounded-2xl">
             <Text
@@ -364,8 +450,9 @@ const Security = () => {
             )}
           </View>
         </View>
+
         <View
-          className="p-3 my-2 rounded-2xl"
+          className="p-3 my-1 rounded-2xl"
           style={{
             backgroundColor: colors.background.primary,
           }}>
@@ -374,30 +461,14 @@ const Security = () => {
             style={{
               backgroundColor: colors.background.secondary,
             }}
-            onPress={testGetUser}>
-            <MaskedView
-              maskElement={
-                <Text
-                  className="text-lg font-rubik-medium ml-2"
-                  style={{
-                    backgroundColor: 'transparent',
-                  }}>
-                  Get User Test
-                </Text>
-              }>
-              <LinearGradient
-                colors={[colors.primary[300], '#40E0D0']} // mavi → turkuaz
-                start={{x: 0, y: 0}}
-                end={{x: 0.2, y: 0}}>
-                <Text
-                  className="text-lg font-rubik-medium"
-                  style={{
-                    opacity: 0, // metni sadece maskeye çevirdik
-                  }}>
-                  Fetch Test
-                </Text>
-              </LinearGradient>
-            </MaskedView>
+            onPress={testRefreshToken}>
+            <GradientText
+              className="text-lg font-rubik-medium ml-2"
+              start={{x: 0, y: 0}}
+              end={{x: 0.3, y: 0}}
+              colors={[colors.primary[300], '#40E0D0']}>
+              Refresh Token Test
+            </GradientText>
           </TouchableOpacity>
           <View className="p-4 rounded-2xl">
             <Text
@@ -412,6 +483,117 @@ const Security = () => {
                 className="text-md font-rubik mt-1"
                 style={{color: colors.text.primary}}>
                 {log2}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        <View
+          className="p-3 my-1 rounded-2xl"
+          style={{
+            backgroundColor: colors.background.primary,
+          }}>
+          <TouchableOpacity
+            className="p-2 rounded-2xl "
+            style={{
+              backgroundColor: colors.background.secondary,
+            }}
+            onPress={testGetSymptomsById}>
+            <GradientText
+              className="text-lg font-rubik-medium ml-2"
+              start={{x: 0, y: 0}}
+              end={{x: 0.3, y: 0}}
+              colors={[colors.primary[300], '#40E0D0']}>
+              Get Symptoms By Id Test
+            </GradientText>
+          </TouchableOpacity>
+          <View className="p-4 rounded-2xl">
+            <Text
+              selectable
+              className="text-md font-rubik-medium"
+              style={{color: colors.text.primary}}>
+              Log:
+            </Text>
+            {log3 !== '' && (
+              <Text
+                selectable
+                className="text-md font-rubik mt-1"
+                style={{color: colors.text.primary}}>
+                {log3}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        <View
+          className="p-3 my-1 rounded-2xl"
+          style={{
+            backgroundColor: colors.background.primary,
+          }}>
+          <TouchableOpacity
+            className="p-2 rounded-2xl "
+            style={{
+              backgroundColor: colors.background.secondary,
+            }}
+            onPress={testGetAllSymptoms}>
+            <GradientText
+              className="text-lg font-rubik-medium ml-2"
+              start={{x: 0, y: 0}}
+              end={{x: 0.3, y: 0}}
+              colors={[colors.primary[300], '#40E0D0']}>
+              Get All Symptoms Test
+            </GradientText>
+          </TouchableOpacity>
+          <View className="p-4 rounded-2xl">
+            <Text
+              selectable
+              className="text-md font-rubik-medium"
+              style={{color: colors.text.primary}}>
+              Log:
+            </Text>
+            {log4 !== '' && (
+              <Text
+                selectable
+                className="text-md font-rubik mt-1"
+                style={{color: colors.text.primary}}>
+                {log4}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        <View
+          className="p-3 mt-1 mb-2 rounded-2xl"
+          style={{
+            backgroundColor: colors.background.primary,
+          }}>
+          <TouchableOpacity
+            className="p-2 rounded-2xl "
+            style={{
+              backgroundColor: colors.background.secondary,
+            }}
+            onPress={testGetAllSymptomsByDate}>
+            <GradientText
+              className="text-lg font-rubik-medium ml-2"
+              start={{x: 0, y: 0}}
+              end={{x: 0.3, y: 0}}
+              colors={[colors.primary[300], '#40E0D0']}>
+              Get All Symptoms By Date Test
+            </GradientText>
+          </TouchableOpacity>
+          <View className="p-4 rounded-2xl">
+            <Text
+              selectable
+              className="text-md font-rubik-medium"
+              style={{color: colors.text.primary}}>
+              Log:
+            </Text>
+            {log5 !== '' && (
+              <Text
+                selectable
+                className="text-md font-rubik mt-1"
+                style={{color: colors.text.primary}}>
+                {log5}
               </Text>
             )}
           </View>

@@ -5,7 +5,7 @@ import {jwtDecode} from 'jwt-decode';
 export const login = async (credentials: LoginRequestPayload) => {
   const response = await apiClient.post('/auth/login', credentials);
   console.log('login', response);
-  const user = response.data.user as User;
+  const user = response.data.userDTO as User;
   const accessToken = response.data.accessToken;
   const refreshToken = response.data.refreshToken;
   await AsyncStorage.setItem('user', JSON.stringify(user));
@@ -17,7 +17,7 @@ export const login = async (credentials: LoginRequestPayload) => {
 export const register = async (credentials: RegisterRequestPayload) => {
   const response = await apiClient.post('/auth/register', credentials);
   console.log('register', response);
-  const user = response.data.user as User;
+  const user = response.data.userDTO as User;
   const accessToken = response.data.accessToken;
   const refreshToken = response.data.refreshToken;
   await AsyncStorage.setItem('user', JSON.stringify(user));
