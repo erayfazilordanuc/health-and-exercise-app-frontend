@@ -23,9 +23,9 @@ import LanPortScanner, {LSScanConfig} from 'react-native-lan-port-scanner';
 import {
   getAggregatedActiveCaloriesBurned,
   getAggregatedSteps,
-  getAllData,
   getAllSleepSessions,
   getHeartRate,
+  getSymptoms,
   getTotalCaloriesBurned,
   getTotalSleepHours,
 } from '../../api/health/healthConnectService';
@@ -72,16 +72,27 @@ const Profile = () => {
     fetchUser();
   }, []);
 
+  const setSymptoms = (symptoms: Symptoms) => {
+    setHeartRate(symptoms.pulse ?? 0);
+    setSteps(symptoms.steps ?? 0);
+    setActiveCaloriesBurned(symptoms.activeCaloriesBurned ?? 0);
+    setTotalSleepHours(symptoms.sleepHours ?? 0);
+    if (symptoms.sleepSessions)
+      setSleepSessions(symptoms.sleepSessions.reverse());
+  };
+
   const fetchAndUpsertAll = async () => {
-    const symptoms: Symptoms = await getAllData();
+    const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
+    const localData = await AsyncStorage.getItem(key);
+    if (localData) {
+      const localSymptoms: Symptoms = JSON.parse(localData);
+      setSymptoms(localSymptoms);
+    }
+
+    const symptoms: Symptoms = await getSymptoms();
 
     if (symptoms) {
-      setHeartRate(symptoms.pulse ?? 0);
-      setSteps(symptoms.steps ?? 0);
-      setActiveCaloriesBurned(symptoms.activeCaloriesBurned ?? 0);
-      setTotalSleepHours(symptoms.sleepHours ?? 0);
-      if (symptoms.sleepSessions)
-        setSleepSessions(symptoms.sleepSessions.reverse());
+      setSymptoms(symptoms);
     }
   };
 

@@ -44,33 +44,3 @@ export const upsertSymptomsByDate = async (date: Date, symptoms: Symptoms) => {
 // Veritabanında günlük kayıt tutulsun
 // UpdateSymptoms isteği yollansın -> Backendde eğer o güne ait symptoms verisi varsa güncellensin yoksa yenisi oluşturulsun
 // Bu yapı değiştirilebilir
-
-//Cache aware
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-// import {healthService} from './abstraction/factory';      // Android / Apple seçimi
-
-// const DAY_KEY = () => `SYMPTOMS_${new Date().toISOString().slice(0, 10)}`;
-
-// /** UI tarafının çağıracağı tek fonksiyon */
-// export const getAllData = async () => {
-//   // 1️⃣  Cache oku
-//   const cachedStr = await AsyncStorage.getItem(DAY_KEY());
-//   if (cachedStr) {
-//     try {
-//       const cached = JSON.parse(cachedStr);
-//       // Arka planda taze veri çekmeye başlayalım (fire-and-forget)
-//       refreshInBackground();
-//       return cached;
-//     } catch {/* bozuk JSON → ignore */}
-//   }
-
-//   // 2️⃣  Cache yoksa canlı oku
-//   return await refreshInBackground();
-// };
-
-// /** Sağlık servisinden çekip AsyncStorage’a yazan helper */
-// const refreshInBackground = async () => {
-//   const fresh = await healthService.getAllSymptoms();   // DaySymptoms
-//   await AsyncStorage.setItem(DAY_KEY(), JSON.stringify(fresh));
-//   return fresh;
-// };

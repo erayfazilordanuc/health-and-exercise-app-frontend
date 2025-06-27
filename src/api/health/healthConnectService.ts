@@ -247,9 +247,10 @@ export const getAllSleepSessions = async () => {
 const saveData = async (key: string, symptoms: Symptoms) => {
   await AsyncStorage.setItem(key, JSON.stringify(symptoms));
   const response = await upsertSymptomsByDate(new Date(), symptoms);
+  console.log('upsert response', response);
 };
 
-export const getAllData = async () => {
+export const getSymptoms = async () => {
   const heartRate = await getHeartRate();
   const aggregatedSteps = await getAggregatedSteps();
   const activeCaloriesBurned = await getActiveCaloriesBurned();
