@@ -14,6 +14,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTheme} from '../../themes/ThemeProvider';
 import {Theme, themes} from '../../themes/themes';
+import {getSymptoms} from '../../api/health/healthConnectService';
 
 const {width, height} = Dimensions.get('window');
 
@@ -48,6 +49,7 @@ const Launch = () => {
     const refreshToken = await AsyncStorage.getItem('refreshToken');
 
     if (accessToken || refreshToken || userData) {
+      await getSymptoms();
       navigation.navigate('App');
     } else {
       setLoading(false);
@@ -92,7 +94,7 @@ const Launch = () => {
         className="px-6 py-3 rounded-2xl mb-2"
         style={{backgroundColor: colors.background.primary}}
         onPress={() => {
-          navigation.navigate('Login');
+          navigation.navigate('UserLogin');
         }}>
         <Text
           className="text-xl font-rubik"
@@ -105,13 +107,16 @@ const Launch = () => {
 
       <TouchableOpacity
         className="px-6 py-3 rounded-2xl"
-        style={{backgroundColor: colors.background.primary}}>
+        style={{backgroundColor: colors.background.primary}}
+        onPress={() => {
+          navigation.navigate('AdminLogin');
+        }}>
         <Text
           className="text-xl font-rubik"
           style={{
             color: colors.text.primary,
           }}>
-          Admin Girişi
+          Yönetici Girişi
         </Text>
       </TouchableOpacity>
 

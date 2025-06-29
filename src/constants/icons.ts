@@ -97,6 +97,7 @@ import brain from '../assets/icons/brain.png';
 import wordle from '../assets/icons/wordle.png';
 import brickwall from '../assets/icons/brickwall.png';
 import chronometer from '../assets/icons/chronometer.png';
+import development from '../assets/icons/development.png';
 
 export default {
   google,
@@ -198,4 +199,5 @@ export default {
   wordle,
   brickwall,
   chronometer,
+  development,
 };

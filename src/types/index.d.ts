@@ -3,7 +3,13 @@ type User = {
   username: string;
   fullName: string;
   email: string;
+  role: string;
 };
+
+enum Role {
+  ROLE_USER,
+  ROLE_ADMIN,
+}
 
 type LoginRequestPayload = {
   username?: string;
@@ -17,10 +23,14 @@ type RegisterRequestPayload = {
   password: string;
 };
 
-type GuestUser = {
-  id: number;
-  username: string;
-  password: string;
+type AdminLoginRequestPayload = {
+  loginDTO: LoginRequestPayload;
+  code?: string | null;
+};
+
+type AdminRegisterRequestPayload = {
+  registerDTO: RegisterRequestPayload;
+  code?: string | null;
 };
 
 type Symptoms = {
@@ -40,6 +50,11 @@ type UpdateSymptomsDTO = {
   activeCaloriesBurned?: number;
   sleepHours?: number;
   sleepSessions?: string[];
+};
+
+type LocalSymptoms = {
+  symptoms: Symptoms;
+  isSynced: boolean;
 };
 
 type Label = {

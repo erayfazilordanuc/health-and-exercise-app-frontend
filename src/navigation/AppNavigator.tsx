@@ -6,8 +6,6 @@ import {
 } from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Launch from '../screens/launch/Launch';
-import Login from '../screens/login/Login';
-import Notes from '../screens/groups/Groups';
 import CustomHeader from '../components/CustomHeader';
 import Options from '../screens/profile/settings/Settings';
 import {BottomNavigator} from './BottomNavigation';
@@ -24,6 +22,8 @@ import Home from '../screens/home/Home';
 import Profile from '../screens/profile/Profile';
 import Groups from '../screens/groups/Groups';
 import Exercises from '../screens/exercises/Exercises';
+import UserLogin from '../screens/login/UserLogin';
+import AdminLogin from '../screens/login/AdminLogin';
 
 const RootNativeStack = createNativeStackNavigator<RootStackParamList>();
 const AppNativeStack = createNativeStackNavigator<AppStackParamList>(); // This one works
@@ -105,8 +105,15 @@ function AppStack() {
         }}
       />
       <AppNativeStack.Screen
-        name="Login"
-        component={Login}
+        name="UserLogin"
+        component={UserLogin}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <AppNativeStack.Screen
+        name="AdminLogin"
+        component={AdminLogin}
         options={{
           headerShown: false,
         }}

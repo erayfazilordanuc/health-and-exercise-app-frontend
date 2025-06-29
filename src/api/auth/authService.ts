@@ -26,6 +26,36 @@ export const register = async (credentials: RegisterRequestPayload) => {
   return response;
 };
 
+export const loginAdmin = async (credentials: AdminLoginRequestPayload) => {
+  const response = await apiClient.post('/auth/admin/login', credentials);
+  console.log('login', response);
+  if (response.data) {
+    const user = response.data.userDTO as User;
+    const accessToken = response.data.accessToken;
+    const refreshToken = response.data.refreshToken;
+    await AsyncStorage.setItem('user', JSON.stringify(user));
+    await AsyncStorage.setItem('accessToken', accessToken);
+    await AsyncStorage.setItem('refreshToken', refreshToken);
+  }
+  return response;
+};
+
+export const registerAdmin = async (
+  credentials: AdminRegisterRequestPayload,
+) => {
+  const response = await apiClient.post('/auth/admin/register', credentials);
+  console.log('register', response);
+  if (response.data) {
+    const user = response.data.userDTO as User;
+    const accessToken = response.data.accessToken;
+    const refreshToken = response.data.refreshToken;
+    await AsyncStorage.setItem('user', JSON.stringify(user));
+    await AsyncStorage.setItem('accessToken', accessToken);
+    await AsyncStorage.setItem('refreshToken', refreshToken);
+  }
+  return response;
+};
+
 export const refreshAccessToken = async () => {
   const refreshToken = await AsyncStorage.getItem('refreshToken');
 
@@ -48,6 +78,13 @@ export const refreshAccessToken = async () => {
 };
 
 export const logout = async () => {
+  const userData = await AsyncStorage.getItem('user');
+  if (userData) {
+    const user: User = JSON.parse(userData);
+    await AsyncStorage.removeItem(`${user!.username}-main-theme`);
+  }
+  const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
+  await AsyncStorage.removeItem(key);
   await AsyncStorage.removeItem('user');
   await AsyncStorage.removeItem('accessToken');
   await AsyncStorage.removeItem('refreshToken');

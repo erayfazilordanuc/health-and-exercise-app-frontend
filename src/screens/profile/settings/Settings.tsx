@@ -87,7 +87,6 @@ const Settings = () => {
   }, []);
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem(`${user?.username}-main-theme`);
     await logout();
     appNavigation.navigate('Launch');
     appNavigation.dispatch(
@@ -129,6 +128,13 @@ const Settings = () => {
             title={'Güvenlik'}
             onPress={() => {
               navigation.navigate('Security');
+            }}
+          />
+          <SettingsItem
+            icon={icons.development}
+            title={'Geliştirme'}
+            onPress={() => {
+              navigation.navigate('Development');
             }}
           />
           {/* <SettingsItem

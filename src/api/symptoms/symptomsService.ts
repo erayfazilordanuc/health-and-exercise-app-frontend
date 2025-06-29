@@ -39,6 +39,19 @@ export const upsertSymptomsByDate = async (date: Date, symptoms: Symptoms) => {
     upsertDTO,
   );
   console.log('Upsert response', response);
+  return response;
+};
+
+export const adminGetSymptomsById = async (id: number) => {
+  const response = await apiClient.get(`/symptoms/id/${id}`);
+  console.log('Get symptoms by id', response);
+  return response;
+};
+
+export const adminGetSymptomsByUserId = async (id: number) => {
+  const response = await apiClient.get(`/symptoms/user/id/${id}`);
+  console.log('Get symptoms by id', response);
+  return response;
 };
 
 // Veritabanında günlük kayıt tutulsun

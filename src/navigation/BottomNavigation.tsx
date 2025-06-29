@@ -33,6 +33,7 @@ import Exercise1 from '../screens/exercises/PhysicalExercises/Exercise1';
 import WordExercise from '../screens/exercises/BrainExercises/WordExercise';
 import Exercise2 from '../screens/exercises/PhysicalExercises/Exercise2';
 import BrainExercise2 from '../screens/exercises/BrainExercises/BrainExercise2';
+import Development from '../screens/profile/settings/Development';
 
 const Tab = createBottomTabNavigator();
 
@@ -136,6 +137,20 @@ function SettingsStack() {
           header: () => (
             <CustomHeader
               title={'Güvenlik'}
+              icon={icons.shield}
+              className="border-primary-300"
+              backArrowEnable={true}
+            />
+          ),
+        }}
+      />
+      <SettingsNativeStack.Screen
+        name="Development"
+        component={Development}
+        options={{
+          header: () => (
+            <CustomHeader
+              title={'Geliştirme'}
               icon={icons.shield}
               className="border-primary-300"
               backArrowEnable={true}

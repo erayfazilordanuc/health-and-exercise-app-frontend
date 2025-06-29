@@ -9,6 +9,7 @@ type SettingsStackParamList = {
   Reminders: undefined;
   Permissions: undefined;
   Security: undefined;
+  Development: undefined;
   // Language: undefined;
 };
 
@@ -43,7 +44,8 @@ type RootStackParamList = {
 
 type AppStackParamList = {
   Launch: undefined;
-  Login: undefined;
+  UserLogin: undefined;
+  AdminLogin: undefined;
   App: NavigatorScreenParams<RootStackParamList>;
 };
 

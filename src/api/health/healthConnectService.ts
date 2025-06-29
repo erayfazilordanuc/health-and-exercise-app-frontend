@@ -245,9 +245,16 @@ export const getAllSleepSessions = async () => {
 };
 
 const saveData = async (key: string, symptoms: Symptoms) => {
-  await AsyncStorage.setItem(key, JSON.stringify(symptoms));
   const response = await upsertSymptomsByDate(new Date(), symptoms);
-  console.log('upsert response', response);
+  let isSynced = false;
+  if (response.status === 200) {
+    isSynced = true;
+  }
+  const localSymptoms: LocalSymptoms = {
+    symptoms: symptoms,
+    isSynced: isSynced,
+  };
+  await AsyncStorage.setItem(key, JSON.stringify(localSymptoms));
 };
 
 export const getSymptoms = async () => {
@@ -278,8 +285,11 @@ export const getSymptoms = async () => {
   const localData = await AsyncStorage.getItem(key);
   console.log('localData', localData);
   if (localData) {
-    const symptomsJson = JSON.stringify(symptoms);
-    if (symptomsJson !== localData) {
+    const localSymptoms: LocalSymptoms = JSON.parse(localData);
+    if (
+      JSON.stringify(symptoms) !== JSON.stringify(localSymptoms.symptoms) ||
+      !localSymptoms.isSynced
+    ) {
       saveData(key, symptoms);
     }
   } else {

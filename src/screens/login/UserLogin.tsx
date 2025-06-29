@@ -8,6 +8,7 @@ import {
   TextInput,
   ScrollView,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import {CommonActions, useNavigation} from '@react-navigation/native';
 import {useEffect, useState} from 'react';
@@ -19,7 +20,7 @@ import {useNetInfo} from '@react-native-community/netinfo';
 import {useTheme} from '../../themes/ThemeProvider';
 import {login, register} from '../../api/auth/authService';
 
-function Login() {
+function UserLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
   const {theme, colors, setTheme} = useTheme();
   const netInfo = useNetInfo();
@@ -65,8 +66,10 @@ function Login() {
         password: password.trim(),
       };
 
+      setLoading(true);
       const loginResponse = await login(loginPayload);
       // TO DO burada hata kodlarına göre hata mesajları eklenbilir
+      setLoading(false);
 
       if (loginResponse && loginResponse.status === 200 && loginResponse.data) {
         // Şimdilik
@@ -80,6 +83,7 @@ function Login() {
         // TO DO burada App e user bilgileri AsyncStorage üzerinden taşınabilir
       }
     } catch (error) {
+      setLoading(false);
       if (axios.isAxiosError(error)) {
         console.log('Axios hatası yakalandı');
 
@@ -100,25 +104,14 @@ function Login() {
 
         ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
       }
-    } finally {
-      setLoading(false);
     }
   };
-
-  // const handleLogin = async () => {
-  //   const loginPayload: LoginRequestPayload = {
-  //     username: 'string',
-  //     email: 'string',
-  //     password: 'string',
-  //   };
-  //   const response = await login(loginPayload);
-  // };
 
   const handleCreateAccount = async () => {
     try {
       setLoading(true);
 
-      if (!(username && password)) {
+      if (!(username && fullName && password)) {
         ToastAndroid.show('Lütfen tüm alanları doldurunuz', ToastAndroid.SHORT);
         return;
       }
@@ -141,13 +134,15 @@ function Login() {
 
       const registerPayload: RegisterRequestPayload = {
         username: username.trim(),
-        email: 'ostensible@gmail.com',
+        // email: 'ostensible@gmail.com',
         fullName: fullName.trim(),
         password: password.trim(),
       };
 
+      setLoading(true);
       const registerResponse = await register(registerPayload);
       // TO DO burada hata kodlarına göre hata mesajları eklenbilir
+      setLoading(false);
 
       if (
         registerResponse &&
@@ -165,6 +160,7 @@ function Login() {
         // TO DO burada App e user bilgileri AsyncStorage üzerinden taşınabilir
       }
     } catch (error) {
+      setLoading(false);
       if (axios.isAxiosError(error)) {
         console.log('Axios hatası yakalandı');
 
@@ -185,8 +181,6 @@ function Login() {
 
         ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -194,11 +188,8 @@ function Login() {
     <SafeAreaView
       className="h-full"
       style={{backgroundColor: colors.background.secondary}}>
-      <ScrollView contentContainerClassName="pb-12 pt-32">
-        <View
-          className={`px-10 mt-${
-            loginMethod === LoginMethod.registration ? '' : '16'
-          }`}>
+      <ScrollView contentContainerClassName="pb-12 pt-24">
+        <View className={`px-10`}>
           <Text
             className="text-3xl text-center uppercase font-rubik-bold mt-12 mb-4"
             style={{color: '#0091ff'}}>
@@ -208,11 +199,16 @@ function Login() {
             </Text>
           </Text>
           <Text
+            className="text-3xl font-rubik-medium text-center mt-4 mb-6"
+            style={{color: colors.text.primary}}>
+            Kullanıcı Girişi
+          </Text>
+          {/* <Text
             className={`text-3xl font-rubik-medium text-center mb-2 mt-8`}
             style={{color: colors.text.primary}}>
             {loginMethod === LoginMethod.default && 'Giriş'}
             {loginMethod === LoginMethod.registration && 'Hesap Oluştur'}
-          </Text>
+          </Text> */}
 
           {loginMethod === LoginMethod.registration && (
             <View
@@ -241,6 +237,7 @@ function Login() {
             <TextInput
               placeholderTextColor={'gray'}
               selectionColor={'#7AADFF'}
+              autoCapitalize="none"
               value={username}
               onChangeText={(value: string) => {
                 setUsername(value);
@@ -280,6 +277,7 @@ function Login() {
             </TouchableOpacity>
           </View>
 
+          {/* {loading ? ( */}
           <View className="flex flex-row justify-center">
             {loginMethod === LoginMethod.default && (
               <TouchableOpacity
@@ -308,6 +306,13 @@ function Login() {
               </TouchableOpacity>
             )}
           </View>
+          {/* ) : (
+            <ActivityIndicator
+              className="mt-5 mb-2"
+              size="large"
+              color={colors.primary[300] ?? colors.primary}
+            />
+          )} */}
 
           {loginMethod !== LoginMethod.default && (
             <Text
@@ -369,4 +374,4 @@ function Login() {
     </SafeAreaView>
   );
 }
-export default Login;
+export default UserLogin;

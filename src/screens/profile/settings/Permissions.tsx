@@ -16,7 +16,7 @@ const Permissions = () => {
         <Text
           className="text-xl font-rubik-medium"
           style={{color: colors.text.primary}}>
-          İzinler beya
+          İzinler
         </Text>
       </View>
     </View>
