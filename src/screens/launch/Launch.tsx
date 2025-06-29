@@ -81,13 +81,13 @@ const Launch = () => {
       {/* Üst sağ mavi dekor */}
       <View style={styles.topRightShape} />
 
-      <Text className="font-rubik-bold text-4xl mt-72" style={styles.titleBlue}>
-        {'{Uygulama ismi}'}'e/a
+      <Text className="font-rubik-bold text-4xl mt-64" style={styles.titleBlue}>
+        Egzersiz Takip
       </Text>
       <Text
-        className="font-rubik-bold text-4xl"
+        className="font-rubik-bold text-4xl text-center"
         style={[styles.titleBlack, {color: colors.text.primary}]}>
-        Hoş Geldiniz
+        Uygulamasına Hoş Geldiniz
       </Text>
 
       <TouchableOpacity

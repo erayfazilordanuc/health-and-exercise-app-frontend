@@ -29,7 +29,7 @@ function AdminLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
   const {theme, colors, setTheme} = useTheme();
   const netInfo = useNetInfo();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   enum LoginMethod {
     'default',
@@ -79,7 +79,6 @@ function AdminLogin() {
         code: code,
       };
 
-      setLoading(true);
       const loginResponse = await loginAdmin(requestPayload);
       // TO DO burada hata kodlarına göre hata mesajları eklenbilir
       setLoading(false);
@@ -119,6 +118,8 @@ function AdminLogin() {
 
         ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -167,7 +168,6 @@ function AdminLogin() {
         code: code,
       };
 
-      setLoading(true);
       const registerResponse = await registerAdmin(requestPayload);
       // TO DO burada hata kodlarına göre hata mesajları eklenbilir
       setLoading(false);
@@ -209,6 +209,8 @@ function AdminLogin() {
 
         ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -216,17 +218,24 @@ function AdminLogin() {
     <SafeAreaView
       className="h-full"
       style={{backgroundColor: colors.background.secondary}}>
-      <View className={`px-10 mt-${isCodeStep ? '10' : '16'}`}>
+      <View
+        className={`px-10 pt-${
+          isCodeStep
+            ? ''
+            : loginMethod === LoginMethod.registration
+            ? '16'
+            : '24'
+        }`}>
         <Text
           className="text-3xl text-center uppercase font-rubik-bold mt-12 mb-4"
           style={{color: '#0091ff'}}>
-          {'{Uygulama ismi}'}
+          {'Egzersiz Takip\n'}
           <Text className="text-center" style={{color: colors.text.primary}}>
-            Hoş Geldiniz
+            Uygulamasına Hoş Geldiniz
           </Text>
         </Text>
         <Text
-          className="text-3xl font-rubik-medium text-center mt-4 mb-6"
+          className="text-3xl font-rubik-medium text-center mt-4 mb-4"
           style={{color: colors.text.primary}}>
           Yönetici Girişi
         </Text>
@@ -343,42 +352,42 @@ function AdminLogin() {
           </View>
         )}
 
-        {/* {loading ? ( */}
-        <View className="flex flex-row justify-center">
-          {loginMethod === LoginMethod.default && (
-            <TouchableOpacity
-              onPress={handleLogin}
-              className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
-              style={{backgroundColor: colors.background.primary}}>
-              <Text
-                className="text-xl font-rubik text-center py-1"
-                style={{color: colors.text.primary}}>
-                Giriş Yap
-              </Text>
-            </TouchableOpacity>
-          )}
-          {loginMethod === LoginMethod.registration && (
-            <TouchableOpacity
-              onPress={() => {
-                handleCreateAccount();
-              }}
-              className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
-              style={{backgroundColor: colors.background.primary}}>
-              <Text
-                className="text-xl font-rubik text-center py-1"
-                style={{color: colors.text.primary}}>
-                Hesap Oluştur
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-        {/* ) : (
-            <ActivityIndicator
-              className="mt-5 mb-2"
-              size="large"
-              color={colors.primary[300] ?? colors.primary}
-            />
-          )} */}
+        {!loading ? (
+          <View className="flex flex-row justify-center">
+            {loginMethod === LoginMethod.default && (
+              <TouchableOpacity
+                onPress={handleLogin}
+                className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
+                style={{backgroundColor: colors.background.primary}}>
+                <Text
+                  className="text-xl font-rubik text-center py-1"
+                  style={{color: colors.text.primary}}>
+                  Giriş Yap
+                </Text>
+              </TouchableOpacity>
+            )}
+            {loginMethod === LoginMethod.registration && (
+              <TouchableOpacity
+                onPress={() => {
+                  handleCreateAccount();
+                }}
+                className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
+                style={{backgroundColor: colors.background.primary}}>
+                <Text
+                  className="text-xl font-rubik text-center py-1"
+                  style={{color: colors.text.primary}}>
+                  Hesap Oluştur
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <ActivityIndicator
+            className="mt-5 mb-2"
+            size="large"
+            color={colors.primary[300] ?? colors.primary}
+          />
+        )}
 
         {loginMethod !== LoginMethod.default && (
           <Text

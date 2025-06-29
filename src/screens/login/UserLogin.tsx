@@ -66,7 +66,6 @@ function UserLogin() {
         password: password.trim(),
       };
 
-      setLoading(true);
       const loginResponse = await login(loginPayload);
       // TO DO burada hata kodlarına göre hata mesajları eklenbilir
       setLoading(false);
@@ -104,6 +103,8 @@ function UserLogin() {
 
         ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,7 +140,6 @@ function UserLogin() {
         password: password.trim(),
       };
 
-      setLoading(true);
       const registerResponse = await register(registerPayload);
       // TO DO burada hata kodlarına göre hata mesajları eklenbilir
       setLoading(false);
@@ -181,6 +181,8 @@ function UserLogin() {
 
         ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -193,9 +195,9 @@ function UserLogin() {
           <Text
             className="text-3xl text-center uppercase font-rubik-bold mt-12 mb-4"
             style={{color: '#0091ff'}}>
-            {'{Uygulama ismi}'}
+            {'Egzersiz Takip\n'}
             <Text className="text-center" style={{color: colors.text.primary}}>
-              Hoş Geldiniz
+              Uygulamasına Hoş Geldiniz
             </Text>
           </Text>
           <Text
@@ -277,42 +279,42 @@ function UserLogin() {
             </TouchableOpacity>
           </View>
 
-          {/* {loading ? ( */}
-          <View className="flex flex-row justify-center">
-            {loginMethod === LoginMethod.default && (
-              <TouchableOpacity
-                onPress={handleLogin}
-                className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
-                style={{backgroundColor: colors.background.primary}}>
-                <Text
-                  className="text-xl font-rubik text-center py-1"
-                  style={{color: colors.text.primary}}>
-                  Giriş Yap
-                </Text>
-              </TouchableOpacity>
-            )}
-            {loginMethod === LoginMethod.registration && (
-              <TouchableOpacity
-                onPress={() => {
-                  handleCreateAccount();
-                }}
-                className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
-                style={{backgroundColor: colors.background.primary}}>
-                <Text
-                  className="text-xl font-rubik text-center py-1"
-                  style={{color: colors.text.primary}}>
-                  Hesap Oluştur
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          {/* ) : (
+          {!loading ? (
+            <View className="flex flex-row justify-center">
+              {loginMethod === LoginMethod.default && (
+                <TouchableOpacity
+                  onPress={handleLogin}
+                  className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
+                  style={{backgroundColor: colors.background.primary}}>
+                  <Text
+                    className="text-xl font-rubik text-center py-1"
+                    style={{color: colors.text.primary}}>
+                    Giriş Yap
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {loginMethod === LoginMethod.registration && (
+                <TouchableOpacity
+                  onPress={() => {
+                    handleCreateAccount();
+                  }}
+                  className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
+                  style={{backgroundColor: colors.background.primary}}>
+                  <Text
+                    className="text-xl font-rubik text-center py-1"
+                    style={{color: colors.text.primary}}>
+                    Hesap Oluştur
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
             <ActivityIndicator
               className="mt-5 mb-2"
               size="large"
               color={colors.primary[300] ?? colors.primary}
             />
-          )} */}
+          )}
 
           {loginMethod !== LoginMethod.default && (
             <Text

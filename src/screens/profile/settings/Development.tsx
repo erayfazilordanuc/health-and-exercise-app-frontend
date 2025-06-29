@@ -6,6 +6,7 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -54,6 +55,8 @@ const Development = () => {
 
   const [input, setInput] = useState('');
   const [input2, setInput2] = useState('');
+
+  const [loading, setLoading] = useState(false);
 
   const [log, setLog] = useState('');
   const [log2, setLog2] = useState('');
@@ -303,6 +306,21 @@ const Development = () => {
         setLog6('Unknown error occurred.');
       }
     }
+  };
+
+  const testActivityIndicatorLoadingState = async () => {
+    setLoading(true);
+    const loginDTO: LoginRequestPayload = {
+      username: 'erayfazilordanuc',
+      password: 'Bismillah1*',
+    };
+    const credentials: AdminLoginRequestPayload = {
+      loginDTO: loginDTO,
+      code: null,
+    };
+    const response = await apiClient.post('/auth/admin/login', credentials);
+    console.log('test login admin', response);
+    setLoading(false);
   };
 
   return (
@@ -798,6 +816,36 @@ const Development = () => {
                 style={{color: colors.text.primary}}>
                 {log6}
               </Text>
+            )}
+          </View>
+        </View>
+
+        <View
+          className="p-3 mt-1 mb-2 rounded-2xl"
+          style={{
+            backgroundColor: colors.background.primary,
+          }}>
+          <TouchableOpacity
+            className="p-2 rounded-2xl "
+            style={{
+              backgroundColor: colors.background.secondary,
+            }}
+            onPress={testActivityIndicatorLoadingState}>
+            <GradientText
+              className="text-lg font-rubik-medium ml-2"
+              start={{x: 0, y: 0}}
+              end={{x: 0.3, y: 0}}
+              colors={[colors.primary[300], '#40E0D0']}>
+              Activity Indicator Loading State Test
+            </GradientText>
+          </TouchableOpacity>
+          <View className="p-4 h-16 rounded-2xl">
+            {loading && (
+              <ActivityIndicator
+                className="mt-2 mb-2"
+                size="large"
+                color={colors.primary[300] ?? colors.primary}
+              />
             )}
           </View>
         </View>
