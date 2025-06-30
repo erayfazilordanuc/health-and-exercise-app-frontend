@@ -2,14 +2,18 @@ type User = {
   id?: number;
   username: string;
   fullName: string;
-  email: string;
+  email?: string;
   role: string;
+  groupId?: number;
 };
 
-enum Role {
-  ROLE_USER,
-  ROLE_ADMIN,
-}
+type UpdateUserDTO = {
+  id: number;
+  username: string;
+  email?: string;
+  fullName: string;
+  groupId?: number;
+};
 
 type LoginRequestPayload = {
   username?: string;
@@ -55,6 +59,17 @@ type UpdateSymptomsDTO = {
 type LocalSymptoms = {
   symptoms: Symptoms;
   isSynced: boolean;
+};
+
+type Group = {
+  id?: number;
+  name: string;
+  adminId: number;
+};
+
+type CreateGroupDTO = {
+  name: string;
+  adminId: number;
 };
 
 type Label = {

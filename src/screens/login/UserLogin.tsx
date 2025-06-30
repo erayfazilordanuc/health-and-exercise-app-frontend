@@ -193,11 +193,11 @@ function UserLogin() {
       <ScrollView contentContainerClassName="pb-12 pt-24">
         <View className={`px-10`}>
           <Text
-            className="text-3xl text-center uppercase font-rubik-bold mt-12 mb-4"
+            className="text-3xl text-center uppercase font-rubik-bold mt-8 mb-4"
             style={{color: '#0091ff'}}>
-            {'Egzersiz Takip\n'}
+            EGZERSİZ TAKİP{'\n'}
             <Text className="text-center" style={{color: colors.text.primary}}>
-              Uygulamasına Hoş Geldiniz
+              Uygulaması
             </Text>
           </Text>
           <Text

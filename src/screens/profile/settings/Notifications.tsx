@@ -6,10 +6,10 @@ import {
   BackHandler,
 } from 'react-native';
 import React, {useCallback, useEffect} from 'react';
-import {useTheme} from '../../../src/themes/ThemeProvider';
+import {useTheme} from '../../../../src/themes/ThemeProvider';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import notifee from '@notifee/react-native';
-import icons from '../../../src/constants/icons';
+import icons from '../../../../src/constants/icons';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
@@ -18,22 +18,6 @@ const Notifications = () => {
   const {colors} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
-
-  useFocusEffect(
-    useCallback(() => {
-      const backAction = () => {
-        navigation.navigate('Home');
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        backAction,
-      );
-
-      return () => backHandler.remove(); // Ekrandan çıkınca event listener'ı kaldır
-    }, []),
-  );
 
   async function showNotification() {
     // Request permissions (required for iOS)
@@ -63,25 +47,8 @@ const Notifications = () => {
   }
 
   return (
-    <View>
-      <View
-        className="pt-14"
-        style={{
-          backgroundColor: colors.background.secondary,
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-        }}>
-        <Text
-          className="pl-7 font-rubik-semibold"
-          style={{
-            color: colors.text.primary,
-            fontSize: 24,
-          }}>
-          Bildirimler
-        </Text>
-      </View>
+    <View className="h-full pb-32 px-5 pt-3">
       <TouchableOpacity
-        className="h-full pb-32 px-5 pt-3"
         style={{
           backgroundColor: colors.background.secondary,
           // paddingTop: insets.top / 2,

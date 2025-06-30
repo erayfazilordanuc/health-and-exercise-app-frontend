@@ -82,7 +82,7 @@ const Launch = () => {
       <View style={styles.topRightShape} />
 
       <Text className="font-rubik-bold text-4xl mt-64" style={styles.titleBlue}>
-        Egzersiz Takip
+        EGZERSİZ TAKİP
       </Text>
       <Text
         className="font-rubik-bold text-4xl text-center"
@@ -116,7 +116,7 @@ const Launch = () => {
           style={{
             color: colors.text.primary,
           }}>
-          Yönetici Girişi
+          Hemşire Girişi
         </Text>
       </TouchableOpacity>
 

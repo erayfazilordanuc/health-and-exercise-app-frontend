@@ -66,33 +66,48 @@ const Profile = () => {
   useEffect(() => {
     const fetchUser = async () => {
       const user: User = await getUser();
-      setUser(user);
+      if (user) setUser(user);
     };
 
     fetchUser();
   }, []);
 
   const setSymptoms = (symptoms: Symptoms) => {
-    setHeartRate(symptoms.pulse ?? 0);
-    setSteps(symptoms.steps ?? 0);
-    setActiveCaloriesBurned(symptoms.activeCaloriesBurned ?? 0);
-    setTotalSleepHours(symptoms.sleepHours ?? 0);
-    if (symptoms.sleepSessions)
-      setSleepSessions(symptoms.sleepSessions.reverse());
+    if (symptoms) {
+      if (symptoms.pulse && heartRate !== symptoms.pulse) {
+        setHeartRate(symptoms.pulse);
+      }
+      if (symptoms.steps && steps !== symptoms.steps) {
+        setSteps(symptoms.steps);
+      }
+      if (
+        symptoms.activeCaloriesBurned &&
+        activeCaloriesBurned !== symptoms.activeCaloriesBurned
+      ) {
+        setActiveCaloriesBurned(symptoms.activeCaloriesBurned);
+      }
+      if (symptoms.sleepHours && totalSleepHours !== symptoms.sleepHours) {
+        setTotalSleepHours(symptoms.sleepHours);
+      }
+      if (symptoms.sleepSessions)
+        setSleepSessions(symptoms.sleepSessions.reverse());
+    }
   };
 
   const fetchAndUpsertAll = async () => {
-    const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
-    const localData = await AsyncStorage.getItem(key);
-    if (localData) {
-      const localSymptoms: Symptoms = JSON.parse(localData);
-      setSymptoms(localSymptoms);
-    }
+    if (user && user.role === 'ROLE_USER') {
+      const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
+      const localData = await AsyncStorage.getItem(key);
+      if (localData) {
+        const localSymptoms: Symptoms = JSON.parse(localData);
+        setSymptoms(localSymptoms);
+      }
 
-    const symptoms: Symptoms = await getSymptoms();
+      const symptoms: Symptoms = await getSymptoms();
 
-    if (symptoms) {
-      setSymptoms(symptoms);
+      if (symptoms) {
+        setSymptoms(symptoms);
+      }
     }
   };
 
@@ -115,7 +130,7 @@ const Profile = () => {
   useFocusEffect(
     useCallback(() => {
       fetchAndUpsertAll();
-    }, []),
+    }, [user]),
   );
 
   return (
@@ -132,7 +147,7 @@ const Profile = () => {
             color: colors.text.primary,
             fontSize: 24,
           }}>
-          Profil
+          Profil {user?.role === 'ROLE_ADMIN' ? ' (Hemşire)' : ''}
         </Text>
         <TouchableOpacity
           className="mr-1"
@@ -151,6 +166,7 @@ const Profile = () => {
         style={{
           backgroundColor: colors.background.secondary,
         }}>
+        {/* TO DO Eğer admin ise bulgu kısmı olmasın */}
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
@@ -183,130 +199,149 @@ const Profile = () => {
                   colors={[colors.primary[300], '#40E0D0']}>
                   {user?.fullName}
                 </GradientText>
-                <View className="flex flex-row">
-                  <Image
-                    source={icons.badge1_colorful_bordered}
-                    className="size-8 mr-2"
-                  />
-                  <Image
-                    source={icons.badge1_colorful}
-                    className="size-8 mr-2"
-                  />
-                  <Image
-                    source={icons.badge1}
-                    tintColor={colors.text.primary} // Eğer renkli değilse tintColor verilsin
-                    className="size-8"
-                  />
-                </View>
+                {user && user.role === 'ROLE_USER' ? (
+                  <View className="flex flex-row">
+                    <Image
+                      source={icons.badge1_colorful_bordered}
+                      className="size-8 mr-2"
+                    />
+                    <Image
+                      source={icons.badge1_colorful}
+                      className="size-8 mr-2"
+                    />
+                    <Image
+                      source={icons.badge1}
+                      tintColor={colors.text.primary} // Eğer renkli değilse tintColor verilsin
+                      className="size-8"
+                    />
+                  </View>
+                ) : (
+                  <View className="flex flex-row">
+                    <Image
+                      source={icons.nurse}
+                      className="size-9 mr-1"
+                      tintColor={colors.text.primary}
+                    />
+                  </View>
+                )}
               </View>
-              {/* <Text className="text-xl font-rubik">Bilgiler: {user?.username}</Text>
-          <Text className="text-xl font-rubik">İsim Soyisim</Text> */}
               <Text
                 className="text-xl font-rubik pt-3"
                 style={{color: colors.text.primary}}>
-                Yaş: {user?.id}
+                Kullanıcı Adı: {user?.username}
               </Text>
+              {user && user.role === 'ROLE_USER' && (
+                <Text
+                  className="text-xl font-rubik pt-3"
+                  style={{color: colors.text.primary}}>
+                  Yaş: {user?.id}
+                </Text>
+              )}
             </View>
             {/* Buraya dğer bilgiler, rozetler falan filan */}
           </View>
           {/* Grafik minimalistik olsun yanında ortalama değer olsun, sağ üstte de son okunan değer varsa yazsın */}
           {/* <HeartRateSimpleChart/> */}
-          <View
-            className="flex flex-col py-2 px-5 rounded-2xl mt-3"
-            style={{backgroundColor: colors.background.primary}}>
-            <Text
-              className="font-rubik text-2xl pt-2 pb-3"
-              style={{color: colors.text.primary}}>
-              Bulgular
-            </Text>
-            <ProgressBar
-              value={93}
-              label="Genel sağlık"
-              iconSource={icons.better_health}
-              color="#41D16F"></ProgressBar>
-            {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
-            <ProgressBar
-              value={heartRate}
-              label="Nabız"
-              iconSource={icons.pulse}
-              color="#FF3F3F"></ProgressBar>
-            <ProgressBar
-              value={96}
-              label="O2 Seviyesi"
-              iconSource={icons.o2sat}
-              color="#2CA4FF"></ProgressBar>
-            {/* <ProgressBar
+          {user && user.role === 'ROLE_USER' && (
+            <>
+              <View
+                className="flex flex-col py-2 px-5 rounded-2xl mt-3"
+                style={{backgroundColor: colors.background.primary}}>
+                <Text
+                  className="font-rubik text-2xl pt-2 pb-3"
+                  style={{color: colors.text.primary}}>
+                  Bulgular
+                </Text>
+                <ProgressBar
+                  value={93}
+                  label="Genel sağlık"
+                  iconSource={icons.better_health}
+                  color="#41D16F"></ProgressBar>
+                {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
+                <ProgressBar
+                  value={heartRate ? heartRate : 75}
+                  label="Nabız"
+                  iconSource={icons.pulse}
+                  color="#FF3F3F"></ProgressBar>
+                <ProgressBar
+                  value={96}
+                  label="O2 Seviyesi"
+                  iconSource={icons.o2sat}
+                  color="#2CA4FF"></ProgressBar>
+                {/* <ProgressBar
             value={83}
             label="Tansiyon"
             iconSource={icons.blood_pressure}
             color="#FF9900"></ProgressBar> FDEF22*/}
-            <ProgressBar
-              value={activeCaloriesBurned}
-              label="Yakılan Kalori"
-              iconSource={icons.kcal}
-              color="#FF9900"></ProgressBar>
-            <ProgressBar
-              value={steps}
-              label="Adım"
-              iconSource={icons.man_walking}
-              color="#FDEF22"></ProgressBar>
-            <ProgressBar
-              value={totalSleepHours}
-              label="Uyku"
-              iconSource={icons.sleep}
-              color="#FDEF22"></ProgressBar>
-            {sleepSessions.length > 0 && (
-              <Text
-                className="font-rubik text-xl pt-4"
-                style={{color: colors.text.primary}}>
-                Uyku Devreleri
-              </Text>
-            )}
-            {sleepSessions.map((session, index) => (
-              <View key={index} className="mt-3">
-                <Text
-                  className="font-rubik text-lg"
-                  style={{color: colors.text.primary}}>
-                  💤 Başlangıç: {session}
-                </Text>
+                <ProgressBar
+                  value={activeCaloriesBurned}
+                  label="Yakılan Kalori"
+                  iconSource={icons.kcal}
+                  color="#FF9900"></ProgressBar>
+                <ProgressBar
+                  value={steps}
+                  label="Adım"
+                  iconSource={icons.man_walking}
+                  color="#FDEF22"></ProgressBar>
+                <ProgressBar
+                  value={totalSleepHours ? totalSleepHours : 9}
+                  label="Uyku"
+                  iconSource={icons.sleep}
+                  color="#FDEF22"></ProgressBar>
+                {sleepSessions.length > 0 && (
+                  <Text
+                    className="font-rubik text-xl pt-4"
+                    style={{color: colors.text.primary}}>
+                    Uyku Devreleri
+                  </Text>
+                )}
+                {sleepSessions.map((session, index) => (
+                  <View key={index} className="mt-3">
+                    <Text
+                      className="font-rubik text-lg"
+                      style={{color: colors.text.primary}}>
+                      💤 Başlangıç: {session}
+                    </Text>
+                  </View>
+                ))}
+                {/* Uyku da minimalist bir grafik ile gösterilsin */}
               </View>
-            ))}
-            {/* Uyku da minimalist bir grafik ile gösterilsin */}
-          </View>
-          <View className="flex flex-row items-center justify-between mt-3">
-            <TouchableOpacity
-              className="flex flex-row justify-center items-center px-5 py-3 rounded-2xl"
-              style={{backgroundColor: colors.background.primary}}>
-              <MaskedView
-                maskElement={
-                  <Text
-                    className="text-xl font-rubik"
-                    style={{
-                      backgroundColor: 'transparent',
-                    }}>
-                    Bulgu Ekle
-                  </Text>
-                }>
-                <LinearGradient
-                  colors={['#0EC946', 'white']} // mavi → turkuaz
-                  start={{x: 0, y: 0}}
-                  end={{x: 2, y: 2}}>
-                  <Text
-                    className="text-xl font-rubik"
-                    style={{
-                      opacity: 0,
-                    }}>
-                    Bulgu Ekle
-                  </Text>
-                </LinearGradient>
-              </MaskedView>
-              <Image
-                source={icons.plus_sign_green}
-                tintColor="#78f39e"
-                className="ml-3 size-6"
-              />
-            </TouchableOpacity>
-          </View>
+              <View className="flex flex-row items-center justify-between mt-3">
+                <TouchableOpacity
+                  className="flex flex-row justify-center items-center px-5 py-3 rounded-2xl"
+                  style={{backgroundColor: colors.background.primary}}>
+                  <MaskedView
+                    maskElement={
+                      <Text
+                        className="text-xl font-rubik"
+                        style={{
+                          backgroundColor: 'transparent',
+                        }}>
+                        Bulgu Ekle
+                      </Text>
+                    }>
+                    <LinearGradient
+                      colors={['#0EC946', 'white']} // mavi → turkuaz
+                      start={{x: 0, y: 0}}
+                      end={{x: 1.5, y: 0}}>
+                      <Text
+                        className="text-xl font-rubik"
+                        style={{
+                          opacity: 0,
+                        }}>
+                        Bulgu Ekle
+                      </Text>
+                    </LinearGradient>
+                  </MaskedView>
+                  <Image
+                    source={icons.plus_sign_green}
+                    tintColor="#78f39e"
+                    className="ml-3 size-6"
+                  />
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </ScrollView>
       </View>
     </>

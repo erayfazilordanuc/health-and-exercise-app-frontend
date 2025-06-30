@@ -13,6 +13,7 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../../themes/ThemeProvider';
 import icons from '../../constants/icons';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
+import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -20,8 +21,7 @@ const Exercises = () => {
   const {colors} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
-  const exercisesNavigation =
-    useNavigation<BrainExercisesScreenNavigationProp>();
+  const exercisesNavigation = useNavigation<ExercisesScreenNavigationProp>();
   const scrollViewHeight = SCREEN_HEIGHT / 8;
 
   useFocusEffect(
@@ -44,8 +44,8 @@ const Exercises = () => {
     navigation.navigate('PhysicalExercises', {screen: 'Exercise1'});
   };
 
-  const navigateToBrainExercises = async (routeName: string) => {
-    navigation.navigate('BrainExercises', {screen: 'WordExercise'});
+  const navigateToMindGames = async (routeName: string) => {
+    navigation.navigate('MindGames', {screen: 'WordGame'});
   };
 
   return (
@@ -75,20 +75,127 @@ const Exercises = () => {
         <View
           className="px-5 py-3 rounded-2xl mb-3"
           style={{backgroundColor: colors.background.primary}}>
-          <Text className="text-xl mb-4" style={{color: colors.text.primary}}>
-            Egzersizler
+          <Text
+            className="font-rubik text-2xl mb-5"
+            style={{color: colors.text.primary}}>
+            Başarımlarım
+          </Text>
+          <View className="flex flex-row justify-between mb-4">
+            <Text
+              className="font-rubik text-xl"
+              style={{color: colors.text.primary}}>
+              Başarım 1
+            </Text>
+            <Image
+              source={icons.badge1_colorful_bordered}
+              className="size-8 mr-2"
+            />
+          </View>
+          <View className="flex flex-row justify-between mb-4">
+            <Text
+              className="font-rubik text-xl"
+              style={{color: colors.text.primary}}>
+              Başarım 2
+            </Text>
+            <Image source={icons.badge1_colorful} className="size-8 mr-2" />
+          </View>
+          <View className="flex flex-row justify-between mb-4">
+            <Text
+              className="font-rubik text-xl"
+              style={{color: colors.text.primary}}>
+              Başarım 3
+            </Text>
+            <Image
+              source={icons.badge1}
+              tintColor={colors.text.primary} // Eğer renkli değilse tintColor verilsin
+              className="size-8 mr-2"
+            />
+          </View>
+        </View>
+
+        <View
+          className="px-5 py-3 rounded-2xl mb-3"
+          style={{backgroundColor: colors.background.primary}}>
+          <View className="flex flex-col justify-center items-start">
+            <Text
+              className="font-rubik text-2xl mb-3"
+              style={{color: colors.text.primary}}>
+              Günlük Egzersizler
+            </Text>
+            <View className="flex flex-row items-center justify-start">
+              <AnimatedCircularProgress
+                size={50}
+                width={4}
+                fill={59}
+                tintColor={colors.primary[300]}
+                onAnimationComplete={() => console.log('onAnimationComplete')}
+                backgroundColor={colors.background.secondary}>
+                {() => (
+                  <Text
+                    className="text-lg font-rubik"
+                    style={{
+                      color: colors.text.primary,
+                    }}>
+                    %{59}
+                  </Text>
+                )}
+              </AnimatedCircularProgress>
+              <Text
+                className="ml-3 text-lg font-rubik"
+                style={{
+                  color: colors.text.primary,
+                }}>
+                tamamlandı
+              </Text>
+            </View>
+          </View>
+          <ScrollView
+            className="mt-4"
+            horizontal
+            style={{height: scrollViewHeight}}
+            showsHorizontalScrollIndicator={false}>
+            {/* <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#48AAFF'}}
+              // onPress={() => navigateToPhysicalExercises('Exercise2')}
+            >
+              <Image source={icons.back} className="size-20" />
+            </TouchableOpacity> */}
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#55CC88'}}
+              onPress={() => {}}>
+              <Image source={icons.stretching} className="size-20" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#FFAA33'}}>
+              <Image source={icons.gymnastic_1} className="size-20" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#48AAFF'}}
+              onPress={() => exercisesNavigation.navigate('Exercise1')}>
+              <Image source={icons.chronometer} className="size-20" />
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+
+        <View
+          className="px-5 py-3 rounded-2xl mb-3"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="font-rubik text-2xl mb-4"
+            style={{color: colors.text.primary}}>
+            Tüm Egzersizler
           </Text>
           <ScrollView
             horizontal
             style={{height: scrollViewHeight}}
             showsHorizontalScrollIndicator={false}>
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#48AAFF'}}
-              onPress={() => navigateToPhysicalExercises('Exercise1')}>
-              <Image source={icons.chronometer} className="size-20" />
-            </TouchableOpacity>
-
             <TouchableOpacity
               className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
               style={{backgroundColor: '#48AAFF'}}
@@ -112,29 +219,20 @@ const Exercises = () => {
 
             <TouchableOpacity
               className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#48AAFF'}}>
-              <Image source={icons.pulse} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#55CC88'}}>
-              <Image source={icons.pulse} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FFAA33'}}>
-              <Image source={icons.pulse} className="size-20" />
+              style={{backgroundColor: '#48AAFF'}}
+              onPress={() => exercisesNavigation.navigate('Exercise1')}>
+              <Image source={icons.chronometer} className="size-20" />
             </TouchableOpacity>
           </ScrollView>
         </View>
 
-        <View
+        {/* <View
           className="px-5 py-3 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
-          <Text className="text-xl mb-4" style={{color: colors.text.primary}}>
-            Beyin Egzersizleri
+          <Text
+            className="font-rubik text-2xl mb-4"
+            style={{color: colors.text.primary}}>
+            Zeka Oyunları
           </Text>
           <ScrollView
             horizontal
@@ -143,14 +241,14 @@ const Exercises = () => {
             <TouchableOpacity
               className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
               style={{backgroundColor: '#FF8B8B'}}
-              onPress={() => navigateToBrainExercises('WordExercise')}>
+              onPress={() => navigateToMindGames('WordGame')}>
               <Image source={icons.wordle} className="size-20" />
             </TouchableOpacity>
 
             <TouchableOpacity
               className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
               style={{backgroundColor: '#FF8B8B'}}
-              // onPress={() => navigateToBrainExercises('BrainExercise2')}
+              // onPress={() => navigateToMindGames('MindGame2')}
             >
               <Image source={icons.brickwall} className="size-20" />
             </TouchableOpacity>
@@ -178,23 +276,11 @@ const Exercises = () => {
               style={{backgroundColor: '#FF8B8B'}}>
               <Image source={icons.brain} className="size-20" />
             </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FF8B8B'}}>
-              <Image source={icons.brain} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FF8B8B'}}>
-              <Image source={icons.brain} className="size-20" />
-            </TouchableOpacity>
           </ScrollView>
-        </View>
+        </View> */}
       </View>
 
-      {/* TO DO Buraya liste şeklinde gruplar maplenmeli yoksa da no result component kullanılabilir */}
+      {/* TO DO Buraya liste şeklinde Grup maplenmeli yoksa da no result component kullanılabilir */}
     </>
   );
 };

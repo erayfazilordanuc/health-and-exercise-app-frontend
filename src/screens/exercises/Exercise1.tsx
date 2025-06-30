@@ -1,6 +1,6 @@
 import React, {useState, useRef} from 'react';
 import {View, Text, TouchableOpacity} from 'react-native';
-import {useTheme} from '../../../../src/themes/ThemeProvider';
+import {useTheme} from '../../themes/ThemeProvider';
 
 const Exercise1: React.FC = () => {
   const {colors} = useTheme();

@@ -6,6 +6,7 @@ type ProfileStackParamList = {
 type SettingsStackParamList = {
   Settings: undefined;
   Preferences: undefined;
+  Notifications: undefined;
   Reminders: undefined;
   Permissions: undefined;
   Security: undefined;
@@ -15,8 +16,9 @@ type SettingsStackParamList = {
 
 type ExercisesStackParamList = {
   Exercises: any;
-  PhysicalExercises: any;
-  BrainExercises: any;
+  Exercise1: any;
+  Exercise2: any;
+  MindGames: any;
 };
 
 type PhysicalExercisesStackParamList = {
@@ -24,9 +26,9 @@ type PhysicalExercisesStackParamList = {
   Exercise2: any;
 };
 
-type BrainExercisesStackParamList = {
-  WordExercise: any;
-  BrainExercise2: any;
+type MindGamesStackParamList = {
+  WordGame: any;
+  MindGame2: any;
 };
 
 type GroupsStackParamList = {
@@ -39,7 +41,6 @@ type RootStackParamList = {
   Profile: NavigatorScreenParams<ProfileStackParamList>;
   Groups: NavigatorScreenParams<GroupsStackParamList>;
   Exercises: NavigatorScreenParams<ExercisesStackParamList>;
-  Notifications: any;
 };
 
 type AppStackParamList = {
@@ -68,5 +69,5 @@ type ExercisesScreenNavigationProp =
 type PhysicalExercisesScreenNavigationProp =
   NativeStackNavigationProp<ExercisesStackParamList>;
 
-type BrainExercisesScreenNavigationProp =
-  NativeStackNavigationProp<BrainExercisesStackParamList>;
+type MindGamesScreenNavigationProp =
+  NativeStackNavigationProp<MindGamesStackParamList>;

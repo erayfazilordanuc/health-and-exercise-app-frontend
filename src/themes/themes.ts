@@ -18,8 +18,9 @@ export type Theme = {
 const lightColors = {
   primary: {
     100: '#0061FF0A',
+    125: '#dff2ff',
     150: '#5dbfff',
-    200: '#5dbfff', // 92b4e5
+    200: '#2d99ff', // 92b4e5
     250: '#0080ff',
     300: '#0091ff',
   },
@@ -39,6 +40,7 @@ const lightColors = {
 const darkColors = {
   primary: {
     100: '#0061FF0A',
+    125: '#dff2ff',
     150: '#5dbfff',
     200: '#13a2ff', // 3e5c8a
     250: '#2c77ff',

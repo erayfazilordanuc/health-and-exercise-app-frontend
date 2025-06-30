@@ -98,6 +98,7 @@ import wordle from '../assets/icons/wordle.png';
 import brickwall from '../assets/icons/brickwall.png';
 import chronometer from '../assets/icons/chronometer.png';
 import development from '../assets/icons/development.png';
+import nurse from '../assets/icons/nurse.png';
 
 export default {
   google,
@@ -200,4 +201,5 @@ export default {
   brickwall,
   chronometer,
   development,
+  nurse,
 };

@@ -1,6 +1,7 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import React, {useRef} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {
+  ActivityIndicator,
   Animated,
   Image,
   ImageSourcePropType,
@@ -15,7 +16,7 @@ import CustomHeader from '../components/CustomHeader';
 import Settings from '../screens/profile/settings/Settings';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Security from '../screens/profile/settings/Security';
-import Reminders from '../screens/notifications/Reminders';
+import Reminders from '../screens/profile/settings/Reminders';
 import Language from '../screens/profile/settings/Language';
 import Preferences from '../screens/profile/settings/Preferences';
 import Profile from '../screens/profile/Profile';
@@ -23,17 +24,18 @@ import {useTheme} from '../themes/ThemeProvider';
 import {themes} from '../themes/themes';
 import Group from '../screens/groups/Group';
 import Exercises from '../screens/exercises/Exercises';
-import Exercise from '../screens/exercises/PhysicalExercises/Exercise1';
+import Exercise from '../screens/exercises/Exercise1';
 import Home from '../screens/home/Home';
-import Notifications from '../screens/notifications/Notifications';
 import Groups from '../screens/groups/Groups';
 import Permissions from '../screens/profile/settings/Permissions';
 import ExercisesHome from '../screens/exercises/Exercises';
-import Exercise1 from '../screens/exercises/PhysicalExercises/Exercise1';
-import WordExercise from '../screens/exercises/BrainExercises/WordExercise';
-import Exercise2 from '../screens/exercises/PhysicalExercises/Exercise2';
-import BrainExercise2 from '../screens/exercises/BrainExercises/BrainExercise2';
+import Exercise1 from '../screens/exercises/Exercise1';
+import WordGame from '../screens/exercises/MindGames/WordGame';
+import Exercise2 from '../screens/exercises/Exercise2';
+import MindGame2 from '../screens/exercises/MindGames/MindGame2';
 import Development from '../screens/profile/settings/Development';
+import {getUser} from '../api/user/userService';
+import Notifications from '../screens/profile/settings/Notifications';
 
 const Tab = createBottomTabNavigator();
 
@@ -63,8 +65,8 @@ const ExercisesNativeStack =
 const PhysicalExercisesNativeStack =
   createNativeStackNavigator<PhysicalExercisesStackParamList>();
 
-const BrainExercisesNativeStack =
-  createNativeStackNavigator<BrainExercisesStackParamList>();
+const MindGamesNativeStack =
+  createNativeStackNavigator<MindGamesStackParamList>();
 
 function SettingsStack() {
   const {theme, colors, setTheme} = useTheme();
@@ -97,6 +99,20 @@ function SettingsStack() {
             <CustomHeader
               title={'Tercihler'}
               icon={icons.preferences}
+              className="border-primary-300"
+              backArrowEnable={true}
+            />
+          ),
+        }}
+      />
+      <SettingsNativeStack.Screen
+        name="Notifications"
+        component={Notifications}
+        options={{
+          header: () => (
+            <CustomHeader
+              title={'Bildirimler'}
+              icon={icons.bell}
               className="border-primary-300"
               backArrowEnable={true}
             />
@@ -144,6 +160,7 @@ function SettingsStack() {
           ),
         }}
       />
+      {/* TO DO Eğer kullanıcı erayfazilordanuc ise Development seçeneği çıksın */}
       <SettingsNativeStack.Screen
         name="Development"
         component={Development}
@@ -219,10 +236,48 @@ function ProfileStack() {
 function GroupsStack() {
   const {theme, colors, setTheme} = useTheme();
 
+  const [user, setUser] = React.useState<User | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  // b) İlk render’da kullanıcıyı getir
+  React.useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      try {
+        const u = await getUser(); // API veya AsyncStorage
+        if (isMounted) setUser(u);
+      } catch (e) {
+        console.error('getUser error:', e);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    })();
+
+    return () => {
+      isMounted = false; // Memory-leak guard
+    };
+  }, []);
+
+  // c) Kullanıcı gelene kadar gösterilecek ekran
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.background.secondary,
+        }}>
+        <ActivityIndicator size="large" color={colors.primary[300]} />
+      </View>
+    );
+  }
+
   return (
     <>
       <GroupsNativeStack.Navigator
-        initialRouteName="Groups"
+        initialRouteName={`${user!.groupId ? 'Group' : 'Groups'}`}
         screenOptions={{
           animation: 'default',
         }}>
@@ -233,7 +288,7 @@ function GroupsStack() {
             headerShown: false,
             header: () => (
               <CustomHeader
-                title={'Gruplar'}
+                title={'Grup'}
                 icon={icons.notes}
                 className="border-primary-300"
               />
@@ -243,6 +298,7 @@ function GroupsStack() {
         <GroupsNativeStack.Screen
           name="Group"
           component={Group}
+          initialParams={{groupId: user!.groupId}}
           options={{
             headerShown: false,
             header: () => (
@@ -304,19 +360,19 @@ function PhysicalExercisesStack() {
   );
 }
 
-function BrainExercisesStack() {
+function MindGamesStack() {
   const {theme, colors, setTheme} = useTheme();
 
   return (
     <>
-      <BrainExercisesNativeStack.Navigator
-        initialRouteName="WordExercise"
+      <MindGamesNativeStack.Navigator
+        initialRouteName="WordGame"
         screenOptions={{
           animation: 'default',
         }}>
-        <BrainExercisesNativeStack.Screen
-          name="WordExercise"
-          component={WordExercise}
+        <MindGamesNativeStack.Screen
+          name="WordGame"
+          component={WordGame}
           options={{
             headerShown: false,
             header: () => (
@@ -328,9 +384,9 @@ function BrainExercisesStack() {
             ),
           }}
         />
-        <BrainExercisesNativeStack.Screen
-          name="BrainExercise2"
-          component={BrainExercise2}
+        <MindGamesNativeStack.Screen
+          name="MindGame2"
+          component={MindGame2}
           options={{
             headerShown: false,
             header: () => (
@@ -342,7 +398,7 @@ function BrainExercisesStack() {
             ),
           }}
         />
-      </BrainExercisesNativeStack.Navigator>
+      </MindGamesNativeStack.Navigator>
     </>
   );
 }
@@ -372,22 +428,38 @@ function ExercisesStack() {
           }}
         />
         <ExercisesNativeStack.Screen
-          name="PhysicalExercises"
-          component={PhysicalExercisesStack}
+          name="Exercise1"
+          component={Exercise1}
           options={{
             headerShown: false,
             header: () => (
               <CustomHeader
-                title={'Egzersizler'}
+                title={'Egzersiz 1'}
                 icon={icons.todo}
                 className="border-primary-300"
+                backArrowEnable={true}
               />
             ),
           }}
         />
         <ExercisesNativeStack.Screen
-          name="BrainExercises"
-          component={BrainExercisesStack}
+          name="Exercise2"
+          component={Exercise2}
+          options={{
+            headerShown: false,
+            header: () => (
+              <CustomHeader
+                title={'Egzersiz 2'}
+                icon={icons.todo}
+                className="border-primary-300"
+                backArrowEnable={true}
+              />
+            ),
+          }}
+        />
+        <ExercisesNativeStack.Screen
+          name="MindGames"
+          component={MindGamesStack}
           options={{
             headerShown: false,
             header: () => (
@@ -421,17 +493,17 @@ const TabIcon = ({
   return (
     <View
       className="flex-1 flex flex-col items-center"
-      style={{marginTop: size ? (focused ? 2 : 4) : focused ? 8 : 10}}>
+      style={{marginTop: size ? (focused ? 2 : 4) : focused ? 2 : 4}}>
       <Image
         source={icon}
         tintColor={focused ? colors.primary[200] : colors.text.secondary}
         resizeMode="contain"
         className={`${
           focused
-            ? title == 'Home'
+            ? title == 'Ana Ekran'
               ? 'size-9'
               : 'size-8'
-            : title == 'Home'
+            : title == 'Ana Ekran'
             ? 'size-8'
             : 'size-7'
         }`}
@@ -445,6 +517,7 @@ const TabIcon = ({
             ? colors.primary[200] // 250
             : colors.text.secondary,
         }}>
+        {title}
         {/* {focused && title} */}
       </Text>
     </View>
@@ -453,6 +526,36 @@ const TabIcon = ({
 
 export function BottomNavigator() {
   const {theme, colors, setTheme} = useTheme();
+  const [user, setUser] = React.useState<User | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await getUser();
+        setUser(user);
+      } catch (error) {
+        console.log(error);
+      }
+      setLoading(false);
+    };
+
+    fetchUser();
+  }, []);
+
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.background.secondary,
+        }}>
+        <ActivityIndicator size="large" color={colors.primary[300]} />
+      </View>
+    );
+  }
 
   return (
     <Tab.Navigator
@@ -473,13 +576,13 @@ export function BottomNavigator() {
         component={GroupsStack}
         options={{
           headerShown: false,
-          headerTitle: 'Gruplar',
+          headerTitle: 'Grup',
           headerTitleStyle: {
             fontFamily: 'Rubik-SemiBold',
             fontSize: 24,
           },
           tabBarIcon: ({focused}) => (
-            <TabIcon focused={focused} icon={icons.peopleV3} title="Gruplar" />
+            <TabIcon focused={focused} icon={icons.peopleV3} title="Grup" />
           ),
           tabBarButton: props => {
             const scale = useRef(new Animated.Value(1)).current;
@@ -532,78 +635,80 @@ export function BottomNavigator() {
           },
         }}
       />
-      <Tab.Screen
-        name="Exercises"
-        component={ExercisesStack}
-        options={{
-          headerShown: false,
-          headerTitle: 'Egzersizler',
-          headerTitleStyle: {
-            fontFamily: 'Rubik-SemiBold',
-            fontSize: 24,
-          },
-          // header: () => (
-          //   <CustomHeader
-          //     title={'Egzersizler'}
-          //     icon={icons.todo}
-          //     className="border-emerald-500"
-          //   />
-          // ),
-          title: 'Exercises',
-          tabBarIcon: ({focused}) => (
-            <TabIcon focused={focused} icon={icons.gym} title="Egzersiz" />
-          ),
-          tabBarButton: props => {
-            const scale = useRef(new Animated.Value(1)).current;
+      {user?.role === 'ROLE_USER' && (
+        <Tab.Screen
+          name="Exercises"
+          component={ExercisesStack}
+          options={{
+            headerShown: false,
+            headerTitle: 'Egzersizler',
+            headerTitleStyle: {
+              fontFamily: 'Rubik-SemiBold',
+              fontSize: 24,
+            },
+            // header: () => (
+            //   <CustomHeader
+            //     title={'Egzersizler'}
+            //     icon={icons.todo}
+            //     className="border-emerald-500"
+            //   />
+            // ),
+            title: 'Exercises',
+            tabBarIcon: ({focused}) => (
+              <TabIcon focused={focused} icon={icons.gym} title="Egzersizler" />
+            ),
+            tabBarButton: props => {
+              const scale = useRef(new Animated.Value(1)).current;
 
-            const handlePressIn = () => {
-              Animated.spring(scale, {
-                toValue: 0.95,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
+              const handlePressIn = () => {
+                Animated.spring(scale, {
+                  toValue: 0.95,
+                  useNativeDriver: true,
+                  speed: 20,
+                  bounciness: 10,
+                }).start();
+              };
 
-            const handlePressOut = () => {
-              Animated.spring(scale, {
-                toValue: 1,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
+              const handlePressOut = () => {
+                Animated.spring(scale, {
+                  toValue: 1,
+                  useNativeDriver: true,
+                  speed: 20,
+                  bounciness: 10,
+                }).start();
+              };
 
-            return (
-              <Animated.View
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: [{scale}],
-                }}>
-                <Pressable
-                  onPressIn={handlePressIn}
-                  onPressOut={handlePressOut}
-                  android_ripple={{
-                    color: 'transparent', // Açık mavi ve yumuşak ripple için -> 'rgba(255, 255, 255, 0.12)'
-                    borderless: true,
-                    radius: 35, // Ripple boyutunu sınırla
-                  }}
+              return (
+                <Animated.View
                   style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 35,
+                    flex: 1,
                     alignItems: 'center',
                     justifyContent: 'center',
-                  }}
-                  {...props}
-                />
-              </Animated.View>
-            );
-          },
-        }}
-      />
+                    transform: [{scale}],
+                  }}>
+                  <Pressable
+                    onPressIn={handlePressIn}
+                    onPressOut={handlePressOut}
+                    android_ripple={{
+                      color: 'transparent', // Açık mavi ve yumuşak ripple için -> 'rgba(255, 255, 255, 0.12)'
+                      borderless: true,
+                      radius: 35, // Ripple boyutunu sınırla
+                    }}
+                    style={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: 35,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    {...props}
+                  />
+                </Animated.View>
+              );
+            },
+          }}
+        />
+      )}
       <Tab.Screen
         name="Home"
         component={Home}
@@ -615,7 +720,7 @@ export function BottomNavigator() {
             fontSize: 24,
           },
           tabBarIcon: ({focused}) => (
-            <TabIcon focused={focused} icon={icons.home} title="Home" />
+            <TabIcon focused={focused} icon={icons.home} title="Ana Ekran" />
           ),
           tabBarButton: props => {
             const scale = useRef(new Animated.Value(1)).current;
@@ -668,7 +773,7 @@ export function BottomNavigator() {
           },
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Notifications"
         component={Notifications}
         options={{
@@ -731,7 +836,7 @@ export function BottomNavigator() {
             );
           },
         }}
-      />
+      /> */}
       <Tab.Screen
         name="Profile"
         component={ProfileStack}
@@ -827,7 +932,7 @@ export function BottomNavigator() {
 //         options={{
 //           headerShown: false,
 //           tabBarIcon: ({focused}) => (
-//             <TabIcon focused={focused} icon={icons.peopleV3} title="Gruplar" />
+//             <TabIcon focused={focused} icon={icons.peopleV3} title="Grup" />
 //           ),
 //         }}
 //       />

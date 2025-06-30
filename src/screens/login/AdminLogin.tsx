@@ -86,6 +86,10 @@ function AdminLogin() {
       if (loginResponse && loginResponse.status === 200) {
         if (!loginResponse.data) {
           setIsCodeStep(true);
+          ToastAndroid.show(
+            'E-postanıza doğrulama kodu gönderildi',
+            ToastAndroid.SHORT,
+          );
         } else {
           navigation.navigate('App');
           navigation.dispatch(
@@ -175,6 +179,10 @@ function AdminLogin() {
       if (registerResponse && registerResponse.status === 200) {
         if (!registerResponse.data) {
           setIsCodeStep(true);
+          ToastAndroid.show(
+            'E-postanıza doğrulama kodu gönderildi',
+            ToastAndroid.SHORT,
+          );
         } else {
           navigation.navigate('App');
           navigation.dispatch(
@@ -198,7 +206,7 @@ function AdminLogin() {
 
         if (status === 500) message = 'Bu kullanıcı adı zaten alınmış';
         if (status === 400)
-          message = 'Girilen bilgilere ait bir yönetici yetkinliği bulunamadı';
+          message = 'Girilen bilgilere ait bir hemşire yetkinliği bulunamadı';
         ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
       } else if (error instanceof Error) {
         console.log('Genel hata yakalandı:', error.message);
@@ -214,30 +222,40 @@ function AdminLogin() {
     }
   };
 
+  // className={`px-10 pt-${
+  //         isCodeStep
+  //           ? ''
+  //           : loginMethod === LoginMethod.registration
+  //           ? '16'
+  //           : '24'
+  //       }`}
+
   return (
     <SafeAreaView
       className="h-full"
       style={{backgroundColor: colors.background.secondary}}>
       <View
-        className={`px-10 pt-${
-          isCodeStep
-            ? ''
-            : loginMethod === LoginMethod.registration
-            ? '16'
-            : '24'
-        }`}>
+        className={`px-10`}
+        style={{
+          marginTop:
+            loginMethod === LoginMethod.registration
+              ? isCodeStep
+                ? 40
+                : 60
+              : 96,
+        }}>
         <Text
-          className="text-3xl text-center uppercase font-rubik-bold mt-12 mb-4"
+          className="text-3xl text-center uppercase font-rubik-bold mt-8 mb-4"
           style={{color: '#0091ff'}}>
-          {'Egzersiz Takip\n'}
+          EGZERSİZ TAKİP{'\n'}
           <Text className="text-center" style={{color: colors.text.primary}}>
-            Uygulamasına Hoş Geldiniz
+            Uygulaması
           </Text>
         </Text>
         <Text
           className="text-3xl font-rubik-medium text-center mt-4 mb-4"
           style={{color: colors.text.primary}}>
-          Yönetici Girişi
+          Hemşire Girişi
         </Text>
         {/* <Text
             className={`text-3xl font-rubik-medium text-center mb-2 mt-4`}
@@ -342,6 +360,7 @@ function AdminLogin() {
               placeholderTextColor={'gray'}
               selectionColor={'#7AADFF'}
               value={code ? code : ''}
+              maxLength={6}
               onChangeText={(value: string) => {
                 setCode(value);
               }}
@@ -447,7 +466,7 @@ function AdminLogin() {
       </View>
       <View className="flex-1 ">
         <Text className="text-center absolute bottom-6 self-center text-sm text-gray-400">
-          Yönetici hesabı başvurusu için iletişime geçebilirsiniz{'\n'}
+          Hemşire hesabı başvurusu için iletişime geçebilirsiniz{'\n'}
         </Text>
         <Text className="text-center absolute bottom-6 self-center text-sm text-gray-400 underline">
           egzersiz.saglik.uygulaması@gmail.com

@@ -839,15 +839,15 @@ const Development = () => {
               Activity Indicator Loading State Test
             </GradientText>
           </TouchableOpacity>
-          <View className="p-4 h-16 rounded-2xl">
-            {loading && (
+          {loading && (
+            <View className="p-4 h-16 rounded-2xl">
               <ActivityIndicator
                 className="mt-2 mb-2"
                 size="large"
                 color={colors.primary[300] ?? colors.primary}
               />
-            )}
-          </View>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>

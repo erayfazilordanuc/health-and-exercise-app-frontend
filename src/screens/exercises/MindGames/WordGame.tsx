@@ -9,18 +9,14 @@ import {
   TextInput,
 } from 'react-native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useTheme} from '../../../../src/themes/ThemeProvider';
+import {useTheme} from '../../../themes/ThemeProvider';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import CustomAlert from '../../../../src/components/CustomAlert';
+import CustomAlert from '../../../components/CustomAlert';
 import axios from 'axios';
-import {
-  alphabet,
-  cursorArray,
-  keyboardRows,
-} from '../../../../src/constants/wordExercise';
+import {alphabet, cursorArray, keyboardRows} from '../../../constants/wordGame';
 import {answers, words} from '../../../constants/words';
 
-const WordExercise = () => {
+const WordGame = () => {
   const {colors} = useTheme();
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const rootNavigation = useNavigation<RootScreenNavigationProp>();
@@ -608,7 +604,7 @@ const WordExercise = () => {
             <View className="flex flex-row justify-center">
               <KeyButton label="<" borderColor="#88bff9" />
               <KeyButton label=">" borderColor="#88bff9" />
-              <KeyButton label="Onayla" borderColor="#0EC946" />
+              <KeyButton label="Onayla" borderColor="#55CC88" />
             </View>
           </View>
         </View>
@@ -642,7 +638,7 @@ const WordExercise = () => {
               <View className="mb-4">
                 <ActivityIndicator
                   size="large"
-                  color={isWon ? '#0EC946' : '#f24646'}
+                  color={isWon ? '#55CC88' : '#f24646'}
                 />
                 <Text
                   className="mt-4 text-xl font-rubik"
@@ -658,7 +654,7 @@ const WordExercise = () => {
                   getSelectedWord();
                 }}
                 className="p-3 rounded-xl items-center mx-1"
-                style={{backgroundColor: isWon ? '#0EC946' : '#f24646'}}>
+                style={{backgroundColor: isWon ? '#55CC88' : '#f24646'}}>
                 <Text className="text-base font-rubik-medium text-white">
                   {isWon ? 'Bir Daha' : 'Tekrar Dene'}
                 </Text>
@@ -695,7 +691,7 @@ const WordExercise = () => {
             </Text>
             {loading && (
               <View className="mb-4">
-                <ActivityIndicator size="large" color={'#0EC946'} />
+                <ActivityIndicator size="large" color={'#55CC88'} />
                 <Text
                   className="mt-4 text-xl font-rubik"
                   style={{color: colors.text.primary}}>
@@ -711,7 +707,7 @@ const WordExercise = () => {
                   getSelectedWord();
                 }}
                 className="p-3 rounded-xl items-center mx-1"
-                style={{backgroundColor: '#0EC946'}}>
+                style={{backgroundColor: '#55CC88'}}>
                 <Text className="text-base font-rubik-medium text-white">
                   Başlat
                 </Text>
@@ -736,4 +732,4 @@ const WordExercise = () => {
   );
 };
 
-export default WordExercise;
+export default WordGame;

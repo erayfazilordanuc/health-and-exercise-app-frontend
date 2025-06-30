@@ -117,6 +117,13 @@ const Settings = () => {
             }}
           />
           <SettingsItem
+            icon={icons.bell}
+            title={'Bildirimler'}
+            onPress={() => {
+              navigation.navigate('Notifications');
+            }}
+          />
+          <SettingsItem
             icon={icons.permission}
             title={'İzinler'}
             onPress={() => {

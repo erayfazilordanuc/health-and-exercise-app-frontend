@@ -12,7 +12,7 @@ import {BottomNavigator} from './BottomNavigation';
 import Settings from '../screens/profile/settings/Settings';
 import icons from '../constants/icons';
 import Security from '../screens/profile/settings/Security';
-import Notifications from '../screens/notifications/Reminders';
+import Notifications from '../screens/profile/settings/Reminders';
 import Language from '../screens/profile/settings/Language';
 import Preferences from '../screens/profile/settings/Preferences';
 import {useTheme} from '../themes/ThemeProvider';
@@ -28,67 +28,6 @@ import AdminLogin from '../screens/login/AdminLogin';
 const RootNativeStack = createNativeStackNavigator<RootStackParamList>();
 const AppNativeStack = createNativeStackNavigator<AppStackParamList>(); // This one works
 // const Stack = createStackNavigator<RootStackParamList>(); // This one not works
-
-function RootStack() {
-  return (
-    <RootNativeStack.Navigator
-      screenOptions={{
-        animation: 'fade',
-      }}
-      initialRouteName="Home">
-      <RootNativeStack.Screen
-        name="Home"
-        component={Home}
-        options={{
-          header: () => <CustomHeader title={'Home'} />,
-        }}
-      />
-      <RootNativeStack.Screen
-        name="Profile"
-        component={Profile}
-        options={{
-          // title: 'To Do',
-          // headerStyle: {
-          //   backgroundColor: '#b6f982',
-          // },
-          header: () => <CustomHeader title={'Profile'} />,
-        }}
-      />
-      <RootNativeStack.Screen
-        name="Groups"
-        component={Groups}
-        options={{
-          // title: 'To Do',
-          // headerStyle: {
-          //   backgroundColor: '#b6f982',
-          // },
-          header: () => <CustomHeader title={'Groups'} />,
-        }}
-      />
-      <RootNativeStack.Screen
-        name="Exercises"
-        component={Exercises}
-        options={{
-          // title: 'To Do',
-          // headerStyle: {
-          //   backgroundColor: '#b6f982',
-          // },
-          header: () => <CustomHeader title={'Exercises'} />,
-        }}
-      />
-      <RootNativeStack.Screen
-        name="Notifications"
-        component={Notifications}
-        options={{
-          // headerStyle: {
-          //   backgroundColor: '#ff6751',
-          // },
-          header: () => <CustomHeader title={'Notifications'} />,
-        }}
-      />
-    </RootNativeStack.Navigator>
-  );
-}
 
 function AppStack() {
   return (
