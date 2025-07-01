@@ -78,11 +78,11 @@ const Home = () => {
   return (
     <>
       <View
-        className="pt-14"
         style={{
           backgroundColor: colors.background.secondary,
           justifyContent: 'center',
           alignItems: 'flex-start',
+          paddingTop: insets.top * 1.3,
         }}>
         <Text
           className="pl-7 font-rubik-semibold"

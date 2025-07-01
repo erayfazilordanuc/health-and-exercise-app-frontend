@@ -211,7 +211,7 @@ function UserLogin() {
           <Text
             className="text-3xl text-center uppercase font-rubik-bold mt-8 mb-4"
             style={{color: '#0091ff'}}>
-            EGZERSİZ TAKİP{'\n'}
+            EGZERSİZ TAKİP{'\n'}VE{'\n'}SAĞLIK{'\n'}
             <Text className="text-center" style={{color: colors.text.primary}}>
               Uygulaması
             </Text>

@@ -188,6 +188,15 @@ const Group = () => {
             style={{color: colors.text.primary}}>
             Geri Bildirimler
           </Text>
+          <TouchableOpacity
+            className="p-2 px-3 rounded-2xl"
+            style={{backgroundColor: colors.background.secondary}}>
+            <Text
+              className="font-rubik text-lg"
+              style={{color: colors.text.primary}}>
+              Bildirim gönder
+            </Text>
+          </TouchableOpacity>
         </View>
         <Text
           className="font-rubik text-lg mt-3"

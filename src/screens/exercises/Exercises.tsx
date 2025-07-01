@@ -51,11 +51,11 @@ const Exercises = () => {
   return (
     <>
       <View
-        className="pt-14"
         style={{
           backgroundColor: colors.background.secondary,
           justifyContent: 'center',
           alignItems: 'flex-start',
+          paddingTop: insets.top * 1.3,
         }}>
         <Text
           className="pl-7 font-rubik-semibold"
@@ -67,10 +67,9 @@ const Exercises = () => {
         </Text>
       </View>
       <View
-        className="h-full pb-32 px-3 pt-3"
+        className="h-full pb-32 px-3 mt-3"
         style={{
           backgroundColor: colors.background.secondary,
-          // paddingTop: insets.top / 2,
         }}>
         <View
           className="px-5 py-3 rounded-2xl mb-3"

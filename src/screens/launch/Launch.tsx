@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   useColorScheme,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTheme} from '../../themes/ThemeProvider';
 import {Theme, themes} from '../../themes/themes';
@@ -19,6 +19,7 @@ import {getSymptoms} from '../../api/health/healthConnectService';
 const {width, height} = Dimensions.get('window');
 
 const Launch = () => {
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const colorScheme = useColorScheme();
   const {theme, colors, setTheme} = useTheme();
@@ -81,13 +82,15 @@ const Launch = () => {
       {/* Üst sağ mavi dekor */}
       <View style={styles.topRightShape} />
 
-      <Text className="font-rubik-bold text-4xl mt-64" style={styles.titleBlue}>
-        EGZERSİZ TAKİP
+      <Text
+        className="font-rubik-bold text-4xl text-center"
+        style={[styles.titleBlue, {paddingTop: insets.top * 6.3}]}>
+        EGZERSİZ TAKİP{'\n'}VE{'\n'}SAĞLIK
       </Text>
       <Text
         className="font-rubik-bold text-4xl text-center"
         style={[styles.titleBlack, {color: colors.text.primary}]}>
-        Uygulamasına Hoş Geldiniz
+        Uygulamasına{'\n'}Hoş Geldiniz
       </Text>
 
       <TouchableOpacity

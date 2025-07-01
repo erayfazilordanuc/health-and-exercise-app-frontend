@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   RouteProp,
   useFocusEffect,
@@ -26,6 +26,7 @@ import {
 import {setGestureState} from 'react-native-reanimated';
 
 const Group = () => {
+  const insets = useSafeAreaInsets();
   const {colors} = useTheme();
   type GroupRouteProp = RouteProp<GroupsStackParamList, 'Group'>;
   const {params} = useRoute<GroupRouteProp>();
@@ -188,7 +189,7 @@ const Group = () => {
             <Text
               className="text-lg font-semibold dark:text-blue-300"
               style={{color: colors.text.primary}}>
-              Durum
+              Detay
             </Text>
           </TouchableOpacity>
         )}
@@ -204,11 +205,12 @@ const Group = () => {
   return (
     <View className="flex-1">
       <View
-        className="pt-14 pb-3"
+        className=" pb-3"
         style={{
           backgroundColor: colors.background.secondary,
           justifyContent: 'center',
           alignItems: 'flex-start',
+          paddingTop: insets.top * 1.3,
         }}>
         <Text
           className="pl-7 font-rubik-semibold pr-7"
@@ -248,8 +250,7 @@ const Group = () => {
                   style={{color: colors.primary[175]}}>
                   Adı Soyadı:{'  '}
                   <Text style={{color: colors.text.primary}}>
-                    {'Yağmur Berktaş'}
-                    {/* {admin?.fullName} */}
+                    {admin?.fullName}
                   </Text>
                 </Text>
                 {/* <Text
@@ -266,8 +267,7 @@ const Group = () => {
                   style={{color: colors.primary[175]}}>
                   E-posta:{'  '}
                   <Text style={{color: colors.text.primary}}>
-                    {'{'}Hemşirenin E-posta adresi{'}'}
-                    {/* {admin?.email} */}
+                    {admin?.email}
                   </Text>
                 </Text>
               </>
@@ -365,6 +365,28 @@ const Group = () => {
           </View>
         </View>
       </ScrollView>
+      {user && user.role === 'ROLE_USER' && (
+        <View className="absolute bottom-20 right-3 items-center">
+          {/* <Text
+                    className="mb-1 font-rubik text-base"
+                    style={{color: colors.text.primary}}>
+                    Grup Oluştur
+                  </Text> */}
+
+          {/* Buton */}
+          <TouchableOpacity
+            className="w-48 h-16 bg-blue-500 rounded-3xl flex items-center justify-center"
+            onPress={() => {
+              // setIsCreateModalVisible(true);
+            }}>
+            <Text
+              className="font-rubik text-lg"
+              style={{color: colors.background.secondary}}>
+              Hemşireye bildir
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

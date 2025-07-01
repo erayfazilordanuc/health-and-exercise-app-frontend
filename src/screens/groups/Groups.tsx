@@ -85,19 +85,21 @@ const Groups = () => {
           style={{color: colors.primary[200]}}>
           {item.name}
         </Text>
-        <TouchableOpacity
-          className="py-3 px-4 rounded-2xl"
-          style={{backgroundColor: colors.background.secondary}}
-          onPress={() => {
-            setGroupToJoin(item);
-            setIsJoinModalVisible(true);
-          }}>
-          <Text
-            className="text-md font-rubik-medium"
-            style={{color: '#55CC88'}}>
-            Katıl
-          </Text>
-        </TouchableOpacity>
+        {user && user.role === 'ROLE_USER' && (
+          <TouchableOpacity
+            className="py-3 px-4 rounded-2xl"
+            style={{backgroundColor: colors.background.secondary}}
+            onPress={() => {
+              setGroupToJoin(item);
+              setIsJoinModalVisible(true);
+            }}>
+            <Text
+              className="text-md font-rubik-medium"
+              style={{color: '#55CC88'}}>
+              Katıl
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
       {/* <Text
         className="text-md font-semibold dark:text-blue-300 ml-1"
@@ -151,11 +153,11 @@ const Groups = () => {
   return (
     <>
       <View
-        className="pt-14"
         style={{
           backgroundColor: colors.background.secondary,
           justifyContent: 'center',
           alignItems: 'flex-start',
+          paddingTop: insets.top * 1.3,
         }}>
         <Text
           className="pl-7 font-rubik-semibold"

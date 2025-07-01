@@ -170,6 +170,7 @@ const Profile = () => {
         style={{
           backgroundColor: colors.background.secondary,
           justifyContent: 'space-between',
+          paddingTop: insets.top * 1.3,
         }}>
         <Text
           className="pl-7 font-rubik-semibold"
