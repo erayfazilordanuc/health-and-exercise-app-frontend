@@ -127,14 +127,14 @@ const Home = () => {
               <View className="flex flex-row">
                 <Image
                   source={icons.badge1_colorful_bordered}
-                  className="size-8 mr-2"
+                  className="size-8 mr-3"
                 />
-                <Image source={icons.badge1_colorful} className="size-8 mr-2" />
+                {/* <Image source={icons.badge1_colorful} className="size-8 mr-2" />
                 <Image
                   source={icons.badge1}
                   tintColor={colors.text.primary} // Eğer renkli değilse tintColor verilsin
                   className="size-8"
-                />
+                /> */}
               </View>
             ) : (
               <View className="flex flex-row">
@@ -191,10 +191,11 @@ const Home = () => {
                     width: SCREEN_WIDTH / 2 - 16,
                   }}>
                   <Text
-                    className="pl-2 text-xl font-rubik"
+                    className="pl-2 text-xl font-rubik text-center"
                     style={{
                       color: colors.text.primary,
                     }}>
+                    Tamamlanan{'\n'}
                     Günlük Egzersiz
                   </Text>
                   <View className="mt-4 mb-2 flex justify-center items-center">
@@ -249,7 +250,12 @@ const Home = () => {
 
                   <TouchableOpacity
                     className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-                    style={{backgroundColor: '#FFAA33'}}>
+                    style={{backgroundColor: '#FFAA33'}}
+                    onPress={() =>
+                      exercisesNavigation.navigate('Exercises', {
+                        screen: 'Exercise1',
+                      })
+                    }>
                     <Image source={icons.gymnastic_1} className="size-20" />
                   </TouchableOpacity>
 
@@ -258,7 +264,7 @@ const Home = () => {
                     style={{backgroundColor: '#48AAFF'}}
                     onPress={() =>
                       exercisesNavigation.navigate('Exercises', {
-                        screen: 'Exercise1',
+                        screen: 'Exercise2',
                       })
                     }>
                     <Image source={icons.chronometer} className="size-20" />
@@ -267,7 +273,7 @@ const Home = () => {
               </View>
             </>
           )}
-          {user && user.role === 'ROLE_USER' && (
+          {user && user.role === 'ROLE_USER' && user.groupId && (
             <View
               className="flex flex-column justify-start rounded-2xl pl-5 p-4 mb-3" // border
               style={{
@@ -287,7 +293,7 @@ const Home = () => {
             </View>
           )}
 
-          {user && user.role === 'ROLE_ADMIN' && (
+          {user && user.role === 'ROLE_ADMIN' && user.groupId && (
             <View
               className="flex flex-column justify-start rounded-2xl pl-5 p-3 mt-1"
               style={{

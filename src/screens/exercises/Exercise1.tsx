@@ -1,58 +1,96 @@
-import React, {useState, useRef} from 'react';
-import {View, Text, TouchableOpacity} from 'react-native';
+import React, {useState, useRef, useCallback} from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  BackHandler,
+  StyleSheet,
+} from 'react-native';
 import {useTheme} from '../../themes/ThemeProvider';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import Video from 'react-native-video';
+// import exercise from '../../assets/videos/egzersiz';
 
-const Exercise1: React.FC = () => {
-  const {colors} = useTheme();
+const Exercise1 = () => {
+  const navigation = useNavigation<ExercisesScreenNavigationProp>();
+  const videoUri = 'https://www.w3schools.com/html/mov_bbb.mp4';
 
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [now, setNow] = useState<number | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        navigation.navigate('Exercises');
+        return true;
+      };
 
-  const handleStart = () => {
-    const currentTime = Date.now();
-    setStartTime(currentTime);
-    setNow(currentTime);
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
 
-    if (intervalRef.current) clearInterval(intervalRef.current);
-
-    intervalRef.current = setInterval(() => {
-      setNow(Date.now());
-    }, 10);
-  };
-
-  const handleStop = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-  };
-
-  let secondsPassed = 0;
-  if (startTime !== null && now !== null) {
-    secondsPassed = (now - startTime) / 1000;
-  }
+      return () => backHandler.remove(); // Ekrandan çıkınca event listener'ı kaldır
+    }, []),
+  );
 
   return (
-    <View
-      className="flex-1 items-center justify-center"
-      style={{backgroundColor: colors.background.secondary}}>
-      <Text
-        className="text-4xl font-bold mb-8"
-        style={{color: colors.text.primary}}>
-        Geçen Zaman: {secondsPassed.toFixed(3)} s
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Egzersiz</Text>
 
-      <TouchableOpacity
-        onPress={handleStart}
-        className="bg-blue-600 px-6 py-3 rounded-xl mb-4">
-        <Text className="text-white text-lg font-semibold">Başlat</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={handleStop}
-        className="bg-red-600 px-6 py-3 rounded-xl">
-        <Text className="text-white text-lg font-semibold">Durdur</Text>
-      </TouchableOpacity>
+      <View style={styles.card}>
+        <Video
+          // source={{uri: videoUri}}
+          source={require('../../assets/videos/egzersiz.mp4')}
+          style={styles.video}
+          resizeMode="contain"
+          controls
+          repeat={false}
+        />
+        <Text style={styles.description}>
+          Bu video egzersiz hareketlerini öğrenmen için hazırlanmıştır.
+        </Text>
+      </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f9fafb', // çok açık gri
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    padding: 16,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginTop: 64,
+    marginBottom: 16,
+    color: '#1f2937', // koyu gri
+  },
+  card: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5, // android gölge
+  },
+  video: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+    borderRadius: 12,
+    backgroundColor: 'black',
+    overflow: 'hidden',
+  },
+  description: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#4b5563', // koyu gri
+    textAlign: 'center',
+  },
+});
 
 export default Exercise1;

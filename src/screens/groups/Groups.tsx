@@ -111,7 +111,7 @@ const Groups = () => {
     setLoading(true);
     if (user) {
       const createGroupDTO: CreateGroupDTO = {
-        name: newGroupName,
+        name: newGroupName.trim(),
         adminId: user.id!,
       };
 
@@ -140,12 +140,12 @@ const Groups = () => {
       const response = await updateUser(updateUserDTO);
       if (response.status === 200) {
         setTimeout(() => {
-          navigation.navigate('Group', {groupId: response.data.id});
+          navigation.navigate('Group', {groupId: response.data.groupId});
           setIsJoinModalVisible(false);
+          setLoading(false);
         }, 750);
       }
     }
-    setLoading(false);
   };
 
   return (
@@ -239,7 +239,7 @@ const Groups = () => {
                 style={{color: colors.text.primary}}>
                 <Text style={{color: colors.primary[200]}}>
                   {groupToJoin?.name}
-                </Text>
+                </Text>{' '}
                 grubuna katılmak istediğinize emin misiniz?
               </Text>
               <View className="flex-row justify-between w-full">
@@ -348,23 +348,22 @@ const Groups = () => {
 
         {user && user.role === 'ROLE_ADMIN' && (
           <View className="absolute bottom-48 right-3 items-center">
-            {/* 👉 Etiket */}
-            <Text
+            {/* <Text
               className="mb-1 font-rubik text-base"
               style={{color: colors.text.primary}}>
               Grup Oluştur
-            </Text>
+            </Text> */}
 
             {/* Buton */}
             <TouchableOpacity
-              className="w-16 h-16 bg-blue-500 rounded-3xl flex items-center justify-center"
+              className="w-32 h-16 bg-blue-500 rounded-3xl flex items-center justify-center"
               onPress={() => {
                 setIsCreateModalVisible(true);
               }}>
               <Text
-                className="font-rubik-light text-4xl"
+                className="font-rubik text-lg"
                 style={{color: colors.background.secondary}}>
-                +
+                Grup Oluştur
               </Text>
             </TouchableOpacity>
           </View>

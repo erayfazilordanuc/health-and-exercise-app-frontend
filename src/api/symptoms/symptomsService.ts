@@ -54,6 +54,18 @@ export const adminGetSymptomsByUserId = async (id: number) => {
   return response;
 };
 
+export const adminGetSymptomsByUserIdAndDate = async (
+  userId: number,
+  date: Date,
+) => {
+  const dateVariable = date.toISOString().slice(0, 10);
+  const response = await apiClient.get(
+    `/symptoms/user/id/${userId}/date/${dateVariable}`,
+  );
+  console.log('Get symptom by user id', response);
+  return response;
+};
+
 // Veritabanında günlük kayıt tutulsun
 // UpdateSymptoms isteği yollansın -> Backendde eğer o güne ait symptoms verisi varsa güncellensin yoksa yenisi oluşturulsun
 // Bu yapı değiştirilebilir

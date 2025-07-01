@@ -36,6 +36,7 @@ import MindGame2 from '../screens/exercises/MindGames/MindGame2';
 import Development from '../screens/profile/settings/Development';
 import {getUser} from '../api/user/userService';
 import Notifications from '../screens/profile/settings/Notifications';
+import Member from '../screens/groups/Member';
 
 const Tab = createBottomTabNavigator();
 
@@ -304,6 +305,21 @@ function GroupsStack() {
             header: () => (
               <CustomHeader
                 title={'Grup'}
+                icon={icons.notes}
+                className="border-primary-300"
+                backArrowEnable={true}
+              />
+            ),
+          }}
+        />
+        <GroupsNativeStack.Screen
+          name="Member"
+          component={Member}
+          options={{
+            headerShown: false,
+            header: () => (
+              <CustomHeader
+                title={'Üye'}
                 icon={icons.notes}
                 className="border-primary-300"
                 backArrowEnable={true}

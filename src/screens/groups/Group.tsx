@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   Pressable,
+  ScrollView,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -61,6 +62,8 @@ const Group = () => {
         const u = await getUser();
         if (!isActive) return;
         setUser(u);
+
+        console.log('param', groupId);
 
         // 2. grup bilgisini çek
         const grpRes = await getGroupById(groupId);
@@ -177,6 +180,9 @@ const Group = () => {
             className="p-1 px-4 rounded-2xl"
             style={{backgroundColor: colors.background.primary}}
             onPress={() => {
+              if (user && user.role === 'ROLE_ADMIN') {
+                navigation.navigate('Member', {memberId: item.id});
+              }
               /* member a navigate etmeli id ile */
             }}>
             <Text
@@ -196,9 +202,9 @@ const Group = () => {
   );
 
   return (
-    <>
+    <View className="flex-1">
       <View
-        className="pt-14"
+        className="pt-14 pb-3"
         style={{
           backgroundColor: colors.background.secondary,
           justifyContent: 'center',
@@ -216,15 +222,16 @@ const Group = () => {
           </Text>
         </Text>
       </View>
-      <View
-        className="h-full pb-32 px-3"
+      <ScrollView
+        className="flex-1 px-3"
         style={{
           backgroundColor: colors.background.secondary,
           // paddingTop: insets.top / 2,
-        }}>
+        }}
+        contentContainerClassName="pb-20">
         {user && user.role === 'ROLE_USER' && (
           <View
-            className="flex flex-column justify-start rounded-2xl pl-5 p-3 mt-3" // border
+            className="flex flex-column justify-start rounded-2xl pl-5 p-3 mb-3" // border
             style={{
               backgroundColor: colors.background.primary,
               borderColor: colors.primary[300],
@@ -233,18 +240,35 @@ const Group = () => {
               <>
                 <Text
                   className="font-rubik text-2xl"
-                  style={{color: colors.primary[150]}}>
+                  style={{color: colors.primary[175]}}>
                   Hemşire Bilgileri
                 </Text>
                 <Text
                   className="font-rubik text-lg mt-3 mb-1"
-                  style={{color: colors.primary[150]}}>
-                  {admin?.fullName}
+                  style={{color: colors.primary[175]}}>
+                  Adı Soyadı:{'  '}
+                  <Text style={{color: colors.text.primary}}>
+                    {'Yağmur Berktaş'}
+                    {/* {admin?.fullName} */}
+                  </Text>
                 </Text>
+                {/* <Text
+                  className="font-rubik text-lg mt-1 mb-1"
+                  style={{color: colors.primary[175]}}>
+                  Kullanıcı Adı:{'  '}
+                  <Text style={{color: colors.text.primary}}>
+                    yagmurberktas
+                  </Text>
+                </Text> */}
+                {/* {admin?.username} */}
                 <Text
                   className="font-rubik text-lg mt-1 mb-1"
-                  style={{color: colors.primary[150]}}>
-                  {admin?.email}
+                  style={{color: colors.primary[175]}}>
+                  E-posta:{'  '}
+                  <Text style={{color: colors.text.primary}}>
+                    {'{'}Hemşirenin E-posta adresi{'}'}
+                    {/* {admin?.email} */}
+                  </Text>
                 </Text>
               </>
             )}
@@ -252,7 +276,7 @@ const Group = () => {
         )}
 
         <View
-          className="flex flex-column justify-start rounded-2xl pl-5 p-3 mt-3" // border
+          className="flex flex-column justify-start rounded-2xl pl-5 p-3" // border
           style={{
             backgroundColor: colors.background.primary,
             borderColor: colors.primary[300],
@@ -323,7 +347,12 @@ const Group = () => {
           </View>
 
           <View className="mt-4">
-            <FlatList
+            {users.map(user => (
+              <View key={user.id?.toString() ?? user.username}>
+                {renderItem({item: user})}
+              </View>
+            ))}
+            {/* <FlatList
               data={users}
               keyExtractor={item => (item.id ? item.id.toString() : '')}
               renderItem={renderItem}
@@ -332,11 +361,11 @@ const Group = () => {
               //     Henüz bir grup yok
               //   </Text>
               // }
-            />
+            /> */}
           </View>
         </View>
-      </View>
-    </>
+      </ScrollView>
+    </View>
   );
 };
 

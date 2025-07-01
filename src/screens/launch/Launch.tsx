@@ -49,7 +49,7 @@ const Launch = () => {
     const refreshToken = await AsyncStorage.getItem('refreshToken');
 
     if (accessToken || refreshToken || userData) {
-      await getSymptoms();
+      if (user.role === 'ROLE_USER') await getSymptoms();
       navigation.navigate('App');
     } else {
       setLoading(false);

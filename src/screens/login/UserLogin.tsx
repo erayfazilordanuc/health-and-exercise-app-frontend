@@ -117,9 +117,25 @@ function UserLogin() {
         return;
       }
 
-      if (!usernameRegex.test(username)) {
+      // if (!usernameRegex.test(username)) {
+      //   ToastAndroid.show(
+      //     'Lütfen kullanıcı adını uygun formatta giriniz',
+      //     ToastAndroid.SHORT,
+      //   );
+      //   return;
+      // }
+
+      if (username.length < 4) {
         ToastAndroid.show(
-          'Lütfen kullanıcı adını uygun formatta giriniz',
+          'Kullanıcı adı en az 4 karakter olmalı',
+          ToastAndroid.SHORT,
+        );
+        return;
+      }
+
+      if (username.length > 25) {
+        ToastAndroid.show(
+          'Kullanıcı adı en fazla 25 karakter olabilir',
           ToastAndroid.SHORT,
         );
         return;

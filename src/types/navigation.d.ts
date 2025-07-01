@@ -34,6 +34,7 @@ type MindGamesStackParamList = {
 type GroupsStackParamList = {
   Groups: any;
   Group: {groupId: number};
+  Member: {memberId: number};
 };
 
 type RootStackParamList = {

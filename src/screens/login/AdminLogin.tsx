@@ -131,18 +131,18 @@ function AdminLogin() {
     try {
       setLoading(true);
 
-      if (!(username && fullName && password)) {
+      if (!(username && email && fullName && password)) {
         ToastAndroid.show('Lütfen tüm alanları doldurunuz', ToastAndroid.SHORT);
         return;
       }
 
-      if (!usernameRegex.test(username.trim())) {
-        ToastAndroid.show(
-          'Lütfen kullanıcı adını uygun formatta giriniz',
-          ToastAndroid.SHORT,
-        );
-        return;
-      }
+      // if (!usernameRegex.test(username.trim())) {
+      //   ToastAndroid.show(
+      //     'Lütfen kullanıcı adını uygun formatta giriniz',
+      //     ToastAndroid.SHORT,
+      //   );
+      //   return;
+      // }
 
       if (!emailRegex.test(email.trim())) {
         ToastAndroid.show(

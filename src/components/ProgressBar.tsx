@@ -18,7 +18,33 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 }) => {
   const {colors} = useTheme();
 
+  if (value < 0) {
+    return (
+      <View className="py-4">
+        <View className="flex-row items-center mb-2">
+          <Image
+            source={iconSource}
+            className="size-8"
+            tintColor={colors.text.primary}
+          />
+          <Text
+            className="pl-2 flex-1 text-lg font-rubik"
+            style={{color: colors.text.primary}}>
+            {label}
+          </Text>
+          <Text
+            className="text-md font-rubik"
+            style={{color: colors.text.primary}}>
+            Veri yok
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   const isStep = iconSource === icons.man_walking;
+  const isSleep = iconSource === icons.sleep;
+  const maxSleepHours = 15;
 
   // maxSteps: 5000 → 10000 → 15000 mantığı
   let maxSteps = 2500;
@@ -44,10 +70,12 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   // İç bar oranı
   const progressRatio = isStep
     ? Math.min((value / maxSteps) * 100, 100)
-    : iconSource == icons.pulse
+    : iconSource === icons.pulse
     ? value / 1.5
-    : iconSource == icons.kcal
+    : iconSource === icons.kcal
     ? Math.min((value / maxCalories) * 100, 100)
+    : isSleep
+    ? Math.min((value / maxSleepHours) * 100, 100)
     : Math.min(value, 100);
 
   // Sağ üst metin

@@ -116,13 +116,13 @@ const Exercises = () => {
         <View
           className="px-5 py-3 rounded-2xl mb-3"
           style={{backgroundColor: colors.background.primary}}>
-          <View className="flex flex-col justify-center items-start">
+          <View className="flex flex-row justify-between items-start">
             <Text
               className="font-rubik text-2xl mb-3"
               style={{color: colors.text.primary}}>
               Günlük Egzersizler
             </Text>
-            <View className="flex flex-row items-center justify-start">
+            <View className="flex flex-col items-center justify-center">
               <AnimatedCircularProgress
                 size={50}
                 width={4}
@@ -141,7 +141,7 @@ const Exercises = () => {
                 )}
               </AnimatedCircularProgress>
               <Text
-                className="ml-3 text-lg font-rubik"
+                className="text-lg font-rubik"
                 style={{
                   color: colors.text.primary,
                 }}>
@@ -171,14 +171,21 @@ const Exercises = () => {
 
             <TouchableOpacity
               className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FFAA33'}}>
+              style={{backgroundColor: '#FFAA33'}}
+              onPress={() => exercisesNavigation.navigate('Exercise1')}>
               <Image source={icons.gymnastic_1} className="size-20" />
             </TouchableOpacity>
 
             <TouchableOpacity
               className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#48AAFF'}}
-              onPress={() => exercisesNavigation.navigate('Exercise1')}>
+              style={{backgroundColor: '#48AAFF'}}>
+              <Image source={icons.dumbell_up} className="size-16" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#55CC88'}}
+              onPress={() => exercisesNavigation.navigate('Exercise2')}>
               <Image source={icons.chronometer} className="size-20" />
             </TouchableOpacity>
           </ScrollView>

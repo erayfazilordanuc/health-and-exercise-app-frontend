@@ -59,6 +59,8 @@ const Profile = () => {
   const [totalSleepHours, setTotalSleepHours] = useState(0);
   const [sleepSessions, setSleepSessions] = useState<String[]>([]);
 
+  const [symptoms, setSymptoms] = useState<Symptoms>();
+
   const today = new Date();
 
   // TO DO There should be a favorite color pair to use it on username
@@ -72,7 +74,7 @@ const Profile = () => {
     fetchUser();
   }, []);
 
-  const setSymptoms = (symptoms: Symptoms) => {
+  const checkAndSetSymptomsLegacy = (symptoms: Symptoms) => {
     if (symptoms) {
       if (symptoms.pulse && heartRate !== symptoms.pulse) {
         setHeartRate(symptoms.pulse);
@@ -94,19 +96,47 @@ const Profile = () => {
     }
   };
 
+  // const checkAndSetSymptoms = (newSymptoms: Symptoms) => {
+  //   let isUpdated = false;
+  //   if (symptoms) {
+  //     if (newSymptoms.pulse && symptoms.pulse !== newSymptoms.pulse) {
+  //       isUpdated = true;
+  //     }
+  //     if (newSymptoms.steps && symptoms.steps !== newSymptoms.steps) {
+  //       isUpdated = true;
+  //     }
+  //     if (
+  //       newSymptoms.activeCaloriesBurned &&
+  //       symptoms.activeCaloriesBurned !== newSymptoms.activeCaloriesBurned
+  //     ) {
+  //       isUpdated = true;
+  //     }
+  //     if (
+  //       newSymptoms.sleepHours &&
+  //       symptoms.sleepHours !== newSymptoms.sleepHours
+  //     ) {
+  //       isUpdated = true;
+  //     }
+  //     if (newSymptoms.sleepSessions) isUpdated = true;
+  //   } else isUpdated = true;
+
+  //   if (isUpdated) setSymptoms(newSymptoms);
+  // };
+
   const fetchAndUpsertAll = async () => {
     if (user && user.role === 'ROLE_USER') {
+      // Fetching from cache first in order to prevent flickering
       const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
       const localData = await AsyncStorage.getItem(key);
       if (localData) {
         const localSymptoms: Symptoms = JSON.parse(localData);
-        setSymptoms(localSymptoms);
+        checkAndSetSymptomsLegacy(localSymptoms);
       }
 
       const symptoms: Symptoms = await getSymptoms();
 
       if (symptoms) {
-        setSymptoms(symptoms);
+        checkAndSetSymptomsLegacy(symptoms);
       }
     }
   };
@@ -205,7 +235,7 @@ const Profile = () => {
                       source={icons.badge1_colorful_bordered}
                       className="size-8 mr-2"
                     />
-                    <Image
+                    {/* <Image
                       source={icons.badge1_colorful}
                       className="size-8 mr-2"
                     />
@@ -213,7 +243,7 @@ const Profile = () => {
                       source={icons.badge1}
                       tintColor={colors.text.primary} // Eğer renkli değilse tintColor verilsin
                       className="size-8"
-                    />
+                    /> */}
                   </View>
                 ) : (
                   <View className="flex flex-row">
