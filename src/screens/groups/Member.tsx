@@ -250,7 +250,7 @@ const Group = () => {
           color="#41D16F"></ProgressBar>
         {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
         <ProgressBar
-          value={symptoms?.pulse ?? -1}
+          value={symptoms?.pulse}
           label="Nabız"
           iconSource={icons.pulse}
           color="#FF3F3F"></ProgressBar>
@@ -265,21 +265,17 @@ const Group = () => {
             iconSource={icons.blood_pressure}
             color="#FF9900"></ProgressBar> FDEF22*/}
         <ProgressBar
-          value={
-            symptoms && symptoms.activeCaloriesBurned
-              ? symptoms.activeCaloriesBurned
-              : -1
-          }
+          value={symptoms?.activeCaloriesBurned}
           label="Yakılan Kalori"
           iconSource={icons.kcal}
           color="#FF9900"></ProgressBar>
         <ProgressBar
-          value={symptoms && symptoms.steps ? symptoms.steps : -1}
+          value={symptoms?.steps}
           label="Adım"
           iconSource={icons.man_walking}
           color="#FDEF22"></ProgressBar>
         <ProgressBar
-          value={symptoms && symptoms.sleepHours ? symptoms.sleepHours : 9}
+          value={symptoms?.sleepHours}
           label="Uyku"
           iconSource={icons.sleep}
           color="#FDEF22"></ProgressBar>

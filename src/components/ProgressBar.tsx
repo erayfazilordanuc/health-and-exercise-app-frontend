@@ -6,7 +6,7 @@ import {View, Text, Image, TouchableOpacity} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 type ProgressBarProps = {
-  value: number;
+  value?: number; // artık optional
   label: string;
   iconSource: any;
   color: string;
@@ -55,6 +55,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   const {colors} = useTheme();
 
   const calculateProgressRatio = (): number => {
+    if (value == null) return 0; // value undefined/null için 0
     let ratio = 0;
     if (iconSource === icons.man_walking) {
       let maxSteps = INITIAL_MAX_STEPS;
@@ -78,6 +79,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   };
 
   const getDisplayText = (): string => {
+    if (value == null) return 'Veri yok';
     if (iconSource === icons.man_walking) return `${value} adım`;
     if (iconSource === icons.sleep) {
       const hours = Math.floor(value);
@@ -92,7 +94,6 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   };
 
   const progressRatio = calculateProgressRatio();
-  const displayText = value ? getDisplayText() : 'Veri yok';
 
   return (
     <View className="py-4">
@@ -113,7 +114,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         <Text
           className="text-md font-rubik mr-2"
           style={{color: colors.text.primary}}>
-          {displayText}
+          {getDisplayText()}
         </Text>
 
         {label !== 'Genel Sağlık' &&
@@ -132,7 +133,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           )}
       </View>
 
-      {value ? (
+      {value != null && (
         <View
           className="w-full h-1 rounded-full overflow-hidden"
           style={{backgroundColor: colors.background.secondary}}>
@@ -144,8 +145,6 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             }}
           />
         </View>
-      ) : (
-        <></>
       )}
     </View>
   );

@@ -230,6 +230,7 @@ function AdminLogin() {
   //           : '24'
   //       }`}
 
+  // Padding ve marginleri dimensionsa göre yap
   return (
     <SafeAreaView
       className="h-full"

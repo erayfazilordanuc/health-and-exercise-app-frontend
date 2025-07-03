@@ -25,6 +25,8 @@ const Launch = () => {
   const {theme, colors, setTheme} = useTheme();
   const styles = stylesWithColor(colors);
   const navigation = useNavigation<RootScreenNavigationProp>();
+  const windowHeight = Dimensions.get('window').height;
+  const windowWidth = Dimensions.get('window').width;
   // const {user} = useGlobalContext();
   // TO DO burada global user nesnesi alsın ona göre yönlendirsin
 
@@ -84,7 +86,7 @@ const Launch = () => {
 
       <Text
         className="font-rubik-bold text-4xl text-center"
-        style={[styles.titleBlue, {paddingTop: insets.top * 6}]}>
+        style={[styles.titleBlue, {paddingTop: windowHeight / 5}]}>
         EGZERSİZ TAKİP{'\n'}VE{'\n'}SAĞLIK
       </Text>
       <Text
