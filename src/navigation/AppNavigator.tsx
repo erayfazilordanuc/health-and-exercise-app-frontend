@@ -20,7 +20,7 @@ import {themes} from '../themes/themes';
 import {StatusBar} from 'react-native';
 import Home from '../screens/home/Home';
 import Profile from '../screens/profile/Profile';
-import Groups from '../screens/groups/Groups';
+import Groups from '../screens/groups/groups';
 import Exercises from '../screens/exercises/Exercises';
 import UserLogin from '../screens/login/UserLogin';
 import AdminLogin from '../screens/login/AdminLogin';

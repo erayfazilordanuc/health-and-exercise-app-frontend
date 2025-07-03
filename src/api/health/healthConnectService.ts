@@ -91,7 +91,7 @@ export const aggregatedSampleData = async (
 export const getHeartRate = async () => {
   const result: any = await readSampleData('HeartRate');
 
-  if (!result?.records || result.records.length === 0) return 0;
+  if (!result.records || result.records.length === 0) return -1;
 
   const sorted = result.records.sort(
     (a: any, b: any) =>
@@ -104,7 +104,7 @@ export const getHeartRate = async () => {
 export const getSteps = async () => {
   const result: any = await readSampleData('Steps');
 
-  if (!result?.records) return 0;
+  if (!result.records) return -1;
 
   const count = result.records.reduce(
     (sum: number, r: any) => sum + (r.count ?? 0),
@@ -125,6 +125,8 @@ export const getAggregatedSteps = async () => {
     },
   });
 
+  if (!result.COUNT_TOTAL) return -1;
+
   console.log('Aggregated result ' + recordType, result);
 
   const steps = result.COUNT_TOTAL;
@@ -136,7 +138,7 @@ export const getActiveCaloriesBurned = async () => {
   const result: any = await readSampleData('ActiveCaloriesBurned');
   // TO DO buranın dizi dönmesi lazım çünkü aggreagated fonksiyonu ayrı
 
-  if (!result?.records) return 0;
+  if (!result.records) return -1;
 
   const activeKcal = result.records.reduce(
     (sum: number, r: any) => sum + (r.energy?.inKilocalories ?? 0),
@@ -167,7 +169,7 @@ export const getAggregatedActiveCaloriesBurned = async () => {
 export const getTotalCaloriesBurned = async () => {
   const result: any = await readSampleData('TotalCaloriesBurned');
 
-  if (!result?.records) return 0;
+  if (!result.records) return -1;
 
   const totalKcal = result.records.reduce(
     (sum: number, r: any) => sum + (r.energy?.inKilocalories ?? 0),
@@ -180,7 +182,7 @@ export const getTotalCaloriesBurned = async () => {
 export const getTotalSleepHours = async () => {
   const result: any = await readSampleData('SleepSession');
 
-  if (!result?.records || result.records.length === 0) return 0;
+  if (!result.records || result.records.length === 0) return -1;
 
   const totalMs = result.records.reduce((sum: number, r: any) => {
     if (!r.startDate || !r.endDate) return sum;
@@ -221,7 +223,7 @@ export const getLastSleepSession = async () => {
 export const getAllSleepSessions = async () => {
   const result: any = await readSampleData('SleepSession');
 
-  if (!result?.records || result.records.length === 0) return [];
+  if (!result.records || result.records.length === 0) return [];
 
   const sorted = result.records.sort(
     (a: any, b: any) =>
@@ -244,7 +246,7 @@ export const getAllSleepSessions = async () => {
   return sessions;
 };
 
-const saveData = async (key: string, symptoms: Symptoms) => {
+export const saveData = async (key: string, symptoms: Symptoms) => {
   const response = await upsertSymptomsByDate(new Date(), symptoms);
   let isSynced = false;
   if (response.status === 200) {
@@ -257,21 +259,20 @@ const saveData = async (key: string, symptoms: Symptoms) => {
   await AsyncStorage.setItem(key, JSON.stringify(localSymptoms));
 };
 
-export const getSymptoms = async () => {
+export const saveAndGetSymptoms = async (symptoms?: Symptoms) => {
   const heartRate = await getHeartRate();
   const aggregatedSteps = await getAggregatedSteps();
   const activeCaloriesBurned = await getActiveCaloriesBurned();
   const totalSleepHours = await getTotalSleepHours();
   const sleepSessions = await getAllSleepSessions();
 
-  const symptoms = {
-    pulse: heartRate,
-    steps: aggregatedSteps,
-    activeCaloriesBurned: activeCaloriesBurned,
-    sleepHours: totalSleepHours,
-    sleepSessions: sleepSessions,
-  } as Symptoms;
-  console.log('symptoms', symptoms);
+  console.log('------ Health Data Log ------');
+  console.log('Heart Rate:', heartRate);
+  console.log('Aggregated Steps:', aggregatedSteps);
+  console.log('Active Calories Burned:', activeCaloriesBurned);
+  console.log('Total Sleep Hours:', totalSleepHours);
+  console.log('Sleep Sessions:', sleepSessions);
+  console.log('------------------------------');
 
   const key = todayKey();
   console.log('key', key);
@@ -284,17 +285,58 @@ export const getSymptoms = async () => {
 
   const localData = await AsyncStorage.getItem(key);
   console.log('localData', localData);
+  let localSymptoms: Symptoms = {};
   if (localData) {
-    const localSymptoms: LocalSymptoms = JSON.parse(localData);
-    if (
-      JSON.stringify(symptoms) !== JSON.stringify(localSymptoms.symptoms) ||
-      !localSymptoms.isSynced
-    ) {
-      saveData(key, symptoms);
-    }
-  } else {
-    saveData(key, symptoms);
+    const localSymptomsObject: LocalSymptoms = JSON.parse(localData);
+    localSymptoms = localSymptomsObject.symptoms;
   }
+  localSymptoms.pulse =
+    heartRate === -1
+      ? symptoms?.pulse
+        ? symptoms.pulse
+        : localSymptoms.pulse
+      : heartRate;
 
-  return symptoms;
+  localSymptoms.steps =
+    aggregatedSteps === -1
+      ? symptoms?.steps
+        ? symptoms.steps
+        : localSymptoms.steps
+      : aggregatedSteps;
+
+  localSymptoms.activeCaloriesBurned =
+    activeCaloriesBurned === -1
+      ? symptoms?.activeCaloriesBurned
+        ? symptoms.activeCaloriesBurned
+        : localSymptoms.activeCaloriesBurned
+      : activeCaloriesBurned;
+
+  localSymptoms.sleepHours =
+    totalSleepHours === -1
+      ? symptoms?.sleepHours
+        ? symptoms.sleepHours
+        : localSymptoms.sleepHours
+      : totalSleepHours;
+
+  localSymptoms.sleepSessions =
+    sleepSessions.length === 0
+      ? symptoms?.sleepSessions
+        ? symptoms.sleepSessions
+        : localSymptoms.sleepSessions
+      : sleepSessions;
+
+  console.log('Local Symptoms', localSymptoms);
+
+  const response = await upsertSymptomsByDate(new Date(), localSymptoms);
+  let isSynced = false;
+  if (response.status === 200) {
+    isSynced = true;
+  }
+  const localSymptomsObjectToSave: LocalSymptoms = {
+    symptoms: localSymptoms,
+    isSynced: isSynced,
+  };
+  await AsyncStorage.setItem(key, JSON.stringify(localSymptomsObjectToSave));
+
+  return localSymptoms;
 };

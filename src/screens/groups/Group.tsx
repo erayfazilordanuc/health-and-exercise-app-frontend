@@ -7,6 +7,8 @@ import {
   FlatList,
   Pressable,
   ScrollView,
+  Image,
+  ToastAndroid,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -17,13 +19,23 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import {useTheme} from '../../themes/ThemeProvider';
-import {getUser, getUsersByGroupId} from '../../api/user/userService';
+import {
+  getUser,
+  getUsersByGroupId,
+  updateUser,
+} from '../../api/user/userService';
 import {
   getGroupAdmin,
   getGroupById,
   getGroupSize,
 } from '../../api/group/groupService';
 import {setGestureState} from 'react-native-reanimated';
+import CustomAlert from '../../components/CustomAlert';
+import icons from '../../constants/icons';
+import {
+  getNextRoomId,
+  isRoomExistBySenderAndReceiver,
+} from '../../api/message/messageService';
 
 const Group = () => {
   const insets = useSafeAreaInsets();
@@ -32,11 +44,13 @@ const Group = () => {
   const {params} = useRoute<GroupRouteProp>();
   const {groupId} = params;
   const navigation = useNavigation<GroupsScreenNavigationProp>();
+  const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>();
   const [group, setGroup] = useState<Group | null>();
   const [users, setUsers] = useState<User[]>([]);
   const [admin, setAdmin] = useState<User | null>();
   const [groupSize, setGroupSize] = useState(0);
+  const [isLeaveAlertVisible, setIsLeaveAlertVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -58,6 +72,7 @@ const Group = () => {
     let isActive = true;
 
     const loadAll = async () => {
+      setLoading(true);
       try {
         // 1. user’ı çek
         const u = await getUser();
@@ -92,6 +107,7 @@ const Group = () => {
       } catch (e) {
         console.error('Group screen load error', e);
       }
+      setLoading(false);
     };
 
     loadAll();
@@ -101,61 +117,28 @@ const Group = () => {
     };
   }, [groupId]);
 
-  // const fetchGroup = async () => {
-  //   const response = await getGroupById(groupId);
-  //   if (response.status === 200) {
-  //     setGroup(response.data);
-  //   }
-  // };
+  const onLeaveGroup = async () => {
+    ToastAndroid.show(
+      'Gruptan ayrılma isteğiniz hemşireye iletildi.',
+      ToastAndroid.SHORT,
+    );
+    setIsLeaveAlertVisible(false);
 
-  // const fetchGroupMembers = async () => {
-  //   const response = await getUsersByGroupId(groupId);
-  //   if (response.status === 200) {
-  //     const list: User[] = Array.isArray(response.data)
-  //       ? (response.data as User[])
-  //       : [response.data as User];
-  //     console.log('list', list);
-  //     const sorted = user
-  //       ? [
-  //           ...list.filter(u => u.role === 'ROLE_ADMIN'),
-  //           ...list.filter(u => u.role !== 'ROLE_ADMIN'),
-  //         ]
-  //       : list;
-
-  //     console.log('sıfır', sorted[0]);
-
-  //     setAdmin(sorted[0]);
-  //     setUsers(sorted);
-  //     setGroupSize(list.length);
-  //   } else {
-  //     const sizeResponse = await getGroupSize(groupId);
-  //     if (sizeResponse.status === 200) setGroupSize(sizeResponse.data);
-  //     const adminResponse = await getGroupAdmin(groupId);
-  //     if (adminResponse.status === 200) setAdmin(adminResponse.data);
-  //   }
-  // };
-
-  // const fetchUser = async () => {
-  //   const user = await getUser();
-  //   setUser(user);
-  // };
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     fetchUser();
-  //     fetchGroup();
-  //   }, []),
-  // );
-
-  // useEffect(() => {
-  //   if (user && users.length === 0) {
-  //     fetchGroupMembers();
-  //   }
-  // }, [user]);
-
-  // useEffect(() => {
-  //   fetchUser();
-  // }, []);
+    // if (user) {
+    //   const updateUserDTO: UpdateUserDTO = {
+    //     id: user.id!,
+    //     username: user.username,
+    //     email: user.email,
+    //     fullName: user.fullName,
+    //     groupId: null,
+    //   };
+    //   const response = await updateUser(updateUserDTO);
+    //   if (response.status === 200) {
+    //     ToastAndroid.show('Gruptan ayrılma isteğiniz hemşireye iletildi', ToastAndroid.SHORT);
+    //     navigation.navigate('Groups');
+    //   }
+    // }
+  };
 
   const renderItem = ({item}: {item: User}) => (
     <Pressable
@@ -267,7 +250,8 @@ const Group = () => {
                   style={{color: colors.primary[175]}}>
                   E-posta:{'  '}
                   <Text style={{color: colors.text.primary}}>
-                    {admin?.email}
+                    {'(Hemşirenin e-posta adresi)'}
+                    {/* {admin?.email} */}
                   </Text>
                 </Text>
               </>
@@ -275,36 +259,61 @@ const Group = () => {
           </View>
         )}
 
-        <View
-          className="flex flex-column justify-start rounded-2xl pl-5 p-3" // border
-          style={{
-            backgroundColor: colors.background.primary,
-            borderColor: colors.primary[300],
-          }}>
-          <View className="flex flex-row justify-between">
-            <Text
-              className="font-rubik text-2xl"
-              style={{color: colors.text.primary}}>
-              Duyurular
-            </Text>
-            {user && user.role === 'ROLE_ADMIN' && (
+        {user && user.role === 'ROLE_USER' && (
+          <View
+            className="flex flex-column justify-start rounded-2xl pl-5 p-3" // border
+            style={{
+              backgroundColor: colors.background.primary,
+              borderColor: colors.primary[300],
+            }}>
+            <View className="flex flex-row justify-between">
+              <Text
+                className="font-rubik text-2xl"
+                style={{color: colors.text.primary}}>
+                Hemşireden Gelen İleti
+              </Text>
               <TouchableOpacity
-                className="p-2 px-3 rounded-2xl"
-                style={{backgroundColor: colors.background.secondary}}>
+                className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center"
+                onPress={async () => {
+                  const response = await isRoomExistBySenderAndReceiver(
+                    user.username,
+                    admin?.username!,
+                  );
+                  if (response.status === 200) {
+                    const roomId = response.data;
+                    if (roomId !== 0) {
+                      navigation.navigate('Chat', {
+                        roomId: roomId,
+                        sender: user.username,
+                        receiver: admin,
+                      });
+                    } else {
+                      const nextRoomResponse = await getNextRoomId();
+                      if (nextRoomResponse.status === 200) {
+                        const nextRoomId = nextRoomResponse.data;
+                        navigation.navigate('Chat', {
+                          roomId: nextRoomId,
+                          sender: user.username,
+                          receiver: admin,
+                        });
+                      }
+                    }
+                  }
+                }}>
                 <Text
                   className="font-rubik text-lg"
-                  style={{color: colors.text.primary}}>
-                  Duyuru Yap
+                  style={{color: colors.background.secondary}}>
+                  Sohbet
                 </Text>
               </TouchableOpacity>
-            )}
+            </View>
+            <Text
+              className="font-rubik text-lg mt-3"
+              style={{color: colors.text.primary}}>
+              Sağlıklı günler!
+            </Text>
           </View>
-          <Text
-            className="font-rubik text-lg mt-3"
-            style={{color: colors.text.primary}}>
-            Sağlıklı günler!
-          </Text>
-        </View>
+        )}
 
         {user && user.role === 'ROLE_ADMIN' && (
           <View
@@ -328,14 +337,14 @@ const Group = () => {
         )}
 
         <View
-          className="flex flex-column justify-start rounded-2xl pl-5 p-4 mt-3" // border
+          className="flex flex-column justify-start rounded-2xl pl-4 p-3 mt-3" // border
           style={{
             backgroundColor: colors.background.primary,
             borderColor: colors.primary[300],
           }}>
           <View className="flex flex-row justify-between">
             <Text
-              className="font-rubik text-2xl"
+              className="font-rubik text-2xl ml-1"
               style={{color: colors.text.primary}}>
               Üyeler
             </Text>
@@ -364,6 +373,64 @@ const Group = () => {
             /> */}
           </View>
         </View>
+        <View className="mt-4 rounded-2xl w-1/2">
+          <CustomAlert
+            message={'Gruptan ayrılmak istediğinize emin misiniz?'}
+            visible={isLeaveAlertVisible}
+            onYes={onLeaveGroup}
+            onCancel={() => {
+              setIsLeaveAlertVisible(false);
+            }}
+          />
+
+          {/* {!loading && user && user.role === 'ROLE_USER' && (
+            <TouchableOpacity
+              style={{backgroundColor: colors.background.primary}}
+              onPress={() => {
+                setIsLeaveAlertVisible(true);
+              }}
+              className="flex flex-row items-center justify-between py-4 px-5 rounded-2xl">
+              <View className="flex flex-row items-center gap-3">
+                <Image
+                  source={icons.logout}
+                  className="size-7"
+                  tintColor={'#fd5353'}
+                />
+                <Text
+                  style={{color: '#fd5353'}}
+                  className={`font-rubik text-xl`}>
+                  Gruptan Ayrıl
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )} */}
+
+          {!loading &&
+            users &&
+            users.length === 0 &&
+            user &&
+            user.role === 'ROLE_ADMIN' && (
+              <TouchableOpacity
+                style={{backgroundColor: colors.background.primary}}
+                onPress={() => {
+                  setIsLeaveAlertVisible(true);
+                }}
+                className="flex flex-row items-center justify-between py-4 px-5 rounded-2xl">
+                <View className="flex flex-row items-center gap-3">
+                  <Image
+                    source={icons.logout}
+                    className="size-7"
+                    tintColor={'#fd5353'}
+                  />
+                  <Text
+                    style={{color: '#fd5353'}}
+                    className={`font-rubik text-xl`}>
+                    Grubu Sil
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
+        </View>
       </ScrollView>
       {user && user.role === 'ROLE_USER' && (
         <View className="absolute bottom-20 right-3 items-center">
@@ -374,17 +441,6 @@ const Group = () => {
                   </Text> */}
 
           {/* Buton */}
-          <TouchableOpacity
-            className="w-48 h-16 bg-blue-500 rounded-3xl flex items-center justify-center"
-            onPress={() => {
-              // setIsCreateModalVisible(true);
-            }}>
-            <Text
-              className="font-rubik text-lg"
-              style={{color: colors.background.secondary}}>
-              Hemşireye bildir
-            </Text>
-          </TouchableOpacity>
         </View>
       )}
     </View>

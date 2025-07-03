@@ -22,11 +22,9 @@ import Preferences from '../screens/profile/settings/Preferences';
 import Profile from '../screens/profile/Profile';
 import {useTheme} from '../themes/ThemeProvider';
 import {themes} from '../themes/themes';
-import Group from '../screens/groups/Group';
 import Exercises from '../screens/exercises/Exercises';
 import Exercise from '../screens/exercises/Exercise1';
 import Home from '../screens/home/Home';
-import Groups from '../screens/groups/Groups';
 import Permissions from '../screens/profile/settings/Permissions';
 import ExercisesHome from '../screens/exercises/Exercises';
 import Exercise1 from '../screens/exercises/Exercise1';
@@ -36,6 +34,9 @@ import MindGame2 from '../screens/exercises/MindGames/MindGame2';
 import Development from '../screens/profile/settings/Development';
 import {getUser} from '../api/user/userService';
 import Notifications from '../screens/profile/settings/Notifications';
+import Groups from '../screens/groups/Groups';
+import Group from '../screens/groups/Group';
+import Chat from '../screens/groups/Chat';
 import Member from '../screens/groups/Member';
 
 const Tab = createBottomTabNavigator();
@@ -320,6 +321,21 @@ function GroupsStack() {
             header: () => (
               <CustomHeader
                 title={'Üye'}
+                icon={icons.notes}
+                className="border-primary-300"
+                backArrowEnable={true}
+              />
+            ),
+          }}
+        />
+        <GroupsNativeStack.Screen
+          name="Chat"
+          component={Chat}
+          options={{
+            headerShown: false,
+            header: () => (
+              <CustomHeader
+                title={'Sohbet'}
                 icon={icons.notes}
                 className="border-primary-300"
                 backArrowEnable={true}

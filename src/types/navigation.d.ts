@@ -35,6 +35,7 @@ type GroupsStackParamList = {
   Groups: any;
   Group: {groupId: number};
   Member: {memberId: number};
+  Chat: {roomId: number; sender: string; receiver: User};
 };
 
 type RootStackParamList = {

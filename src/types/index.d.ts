@@ -12,7 +12,7 @@ type UpdateUserDTO = {
   username: string;
   email?: string;
   fullName: string;
-  groupId?: number;
+  groupId?: number | null;
 };
 
 type LoginRequestPayload = {
@@ -72,6 +72,11 @@ type CreateGroupDTO = {
   adminId: number;
 };
 
-type Label = {
-  name: string;
+type Message = {
+  id?: number;
+  message: string;
+  sender: string;
+  receiver: string;
+  roomId: number;
+  createdAt?: number;
 };

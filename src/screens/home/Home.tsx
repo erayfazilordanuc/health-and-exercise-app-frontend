@@ -19,6 +19,10 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
 import {getUser} from '../../api/user/userService';
 import GradientText from '../../components/GradientText';
+import {
+  getNextRoomId,
+  isRoomExistBySenderAndReceiver,
+} from '../../api/message/messageService';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -273,25 +277,64 @@ const Home = () => {
               </View>
             </>
           )}
-          {user && user.role === 'ROLE_USER' && user.groupId && (
+
+          {/* {user && user.role === 'ROLE_USER' && user.groupId && (
             <View
-              className="flex flex-column justify-start rounded-2xl pl-5 p-4 mb-3" // border
+              className="flex flex-column justify-start rounded-2xl pl-5 p-3" // border
               style={{
                 backgroundColor: colors.background.primary,
                 borderColor: colors.primary[300],
               }}>
-              <Text
-                className="font-rubik text-2xl"
-                style={{color: colors.text.primary}}>
-                Duyurular
-              </Text>
+              <View className="flex flex-row justify-between">
+                <Text
+                  className="font-rubik text-2xl"
+                  style={{color: colors.text.primary}}>
+                  Hemşireden Gelen İleti
+                </Text>
+                <TouchableOpacity
+                  className="py-1 px-3 bg-blue-500 rounded-3xl flex items-center justify-center"
+                  onPress={() => {
+                    async () => {
+                      const response = await isRoomExistBySenderAndReceiver(
+                        user.username,
+                        admin?.username!,
+                      );
+                      if (response.status === 200) {
+                        const roomId = response.data;
+                        if (roomId !== 0) {
+                          navigation.navigate('Chat', {
+                            roomId: roomId,
+                            sender: user.username,
+                            receiver: admin?.username,
+                          });
+                        } else {
+                          const nextRoomResponse = await getNextRoomId();
+                          if (nextRoomResponse.status === 200) {
+                            const nextRoomId = nextRoomResponse.data;
+                            navigation.navigate('Chat', {
+                              roomId: nextRoomId,
+                              sender: user.username,
+                              receiver: admin?.username,
+                            });
+                          }
+                        }
+                      }
+                    };
+                  }}>
+                  <Text
+                    className="font-rubik text-lg"
+                    style={{color: colors.background.secondary}}>
+                    Sohbet
+                  </Text>
+                </TouchableOpacity>
+              </View>
               <Text
                 className="font-rubik text-lg mt-3"
                 style={{color: colors.text.primary}}>
                 Sağlıklı günler!
               </Text>
             </View>
-          )}
+          )} */}
 
           {user && user.role === 'ROLE_ADMIN' && user.groupId && (
             <View

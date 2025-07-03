@@ -73,6 +73,11 @@ const processQueue = (error: any, token: string | null = null) => {
 apiClient.interceptors.response.use(
   response => response,
   async error => {
+    console.log('❌ API ERROR:');
+    console.log('Request URL:', error.config?.url);
+    console.log('Status Code:', error.response?.status);
+    console.log('Response Data:', error.response?.data);
+
     const originalRequest = error.config;
 
     if (

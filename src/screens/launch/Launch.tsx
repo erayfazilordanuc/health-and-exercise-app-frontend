@@ -14,7 +14,7 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTheme} from '../../themes/ThemeProvider';
 import {Theme, themes} from '../../themes/themes';
-import {getSymptoms} from '../../api/health/healthConnectService';
+import {saveAndGetSymptoms} from '../../api/health/healthConnectService';
 
 const {width, height} = Dimensions.get('window');
 
@@ -50,7 +50,7 @@ const Launch = () => {
     const refreshToken = await AsyncStorage.getItem('refreshToken');
 
     if (accessToken || refreshToken || userData) {
-      if (user.role === 'ROLE_USER') await getSymptoms();
+      if (user.role === 'ROLE_USER') await saveAndGetSymptoms();
       navigation.navigate('App');
     } else {
       setLoading(false);
@@ -84,7 +84,7 @@ const Launch = () => {
 
       <Text
         className="font-rubik-bold text-4xl text-center"
-        style={[styles.titleBlue, {paddingTop: insets.top * 6.3}]}>
+        style={[styles.titleBlue, {paddingTop: insets.top * 6}]}>
         EGZERSİZ TAKİP{'\n'}VE{'\n'}SAĞLIK
       </Text>
       <Text

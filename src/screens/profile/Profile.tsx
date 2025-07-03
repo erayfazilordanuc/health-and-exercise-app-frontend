@@ -9,6 +9,9 @@ import {
   RefreshControl,
   InteractionManager,
   BackHandler,
+  ActivityIndicator,
+  Modal,
+  ToastAndroid,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -25,9 +28,9 @@ import {
   getAggregatedSteps,
   getAllSleepSessions,
   getHeartRate,
-  getSymptoms,
   getTotalCaloriesBurned,
   getTotalSleepHours,
+  saveAndGetSymptoms,
 } from '../../api/health/healthConnectService';
 import {RecordType} from 'react-native-health-connect';
 import {Picker} from '@react-native-picker/picker';
@@ -39,6 +42,7 @@ import {getUser} from '../../api/user/userService';
 import GradientText from '../../components/GradientText';
 import {HealthService} from '../../api/health/abstraction/healthService';
 import {upsertSymptomsByDate} from '../../api/symptoms/symptomsService';
+import {Float} from 'react-native/Libraries/Types/CodegenTypes';
 
 const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -59,7 +63,15 @@ const Profile = () => {
   const [totalSleepHours, setTotalSleepHours] = useState(0);
   const [sleepSessions, setSleepSessions] = useState<String[]>([]);
 
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [addModalFunction, setAddModalFunction] = useState<{
+    setSymptom?: React.Dispatch<React.SetStateAction<number>>;
+  }>({});
+  const [addModalValue, setAddModalValue] = useState<Float>();
+
   const [symptoms, setSymptoms] = useState<Symptoms>();
+
+  const [loading, setLoading] = useState(false);
 
   const today = new Date();
 
@@ -96,33 +108,6 @@ const Profile = () => {
     }
   };
 
-  // const checkAndSetSymptoms = (newSymptoms: Symptoms) => {
-  //   let isUpdated = false;
-  //   if (symptoms) {
-  //     if (newSymptoms.pulse && symptoms.pulse !== newSymptoms.pulse) {
-  //       isUpdated = true;
-  //     }
-  //     if (newSymptoms.steps && symptoms.steps !== newSymptoms.steps) {
-  //       isUpdated = true;
-  //     }
-  //     if (
-  //       newSymptoms.activeCaloriesBurned &&
-  //       symptoms.activeCaloriesBurned !== newSymptoms.activeCaloriesBurned
-  //     ) {
-  //       isUpdated = true;
-  //     }
-  //     if (
-  //       newSymptoms.sleepHours &&
-  //       symptoms.sleepHours !== newSymptoms.sleepHours
-  //     ) {
-  //       isUpdated = true;
-  //     }
-  //     if (newSymptoms.sleepSessions) isUpdated = true;
-  //   } else isUpdated = true;
-
-  //   if (isUpdated) setSymptoms(newSymptoms);
-  // };
-
   const fetchAndUpsertAll = async () => {
     if (user && user.role === 'ROLE_USER') {
       // Fetching from cache first in order to prevent flickering
@@ -133,10 +118,11 @@ const Profile = () => {
         checkAndSetSymptomsLegacy(localSymptoms);
       }
 
-      const symptoms: Symptoms = await getSymptoms();
+      const symptoms: Symptoms = await saveAndGetSymptoms();
 
       if (symptoms) {
         checkAndSetSymptomsLegacy(symptoms);
+        setSymptoms(symptoms);
       }
     }
   };
@@ -162,6 +148,19 @@ const Profile = () => {
       fetchAndUpsertAll();
     }, [user]),
   );
+
+  const bulguMap = new Map<
+    React.Dispatch<React.SetStateAction<number>> | undefined,
+    string
+  >([
+    [setHeartRate, 'Nabız'],
+    [setSteps, 'Adım Sayısı'],
+    [setActiveCaloriesBurned, 'Yakılan Kalori'],
+    [setTotalSleepHours, 'Uyku'],
+    [undefined, 'Bulgu'], // fallback
+  ]);
+  const getBulguLabel = () =>
+    bulguMap.get(addModalFunction?.setSymptom) ?? 'Bulgu';
 
   return (
     <>
@@ -261,13 +260,13 @@ const Profile = () => {
                 style={{color: colors.text.primary}}>
                 Kullanıcı Adı: {user?.username}
               </Text>
-              {user && user.role === 'ROLE_USER' && (
+              {/* {user && user.role === 'ROLE_USER' && (
                 <Text
                   className="text-xl font-rubik pt-3"
                   style={{color: colors.text.primary}}>
                   Yaş: {user?.id}
                 </Text>
-              )}
+              )} */}
             </View>
             {/* Buraya dğer bilgiler, rozetler falan filan */}
           </View>
@@ -285,16 +284,20 @@ const Profile = () => {
                 </Text>
                 <ProgressBar
                   value={93}
-                  label="Genel sağlık"
+                  label="Genel Sağlık"
                   iconSource={icons.better_health}
                   color="#41D16F"></ProgressBar>
                 {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
                 <ProgressBar
-                  value={heartRate ? heartRate : 75}
+                  value={heartRate}
                   label="Nabız"
                   iconSource={icons.pulse}
-                  color="#FF3F3F"></ProgressBar>
+                  color="#FF3F3F"
+                  setAddModalFunction={setAddModalFunction}
+                  setSymptom={setHeartRate}
+                  onAdd={setIsAddModalVisible}></ProgressBar>
                 <ProgressBar
+                  // Düzenlenecek
                   value={96}
                   label="O2 Seviyesi"
                   iconSource={icons.o2sat}
@@ -308,17 +311,26 @@ const Profile = () => {
                   value={activeCaloriesBurned}
                   label="Yakılan Kalori"
                   iconSource={icons.kcal}
-                  color="#FF9900"></ProgressBar>
+                  color="#FF9900"
+                  setAddModalFunction={setAddModalFunction}
+                  setSymptom={setActiveCaloriesBurned}
+                  onAdd={setIsAddModalVisible}></ProgressBar>
                 <ProgressBar
                   value={steps}
                   label="Adım"
                   iconSource={icons.man_walking}
-                  color="#FDEF22"></ProgressBar>
+                  color="#FDEF22"
+                  setAddModalFunction={setAddModalFunction}
+                  setSymptom={setSteps}
+                  onAdd={setIsAddModalVisible}></ProgressBar>
                 <ProgressBar
-                  value={totalSleepHours ? totalSleepHours : 9}
+                  value={totalSleepHours}
                   label="Uyku"
                   iconSource={icons.sleep}
-                  color="#FDEF22"></ProgressBar>
+                  color="#FDEF22"
+                  setAddModalFunction={setAddModalFunction}
+                  setSymptom={setTotalSleepHours}
+                  onAdd={setIsAddModalVisible}></ProgressBar>
                 {sleepSessions.length > 0 && (
                   <Text
                     className="font-rubik text-xl pt-4"
@@ -337,42 +349,121 @@ const Profile = () => {
                 ))}
                 {/* Uyku da minimalist bir grafik ile gösterilsin */}
               </View>
-              <View className="flex flex-row items-center justify-between mt-3">
-                <TouchableOpacity
-                  className="flex flex-row justify-center items-center px-5 py-3 rounded-2xl"
-                  style={{backgroundColor: colors.background.primary}}>
-                  <MaskedView
-                    maskElement={
-                      <Text
-                        className="text-xl font-rubik"
-                        style={{
-                          backgroundColor: 'transparent',
-                        }}>
-                        Bulgu Ekle
-                      </Text>
-                    }>
-                    <LinearGradient
-                      colors={['#0EC946', 'white']} // mavi → turkuaz
-                      start={{x: 0, y: 0}}
-                      end={{x: 1.5, y: 0}}>
-                      <Text
-                        className="text-xl font-rubik"
-                        style={{
-                          opacity: 0,
-                        }}>
-                        Bulgu Ekle
-                      </Text>
-                    </LinearGradient>
-                  </MaskedView>
-                  <Image
-                    source={icons.plus_sign_green}
-                    tintColor="#78f39e"
-                    className="ml-3 size-6"
-                  />
-                </TouchableOpacity>
-              </View>
             </>
           )}
+
+          <Modal
+            transparent={true}
+            visible={isAddModalVisible}
+            animationType="fade"
+            onRequestClose={() => setIsAddModalVisible(false)}>
+            <View className="flex-1 justify-center items-center bg-black/50">
+              <View
+                className="w-4/5 rounded-xl p-5 py-6 items-center"
+                style={{backgroundColor: colors.background.primary}}>
+                <Text
+                  className="text-lg font-bold mb-4 text-center"
+                  style={{color: colors.text.primary}}>
+                  {getBulguLabel()}
+                </Text>
+                <View
+                  className="flex flex-row items-center justify-start z-50 rounded-2xl mb-4"
+                  style={{
+                    backgroundColor: colors.background.secondary,
+                  }}>
+                  <TextInput
+                    placeholderTextColor={'gray'}
+                    selectionColor={'#7AADFF'}
+                    keyboardType="decimal-pad"
+                    value={addModalValue?.toString()}
+                    onChangeText={(value: string) => {
+                      const onlyNumbers = value.replace(/[^0-9.,]/g, '');
+                      const normalized = onlyNumbers.replace(',', '.');
+                      const numericValue = parseFloat(normalized) || 0;
+                      setAddModalValue(numericValue);
+                    }}
+                    placeholder="Bulgu değeri"
+                    className="text-lg font-rubik ml-5 flex-1"
+                    style={{color: colors.text.primary}}
+                  />
+                </View>
+                <View className="flex-row justify-between w-full">
+                  {!loading ? (
+                    <>
+                      <TouchableOpacity
+                        onPress={async () => {
+                          setLoading(true);
+                          if (addModalValue) {
+                            addModalFunction?.setSymptom?.(addModalValue);
+
+                            // Güncellenmiş symptoms objesi
+                            const updatedSymptoms: Symptoms = {
+                              ...symptoms,
+                            };
+
+                            // Dinamik olarak hangisini güncellemek istiyorsan ona koy
+                            if (addModalFunction?.setSymptom === setHeartRate) {
+                              updatedSymptoms.pulse = addModalValue;
+                            } else if (
+                              addModalFunction?.setSymptom === setSteps
+                            ) {
+                              updatedSymptoms.steps = addModalValue;
+                            } else if (
+                              addModalFunction?.setSymptom ===
+                              setActiveCaloriesBurned
+                            ) {
+                              updatedSymptoms.activeCaloriesBurned =
+                                addModalValue;
+                            } else if (
+                              addModalFunction?.setSymptom ===
+                              setTotalSleepHours
+                            ) {
+                              updatedSymptoms.sleepHours = addModalValue;
+                            }
+
+                            // Güncellenmiş veriyi kaydet
+                            await saveAndGetSymptoms(updatedSymptoms);
+
+                            // Modalı kapat
+                            setIsAddModalVisible(false);
+                          } else {
+                            ToastAndroid.show(
+                              'Lütfen bir değer giriniz.',
+                              ToastAndroid.SHORT,
+                            );
+                          }
+                          setLoading(false);
+                        }}
+                        className="flex-1 p-2 rounded-xl items-center mx-1"
+                        style={{backgroundColor: '#0EC946'}}>
+                        <Text className="text-base font-bold text-white">
+                          Güncelle
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setIsAddModalVisible(false)}
+                        className="flex-1 p-2 rounded-xl items-center mx-1"
+                        style={{backgroundColor: colors.background.secondary}}>
+                        <Text
+                          className="text-base font-bold"
+                          style={{color: colors.text.primary}}>
+                          İptal
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <View className="flex flex-row items-center justify-center w-full">
+                      <ActivityIndicator
+                        className="mt-2 self-center"
+                        size="large"
+                        color={colors.primary[300] ?? colors.primary}
+                      />
+                    </View>
+                  )}
+                </View>
+              </View>
+            </View>
+          </Modal>
         </ScrollView>
       </View>
     </>

@@ -1,134 +1,152 @@
+import MaskedView from '@react-native-masked-view/masked-view';
 import icons from '../constants/icons';
 import {useTheme} from '../themes/ThemeProvider';
 import React from 'react';
-import {View, Text, Image} from 'react-native';
+import {View, Text, Image, TouchableOpacity} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
 type ProgressBarProps = {
-  value: number; // Nabız ise bpm, sağlık ise yüzde, adım ise sayı
+  value: number;
   label: string;
   iconSource: any;
   color: string;
+  setAddModalFunction?: React.Dispatch<
+    React.SetStateAction<{
+      setSymptom?: React.Dispatch<React.SetStateAction<number>>;
+    }>
+  >;
+  setSymptom?: React.Dispatch<React.SetStateAction<number>>;
+  onAdd?: React.Dispatch<React.SetStateAction<boolean>>;
 };
+
+const MAX_SLEEP_HOURS = 15;
+const INITIAL_MAX_STEPS = 2500;
+const INITIAL_MAX_CALORIES = 2000;
+
+const GradientText: React.FC<{text: string}> = ({text}) => (
+  <MaskedView
+    maskElement={
+      <Text
+        className="text-md font-rubik"
+        style={{backgroundColor: 'transparent'}}>
+        {text}
+      </Text>
+    }>
+    <LinearGradient
+      colors={['#0EC946', 'white']}
+      start={{x: 0, y: 0}}
+      end={{x: 2, y: 0}}>
+      <Text className="text-md font-rubik" style={{opacity: 0}}>
+        {text}
+      </Text>
+    </LinearGradient>
+  </MaskedView>
+);
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
   value,
   label,
   iconSource,
   color,
+  setAddModalFunction,
+  setSymptom,
+  onAdd,
 }) => {
   const {colors} = useTheme();
 
-  if (value < 0) {
-    return (
-      <View className="py-4">
-        <View className="flex-row items-center mb-2">
+  const calculateProgressRatio = (): number => {
+    let ratio = 0;
+    if (iconSource === icons.man_walking) {
+      let maxSteps = INITIAL_MAX_STEPS;
+      if (value > maxSteps) {
+        const gap = value - maxSteps;
+        maxSteps += (Math.floor(gap / 5000) + 1) * 5000;
+      }
+      ratio = Math.min((value / maxSteps) * 100, 100);
+    } else if (iconSource === icons.pulse) {
+      ratio = value / 1.5;
+    } else if (iconSource === icons.kcal) {
+      let maxCalories = INITIAL_MAX_CALORIES;
+      if (value > maxCalories) maxCalories += 500;
+      ratio = Math.min((value / maxCalories) * 100, 100);
+    } else if (iconSource === icons.sleep) {
+      ratio = Math.min((value / MAX_SLEEP_HOURS) * 100, 100);
+    } else {
+      ratio = Math.min(value, 100);
+    }
+    return ratio;
+  };
+
+  const getDisplayText = (): string => {
+    if (iconSource === icons.man_walking) return `${value} adım`;
+    if (iconSource === icons.sleep) {
+      const hours = Math.floor(value);
+      const minutes = Math.round((value - hours) * 60);
+      return `${hours} saat ${minutes} dk`;
+    }
+    if (iconSource === icons.pulse) return `${value} bpm`;
+    if (iconSource === icons.kcal) return `${value} kcal`;
+    if (iconSource === icons.better_health || iconSource === icons.o2sat)
+      return `%${value}`;
+    return `${value}`;
+  };
+
+  const progressRatio = calculateProgressRatio();
+  const displayText = value ? getDisplayText() : 'Veri yok';
+
+  return (
+    <View className="py-4">
+      <View className="flex-row items-center mb-2 justify-between">
+        <View className="flex-row items-center flex-1">
           <Image
             source={iconSource}
             className="size-8"
             tintColor={colors.text.primary}
           />
           <Text
-            className="pl-2 flex-1 text-lg font-rubik"
+            className="pl-2 text-lg font-rubik"
             style={{color: colors.text.primary}}>
             {label}
           </Text>
-          <Text
-            className="text-md font-rubik"
-            style={{color: colors.text.primary}}>
-            Veri yok
-          </Text>
         </View>
-      </View>
-    );
-  }
 
-  const isStep = iconSource === icons.man_walking;
-  const isSleep = iconSource === icons.sleep;
-  const maxSleepHours = 15;
-
-  // maxSteps: 5000 → 10000 → 15000 mantığı
-  let maxSteps = 2500;
-  if (isStep && value > maxSteps) {
-    if (maxSteps == 2500) {
-      maxSteps = 5000;
-    }
-
-    const gap = value - maxSteps;
-    maxSteps += (Math.floor(gap / 5000) + 1) * 5000;
-  }
-  // if (isStep && value > 5000) {
-  //   maxSteps = 10000;
-  // }
-  // if (isStep && value > 10000) {
-  //   maxSteps = 15000;
-  // }
-  const isCalorie = iconSource === icons.kcal;
-
-  let maxCalories = 2000;
-  if (isCalorie && value > maxCalories) maxCalories += 500;
-
-  // İç bar oranı
-  const progressRatio = isStep
-    ? Math.min((value / maxSteps) * 100, 100)
-    : iconSource === icons.pulse
-    ? value / 1.5
-    : iconSource === icons.kcal
-    ? Math.min((value / maxCalories) * 100, 100)
-    : isSleep
-    ? Math.min((value / maxSleepHours) * 100, 100)
-    : Math.min(value, 100);
-
-  // Sağ üst metin
-  const displayText = isStep
-    ? `${value} adım`
-    : `${
-        iconSource === icons.better_health || iconSource == icons.o2sat
-          ? '%'
-          : ''
-      }${
-        iconSource == icons.sleep
-          ? Math.floor(value) +
-            ' saat ' +
-            (value - Math.floor(value)) * 60 +
-            ' dakika'
-          : value
-      }${iconSource == icons.pulse ? ' bpm' : ''}${
-        iconSource == icons.kcal ? ' kcal' : ''
-      }`;
-
-  return (
-    <View className="py-4">
-      <View className="flex-row items-center mb-2">
-        <Image
-          source={iconSource}
-          className="size-8"
-          tintColor={colors.text.primary}
-        />
         <Text
-          className="pl-2 flex-1 text-lg font-rubik"
+          className="text-md font-rubik mr-2"
           style={{color: colors.text.primary}}>
-          {label}
-        </Text>
-        <Text
-          className="text-md font-rubik"
-          style={{
-            color: colors.text.primary,
-          }}>
           {displayText}
         </Text>
+
+        {label !== 'Genel Sağlık' &&
+          setAddModalFunction &&
+          setSymptom &&
+          onAdd && (
+            <TouchableOpacity
+              className="ml-1 flex-row justify-center items-center px-2 py-1 rounded-2xl"
+              style={{backgroundColor: colors.background.secondary}}
+              onPress={() => {
+                setAddModalFunction({setSymptom});
+                onAdd(true);
+              }}>
+              <GradientText text="Güncelle" />
+            </TouchableOpacity>
+          )}
       </View>
 
-      <View
-        className="w-full h-1 rounded-full overflow-hidden"
-        style={{backgroundColor: colors.background.secondary}}>
+      {value ? (
         <View
-          className="h-1 rounded-full"
-          style={{
-            width: `${progressRatio}%`,
-            backgroundColor: color,
-          }}
-        />
-      </View>
+          className="w-full h-1 rounded-full overflow-hidden"
+          style={{backgroundColor: colors.background.secondary}}>
+          <View
+            className="h-1 rounded-full"
+            style={{
+              width: `${progressRatio}%`,
+              backgroundColor: color,
+            }}
+          />
+        </View>
+      ) : (
+        <></>
+      )}
     </View>
   );
 };

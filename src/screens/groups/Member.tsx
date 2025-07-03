@@ -34,6 +34,10 @@ import {
   adminGetSymptomsByUserId,
   adminGetSymptomsByUserIdAndDate,
 } from '../../api/symptoms/symptomsService';
+import {
+  getNextRoomId,
+  isRoomExistBySenderAndReceiver,
+} from '../../api/message/messageService';
 
 const Group = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -186,22 +190,49 @@ const Group = () => {
           <Text
             className="font-rubik text-2xl"
             style={{color: colors.text.primary}}>
-            Geri Bildirimler
+            Mesajlar
           </Text>
           <TouchableOpacity
-            className="p-2 px-3 rounded-2xl"
-            style={{backgroundColor: colors.background.secondary}}>
+            className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center"
+            onPress={async () => {
+              if (admin && member) {
+                const response = await isRoomExistBySenderAndReceiver(
+                  admin.username,
+                  member.username,
+                );
+                if (response.status === 200) {
+                  const roomId = response.data;
+                  if (roomId !== 0) {
+                    navigation.navigate('Chat', {
+                      roomId: roomId,
+                      sender: admin?.username,
+                      receiver: member,
+                    });
+                  } else {
+                    const nextRoomResponse = await getNextRoomId();
+                    if (nextRoomResponse.status === 200) {
+                      const nextRoomId = nextRoomResponse.data;
+                      navigation.navigate('Chat', {
+                        roomId: nextRoomId,
+                        sender: admin.username,
+                        receiver: member,
+                      });
+                    }
+                  }
+                }
+              }
+            }}>
             <Text
               className="font-rubik text-lg"
-              style={{color: colors.text.primary}}>
-              Bildirim gönder
+              style={{color: colors.background.secondary}}>
+              Sohbet
             </Text>
           </TouchableOpacity>
         </View>
         <Text
           className="font-rubik text-lg mt-3"
           style={{color: colors.text.primary}}>
-          Hastadan gelen geri bildirim
+          Hastadan gelen mesaj
         </Text>
       </View>
       <View
@@ -219,7 +250,7 @@ const Group = () => {
           color="#41D16F"></ProgressBar>
         {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
         <ProgressBar
-          value={symptoms && symptoms.pulse ? symptoms.pulse : 75}
+          value={symptoms?.pulse ?? -1}
           label="Nabız"
           iconSource={icons.pulse}
           color="#FF3F3F"></ProgressBar>
@@ -237,13 +268,13 @@ const Group = () => {
           value={
             symptoms && symptoms.activeCaloriesBurned
               ? symptoms.activeCaloriesBurned
-              : 570
+              : -1
           }
           label="Yakılan Kalori"
           iconSource={icons.kcal}
           color="#FF9900"></ProgressBar>
         <ProgressBar
-          value={symptoms && symptoms.steps ? symptoms.steps : 2350}
+          value={symptoms && symptoms.steps ? symptoms.steps : -1}
           label="Adım"
           iconSource={icons.man_walking}
           color="#FDEF22"></ProgressBar>
