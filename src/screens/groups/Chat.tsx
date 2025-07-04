@@ -156,7 +156,7 @@ const Chat = () => {
     //   }>
     <View className="flex-1">
       <View
-        className="flex-1 px-3 pb-2"
+        className="flex-1 px-5 pb-2"
         style={{
           paddingTop: insets.top * 1.3,
           backgroundColor: colors.background.secondary,
@@ -203,7 +203,10 @@ const Chat = () => {
             </Text>
           </View>
         ) : (
-          <ScrollView ref={scrollViewRef} className="flex-1 mt-2">
+          <ScrollView
+            ref={scrollViewRef}
+            className="flex-1 mt-2"
+            showsVerticalScrollIndicator={false}>
             {messages.map((msg, index) => (
               <View
                 key={index}
@@ -233,7 +236,7 @@ const Chat = () => {
                 )} */}
                 <View
                   className={`flex  py-2 rounded-2xl flex-row
-                  ${msg.message.length > 30 ? 'w-1/2' : ''} ${
+                  ${msg.message.length > 30 ? 'w-3/4' : ''} ${
                     msg.sender === sender ? 'justify-end' : 'justify-start'
                   }`}
                   style={{
