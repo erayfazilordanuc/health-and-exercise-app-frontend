@@ -14,7 +14,10 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTheme} from '../../themes/ThemeProvider';
 import {Theme, themes} from '../../themes/themes';
-import {saveAndGetSymptoms} from '../../api/health/healthConnectService';
+import {
+  checkHealthConnectAvailable,
+  saveAndGetSymptoms,
+} from '../../api/health/healthConnectService';
 
 const {width, height} = Dimensions.get('window');
 
@@ -52,7 +55,12 @@ const Launch = () => {
     const refreshToken = await AsyncStorage.getItem('refreshToken');
 
     if (accessToken || refreshToken || userData) {
-      if (user.role === 'ROLE_USER') await saveAndGetSymptoms();
+      if (user.role === 'ROLE_USER') {
+        console.log('bura59');
+        const isHealthConnectInstalled = await checkHealthConnectAvailable();
+        if (isHealthConnectInstalled) await saveAndGetSymptoms();
+        console.log('bura62');
+      }
       navigation.navigate('App');
     } else {
       setLoading(false);

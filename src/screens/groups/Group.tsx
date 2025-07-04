@@ -68,6 +68,22 @@ const Group = () => {
     }, []),
   );
 
+  const fetchUsers = async () => {
+    const membersRes = await getUsersByGroupId(groupId);
+    if (membersRes.status !== 200) return;
+    const list: User[] = Array.isArray(membersRes.data)
+      ? membersRes.data
+      : [membersRes.data];
+    setGroupSize(list.length);
+    const sorted = user
+      ? [
+          ...list.filter(u => u.role === 'ROLE_ADMIN'),
+          ...list.filter(u => u.role !== 'ROLE_ADMIN'),
+        ]
+      : list;
+    setUsers(sorted);
+  };
+
   useEffect(() => {
     let isActive = true;
 
@@ -116,6 +132,12 @@ const Group = () => {
       isActive = false;
     };
   }, [groupId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchUsers();
+    }, []),
+  );
 
   const onLeaveGroup = async () => {
     ToastAndroid.show(

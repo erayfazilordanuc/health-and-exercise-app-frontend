@@ -561,33 +561,33 @@ export function BottomNavigator() {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await getUser();
-        setUser(user);
-      } catch (error) {
-        console.log(error);
-      }
-      setLoading(false);
-    };
+  const fetchUser = async () => {
+    try {
+      const user = await getUser();
+      setUser(user);
+    } catch (error) {
+      console.log(error);
+    }
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchUser();
   }, []);
 
-  if (loading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: colors.background.secondary,
-        }}>
-        <ActivityIndicator size="large" color={colors.primary[300]} />
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <View
+  //       style={{
+  //         flex: 1,
+  //         alignItems: 'center',
+  //         justifyContent: 'center',
+  //         backgroundColor: colors.background.secondary,
+  //       }}>
+  //       <ActivityIndicator size="large" color={colors.primary[300]} />
+  //     </View>
+  //   );
+  // }
 
   return (
     <Tab.Navigator
@@ -600,6 +600,7 @@ export function BottomNavigator() {
           minHeight: 60,
           borderTopWidth: 0,
         },
+        tabBarHideOnKeyboard: true,
         // animation: 'shift', // (ISSUE) TO DO Shift animation causes freezing when switching to profile tab.
       }}
       initialRouteName="Home">
@@ -667,7 +668,7 @@ export function BottomNavigator() {
           },
         }}
       />
-      {user?.role === 'ROLE_USER' && (
+      {user && user?.role === 'ROLE_USER' && (
         <Tab.Screen
           name="Exercises"
           component={ExercisesStack}

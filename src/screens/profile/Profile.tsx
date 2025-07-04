@@ -30,6 +30,7 @@ import {
   getHeartRate,
   getTotalCaloriesBurned,
   getTotalSleepHours,
+  initializeHealthConnect,
   saveAndGetSymptoms,
 } from '../../api/health/healthConnectService';
 import {RecordType} from 'react-native-health-connect';
@@ -117,6 +118,13 @@ const Profile = () => {
         const localSymptoms: Symptoms = JSON.parse(localData);
         checkAndSetSymptomsLegacy(localSymptoms);
       }
+
+      const isHealthConnectReady = await initializeHealthConnect();
+      if (!isHealthConnectReady) {
+        console.log('Health connect permissions not fully granted.');
+        return;
+      }
+      console.log('All health permissions granted. Ready to collect data.');
 
       const symptoms: Symptoms = await saveAndGetSymptoms();
 

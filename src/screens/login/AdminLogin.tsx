@@ -235,14 +235,14 @@ function AdminLogin() {
     <SafeAreaView
       className="h-full"
       style={{backgroundColor: colors.background.secondary}}>
-      <View
+      <ScrollView
         className={`px-10`}
         style={{
           marginTop:
             loginMethod === LoginMethod.registration
               ? isCodeStep
-                ? 40
-                : 60
+                ? 0
+                : 40
               : 96,
         }}>
         <Text
@@ -464,7 +464,7 @@ function AdminLogin() {
               </View>
             </TouchableOpacity>
           </View> */}
-      </View>
+      </ScrollView>
       <View className="flex-1 ">
         <Text className="text-center absolute bottom-6 self-center text-sm text-gray-400">
           Hemşire hesabı başvurusu için iletişime geçebilirsiniz{'\n'}

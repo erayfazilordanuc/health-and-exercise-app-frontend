@@ -9,6 +9,16 @@ import {
 } from 'react-native-health-connect';
 import {upsertSymptomsByDate} from '../symptoms/symptomsService';
 
+export const checkHealthConnectAvailable = async (): Promise<boolean> => {
+  try {
+    await initialize();
+    return true;
+  } catch (err) {
+    console.log('Health Connect init error:', err);
+    return false;
+  }
+};
+
 // TO DO Burada aggregated olmayan fonksiyonların dizi dönmesi lazım
 
 const todayStart = () => new Date().setHours(0, 0, 0, 0);
@@ -35,6 +45,36 @@ const requestReadPermission = async (recordTypes: RecordType[]) => {
   return granted.length === recordTypes.length;
 };
 
+export const initializeHealthConnect = async () => {
+  const allRecordTypes: RecordType[] = [
+    'HeartRate',
+    'Steps',
+    'ActiveCaloriesBurned',
+    'TotalCaloriesBurned',
+    'SleepSession',
+    'StepsCadence',
+  ];
+
+  if (!(await initializeService())) return false;
+
+  const granted = await requestPermission(
+    allRecordTypes.map(rt => ({accessType: 'read', recordType: rt})),
+  );
+
+  console.log('[HC] Permissions granted:', granted);
+
+  return granted.length === allRecordTypes.length;
+};
+
+const initHealth = async () => {
+  const isHealthConnectReady = await initializeHealthConnect();
+  if (!isHealthConnectReady) {
+    console.log('Health connect permissions not fully granted.');
+    return;
+  }
+  console.log('All health permissions granted. Ready to collect data.');
+};
+
 export const readSampleData = async (
   recordType: RecordType,
   // If there is no date given, todays begin and end date are selected
@@ -43,9 +83,6 @@ export const readSampleData = async (
 ) => {
   // initialize the client
   if (!(await initializeService())) return;
-
-  // request permissions
-  if (!(await requestReadPermission([recordType]))) return;
 
   const result = await readRecords(recordType, {
     timeRangeFilter: {
@@ -68,9 +105,6 @@ export const aggregatedSampleData = async (
   let recordType: RecordType = 'ActiveCaloriesBurned';
   // initialize the client
   if (!(await initializeService())) return;
-
-  // request permissions
-  if (!(await requestReadPermission([recordType]))) return;
 
   const currentDate = new Date();
 
@@ -259,12 +293,57 @@ export const saveData = async (key: string, symptoms: Symptoms) => {
   await AsyncStorage.setItem(key, JSON.stringify(localSymptoms));
 };
 
+function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  fallback: T,
+): Promise<T> {
+  return new Promise(resolve => {
+    const timer = setTimeout(() => {
+      console.log(`Timeout: returning fallback after ${ms} ms`);
+      resolve(fallback);
+    }, ms);
+
+    promise.then(
+      value => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      err => {
+        console.log('Promise rejected:', err);
+        clearTimeout(timer);
+        resolve(fallback);
+      },
+    );
+  });
+}
+
 export const saveAndGetSymptoms = async (symptoms?: Symptoms) => {
+  console.log('getHeartRate start');
   const heartRate = await getHeartRate();
-  const aggregatedSteps = await getAggregatedSteps();
+  console.log('getHeartRate done', heartRate);
+
+  console.log('getAggregatedSteps start');
+  let aggregatedSteps = await withTimeout(getAggregatedSteps(), 3000, -1);
+  console.log('getAggregatedSteps done', aggregatedSteps);
+
+  if (aggregatedSteps === -1) {
+    console.log('getSteps start');
+    let aggregatedSteps = await withTimeout(getSteps(), 3000, -1);
+    console.log('getSteps done', aggregatedSteps);
+  }
+
+  console.log('getActiveCaloriesBurned start');
   const activeCaloriesBurned = await getActiveCaloriesBurned();
+  console.log('getActiveCaloriesBurned done', activeCaloriesBurned);
+
+  console.log('getTotalSleepHours start');
   const totalSleepHours = await getTotalSleepHours();
+  console.log('getTotalSleepHours done', totalSleepHours);
+
+  console.log('getAllSleepSessions start');
   const sleepSessions = await getAllSleepSessions();
+  console.log('getAllSleepSessions done', sleepSessions);
 
   console.log('------ Health Data Log ------');
   console.log('Heart Rate:', heartRate);
@@ -277,7 +356,9 @@ export const saveAndGetSymptoms = async (symptoms?: Symptoms) => {
   const key = todayKey();
   console.log('key', key);
 
+  console.log('getAllKeys start');
   const allKeys = await AsyncStorage.getAllKeys();
+  console.log('getAllKeys done', allKeys);
   if (allKeys) {
     const outdated = allKeys.filter(k => k.startsWith(keyPrefix) && k !== key);
     if (outdated.length) await AsyncStorage.multiRemove(outdated);

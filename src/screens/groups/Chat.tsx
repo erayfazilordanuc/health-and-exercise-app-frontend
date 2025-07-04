@@ -34,7 +34,8 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userAmount, setUserAmount] = useState<number>(0);
 
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false); // sıkıntı var ya
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(60);
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -105,7 +106,8 @@ const Chat = () => {
         roomId: roomId,
         createdAt: Date.now(),
       };
-      setMessages(prev => [...prev, loginMsg]);
+      // setMessages(prev => [...prev, loginMsg]);
+      console.log('user has joined the chat', loginMsg);
     };
 
     socketService.on('receive_message', handleReceiveMessage);
@@ -124,11 +126,19 @@ const Chat = () => {
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
-      () => setIsKeyboardVisible(true),
+      e => {
+        setIsKeyboardVisible(true);
+        setKeyboardHeight(e.endCoordinates.height);
+        console.log('Klavyeyi gördüm 👀 yükseklik:', e.endCoordinates.height);
+      },
     );
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
-      () => setIsKeyboardVisible(false),
+      () => {
+        setIsKeyboardVisible(false);
+        setKeyboardHeight(60);
+        console.log('Klavye kapandı 😴');
+      },
     );
 
     return () => {
@@ -138,12 +148,13 @@ const Chat = () => {
   }, [messages]);
 
   return (
-    <KeyboardAvoidingView
-      style={{flex: 1, paddingBottom: isKeyboardVisible ? 5 : 60}}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={
-        Platform.OS === 'ios' ? 0 : isKeyboardVisible ? -5 : -32
-      }>
+    // <KeyboardAvoidingView
+    //   style={{flex: 1, paddingBottom: isKeyboardVisible ? 5 : 60}}
+    //   behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    //   keyboardVerticalOffset={
+    //     Platform.OS === 'ios' ? 0 : isKeyboardVisible ? -5 : -32
+    //   }>
+    <View className="flex-1">
       <View
         className="flex-1 px-3 pb-2"
         style={{
@@ -248,6 +259,7 @@ const Chat = () => {
           className="flex-row items-center rounded-3xl px-3 py-2 mt-2"
           style={{
             backgroundColor: colors.background.primary,
+            marginBottom: keyboardHeight,
           }}>
           <TextInput
             value={message}
@@ -277,7 +289,8 @@ const Chat = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </KeyboardAvoidingView>
+    </View>
+    // </KeyboardAvoidingView>
   );
 };
 
