@@ -13,35 +13,38 @@ import icons from '../../../../src/constants/icons';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
-import axios, {AxiosError} from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Notifications = () => {
+const LocalNotifications = () => {
   const {colors} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
 
-  const sendFCMNotification = async () => {
-    const accessToken = await AsyncStorage.getItem('accessToken');
-    try {
-      const response = await axios.post(
-        'https://eray.ordanuc.com/api/notifications/send',
-        {
-          receiver: 'hasta1',
-          message: 'merhaba bu bir test',
+  async function showNotification() {
+    // Request permissions (required for iOS)
+    await notifee.requestPermission();
+
+    // Create a channel (required for Android)
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+
+    // Display a notification
+    await notifee.displayNotification({
+      title: 'Takipten Bildirim',
+      body: 'Çok fena bildirim içeriği',
+      android: {
+        channelId,
+        importance: 4,
+        smallIcon: 'ic_launcher',
+        color: colors.primary[300], // optional, defaults to 'ic_launcher'.
+        // pressAction is needed if you want the notification to open the app when pressed
+        pressAction: {
+          id: 'default',
         },
-        {
-          headers: {
-            Authorization: accessToken,
-          },
-        },
-      );
-      console.log('notification test response:', response.data);
-    } catch (err) {
-      const error = err as AxiosError;
-      console.log('HATA:', error.response?.data || error.message);
-    }
-  };
+      },
+    });
+  }
 
   return (
     <View className="h-full pb-32 px-5 pt-3">
@@ -50,7 +53,7 @@ const Notifications = () => {
           backgroundColor: colors.background.secondary,
           // paddingTop: insets.top / 2,
         }}
-        onPress={sendFCMNotification}>
+        onPress={() => showNotification()}>
         <View className="flex flex-row justify-center items-center">
           <View
             className="text-xl font-rubik py-3 px-5 rounded-2xl"
@@ -87,4 +90,4 @@ const Notifications = () => {
   );
 };
 
-export default Notifications;
+export default LocalNotifications;

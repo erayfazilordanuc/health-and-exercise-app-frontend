@@ -69,6 +69,7 @@ const Group = () => {
   );
 
   const fetchUsers = async () => {
+    if (!groupId) return;
     const membersRes = await getUsersByGroupId(groupId);
     if (membersRes.status !== 200) return;
     const list: User[] = Array.isArray(membersRes.data)
@@ -95,6 +96,7 @@ const Group = () => {
         if (!isActive) return;
         setUser(u);
 
+        if (!groupId) return;
         console.log('param', groupId);
 
         // 2. grup bilgisini çek

@@ -21,6 +21,7 @@ import {
 } from '../../api/message/messageService';
 import {useTheme} from '../../themes/ThemeProvider';
 import icons from '../../constants/icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type ChatRouteProp = RouteProp<GroupsStackParamList, 'Chat'>;
 const Chat = () => {
@@ -33,6 +34,8 @@ const Chat = () => {
   const [message, setMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [userAmount, setUserAmount] = useState<number>(0);
+
+  const [accessToken, setAccessToken] = useState('');
 
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(60);
@@ -52,10 +55,13 @@ const Chat = () => {
       createdAt: Date.now(),
     };
 
+    console.log(accessToken);
+
     // emit socket
     socketService.emit('send_message', {
       messageWithSender: newMessage,
       room: roomId,
+      accessToken: accessToken,
     });
 
     // save db
@@ -65,9 +71,15 @@ const Chat = () => {
     setMessage('');
   };
 
+  const getAccessToken = async () => {
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    if (accessToken) setAccessToken(accessToken);
+  };
+
   useEffect(() => {
     if (!socketService.isConnected()) {
       socketService.connect();
+      getAccessToken();
     }
 
     // join room

@@ -126,7 +126,7 @@ const Profile = () => {
       }
       console.log('All health permissions granted. Ready to collect data.');
 
-      const symptoms: Symptoms = await saveAndGetSymptoms();
+      const symptoms = await saveAndGetSymptoms();
 
       if (symptoms) {
         checkAndSetSymptomsLegacy(symptoms);
@@ -339,22 +339,25 @@ const Profile = () => {
                   setAddModalFunction={setAddModalFunction}
                   setSymptom={setTotalSleepHours}
                   onAdd={setIsAddModalVisible}></ProgressBar>
-                {sleepSessions.length > 0 && (
-                  <Text
-                    className="font-rubik text-xl pt-4"
-                    style={{color: colors.text.primary}}>
-                    Uyku Devreleri
-                  </Text>
-                )}
-                {sleepSessions.map((session, index) => (
-                  <View key={index} className="mt-3">
+                {sleepSessions.length > 0 && sleepSessions[0] !== '' && (
+                  <>
                     <Text
-                      className="font-rubik text-lg"
+                      className="font-rubik text-xl pt-4"
                       style={{color: colors.text.primary}}>
-                      💤 Başlangıç: {session}
+                      Uyku Devreleri
                     </Text>
-                  </View>
-                ))}
+
+                    {sleepSessions.map((session, index) => (
+                      <View key={index} className="mt-3">
+                        <Text
+                          className="font-rubik text-lg"
+                          style={{color: colors.text.primary}}>
+                          💤 Başlangıç: {session}
+                        </Text>
+                      </View>
+                    ))}
+                  </>
+                )}
                 {/* Uyku da minimalist bir grafik ile gösterilsin */}
               </View>
             </>

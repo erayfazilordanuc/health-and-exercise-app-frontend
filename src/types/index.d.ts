@@ -80,3 +80,11 @@ type Message = {
   roomId: number;
   createdAt?: number;
 };
+
+type FCMToken = {
+  id?: number;
+  userId: number | null;
+  token: string | null;
+  platform: string | null;
+  createdAt?: Date | null;
+};

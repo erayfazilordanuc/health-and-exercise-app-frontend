@@ -33,7 +33,7 @@ type MindGamesStackParamList = {
 
 type GroupsStackParamList = {
   Groups: any;
-  Group: {groupId: number};
+  Group: {groupId: number | null};
   Member: {memberId: number};
   Chat: {roomId: number; sender: string; receiver: User};
 };

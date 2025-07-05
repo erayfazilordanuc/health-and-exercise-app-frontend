@@ -23,6 +23,10 @@ import {
   getNextRoomId,
   isRoomExistBySenderAndReceiver,
 } from '../../api/message/messageService';
+import {getToken, requestPermission} from './../../hooks/useNotification';
+import {Platform} from 'react-native';
+import {saveFCMToken} from '../../api/notification/notificationService';
+import NetInfo from '@react-native-community/netinfo';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -40,14 +44,41 @@ const Home = () => {
 
   const scrollViewHeight = SCREEN_HEIGHT / 8;
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const user: User = await getUser();
-      setUser(user);
-      if (user.role === 'ROLE_ADMIN') setIsAdmin(true);
-    };
+  const fetchUserAndSaveFCMToken = async () => {
+    await AsyncStorage.removeItem('fcmToken');
+    const user: User = await getUser();
+    setUser(user);
+    if (user.role === 'ROLE_ADMIN') setIsAdmin(true);
+    requestPermission();
+    const localFcmTokenString = await AsyncStorage.getItem('fcmToken');
+    let localFcmToken: FCMToken = {userId: null, token: null, platform: null};
+    if (localFcmTokenString) localFcmToken = JSON.parse(localFcmTokenString);
+    console.log('localFcmToken', localFcmToken);
+    if (!localFcmToken || !localFcmToken.token) {
+      const fcmToken = await getToken();
+      console.log('fcmToken', fcmToken);
+      const fcmTokenPayload: FCMToken = {
+        userId: user.id!,
+        token: fcmToken!,
+        platform: Platform.OS,
+      };
 
-    fetchUser();
+      const state = await NetInfo.fetch();
+      const isConnected = state.isConnected;
+      if (isConnected) {
+        const fcmTokenResposne = await saveFCMToken(fcmTokenPayload);
+        if (fcmTokenResposne.status === 200) {
+          await AsyncStorage.setItem(
+            'fcmToken',
+            JSON.stringify(fcmTokenPayload),
+          );
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchUserAndSaveFCMToken();
   }, []);
 
   useFocusEffect(

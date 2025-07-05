@@ -6,13 +6,16 @@ import {
 import '../global.css';
 import AppNavigator from './navigation/AppNavigator';
 import {ThemeProvider, useTheme} from './themes/ThemeProvider';
+import Toast, {BaseToastProps, ErrorToast} from 'react-native-toast-message';
 
 export default function App() {
+
   return (
     <ThemeProvider>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <AppNavigator />
       </SafeAreaProvider>
+      <Toast />
     </ThemeProvider>
   );
 }

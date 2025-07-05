@@ -24,6 +24,7 @@ import Groups from '../screens/groups/groups';
 import Exercises from '../screens/exercises/Exercises';
 import UserLogin from '../screens/login/UserLogin';
 import AdminLogin from '../screens/login/AdminLogin';
+import {useNotificationNavigation} from '../hooks/useNotificationNavigation';
 
 const RootNativeStack = createNativeStackNavigator<RootStackParamList>();
 const AppNativeStack = createNativeStackNavigator<AppStackParamList>(); // This one works
@@ -69,6 +70,7 @@ function AppStack() {
 }
 
 export default function AppNavigator() {
+  // useNotificationNavigation();
   const {theme, colors} = useTheme();
 
   const navTheme = {

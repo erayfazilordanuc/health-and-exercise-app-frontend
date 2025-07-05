@@ -88,6 +88,7 @@ export const logout = async () => {
   await AsyncStorage.removeItem('user');
   await AsyncStorage.removeItem('accessToken');
   await AsyncStorage.removeItem('refreshToken');
+  await AsyncStorage.removeItem('fcmToken');
 };
 
 export const getTokenExpirationTime = (token: string): number | null => {

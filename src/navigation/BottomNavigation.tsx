@@ -279,7 +279,7 @@ function GroupsStack() {
   return (
     <>
       <GroupsNativeStack.Navigator
-        initialRouteName={`${user!.groupId ? 'Group' : 'Groups'}`}
+        initialRouteName={`${user && user.groupId ? 'Group' : 'Groups'}`}
         screenOptions={{
           animation: 'default',
         }}>
@@ -300,7 +300,7 @@ function GroupsStack() {
         <GroupsNativeStack.Screen
           name="Group"
           component={Group}
-          initialParams={{groupId: user!.groupId}}
+          initialParams={{groupId: user && user.groupId ? user.groupId : null}}
           options={{
             headerShown: false,
             header: () => (

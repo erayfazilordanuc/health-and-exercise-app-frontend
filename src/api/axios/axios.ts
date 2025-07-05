@@ -2,6 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {logout, refreshAccessToken} from '../auth/authService';
 import {CommonActions, useNavigation} from '@react-navigation/native';
+import {ToastAndroid} from 'react-native';
 
 const domain = 'eray.ordanuc.com';
 const API_BASE_URL = 'https://eray.ordanuc.com/api';
@@ -77,6 +78,13 @@ apiClient.interceptors.response.use(
     console.log('Request URL:', error.config?.url);
     console.log('Status Code:', error.response?.status);
     console.log('Response Data:', error.response?.data);
+    console.log('Response', error.response);
+    console.log('Error', error);
+
+    if (error.message === 'Network Error') {
+      console.log('🚨 İnternet bağlantısı yok!');
+      ToastAndroid.show('İnternet bağlantısı yok', ToastAndroid.LONG);
+    }
 
     const originalRequest = error.config;
 

@@ -8,6 +8,9 @@ import {
   aggregateRecord,
 } from 'react-native-health-connect';
 import {upsertSymptomsByDate} from '../symptoms/symptomsService';
+import NetInfo from '@react-native-community/netinfo';
+import {Alert, ToastAndroid} from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export const checkHealthConnectAvailable = async (): Promise<boolean> => {
   try {
@@ -319,30 +322,36 @@ function withTimeout<T>(
 }
 
 export const saveAndGetSymptoms = async (symptoms?: Symptoms) => {
+  if (!(await initializeService())) return null;
+
   console.log('getHeartRate start');
-  const heartRate = await getHeartRate();
+  const heartRate = await withTimeout(getHeartRate(), 5000, -1);
   console.log('getHeartRate done', heartRate);
 
   console.log('getAggregatedSteps start');
-  let aggregatedSteps = await withTimeout(getAggregatedSteps(), 3000, -1);
+  let aggregatedSteps = await withTimeout(getAggregatedSteps(), 5000, -1);
   console.log('getAggregatedSteps done', aggregatedSteps);
 
   if (aggregatedSteps === -1) {
     console.log('getSteps start');
-    let aggregatedSteps = await withTimeout(getSteps(), 3000, -1);
+    let aggregatedSteps = await withTimeout(getSteps(), 5000, -1);
     console.log('getSteps done', aggregatedSteps);
   }
 
   console.log('getActiveCaloriesBurned start');
-  const activeCaloriesBurned = await getActiveCaloriesBurned();
+  const activeCaloriesBurned = await withTimeout(
+    getActiveCaloriesBurned(),
+    5000,
+    -1,
+  );
   console.log('getActiveCaloriesBurned done', activeCaloriesBurned);
 
   console.log('getTotalSleepHours start');
-  const totalSleepHours = await getTotalSleepHours();
+  const totalSleepHours = await withTimeout(getTotalSleepHours(), 5000, -1);
   console.log('getTotalSleepHours done', totalSleepHours);
 
   console.log('getAllSleepSessions start');
-  const sleepSessions = await getAllSleepSessions();
+  const sleepSessions = await withTimeout(getAllSleepSessions(), 5000, ['']);
   console.log('getAllSleepSessions done', sleepSessions);
 
   console.log('------ Health Data Log ------');
@@ -408,16 +417,36 @@ export const saveAndGetSymptoms = async (symptoms?: Symptoms) => {
 
   console.log('Local Symptoms', localSymptoms);
 
-  const response = await upsertSymptomsByDate(new Date(), localSymptoms);
-  let isSynced = false;
-  if (response.status === 200) {
-    isSynced = true;
-  }
   const localSymptomsObjectToSave: LocalSymptoms = {
     symptoms: localSymptoms,
-    isSynced: isSynced,
+    isSynced: false,
   };
   await AsyncStorage.setItem(key, JSON.stringify(localSymptomsObjectToSave));
+
+  const state = await NetInfo.fetch();
+  const isConnected = state.isConnected;
+  if (!isConnected) {
+    Toast.show({
+      type: 'error',
+      text1: 'İnternet bağlantısı yok',
+      text2: 'Verileriniz senkronize edilemiyor', //'\nVerilerinizi senkronize etmek için lütfen internete bağlanın.'
+      position: 'top',
+      visibilityTime: 5500,
+      text1Style: {fontSize: 18},
+      text2Style: {fontSize: 16},
+    });
+    return;
+  }
+
+  try {
+    const response = await upsertSymptomsByDate(new Date(), localSymptoms);
+    if (response.status === 200) {
+      localSymptomsObjectToSave.isSynced = true;
+    }
+    await AsyncStorage.setItem(key, JSON.stringify(localSymptomsObjectToSave));
+  } catch (error) {
+    return;
+  }
 
   return localSymptoms;
 };
