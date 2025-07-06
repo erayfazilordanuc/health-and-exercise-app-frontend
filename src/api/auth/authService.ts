@@ -85,9 +85,16 @@ export const logout = async () => {
     await AsyncStorage.removeItem(`${user!.username}-main-theme`);
 
     const deleteFcmTokenPayload = {userId: user.id, platform: Platform.OS};
-    const response = await apiClient.delete('/notifications/users/fcm-token', {
-      data: deleteFcmTokenPayload,
-    });
+    try {
+      const response = await apiClient.delete(
+        '/notifications/user/fcm-token',
+        {
+          data: deleteFcmTokenPayload,
+        },
+      );
+    } catch (error) {
+      console.log('error deleting', error);
+    }
   }
 
   const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
