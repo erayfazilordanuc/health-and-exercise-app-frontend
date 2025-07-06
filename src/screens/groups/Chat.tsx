@@ -97,6 +97,7 @@ const Chat = () => {
     loadMessages();
 
     return () => {
+      socketService.emit('leave_room', {room: roomId, username: sender});
       socketService.disconnect();
     };
   }, []);
