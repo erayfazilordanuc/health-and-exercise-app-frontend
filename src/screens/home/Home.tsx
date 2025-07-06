@@ -45,12 +45,16 @@ const Home = () => {
   const scrollViewHeight = SCREEN_HEIGHT / 8;
 
   const fetchUserAndSaveFCMToken = async () => {
-    await AsyncStorage.removeItem('fcmToken');
     const user: User = await getUser();
     setUser(user);
     if (user.role === 'ROLE_ADMIN') setIsAdmin(true);
+
+    // For notifications
     requestPermission();
+
     const localFcmTokenString = await AsyncStorage.getItem('fcmToken');
+    console.log('localFcmTokenString', localFcmTokenString);
+
     let localFcmToken: FCMToken = {userId: null, token: null, platform: null};
     if (localFcmTokenString) localFcmToken = JSON.parse(localFcmTokenString);
     console.log('localFcmToken', localFcmToken);

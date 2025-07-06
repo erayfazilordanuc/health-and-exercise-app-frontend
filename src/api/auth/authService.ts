@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 import {jwtDecode} from 'jwt-decode';
+import {Platform} from 'react-native';
 
 export const login = async (credentials: LoginRequestPayload) => {
   const response = await apiClient.post('/auth/login', credentials);
@@ -82,7 +83,13 @@ export const logout = async () => {
   if (userData) {
     const user: User = JSON.parse(userData);
     await AsyncStorage.removeItem(`${user!.username}-main-theme`);
+
+    const deleteFcmTokenPayload = {userId: user.id, platform: Platform.OS};
+    const response = await apiClient.delete('/notifications/users/fcm-token', {
+      data: deleteFcmTokenPayload,
+    });
   }
+
   const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
   await AsyncStorage.removeItem(key);
   await AsyncStorage.removeItem('user');

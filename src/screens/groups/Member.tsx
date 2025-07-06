@@ -281,7 +281,8 @@ const Group = () => {
           color="#FDEF22"></ProgressBar>
         {symptoms &&
           symptoms.sleepSessions &&
-          symptoms.sleepSessions.length > 0 && (
+          symptoms.sleepSessions.length > 0 &&
+          symptoms.sleepSessions[0] !== '' && (
             <>
               <Text
                 className="font-rubik text-xl pt-4"
