@@ -27,10 +27,12 @@ import {getToken, requestPermission} from './../../hooks/useNotification';
 import {Platform} from 'react-native';
 import {saveFCMToken} from '../../api/notification/notificationService';
 import NetInfo from '@react-native-community/netinfo';
+import {useNotificationNavigation} from '../../hooks/useNotificationNavigation';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
 const Home = () => {
+  useNotificationNavigation();
   const navigation = useNavigation<RootScreenNavigationProp>();
   const exercisesNavigation = useNavigation<ExercisesScreenNavigationProp>();
   let exitCount = 0; // TO DO sayaç lazım

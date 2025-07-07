@@ -70,7 +70,6 @@ function AppStack() {
 }
 
 export default function AppNavigator() {
-  // useNotificationNavigation();
   const {theme, colors} = useTheme();
 
   const navTheme = {
