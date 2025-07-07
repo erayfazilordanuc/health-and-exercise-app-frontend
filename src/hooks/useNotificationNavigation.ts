@@ -26,6 +26,7 @@ export const useNotificationNavigation = () => {
                   roomId: remoteMessage.data.roomId,
                   sender: user.username,
                   receiver: receiver,
+                  fromNotification: true,
                 },
               },
             });
@@ -59,6 +60,7 @@ export const useNotificationNavigation = () => {
                     roomId: remoteMessage.data.roomId,
                     sender: user.username,
                     receiver: receiver,
+                    fromNotification: true,
                   },
                 },
               });

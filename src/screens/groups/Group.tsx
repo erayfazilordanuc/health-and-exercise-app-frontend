@@ -310,6 +310,7 @@ const Group = () => {
                         roomId: roomId,
                         sender: user.username,
                         receiver: admin,
+                        fromNotification: false,
                       });
                     } else {
                       const nextRoomResponse = await getNextRoomId();
@@ -319,6 +320,7 @@ const Group = () => {
                           roomId: nextRoomId,
                           sender: user.username,
                           receiver: admin,
+                          fromNotification: false,
                         });
                       }
                     }

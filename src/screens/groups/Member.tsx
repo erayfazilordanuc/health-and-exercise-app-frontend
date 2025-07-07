@@ -42,7 +42,7 @@ import {
 const Group = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
   const {params} = useRoute<MemberRouteProp>();
-  const {memberId} = params;
+  const {memberId, fromNotification} = params;
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const {colors} = useTheme();
   const [admin, setAdmin] = useState<User | null>();
@@ -93,6 +93,10 @@ const Group = () => {
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
+        if (!fromNotification && navigation.canGoBack()) {
+          return false;
+        }
+
         navigation.navigate('Group');
         return true;
       };
@@ -223,6 +227,7 @@ const Group = () => {
                       roomId: roomId,
                       sender: admin?.username,
                       receiver: member,
+                      fromNotification: false,
                     });
                   } else {
                     const nextRoomResponse = await getNextRoomId();
@@ -232,6 +237,7 @@ const Group = () => {
                         roomId: nextRoomId,
                         sender: admin.username,
                         receiver: member,
+                        fromNotification: false,
                       });
                     }
                   }
