@@ -40,6 +40,14 @@ export const getUsersByGroupId = async (groupId: number) => {
   return response;
 };
 
+export const getUserByUsername = async (username: string) => {
+  const response = await apiClient.get(`/users/${username}`);
+  console.log('user by id', response);
+  if (response.status !== 200) return null;
+  const user: User = response.data;
+  return user;
+};
+
 export const updateUser = async (updateUserDTO: UpdateUserDTO) => {
   const response = await apiClient.put('/users/me', updateUserDTO);
   console.log('update user response', response);

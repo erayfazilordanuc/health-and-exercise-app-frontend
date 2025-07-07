@@ -2,14 +2,10 @@ import messaging from '@react-native-firebase/messaging';
 import {useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {getUserByUsername} from '../api/user/userService';
 
 export const useNotificationNavigation = () => {
   const navigation = useNavigation<RootScreenNavigationProp>();
-
-  const getUser = async () => {
-    const user = await AsyncStorage.getItem('user');
-    if (user) return user;
-  };
 
   useEffect(() => {
     // App background / kapalıyken bildirime tıklayınca
@@ -20,12 +16,17 @@ export const useNotificationNavigation = () => {
           const userString = await AsyncStorage.getItem('user');
           if (userString) {
             const user: User = JSON.parse(userString);
-            navigation.navigate('Groups', {
-              screen: 'Chat',
+            const receiverUsername = remoteMessage.data.sender.toString();
+            const receiver = await getUserByUsername(receiverUsername);
+            navigation.navigate('App', {
+              screen: 'Groups',
               params: {
-                roomId: remoteMessage.data.roomId,
-                sender: remoteMessage.data.sender,
-                receiver: user,
+                screen: 'Chat',
+                params: {
+                  roomId: remoteMessage.data.roomId,
+                  sender: user.username,
+                  receiver: receiver,
+                },
               },
             });
           }
@@ -48,12 +49,17 @@ export const useNotificationNavigation = () => {
                 'receiver',
                 user.username,
               );
-              navigation.navigate('Groups', {
-                screen: 'Chat',
+              const receiverUsername = remoteMessage.data.sender.toString();
+              const receiver = await getUserByUsername(receiverUsername);
+              navigation.navigate('App', {
+                screen: 'Groups',
                 params: {
-                  roomId: remoteMessage.data.roomId,
-                  sender: remoteMessage.data.sender,
-                  receiver: user,
+                  screen: 'Chat',
+                  params: {
+                    roomId: remoteMessage.data.roomId,
+                    sender: user.username,
+                    receiver: receiver,
+                  },
                 },
               });
             }

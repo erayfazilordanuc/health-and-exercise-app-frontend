@@ -38,6 +38,7 @@ import Groups from '../screens/groups/Groups';
 import Group from '../screens/groups/Group';
 import Chat from '../screens/groups/Chat';
 import Member from '../screens/groups/Member';
+import { useNotificationNavigation } from '../hooks/useNotificationNavigation';
 
 const Tab = createBottomTabNavigator();
 
