@@ -1,5 +1,10 @@
-import {RouteProp, useRoute} from '@react-navigation/native';
-import React, {useEffect, useRef, useState} from 'react';
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -12,6 +17,7 @@ import {
   Keyboard,
   Image,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {socketService} from '../../api/socket/socketService';
@@ -30,6 +36,7 @@ const Chat = () => {
   const {roomId, sender, receiver} = params;
   const {colors} = useTheme();
   const [loading, setLoading] = useState(false);
+  const navigation = useNavigation<GroupsScreenNavigationProp>();
 
   const [message, setMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -45,6 +52,37 @@ const Chat = () => {
   const scrollToBottom = () => {
     scrollViewRef.current?.scrollToEnd({animated: true});
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        // if (navigation.canGoBack()) {
+        //   navigation.goBack();
+        //   return true;
+        // }
+
+        if (receiver.role === 'ROLE_USER') {
+          navigation.navigate('Member', {memberId: receiver.id});
+        }
+
+        if (receiver.role === 'ROLE_ADMIN') {
+          navigation.navigate('Group');
+        }
+
+        socketService.emit('leave_room', {room: roomId, username: sender});
+        socketService.disconnect();
+
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+
+      return () => backHandler.remove();
+    }, []),
+  );
 
   const sendMessage = async () => {
     const newMessage: Message = {
@@ -99,6 +137,7 @@ const Chat = () => {
     return () => {
       socketService.emit('leave_room', {room: roomId, username: sender});
       socketService.disconnect();
+      console.log('disconnected and leaved');
     };
   }, []);
 

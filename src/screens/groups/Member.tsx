@@ -92,6 +92,22 @@ const Group = () => {
 
   useFocusEffect(
     useCallback(() => {
+      const backAction = () => {
+        navigation.navigate('Group');
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+
+      return () => backHandler.remove();
+    }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
       fetchSymptoms();
     }, []),
   );
