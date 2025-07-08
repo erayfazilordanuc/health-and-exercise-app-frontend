@@ -61,11 +61,14 @@ const Chat = () => {
         }
 
         if (receiver.role === 'ROLE_USER') {
-          navigation.navigate('Member', {memberId: receiver.id, fromNotification});
+          navigation.navigate('Group');
         }
 
         if (receiver.role === 'ROLE_ADMIN') {
-          navigation.navigate('Group');
+          navigation.navigate('Member', {
+            memberId: receiver.id,
+            fromNotification,
+          });
         }
 
         socketService.emit('leave_room', {room: roomId, username: sender});

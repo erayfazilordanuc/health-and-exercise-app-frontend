@@ -57,7 +57,7 @@ export const useNotificationNavigation = () => {
                 params: {
                   screen: 'Chat',
                   params: {
-                    roomId: remoteMessage.data.roomId,
+                    roomId: parseInt(remoteMessage.data.roomId.toString()),
                     sender: user.username,
                     receiver: receiver,
                     fromNotification: true,
