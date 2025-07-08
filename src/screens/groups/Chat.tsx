@@ -295,7 +295,7 @@ const Chat = () => {
                   }`}
                   style={{
                     backgroundColor: colors.background.primary,
-                    paddingLeft: msg.sender === sender ? 12 : 7,
+                    paddingLeft: msg.sender === sender ? 12 : 10,
                     paddingRight: msg.sender === sender ? 4 : 12,
                   }}>
                   <Text
