@@ -24,6 +24,7 @@ import {
   register,
   registerAdmin,
 } from '../../api/auth/authService';
+import {useUser} from '../../contexts/UserContext';
 
 function AdminLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
@@ -39,6 +40,8 @@ function AdminLogin() {
   const [loginMethod, setLoginMethod] = useState<LoginMethod>(
     LoginMethod.default,
   );
+
+  const {setUser} = useUser();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -91,6 +94,8 @@ function AdminLogin() {
             ToastAndroid.SHORT,
           );
         } else {
+          const user = loginResponse.data.userDTO as User;
+          setUser(user);
           navigation.navigate('App');
           navigation.dispatch(
             CommonActions.reset({
@@ -184,6 +189,8 @@ function AdminLogin() {
             ToastAndroid.SHORT,
           );
         } else {
+          const user = registerResponse.data.userDTO as User;
+          setUser(user);
           navigation.navigate('App');
           navigation.dispatch(
             CommonActions.reset({

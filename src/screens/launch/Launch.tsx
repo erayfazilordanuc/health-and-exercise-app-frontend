@@ -19,6 +19,7 @@ import {
   saveAndGetSymptoms,
 } from '../../api/health/healthConnectService';
 import {useNotificationNavigation} from '../../hooks/useNotificationNavigation';
+import {useUser} from '../../contexts/UserContext';
 
 const {width, height} = Dimensions.get('window');
 
@@ -32,6 +33,7 @@ const Launch = () => {
   const navigation = useNavigation<RootScreenNavigationProp>();
   const windowHeight = Dimensions.get('window').height;
   const windowWidth = Dimensions.get('window').width;
+  const {setUser} = useUser();
   // const {user} = useGlobalContext();
   // TO DO burada global user nesnesi alsın ona göre yönlendirsin
 
@@ -43,6 +45,7 @@ const Launch = () => {
       const defaultThemeJson = await AsyncStorage.getItem(
         `${user.username}-main-theme`,
       );
+      setUser(user);
       if (defaultThemeJson) {
         const defaultTheme: Theme = defaultThemeJson
           ? JSON.parse(defaultThemeJson)

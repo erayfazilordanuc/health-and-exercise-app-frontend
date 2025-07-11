@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 import {jwtDecode} from 'jwt-decode';
 import {Platform} from 'react-native';
+import {useUser} from '../../contexts/UserContext';
 
 export const login = async (credentials: LoginRequestPayload) => {
   const response = await apiClient.post('/auth/login', credentials);
@@ -86,12 +87,9 @@ export const logout = async () => {
 
     const deleteFcmTokenPayload = {userId: user.id, platform: Platform.OS};
     try {
-      const response = await apiClient.delete(
-        '/notifications/user/fcm-token',
-        {
-          data: deleteFcmTokenPayload,
-        },
-      );
+      const response = await apiClient.delete('/notifications/user/fcm-token', {
+        data: deleteFcmTokenPayload,
+      });
     } catch (error) {
       console.log('error deleting', error);
     }

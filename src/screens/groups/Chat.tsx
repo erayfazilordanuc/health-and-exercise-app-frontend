@@ -92,7 +92,7 @@ const Chat = () => {
       sender: sender,
       receiver: receiver.username,
       roomId: roomId,
-      createdAt: Date.now(),
+      createdAt: new Date(),
     };
 
     console.log(accessToken);
@@ -158,7 +158,7 @@ const Chat = () => {
         sender: data.username,
         receiver: '',
         roomId: roomId,
-        createdAt: Date.now(),
+        createdAt: new Date(),
       };
       // setMessages(prev => [...prev, loginMsg]);
       console.log('user has joined the chat', loginMsg);
@@ -298,13 +298,27 @@ const Chat = () => {
                     paddingLeft: msg.sender === sender ? 12 : 10,
                     paddingRight: msg.sender === sender ? 4 : 12,
                   }}>
-                  <Text
-                    className="text-md font-rubik"
-                    style={{color: colors.text.primary}}>
-                    {msg.sender !== sender
-                      ? `  ${msg.message}`
-                      : `${msg.message}  `}
-                  </Text>
+                  {!msg.message.startsWith('dailyStatus') ? (
+                    <Text
+                      className="text-md font-rubik"
+                      style={{color: colors.text.primary}}>
+                      {msg.sender !== sender
+                        ? `  ${msg.message}`
+                        : `${msg.message}  `}
+                    </Text>
+                  ) : (
+                    <Text
+                      className="text-lg font-rubik ml-2"
+                      style={{color: colors.primary[250]}}>
+                      {(() => {
+                        const match = msg.message.match(/dailyStatus(\d+)/);
+                        return `Bugün ruh halimi 9 üzerinden ${parseInt(
+                          match![1],
+                          10,
+                        )} olarak değerlendiriyorum.`;
+                      })()}
+                    </Text>
+                  )}
                 </View>
               </View>
             ))}

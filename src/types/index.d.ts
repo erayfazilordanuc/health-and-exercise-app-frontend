@@ -78,7 +78,7 @@ type Message = {
   sender: string;
   receiver: string;
   roomId: number;
-  createdAt?: number;
+  createdAt?: Date;
 };
 
 type FCMToken = {

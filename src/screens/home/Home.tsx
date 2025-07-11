@@ -7,6 +7,8 @@ import {
   BackHandler,
   ToastAndroid,
   TouchableOpacity,
+  Modal,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -22,12 +24,17 @@ import GradientText from '../../components/GradientText';
 import {
   getNextRoomId,
   isRoomExistBySenderAndReceiver,
+  saveMessage,
 } from '../../api/message/messageService';
 import {getToken, requestPermission} from './../../hooks/useNotification';
 import {Platform} from 'react-native';
 import {saveFCMToken} from '../../api/notification/notificationService';
 import NetInfo from '@react-native-community/netinfo';
 import {useNotificationNavigation} from '../../hooks/useNotificationNavigation';
+import images from '../../constants/images';
+import Slider from '@react-native-community/slider';
+import {useUser} from '../../contexts/UserContext';
+import {getGroupAdmin} from '../../api/group/groupService';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -37,8 +44,13 @@ const Home = () => {
   let exitCount = 0; // TO DO sayaç lazım
   const {colors} = useTheme();
   const insets = useSafeAreaInsets();
-  const [user, setUser] = useState<User | null>(null);
+  // const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [sliderValue, setSliderValue] = useState(0);
+  const {user} = useUser();
+
+  const [loading, setLoading] = useState(false);
 
   const healthProgressPercent = 93;
   const exercizeProgressPercent = 59;
@@ -46,12 +58,46 @@ const Home = () => {
   const scrollViewHeight = SCREEN_HEIGHT / 8;
 
   const fetchUserAndSaveFCMToken = async () => {
-    const user: User = await getUser();
-    setUser(user);
-    if (user.role === 'ROLE_ADMIN') setIsAdmin(true);
+    if (!user) return;
+
+    let isAdminTemp = false;
+    if (user.role === 'ROLE_ADMIN') {
+      isAdminTemp = true;
+      setIsAdmin(true);
+    }
 
     // For notifications
     requestPermission();
+
+    const state = await NetInfo.fetch();
+    const isConnected = state.isConnected;
+
+    if (isConnected && !isAdminTemp) {
+      const dailyStatus = await AsyncStorage.getItem('dailyStatus');
+      console.log('daily status', dailyStatus);
+      if (!dailyStatus) {
+        setIsModalVisible(true);
+      } else {
+        const dailyStatusObject: Message = JSON.parse(dailyStatus);
+        console.log('daily status object', dailyStatusObject);
+        console.log(
+          'daily status object created at',
+          dailyStatusObject.createdAt,
+        );
+        console.log(
+          'birinci',
+          new Date(dailyStatusObject.createdAt!).toDateString(),
+        );
+        console.log('ikinci', new Date(Date.now()).toDateString());
+        if (
+          new Date(dailyStatusObject.createdAt!).toDateString() !==
+          new Date(Date.now()).toDateString()
+        ) {
+          await AsyncStorage.removeItem('dailyStatus');
+          setIsModalVisible(true);
+        }
+      }
+    }
 
     const localFcmTokenString = await AsyncStorage.getItem('fcmToken');
     console.log('localFcmTokenString', localFcmTokenString);
@@ -68,8 +114,6 @@ const Home = () => {
         platform: Platform.OS,
       };
 
-      const state = await NetInfo.fetch();
-      const isConnected = state.isConnected;
       if (isConnected) {
         const fcmTokenResposne = await saveFCMToken(fcmTokenPayload);
         if (fcmTokenResposne.status === 200) {
@@ -84,7 +128,7 @@ const Home = () => {
 
   useEffect(() => {
     fetchUserAndSaveFCMToken();
-  }, []);
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -108,11 +152,47 @@ const Home = () => {
     }, []),
   );
 
-  const navigateToMindGames = async (routeName: string) => {
-    exercisesNavigation.navigate('Exercises', {
-      screen: 'MindGames',
-      params: {screen: routeName},
-    });
+  const onSaveDailyStatus = async () => {
+    setLoading(true);
+    try {
+      console.log(sliderValue);
+
+      if (user && user.groupId) {
+        const adminResponse = await getGroupAdmin(user.groupId);
+
+        if (!adminResponse) return;
+        const admin = adminResponse.data as User;
+
+        const roomResponse = await isRoomExistBySenderAndReceiver(
+          user.username,
+          admin.username,
+        );
+
+        if (roomResponse.status === 200) {
+          const roomId = roomResponse.data;
+          if (roomId !== 0) {
+            const message = 'dailyStatus' + sliderValue;
+            const newMessage: Message = {
+              message,
+              sender: user.username,
+              receiver: admin.username,
+              roomId: roomId,
+              createdAt: new Date(),
+            };
+
+            const response = await saveMessage(newMessage);
+
+            if (response.status === 200)
+              AsyncStorage.setItem('dailyStatus', JSON.stringify(newMessage));
+
+            setLoading(false);
+            setIsModalVisible(false);
+          }
+        }
+      }
+    } catch (error) {
+      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
+    }
   };
 
   return (
@@ -186,6 +266,58 @@ const Home = () => {
               </View>
             )}
           </View>
+
+          <Modal
+            transparent={true}
+            visible={isModalVisible}
+            animationType="fade"
+            onRequestClose={() => setIsModalVisible(false)}>
+            <View className="flex-1 justify-center items-center bg-black/50">
+              <View
+                className="w-4/5 py-5 rounded-xl items-center"
+                style={{backgroundColor: colors.background.primary}}>
+                <Image
+                  source={images.dailyStatus}
+                  style={{
+                    width: '90%', // ekranın %90'ı
+                    height: undefined,
+                    aspectRatio: 1.5, // oran koruma (örnek)
+                  }}
+                  resizeMode="contain"
+                />
+                <Slider
+                  style={{width: '75%', height: 20}}
+                  minimumValue={1}
+                  maximumValue={9}
+                  step={1}
+                  value={sliderValue}
+                  onValueChange={value => setSliderValue(value)}
+                  minimumTrackTintColor="#0EC946"
+                  maximumTrackTintColor="#0EC946"
+                  thumbTintColor="#0EC946"
+                />
+                {!loading ? (
+                  <TouchableOpacity
+                    className="py-2 px-3 rounded-2xl mt-5"
+                    style={{backgroundColor: '#16d750'}}
+                    onPress={onSaveDailyStatus}>
+                    <Text
+                      className="text-lg font-rubik"
+                      style={{color: colors.background.secondary}}>
+                      Kaydet
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <ActivityIndicator
+                    className="mt-3 mb-2"
+                    size="large"
+                    color="#16d750"
+                  />
+                )}
+              </View>
+            </View>
+          </Modal>
+
           {user && user.role === 'ROLE_USER' && (
             <>
               <View className="flex flex-row justify-between my-1">

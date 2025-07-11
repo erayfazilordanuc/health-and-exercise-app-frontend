@@ -19,6 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNetInfo} from '@react-native-community/netinfo';
 import {useTheme} from '../../themes/ThemeProvider';
 import {login, register} from '../../api/auth/authService';
+import {useUser} from '../../contexts/UserContext';
 
 function UserLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
@@ -34,6 +35,8 @@ function UserLogin() {
   const [loginMethod, setLoginMethod] = useState<LoginMethod>(
     LoginMethod.default,
   );
+
+  const {setUser} = useUser();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -71,7 +74,8 @@ function UserLogin() {
       setLoading(false);
 
       if (loginResponse && loginResponse.status === 200 && loginResponse.data) {
-        // Şimdilik
+        const user = loginResponse.data.userDTO as User;
+        setUser(user);
         navigation.navigate('App');
         navigation.dispatch(
           CommonActions.reset({
@@ -165,7 +169,8 @@ function UserLogin() {
         registerResponse.status === 200 &&
         registerResponse.data
       ) {
-        // Şimdilik
+        const user = registerResponse.data.userDTO as User;
+        setUser(user);
         navigation.navigate('App');
         navigation.dispatch(
           CommonActions.reset({
