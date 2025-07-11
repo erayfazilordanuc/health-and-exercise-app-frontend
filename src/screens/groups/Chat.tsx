@@ -312,10 +312,10 @@ const Chat = () => {
                       style={{color: colors.primary[250]}}>
                       {(() => {
                         const match = msg.message.match(/dailyStatus(\d+)/);
-                        return `Bugün ruh halimi 9 üzerinden ${parseInt(
-                          match![1],
-                          10,
-                        )} olarak değerlendiriyorum.`;
+                        const score = parseInt(match![1], 10);
+                        return msg.sender !== sender
+                          ? `  Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.`
+                          : `Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.  `;
                       })()}
                     </Text>
                   )}

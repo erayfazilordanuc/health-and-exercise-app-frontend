@@ -42,7 +42,7 @@ const Home = () => {
   const navigation = useNavigation<RootScreenNavigationProp>();
   const exercisesNavigation = useNavigation<ExercisesScreenNavigationProp>();
   let exitCount = 0; // TO DO sayaç lazım
-  const {colors} = useTheme();
+  const {theme, colors} = useTheme();
   const insets = useSafeAreaInsets();
   // const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -277,7 +277,11 @@ const Home = () => {
                 className="w-4/5 py-5 rounded-xl items-center"
                 style={{backgroundColor: colors.background.primary}}>
                 <Image
-                  source={images.dailyStatus}
+                  source={
+                    theme.name === 'Light'
+                      ? images.dailyStatus
+                      : images.dailyStatusDark
+                  }
                   style={{
                     width: '90%', // ekranın %90'ı
                     height: undefined,
