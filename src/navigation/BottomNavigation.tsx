@@ -22,11 +22,11 @@ import Preferences from '../screens/profile/settings/Preferences';
 import Profile from '../screens/profile/Profile';
 import {useTheme} from '../themes/ThemeProvider';
 import {themes} from '../themes/themes';
-import Exercises from '../screens/exercises/Exercises';
+import Exercises from '../screens/exercises/ExercisesUser';
 import Exercise from '../screens/exercises/Exercise1';
 import Home from '../screens/home/Home';
 import Permissions from '../screens/profile/settings/Permissions';
-import ExercisesHome from '../screens/exercises/Exercises';
+import ExercisesHome from '../screens/exercises/ExercisesUser';
 import Exercise1 from '../screens/exercises/Exercise1';
 import WordGame from '../screens/exercises/MindGames/WordGame';
 import Exercise2 from '../screens/exercises/Exercise2';
@@ -38,7 +38,10 @@ import Groups from '../screens/groups/Groups';
 import Group from '../screens/groups/Group';
 import Chat from '../screens/groups/Chat';
 import Member from '../screens/groups/Member';
-import { useNotificationNavigation } from '../hooks/useNotificationNavigation';
+import {useNotificationNavigation} from '../hooks/useNotificationNavigation';
+import {useUser} from '../contexts/UserContext';
+import ExercisesUser from '../screens/exercises/ExercisesUser';
+import ExercisesAdmin from '../screens/exercises/ExercisesAdmin';
 
 const Tab = createBottomTabNavigator();
 
@@ -438,17 +441,38 @@ function MindGamesStack() {
 
 function ExercisesStack() {
   const {theme, colors, setTheme} = useTheme();
+  const {user} = useUser();
 
   return (
     <>
       <ExercisesNativeStack.Navigator
-        initialRouteName="Exercises"
+        initialRouteName={
+          user
+            ? user.role === 'ROLE_USER'
+              ? 'ExercisesUser'
+              : 'ExercisesAdmin'
+            : 'ExercisesUser'
+        }
         screenOptions={{
           animation: 'default',
         }}>
         <ExercisesNativeStack.Screen
-          name="Exercises"
-          component={Exercises}
+          name="ExercisesUser"
+          component={ExercisesUser}
+          options={{
+            headerShown: false,
+            header: () => (
+              <CustomHeader
+                title={'Egzersizler'}
+                icon={icons.todo}
+                className="border-primary-300"
+              />
+            ),
+          }}
+        />
+        <ExercisesNativeStack.Screen
+          name="ExercisesAdmin"
+          component={ExercisesAdmin}
           options={{
             headerShown: false,
             header: () => (

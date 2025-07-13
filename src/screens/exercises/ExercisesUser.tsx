@@ -17,7 +17,7 @@ import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
-const Exercises = () => {
+const ExercisesUser = () => {
   const {colors} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
@@ -291,4 +291,4 @@ const Exercises = () => {
   );
 };
 
-export default Exercises;
+export default ExercisesUser;

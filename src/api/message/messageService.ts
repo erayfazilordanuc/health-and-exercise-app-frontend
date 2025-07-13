@@ -23,7 +23,7 @@ export const isRoomExistBySenderAndReceiver = async (
   receiver: string,
 ) => {
   const response = await apiClient.get(
-    `/messages/exists/room/sender/${sender}/receiver/${receiver}`,
+    `/messages/room/sender/${sender}/receiver/${receiver}`,
   );
   console.log('Is room exist by sender and receiver', response);
   return response;

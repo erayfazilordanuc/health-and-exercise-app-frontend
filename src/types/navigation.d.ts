@@ -15,7 +15,8 @@ type SettingsStackParamList = {
 };
 
 type ExercisesStackParamList = {
-  Exercises: any;
+  ExercisesUser: any;
+  ExercisesAdmin: any;
   Exercise1: any;
   Exercise2: any;
   MindGames: any;

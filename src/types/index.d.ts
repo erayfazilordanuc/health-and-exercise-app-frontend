@@ -5,6 +5,7 @@ type User = {
   email?: string;
   role: string;
   groupId?: number;
+  points: number | null;
 };
 
 type UpdateUserDTO = {

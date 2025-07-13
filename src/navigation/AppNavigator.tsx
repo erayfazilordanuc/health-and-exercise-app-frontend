@@ -21,7 +21,7 @@ import {StatusBar} from 'react-native';
 import Home from '../screens/home/Home';
 import Profile from '../screens/profile/Profile';
 import Groups from '../screens/groups/groups';
-import Exercises from '../screens/exercises/Exercises';
+import Exercises from '../screens/exercises/ExercisesUser';
 import UserLogin from '../screens/login/UserLogin';
 import AdminLogin from '../screens/login/AdminLogin';
 import {useNotificationNavigation} from '../hooks/useNotificationNavigation';

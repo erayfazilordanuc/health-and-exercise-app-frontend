@@ -299,31 +299,35 @@ const Group = () => {
               <TouchableOpacity
                 className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center"
                 onPress={async () => {
-                  const response = await isRoomExistBySenderAndReceiver(
-                    user.username,
-                    admin?.username!,
-                  );
-                  if (response.status === 200) {
-                    const roomId = response.data;
-                    if (roomId !== 0) {
-                      navigation.navigate('Chat', {
-                        roomId: roomId,
-                        sender: user.username,
-                        receiver: admin,
-                        fromNotification: false,
-                      });
-                    } else {
-                      const nextRoomResponse = await getNextRoomId();
-                      if (nextRoomResponse.status === 200) {
-                        const nextRoomId = nextRoomResponse.data;
+                  try {
+                    const response = await isRoomExistBySenderAndReceiver(
+                      user.username,
+                      admin?.username!,
+                    );
+                    if (response.status === 200) {
+                      const roomId = response.data;
+                      if (roomId !== 0) {
                         navigation.navigate('Chat', {
-                          roomId: nextRoomId,
+                          roomId: roomId,
                           sender: user.username,
                           receiver: admin,
                           fromNotification: false,
                         });
+                      } else {
+                        const nextRoomResponse = await getNextRoomId();
+                        if (nextRoomResponse.status === 200) {
+                          const nextRoomId = nextRoomResponse.data;
+                          navigation.navigate('Chat', {
+                            roomId: nextRoomId,
+                            sender: user.username,
+                            receiver: admin,
+                            fromNotification: false,
+                          });
+                        }
                       }
                     }
+                  } catch (error) {
+                    ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
                   }
                 }}>
                 <Text
@@ -431,7 +435,7 @@ const Group = () => {
             </TouchableOpacity>
           )} */}
 
-          {!loading &&
+          {/* {!loading &&
             users &&
             users.length === 0 &&
             user &&
@@ -455,7 +459,7 @@ const Group = () => {
                   </Text>
                 </View>
               </TouchableOpacity>
-            )}
+            )} */}
         </View>
       </ScrollView>
       {user && user.role === 'ROLE_USER' && (

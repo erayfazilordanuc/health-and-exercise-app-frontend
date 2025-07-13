@@ -17,7 +17,7 @@ const Exercise1 = () => {
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
-        navigation.navigate('Exercises');
+        navigation.navigate('ExercisesUser');
         return true;
       };
 

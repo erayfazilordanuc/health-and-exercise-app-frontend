@@ -2,11 +2,11 @@ import React, {useState, useRef, useCallback} from 'react';
 import {View, Text, TouchableOpacity, BackHandler} from 'react-native';
 import {useTheme} from '../../themes/ThemeProvider';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const Exercise2: React.FC = () => {
   const {colors} = useTheme();
-    const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const [startTime, setStartTime] = useState<number | null>(null);
   const [now, setNow] = useState<number | null>(null);
@@ -36,7 +36,7 @@ const Exercise2: React.FC = () => {
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
-        navigation.navigate('Exercises');
+        navigation.navigate('ExercisesUser');
         return true;
       };
 
