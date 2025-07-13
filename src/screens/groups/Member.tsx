@@ -257,6 +257,7 @@ const Group = () => {
           Hastadan gelen mesaj
         </Text>
       </View>
+      {/* TO DO Egzersizlerle alakalı kısım eklenmeli */}
       <View
         className="flex flex-col pb-2 pt-1 px-5 rounded-2xl"
         style={{backgroundColor: colors.background.primary}}>
