@@ -1,6 +1,6 @@
 import React, {useState, useRef, useCallback} from 'react';
 import {View, Text, TouchableOpacity, BackHandler} from 'react-native';
-import {useTheme} from '../../themes/ThemeProvider';
+import {useTheme} from '../../../themes/ThemeProvider';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 

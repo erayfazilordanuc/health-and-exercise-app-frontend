@@ -1,0 +1,169 @@
+import {Asset} from 'react-native-image-picker';
+import apiClient from '../axios/axios';
+import RNBlob from 'react-native-blob-util';
+import {AxiosError} from 'axios';
+
+export const getAllExercises = async () => {
+  try {
+    const response = await apiClient.get('/exercises');
+    console.log('get all exercises', response);
+
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    return [];
+  }
+};
+
+export const createExercise = async (createExerciseDTO: CreateExerciseDTO) => {
+  try {
+    console.log('create DTO', createExerciseDTO);
+    const response = await apiClient.post(`/exercises`, createExerciseDTO);
+    console.log('Create exercise', response);
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    return null;
+  }
+};
+
+export const updateExercise = async (
+  id: number,
+  updateExerciseDTO: UpdateExerciseDTO,
+) => {
+  try {
+    const response = await apiClient.put(`/exercises/${id}`, updateExerciseDTO);
+    console.log('Update exercise', response);
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    return null;
+  }
+};
+
+export const deleteExercise = async (exerciseId: number) => {
+  try {
+    const response = await apiClient.delete(`/exercises/${exerciseId}`);
+    console.log('Delete exercise', response);
+    if (response.status >= 200 && response.status < 300) {
+      return response;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error deleting exercises:', error);
+    return null;
+  }
+};
+
+export const getPresignedUrl = async (exerciseId: number, fileName: string) => {
+  try {
+    const response = await apiClient.get(
+      `/exercises/${exerciseId}/videos/presign`,
+      {params: {fileName}},
+    );
+    console.log('get presigned url', response);
+
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    return null;
+  }
+};
+
+export const uploadVideoToS3 = async (
+  url: string,
+  asset: Asset,
+  onProgress: (p: number) => void,
+): Promise<string> => {
+  if (!asset.uri!.startsWith('file://')) {
+    throw new Error('URI dosya yoluna işaret etmiyor');
+  }
+
+  const mime = asset.type ?? 'video/mp4';
+  const headers: Record<string, string> = {'Content-Type': mime};
+
+  const response = await RNBlob.fetch(
+    'PUT',
+    url,
+    headers,
+    RNBlob.wrap(asset.uri!.replace('file://', '')),
+  ).uploadProgress({interval: 250}, (sent, total) => {
+    if (onProgress && total) {
+      onProgress(Math.round((sent / total) * 100));
+    }
+  });
+
+  const status = response.info().status;
+  if (status < 200 || status >= 300) {
+    console.warn('S3 error body:', response.text());
+    throw new Error(`S3 upload failed (${status})`);
+  }
+
+  return url.split('?')[0];
+};
+
+export const addVideoToExercise = async (
+  exerciseId: number,
+  videoUrl: string,
+): Promise<ExerciseDTO> => {
+  return apiClient
+    .post(`/exercises/${exerciseId}/videos`, {videoUrl})
+    .then(({data}) => {
+      console.log('✅ Video başarıyla eklendi:', data);
+      return data as ExerciseDTO;
+    })
+    .catch((err: AxiosError<any>) => {
+      const {response} = err;
+
+      const message =
+        response?.data?.message || response?.data?.error || err.message;
+      console.error('🚨 Video eklenirken hata:', message, response);
+
+      throw {response, message};
+    });
+};
+
+export const deleteVideoFromExercise = async (
+  exerciseId: number,
+  videoUrl: string,
+) => {
+  try {
+    const response = await apiClient.delete(`/exercises/${exerciseId}/videos`, {
+      params: {
+        videoUrl,
+      },
+    });
+    console.log('Delete video from exercise', response);
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error deleting exercises:', error);
+    return null;
+  }
+};

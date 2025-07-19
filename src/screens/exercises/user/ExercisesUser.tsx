@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import React, {useCallback} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useTheme} from '../../themes/ThemeProvider';
-import icons from '../../constants/icons';
+import {useTheme} from '../../../themes/ThemeProvider';
+import icons from '../../../constants/icons';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
@@ -21,7 +21,6 @@ const ExercisesUser = () => {
   const {colors} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
-  const exercisesNavigation = useNavigation<ExercisesScreenNavigationProp>();
   const scrollViewHeight = SCREEN_HEIGHT / 8;
 
   useFocusEffect(
@@ -171,7 +170,7 @@ const ExercisesUser = () => {
             <TouchableOpacity
               className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
               style={{backgroundColor: '#FFAA33'}}
-              onPress={() => exercisesNavigation.navigate('Exercise1')}>
+              onPress={() => navigation.navigate('Exercise')}>
               <Image source={icons.gymnastic_1} className="size-20" />
             </TouchableOpacity>
 
@@ -184,53 +183,23 @@ const ExercisesUser = () => {
             <TouchableOpacity
               className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
               style={{backgroundColor: '#55CC88'}}
-              onPress={() => exercisesNavigation.navigate('Exercise2')}>
+              onPress={() => navigation.navigate('Exercise')}>
               <Image source={icons.chronometer} className="size-20" />
             </TouchableOpacity>
           </ScrollView>
         </View>
 
-        <View
-          className="px-5 py-3 rounded-2xl mb-3"
-          style={{backgroundColor: colors.background.primary}}>
+        <TouchableOpacity
+          className="flex flex-row items-center justify-between px-5 py-4 rounded-2xl mb-3"
+          style={{backgroundColor: colors.background.primary}}
+          onPress={() => navigation.navigate('AllExercises')}>
           <Text
-            className="font-rubik text-2xl mb-4"
+            className="font-rubik text-2xl"
             style={{color: colors.text.primary}}>
             Tüm Egzersizler
           </Text>
-          <ScrollView
-            horizontal
-            style={{height: scrollViewHeight}}
-            showsHorizontalScrollIndicator={false}>
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#48AAFF'}}
-              // onPress={() => navigateToPhysicalExercises('Exercise2')}
-            >
-              <Image source={icons.back} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#55CC88'}}
-              onPress={() => {}}>
-              <Image source={icons.stretching} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FFAA33'}}>
-              <Image source={icons.gymnastic_1} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#48AAFF'}}
-              onPress={() => exercisesNavigation.navigate('Exercise1')}>
-              <Image source={icons.chronometer} className="size-20" />
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
+          <Image source={icons.arrow} className="size-5 mr-3" />
+        </TouchableOpacity>
 
         {/* <View
           className="px-5 py-3 rounded-2xl"

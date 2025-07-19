@@ -212,7 +212,6 @@ const Group = () => {
   return (
     <View className="flex-1">
       <View
-        className=" pb-3"
         style={{
           backgroundColor: colors.background.secondary,
           justifyContent: 'center',
@@ -240,7 +239,7 @@ const Group = () => {
         contentContainerClassName="pb-20">
         {user && user.role === 'ROLE_USER' && (
           <View
-            className="flex flex-column justify-start rounded-2xl pl-5 p-3 mb-3" // border
+            className="flex flex-column justify-start rounded-2xl pl-5 p-3 mb-3 mt-3" // border
             style={{
               backgroundColor: colors.background.primary,
               borderColor: colors.primary[300],

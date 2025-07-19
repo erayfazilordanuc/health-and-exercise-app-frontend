@@ -16,10 +16,11 @@ type SettingsStackParamList = {
 
 type ExercisesStackParamList = {
   ExercisesUser: any;
+  AllExercises: any;
+  Exercise: {exercise: ExerciseDTO | null};
   ExercisesAdmin: any;
-  Exercise1: any;
-  Exercise2: any;
-  MindGames: any;
+  EditExercise: {exercise: ExerciseDTO | null}; // burada Exercise parametresi almalı
+  // MindGames: any;
 };
 
 type PhysicalExercisesStackParamList = {
@@ -42,6 +43,7 @@ type GroupsStackParamList = {
     receiver: User;
     fromNotification: boolean;
   };
+  Achievements: {member: User};
 };
 
 type RootStackParamList = {

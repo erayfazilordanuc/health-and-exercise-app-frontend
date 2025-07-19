@@ -5,7 +5,7 @@ type User = {
   email?: string;
   role: string;
   groupId?: number;
-  points: number | null;
+  achievements: Achievement[];
 };
 
 type UpdateUserDTO = {
@@ -88,4 +88,52 @@ type FCMToken = {
   token: string | null;
   platform: string | null;
   createdAt?: Date | null;
+};
+
+type ExerciseVideoDTO = {
+  id?: number;
+  videoUrl: string;
+  exerciseId: number;
+  createdAt: Date;
+};
+
+type Exercise = {
+  id?: number;
+  name: string;
+  description: string;
+  point: number;
+  videos: ExerciseVideo[];
+  admin: User;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+};
+
+type ExerciseDTO = {
+  id: number | null;
+  name: string | null;
+  description: string | null;
+  point: number | null;
+  videos: ExerciseVideoDTO[];
+  adminId: number | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+};
+
+type CreateExerciseDTO = {
+  name: string;
+  description: string;
+  point: number;
+};
+
+type UpdateExerciseDTO = {
+  name: string;
+  description: string;
+  point: number;
+};
+
+type Achievement = {
+  id?: number;
+  userId: number;
+  exerciseId: number;
+  createdAt: Date | null;
 };

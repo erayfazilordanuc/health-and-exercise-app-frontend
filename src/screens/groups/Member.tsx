@@ -11,7 +11,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   RouteProp,
   useFocusEffect,
@@ -35,9 +35,11 @@ import {
   adminGetSymptomsByUserIdAndDate,
 } from '../../api/symptoms/symptomsService';
 import {
+  getLastMessageBySenderAndReceiver,
   getNextRoomId,
   isRoomExistBySenderAndReceiver,
 } from '../../api/message/messageService';
+import {useUser} from '../../contexts/UserContext';
 
 const Group = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -45,21 +47,13 @@ const Group = () => {
   const {memberId, fromNotification} = params;
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const {colors} = useTheme();
-  const [admin, setAdmin] = useState<User | null>();
+  const insets = useSafeAreaInsets();
+  const {user: admin} = useUser();
   const [member, setMember] = useState<User | null>();
   const [symptoms, setSymptoms] = useState<Symptoms | null>();
   const [refreshing, setRefreshing] = useState(false);
-
-  const fetchSymptoms = async () => {
-    const response = await adminGetSymptomsByUserIdAndDate(
-      memberId,
-      new Date(),
-    );
-    if (response.status === 200) {
-      const symptoms: Symptoms = response.data;
-      checkAndSetSymptoms(symptoms);
-    }
-  };
+  const [lastMessage, setLastMessage] = useState<Message | null>();
+  const [isExerciseModalVisible, setIsExerciseModalVisible] = useState(false);
 
   const checkAndSetSymptoms = (newSymptoms: Symptoms) => {
     let isUpdated = false;
@@ -90,6 +84,27 @@ const Group = () => {
     if (isUpdated) setSymptoms(newSymptoms);
   };
 
+  const fetchSymptoms = async () => {
+    const response = await adminGetSymptomsByUserIdAndDate(
+      memberId,
+      new Date(),
+    );
+    if (response.status === 200) {
+      const symptoms: Symptoms = response.data;
+      checkAndSetSymptoms(symptoms);
+    }
+  };
+
+  const fetchLastMessage = async (member: User) => {
+    if (!admin) return;
+
+    const lastMessage: Message = await getLastMessageBySenderAndReceiver(
+      admin.username,
+      member.username,
+    );
+    setLastMessage(lastMessage);
+  };
+
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
@@ -113,6 +128,7 @@ const Group = () => {
   useFocusEffect(
     useCallback(() => {
       fetchSymptoms();
+      if (member) fetchLastMessage(member);
     }, []),
   );
 
@@ -121,14 +137,11 @@ const Group = () => {
 
     const loadAll = async () => {
       try {
-        // 1. user’ı çek
-        const admin = await getUser();
-        if (!isActive) return;
-        setAdmin(admin);
-
         const member = await getUserById(memberId);
         if (!isActive) return;
         setMember(member);
+
+        await fetchLastMessage(member as User);
       } catch (e) {
         console.error('Group screen load error', e);
       }
@@ -143,7 +156,8 @@ const Group = () => {
 
   return (
     <ScrollView
-      className="pt-14 flex-1 px-3"
+      style={{paddingTop: insets.top * 1.3}}
+      className="flex-1 px-3"
       contentContainerClassName="pb-32"
       refreshControl={
         <RefreshControl
@@ -207,11 +221,13 @@ const Group = () => {
           backgroundColor: colors.background.primary,
         }}>
         <View className="flex flex-row justify-between">
-          <Text
-            className="font-rubik text-2xl"
-            style={{color: colors.text.primary}}>
-            Mesajlar
-          </Text>
+          {lastMessage && !lastMessage.message.startsWith('dailyStatus') && (
+            <Text
+              className="font-rubik text-2xl"
+              style={{color: colors.primary[200]}}>
+              Son Mesaj
+            </Text>
+          )}
           <TouchableOpacity
             className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center"
             onPress={async () => {
@@ -251,13 +267,50 @@ const Group = () => {
             </Text>
           </TouchableOpacity>
         </View>
-        <Text
+        {lastMessage && !lastMessage.message.startsWith('dailyStatus') && (
+          <Text
+            className="font-rubik text-lg"
+            style={{color: colors.text.primary}}>
+            {lastMessage.receiver === admin?.username
+              ? member?.fullName + ': ' + lastMessage.message
+              : 'Siz: ' + lastMessage.message}
+          </Text>
+        )}
+      </View>
+      <View
+        className="flex flex-column justify-center rounded-2xl pl-5 p-3 mb-3"
+        style={{
+          backgroundColor: colors.background.primary,
+        }}>
+        <View className="flex flex-row items-center justify-between">
+          <Text
+            className="font-rubik text-2xl"
+            style={{color: colors.text.primary}}>
+            Başarımlar
+          </Text>
+          <TouchableOpacity
+            className="py-2 px-10 bg-blue-500 rounded-2xl flex items-center justify-center"
+            onPress={() => {
+              navigation.navigate('Achievements', {member: member});
+            }}>
+            {/* <Text
+              className="font-rubik text-lg"
+              style={{color: colors.background.secondary}}>
+              Detay
+            </Text> */}
+            <Image
+              source={icons.arrow}
+              className="size-4"
+              tintColor={colors.background.secondary}
+            />
+          </TouchableOpacity>
+        </View>
+        {/* <Text
           className="font-rubik text-lg mt-3"
           style={{color: colors.text.primary}}>
-          Hastadan gelen mesaj
-        </Text>
+          Hastanın tamamladığı ve devam eden egzersizlerini inceleyin.
+        </Text> */}
       </View>
-      {/* TO DO Egzersizlerle alakalı kısım eklenmeli */}
       <View
         className="flex flex-col pb-2 pt-1 px-5 rounded-2xl"
         style={{backgroundColor: colors.background.primary}}>

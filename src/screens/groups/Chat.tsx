@@ -18,6 +18,7 @@ import {
   Image,
   ActivityIndicator,
   BackHandler,
+  Dimensions,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {socketService} from '../../api/socket/socketService';
@@ -28,6 +29,8 @@ import {
 import {useTheme} from '../../themes/ThemeProvider';
 import icons from '../../constants/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const {width, height} = Dimensions.get('window');
 
 type ChatRouteProp = RouteProp<GroupsStackParamList, 'Chat'>;
 const Chat = () => {
@@ -129,7 +132,7 @@ const Chat = () => {
     const loadMessages = async () => {
       setLoading(true);
       const res = await getMessagesByRoomId(roomId);
-      if (res?.data) {
+      if (res.status >= 200 && res.status <= 300 && res?.data) {
         setMessages(res.data);
       }
       setLoading(false);
@@ -267,27 +270,6 @@ const Chat = () => {
                 className={`flex-row items-center rounded-2xl my-1 ${
                   msg.sender === sender ? 'justify-end' : 'justify-start'
                 }`}>
-                {/* {msg.sender !== sender && (
-                  <Text
-                    className="font-rubik-medium text-lg mr-1"
-                    style={{color: colors.primary[300]}}>
-                    {msg.sender}
-                  </Text>
-                )} */}
-                {/* <Text
-                  className="text-base font-rubik"
-                  style={{color: colors.text.primary}}>
-                  {msg.sender !== sender
-                    ? `: ${msg.message}`
-                    : `${msg.message} : `}
-                </Text> */}
-                {/* {msg.sender === sender && (
-                  <Text
-                    className="font-rubik-medium text-lg ml-1"
-                    style={{color: '#0EC946'}}>
-                    Sen
-                  </Text>
-                )} */}
                 <View
                   className={`flex  py-2 rounded-2xl flex-row
                   ${msg.message.length > 30 ? 'w-3/4' : ''} ${
@@ -308,14 +290,23 @@ const Chat = () => {
                     </Text>
                   ) : (
                     <Text
-                      className="text-lg font-rubik ml-2"
-                      style={{color: colors.primary[250]}}>
+                      className="text-lg font-rubik ml-2 text-center"
+                      style={{
+                        width: (width * 2) / 3,
+                        color: colors.primary[250],
+                      }}>
                       {(() => {
                         const match = msg.message.match(/dailyStatus(\d+)/);
                         const score = parseInt(match![1], 10);
-                        return msg.sender !== sender
-                          ? `  Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.`
-                          : `Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.  `;
+                        // return msg.sender !== sender
+                        //   ? `  Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.`
+                        //   : `Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.  `;
+                        return `${
+                          msg.createdAt
+                            ? new Date(msg.createdAt).toLocaleDateString() +
+                              '\n'
+                            : ''
+                        }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`; // Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.`;
                       })()}
                     </Text>
                   )}

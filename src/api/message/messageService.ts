@@ -41,17 +41,17 @@ export const getMessagesByRoomId = async (roomId: number) => {
   return response;
 };
 
-export const getMessagesBySender = async (sender: string) => {
-  const response = await apiClient.get(`/messages/sender/${sender}`);
-  console.log('Get messages by sender', response);
-  return response;
-};
+// export const getMessagesBySender = async (sender: string) => {
+//   const response = await apiClient.get(`/messages/sender/${sender}`);
+//   console.log('Get messages by sender', response);
+//   return response;
+// };
 
-export const getMessagesByReceiver = async (receiver: string) => {
-  const response = await apiClient.get(`/messages/receiver/${receiver}`);
-  console.log('Get messages by receiver', response);
-  return response;
-};
+// export const getMessagesByReceiver = async (receiver: string) => {
+//   const response = await apiClient.get(`/messages/receiver/${receiver}`);
+//   console.log('Get messages by receiver', response);
+//   return response;
+// };
 
 export const getMessagesBySenderAndReceiver = async (
   sender: string,
@@ -62,6 +62,25 @@ export const getMessagesBySenderAndReceiver = async (
   );
   console.log('Get messages by sender and receiver', response);
   return response;
+};
+
+export const getLastMessageBySenderAndReceiver = async (
+  sender: string,
+  receiver: string,
+) => {
+  try {
+    const response = await apiClient.get(
+      `/messages/sender/${sender}/receiver/${receiver}/last`,
+    );
+    console.log('Get messages by sender and receiver', response);
+
+    if (response.status >= 200 && response.status <= 300 && response) {
+      return response.data;
+    }
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    return null;
+  }
 };
 
 export const deleteMessage = async (id: number) => {

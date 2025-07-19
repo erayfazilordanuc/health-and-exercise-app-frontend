@@ -386,7 +386,13 @@ const Profile = () => {
                     placeholderTextColor={'gray'}
                     selectionColor={'#7AADFF'}
                     keyboardType="decimal-pad"
-                    value={addModalValue?.toString()}
+                    value={
+                      addModalValue
+                        ? addModalValue?.toString()
+                        : addModalValue === 0
+                        ? ''
+                        : ''
+                    }
                     onChangeText={(value: string) => {
                       const onlyNumbers = value.replace(/[^0-9.,]/g, '');
                       const normalized = onlyNumbers.replace(',', '.');
@@ -467,7 +473,7 @@ const Profile = () => {
                       <ActivityIndicator
                         className="mt-2 self-center"
                         size="large"
-                        color={colors.primary[300] ?? colors.primary}
+                        color="#16d750" // {colors.primary[300] ?? colors.primary}
                       />
                     </View>
                   )}
