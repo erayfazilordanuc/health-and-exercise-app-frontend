@@ -28,7 +28,10 @@ import {
 } from '../../api/message/messageService';
 import {getToken, requestPermission} from './../../hooks/useNotification';
 import {Platform} from 'react-native';
-import {saveFCMToken} from '../../api/notification/notificationService';
+import {
+  saveFCMToken,
+  sendNotification,
+} from '../../api/notification/notificationService';
 import NetInfo from '@react-native-community/netinfo';
 import {useNotificationNavigation} from '../../hooks/useNotificationNavigation';
 import images from '../../constants/images';
@@ -53,7 +56,7 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
 
   const healthProgressPercent = 93;
-  const exercizeProgressPercent = 59;
+  const exerciseProgressPercent = 59;
 
   const scrollViewHeight = SCREEN_HEIGHT / 8;
 
@@ -74,21 +77,10 @@ const Home = () => {
 
     if (isConnected && !isAdminTemp) {
       const dailyStatus = await AsyncStorage.getItem('dailyStatus');
-      console.log('daily status', dailyStatus);
       if (!dailyStatus) {
         setIsModalVisible(true);
       } else {
         const dailyStatusObject: Message = JSON.parse(dailyStatus);
-        console.log('daily status object', dailyStatusObject);
-        console.log(
-          'daily status object created at',
-          dailyStatusObject.createdAt,
-        );
-        console.log(
-          'birinci',
-          new Date(dailyStatusObject.createdAt!).toDateString(),
-        );
-        console.log('ikinci', new Date(Date.now()).toDateString());
         if (
           new Date(dailyStatusObject.createdAt!).toDateString() !==
           new Date(Date.now()).toDateString()
@@ -180,9 +172,19 @@ const Home = () => {
               createdAt: new Date(),
             };
 
-            const response = await saveMessage(newMessage);
+            const saveResponse = await saveMessage(newMessage);
 
-            if (response.status === 200)
+            const match = message.match(/dailyStatus(\d+)/);
+            const score = parseInt(match![1], 10);
+
+            const notiResponse = await sendNotification(
+              admin.username,
+              `${
+                message ? new Date().toLocaleDateString() + '\n' : ''
+              }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`,
+            );
+
+            if (saveResponse.status === 200)
               AsyncStorage.setItem('dailyStatus', JSON.stringify(newMessage));
 
             setLoading(false);
@@ -378,7 +380,7 @@ const Home = () => {
                     <AnimatedCircularProgress
                       size={100}
                       width={8}
-                      fill={exercizeProgressPercent}
+                      fill={exerciseProgressPercent}
                       tintColor={colors.primary[300]}
                       onAnimationComplete={() =>
                         console.log('onAnimationComplete')
@@ -390,7 +392,7 @@ const Home = () => {
                           style={{
                             color: colors.text.primary,
                           }}>
-                          %{exercizeProgressPercent}
+                          %{exerciseProgressPercent}
                         </Text>
                       )}
                     </AnimatedCircularProgress>

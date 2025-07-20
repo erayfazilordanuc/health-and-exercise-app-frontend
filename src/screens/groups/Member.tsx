@@ -102,6 +102,16 @@ const Group = () => {
       admin.username,
       member.username,
     );
+
+    if (lastMessage.message.startsWith('dailyStatus')) {
+      const match = lastMessage.message.match(/dailyStatus(\d+)/);
+      const score = parseInt(match![1], 10);
+
+      lastMessage.message =
+        '\n' +
+        new Date().toLocaleDateString() +
+        `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+    }
     setLastMessage(lastMessage);
   };
 
@@ -272,8 +282,8 @@ const Group = () => {
             className="font-rubik text-lg"
             style={{color: colors.text.primary}}>
             {lastMessage.receiver === admin?.username
-              ? member?.fullName + ': ' + lastMessage.message
-              : 'Siz: ' + lastMessage.message}
+              ? member?.fullName + ' : ' + lastMessage.message
+              : 'Siz : ' + lastMessage.message}
           </Text>
         )}
       </View>
