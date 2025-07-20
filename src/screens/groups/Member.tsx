@@ -286,7 +286,7 @@ const Group = () => {
           <Text
             className="font-rubik text-2xl"
             style={{color: colors.text.primary}}>
-            Başarımlar
+            Başarımlar ve İlerleme
           </Text>
           <TouchableOpacity
             className="py-2 px-10 bg-blue-500 rounded-2xl flex items-center justify-center"

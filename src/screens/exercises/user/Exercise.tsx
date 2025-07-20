@@ -161,7 +161,7 @@ const Exercise = () => {
                   thumbnail={
                     thumbs[video.videoUrl]
                       ? {uri: thumbs[video.videoUrl]}
-                      : icons.gymnastic
+                      : icons.exercise_screen
                   }
                   customStyles={{
                     videoWrapper: {borderRadius: 10},

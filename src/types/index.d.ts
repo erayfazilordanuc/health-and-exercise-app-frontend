@@ -5,7 +5,7 @@ type User = {
   email?: string;
   role: string;
   groupId?: number;
-  achievements: Achievement[];
+  achievements: AchievementDTO[];
 };
 
 type UpdateUserDTO = {
@@ -131,9 +131,9 @@ type UpdateExerciseDTO = {
   point: number;
 };
 
-type Achievement = {
-  id?: number;
+type AchievementDTO = {
+  id: number;
   userId: number;
-  exerciseId: number;
-  createdAt: Date | null;
+  exerciseDTO: ExerciseDTO;
+  createdAt: Date;
 };

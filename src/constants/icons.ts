@@ -100,6 +100,7 @@ import chronometer from '../assets/icons/chronometer.png';
 import development from '../assets/icons/development.png';
 import nurse from '../assets/icons/nurse.png';
 import dumbell_up from '../assets/icons/dumbell_up.png';
+import exercise_screen from '../assets/icons/exercise_screen.png';
 
 export default {
   google,
@@ -203,5 +204,5 @@ export default {
   chronometer,
   development,
   nurse,
-  dumbell_up,
+  dumbell_up,exercise_screen
 };

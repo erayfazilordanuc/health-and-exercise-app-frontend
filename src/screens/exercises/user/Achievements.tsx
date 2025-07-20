@@ -21,32 +21,18 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useTheme} from '../../themes/ThemeProvider';
-import icons from '../../constants/icons';
-import {getAchievementsByUserId} from '../../api/exercise/achievementService';
+import {useTheme} from '../../../themes/ThemeProvider';
+import icons from '../../../constants/icons';
+import {getAchievementsByUserId} from '../../../api/exercise/achievementService';
+import {useUser} from '../../../contexts/UserContext';
 
-type AchievementsRouteProp = RouteProp<GroupsStackParamList, 'Achievements'>;
 const Achievements = () => {
   const insets = useSafeAreaInsets();
-  const {params} = useRoute<AchievementsRouteProp>();
-  const {member} = params;
   const {colors} = useTheme();
   const [loading, setLoading] = useState(false);
-  const navigation = useNavigation<GroupsScreenNavigationProp>();
+  const navigation = useNavigation<ExercisesScreenNavigationProp>();
 
-  const [achievements, setAchievements] = useState<AchievementDTO[]>([]);
-
-  const fetchAchievements = async () => {
-    const achievements: AchievementDTO[] = await getAchievementsByUserId(
-      member.id!,
-    );
-
-    if (achievements) setAchievements(achievements);
-  };
-
-  useEffect(() => {
-    fetchAchievements();
-  }, []);
+  const {user, setUser} = useUser();
 
   return (
     <>
@@ -63,7 +49,7 @@ const Achievements = () => {
             color: colors.text.primary,
             fontSize: 24,
           }}>
-          Egzersiz İlerlemesi
+          Başarımlar ve İlerleme
         </Text>
       </View>
       <View
@@ -74,10 +60,8 @@ const Achievements = () => {
         <View
           className="px-4 pb-3 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
-          <Text className="pl-2 font-rubik text-2xl pt-3">
-            Tamamlanan Egzersizler
-          </Text>
-          {achievements.map((a, index) => (
+          <Text className="pl-2 font-rubik text-2xl pt-3">Başarımlar</Text>
+          {user?.achievements.map((a, index) => (
             <View
               key={index}
               className="px-2 py-3 rounded-2xl mt-3"
@@ -94,23 +78,7 @@ const Achievements = () => {
           <Text className="pl-2 font-rubik text-2xl pt-3">
             Devam Eden Egzersiz İlerlemeleri
           </Text>
-          {achievements.map((a, index) => (
-            <View
-              key={index}
-              className="px-2 py-3 rounded-2xl mt-3"
-              style={{backgroundColor: colors.background.secondary}}>
-              <Text className="pl-2 font-rubik text-xl">{a.id}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View
-          className="px-4 pb-3 rounded-2xl mt-3"
-          style={{backgroundColor: colors.background.primary}}>
-          <Text className="pl-2 font-rubik text-2xl pt-3">
-            Günlük Egzersiz İlerlemeleri
-          </Text>
-          {achievements.map((a, index) => (
+          {user?.achievements.map((a, index) => (
             <View
               key={index}
               className="px-2 py-3 rounded-2xl mt-3"

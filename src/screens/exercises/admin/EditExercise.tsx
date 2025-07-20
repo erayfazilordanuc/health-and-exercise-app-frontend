@@ -43,6 +43,7 @@ import {BlurView} from '@react-native-community/blur';
 import * as Progress from 'react-native-progress';
 import CustomAlert from '../../../components/CustomAlert';
 import {createThumbnail} from 'react-native-create-thumbnail';
+import RNFS from 'react-native-fs';
 
 type EditExerciseRouteProp = RouteProp<ExercisesStackParamList, 'EditExercise'>;
 const EditExercise = () => {
@@ -68,6 +69,9 @@ const EditExercise = () => {
   );
 
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
+  const [pendingThumbs, setPendingThumbs] = useState<Record<string, string>>(
+    {},
+  );
   const [pendingVideos, setPendingVideos] = useState<Asset[]>([]);
   const [videoLoading, setVideoLoading] = useState(false);
 
@@ -286,10 +290,17 @@ const EditExercise = () => {
     }
   };
 
+  async function safeUri(uri: string) {
+    if (!uri.startsWith('content://')) return uri;
+    const dest = `${RNFS.CachesDirectoryPath}/tmp_${Date.now()}.mp4`;
+    await RNFS.copyFile(uri, dest);
+    return 'file://' + dest;
+  }
+
   useEffect(() => {
     let isActive = true;
 
-    const loadSequential = async () => {
+    const loadSequentialExerciseVideosThumbs = async () => {
       if (!exercise?.videos?.length) return;
 
       // İçerik etkileşimi bitsin, sonra başla
@@ -316,12 +327,33 @@ const EditExercise = () => {
       }
     };
 
-    loadSequential();
+    const loadPendingVideosThumbs = async () => {
+      for (const v of pendingVideos) {
+        // ↪ local URI; bazı picker sürümlerinde originalPath yerine uri gelebilir
+        const uri = v.originalPath ?? v.uri;
+        if (!uri || pendingThumbs[uri]) continue; // zaten üretilmiş mi?
+        try {
+          const {path} = await createThumbnail({
+            url: await safeUri(uri),
+            timeStamp: 1000,
+            format: 'jpeg',
+            maxWidth: 512,
+          });
+          if (!isActive) return;
+          setPendingThumbs(prev => ({...prev, [uri]: path}));
+        } catch (err) {
+          console.warn('[thumb‑pending] failed', (err as Error).message);
+        }
+      }
+    };
+
+    loadSequentialExerciseVideosThumbs();
+    // loadPendingVideosThumbs();
 
     return () => {
       isActive = false;
     };
-  }, [editedExercise.videos]);
+  }, [editedExercise.videos /*pendingVideos*/]);
 
   return (
     <>
@@ -331,7 +363,7 @@ const EditExercise = () => {
           backgroundColor: colors.background.secondary,
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          paddingTop: insets.top * 1.4,
+          paddingTop: insets.top * 1.3,
         }}>
         <Text
           className="pl-7 font-rubik-semibold"
@@ -493,22 +525,22 @@ const EditExercise = () => {
                   thumbnail={
                     thumbs[video.videoUrl]
                       ? {uri: thumbs[video.videoUrl]}
-                      : icons.gymnastic
+                      : icons.exercise_screen
                   }
                   customStyles={{
                     videoWrapper: {borderRadius: 10},
                     controlButton: {opacity: 0.9},
                     thumbnail: {
                       borderRadius: 15,
-                      width: 80,
-                      height: 80,
+                      width: 125,
+                      height: 125,
                       alignSelf: 'center',
                       justifyContent: 'center',
                     },
                     thumbnailImage: {
                       width: '100%',
                       height: '100%',
-                      resizeMode: 'cover',
+                      resizeMode: 'center',
                     },
                   }}
                 />
@@ -558,16 +590,42 @@ const EditExercise = () => {
                   aspectRatio: 16 / 9,
                   backgroundColor: 'white',
                 }}
-                thumbnail={icons.gymnastic}
+                // thumbnail={
+                //   pendingThumbs[video.originalPath ?? video.uri!]
+                //     ? {uri: pendingThumbs[video.originalPath ?? video.uri!]}
+                //     : icons.exercise_screen
+                // }
+                thumbnail={icons.exercise_screen}
+                // customStyles={{
+                //   videoWrapper: {borderRadius: 10},
+                //   controlButton: {opacity: 0.9},
+                //   thumbnail: {
+                //     borderRadius: 15,
+                //     width: 80,
+                //     height: 80,
+                //     alignSelf: 'center',
+                //     justifyContent: 'center',
+                //   },
+                //   thumbnailImage: {
+                //     width: '100%',
+                //     height: '100%',
+                //     resizeMode: 'cover',
+                //   },
+                // }}
                 customStyles={{
                   videoWrapper: {borderRadius: 10},
                   controlButton: {opacity: 0.9},
                   thumbnail: {
                     borderRadius: 15,
-                    width: 80,
-                    height: 80,
+                    width: 125,
+                    height: 125,
                     alignSelf: 'center',
                     justifyContent: 'center',
+                  },
+                  thumbnailImage: {
+                    width: '100%',
+                    height: '100%',
+                    resizeMode: 'center',
                   },
                 }}
               />

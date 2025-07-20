@@ -33,6 +33,7 @@
     "react-native-circular-progress": "^1.4.1",
     "react-native-create-thumbnail": "^2.1.1",
     "react-native-elements": "^3.4.3",
+    "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.26.0",
     "react-native-health-connect": "^3.3.2",
     "react-native-image-picker": "^8.2.1",
