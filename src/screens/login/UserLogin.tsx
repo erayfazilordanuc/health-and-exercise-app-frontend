@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {CommonActions, useNavigation} from '@react-navigation/native';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import icons from '../../constants/icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import axios from 'axios';
@@ -20,6 +20,11 @@ import {useNetInfo} from '@react-native-community/netinfo';
 import {useTheme} from '../../themes/ThemeProvider';
 import {login, register} from '../../api/auth/authService';
 import {useUser} from '../../contexts/UserContext';
+import {Picker} from '@react-native-picker/picker';
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
+import {Dropdown} from 'react-native-element-dropdown';
 
 function UserLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
@@ -41,6 +46,9 @@ function UserLogin() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [gender, setGender] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -50,6 +58,24 @@ function UserLogin() {
   const clearInputs = () => {
     setUsername('');
     setPassword('');
+  };
+
+  const fiveYearsAgo = useMemo(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 5);
+    return d; // 5 yıl önce bugün
+  }, []);
+
+  const handleDateChange = (_event: DateTimePickerEvent, date?: Date) => {
+    setShowDatePicker(false);
+    if (date) {
+      if (date > fiveYearsAgo) {
+        // ↪ 5 yıldan yeni ise
+        ToastAndroid.show('Geçerli bir tarih girin', ToastAndroid.SHORT);
+        return; // değeri set etmeden çık
+      }
+      setBirthDate(date.toISOString().slice(0, 10));
+    }
   };
 
   const handleGoogleLogin = async () => {};
@@ -129,6 +155,8 @@ function UserLogin() {
       //   return;
       // }
 
+      console.log(username);
+
       if (username.length < 4) {
         ToastAndroid.show(
           'Kullanıcı adı en az 4 karakter olmalı',
@@ -157,7 +185,9 @@ function UserLogin() {
         username: username.trim(),
         // email: 'ostensible@gmail.com',
         fullName: fullName.trim(),
+        birthDate: birthDate,
         password: password.trim(),
+        gender: gender,
       };
 
       const registerResponse = await register(registerPayload);
@@ -211,18 +241,26 @@ function UserLogin() {
     <SafeAreaView
       className="h-full"
       style={{backgroundColor: colors.background.secondary}}>
-      <ScrollView contentContainerClassName="pb-12 pt-24">
+      <ScrollView
+        contentContainerClassName={`pb-12 ${
+          loginMethod === LoginMethod.registration ? 'pt-8' : 'pt-32'
+        }`}>
         <View className={`px-10`}>
-          <Text
+          {/* <Text
             className="text-3xl text-center uppercase font-rubik-bold mt-8 mb-4"
             style={{color: '#0091ff'}}>
             EGZERSİZ TAKİP{'\n'}VE{'\n'}SAĞLIK{'\n'}
             <Text className="text-center" style={{color: colors.text.primary}}>
               Uygulaması
             </Text>
+          </Text> */}
+          <Text
+            className="text-center font-rubik-bold mt-8 mb-8"
+            style={{color: '#0091ff', fontSize: 40}}>
+            HopeMove
           </Text>
           <Text
-            className="text-3xl font-rubik-medium text-center mt-4 mb-6"
+            className="text-3xl font-rubik-semibold text-center mt-6 mb-4"
             style={{color: colors.text.primary}}>
             Kullanıcı Girişi
           </Text>
@@ -232,7 +270,6 @@ function UserLogin() {
             {loginMethod === LoginMethod.default && 'Giriş'}
             {loginMethod === LoginMethod.registration && 'Hesap Oluştur'}
           </Text> */}
-
           {loginMethod === LoginMethod.registration && (
             <View
               className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
@@ -270,6 +307,92 @@ function UserLogin() {
               style={{color: colors.text.primary}}
             />
           </View>
+          {loginMethod === LoginMethod.registration && (
+            <>
+              <View
+                className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
+                style={{
+                  borderColor: '#7AADFF',
+                  backgroundColor: colors.background.primary,
+                }}>
+                <Text
+                  className="text-lg font-rubik ml-6 py-3 flex-1"
+                  style={{color: birthDate ? colors.text.primary : 'gray'}}>
+                  {birthDate
+                    ? new Date(birthDate).toLocaleDateString('tr-TR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    : 'Doğum Tarihi'}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowDatePicker(true);
+                  }}
+                  className="p-2 rounded-2xl mr-4"
+                  style={{backgroundColor: colors.background.secondary}}>
+                  <Image source={icons.calendar} className="size-8" />
+                </TouchableOpacity>
+              </View>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={
+                    birthDate
+                      ? new Date(birthDate)
+                      : new Date(
+                          new Date().setFullYear(new Date().getFullYear() - 10),
+                        )
+                  }
+                  mode="date"
+                  display="default"
+                  maximumDate={new Date()}
+                  onChange={handleDateChange}
+                />
+              )}
+              <View
+                className="z-50 mt-2"
+                style={{
+                  backgroundColor: colors.background.primary,
+                  borderRadius: 25,
+                  paddingHorizontal: 22,
+                  zIndex: 3000,
+                }}>
+                <Dropdown
+                  data={[
+                    {label: 'Kadın', value: 'female'},
+                    {label: 'Erkek', value: 'male'},
+                  ]}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Cinsiyet"
+                  value={gender}
+                  onChange={item => setGender(item.value)}
+                  style={{
+                    backgroundColor: 'transparent', // dış View zaten arka planı taşıyor
+                    height: 52,
+                  }}
+                  placeholderStyle={{
+                    color: 'gray',
+                    fontSize: 16,
+                    fontFamily: 'Rubik',
+                  }}
+                  selectedTextStyle={{
+                    color: colors.text.primary,
+                    fontSize: 16,
+                  }}
+                  itemTextStyle={{
+                    color: colors.text.primary,
+                  }}
+                  containerStyle={{
+                    borderRadius: 20,
+                    backgroundColor: colors.background.primary,
+                  }}
+                  activeColor={colors.primary?.[100] ?? '#D6EFFF'}
+                />
+              </View>
+            </>
+          )}
           <View
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
@@ -283,7 +406,7 @@ function UserLogin() {
                 setPassword(value);
               }}
               placeholder="Şifre"
-              className="text-lg font-rubik ml-5 flex-1"
+              className="text-lg font-rubik ml-6 flex-1"
               style={{color: colors.text.primary}}
               secureTextEntry={!showPassword}
             />
@@ -294,12 +417,11 @@ function UserLogin() {
               {/* TO DO icon can be changed */}
               <Image
                 source={showPassword ? icons.show : icons.hide}
-                className="size-7 mr-2"
+                className="size-6 mr-2"
                 tintColor={'gray'}
               />
             </TouchableOpacity>
           </View>
-
           {!loading ? (
             <View className="flex flex-row justify-center">
               {loginMethod === LoginMethod.default && (
@@ -336,12 +458,11 @@ function UserLogin() {
               color={colors.primary[300] ?? colors.primary}
             />
           )}
-
           {loginMethod !== LoginMethod.default && (
             <Text
               className="text-lg font-rubik text-center mt-4"
               style={{color: colors.text.third}}>
-              eğer hesabınız varsa {'\n'}
+              eğer hesabın varsa {'\n'}
               <TouchableOpacity
                 onPress={() => {
                   clearInputs();
@@ -359,7 +480,7 @@ function UserLogin() {
             <Text
               className="text-lg font-rubik text-center mt-4"
               style={{color: colors.text.third}}>
-              eğer hesabınız yoksa{'\n'}
+              eğer hesabın yoksa{'\n'}
               <TouchableOpacity
                 onPress={() => {
                   clearInputs();

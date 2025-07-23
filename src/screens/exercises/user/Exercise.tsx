@@ -19,6 +19,7 @@ import {useTheme} from '../../../themes/ThemeProvider';
 import icons from '../../../constants/icons';
 import VideoPlayer from 'react-native-video-player';
 import {createThumbnail} from 'react-native-create-thumbnail';
+import CustomAlert from '../../../components/CustomAlert';
 
 type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'Exercise'>;
 const Exercise = () => {
@@ -28,25 +29,30 @@ const Exercise = () => {
   const {params} = useRoute<ExerciseRouteProp>();
   const {exercise} = params;
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
-  const [videoFinished, setVideoFinished] = useState(false);
+
+  const [isBackActionAlertVisible, setIsBackActionAlertVisible] =
+    useState(false);
+
+  const [exerciseStarted, setExerciseStarted] = useState(false);
+  const [exerciseFinished, setExerciseFinished] = useState(false);
 
   const progressPercent = 30;
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     const backAction = () => {
-  //       navigation.navigate('ExercisesUser');
-  //       return true;
-  //     };
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        setIsBackActionAlertVisible(true);
+        return true;
+      };
 
-  //     const backHandler = BackHandler.addEventListener(
-  //       'hardwareBackPress',
-  //       backAction,
-  //     );
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
 
-  //     return () => backHandler.remove();
-  //   }, []),
-  // );
+      return () => backHandler.remove();
+    }, []),
+  );
 
   useEffect(() => {
     let isActive = true;
@@ -113,7 +119,7 @@ const Exercise = () => {
           <Text className="text-gray-600 mb-1">✅ Hareketleri yavaş yap</Text>
           <Text className="text-gray-600 mb-1">✅ Nefes kontrolünü unutma</Text>
         </View> */}
-      <Text className="text-sm text-gray-500 mt-1 self-center">
+      {/* <Text className="text-sm text-gray-500 mt-1 self-center">
         {progressPercent}% tamamlandı
       </Text>
       <View className="w-2/3 self-center h-2 bg-gray-300 rounded-full mt-2">
@@ -121,8 +127,8 @@ const Exercise = () => {
           style={{width: `${progressPercent}%`}}
           className="h-2 bg-blue-500 rounded-full"
         />
-      </View>
-      {videoFinished && (
+      </View> */}
+      {exerciseFinished && (
         <>
           <TouchableOpacity
             className="bg-blue-600 rounded-2xl px-10 py-3 mt-6 shadow-lg self-center w-1/2"
@@ -168,8 +174,8 @@ const Exercise = () => {
                     controlButton: {opacity: 0.9},
                     thumbnail: {
                       borderRadius: 15,
-                      width: 80,
-                      height: 80,
+                      width: 125,
+                      height: 125,
                       alignSelf: 'center',
                       justifyContent: 'center',
                     },
@@ -191,6 +197,30 @@ const Exercise = () => {
             ))}
         </View>
       </ScrollView>
+      <View className="absolute bottom-20 right-3 items-center">
+        <TouchableOpacity className="flex flex-row justify-center items-center mt-3">
+          <Text
+            className="bg-blue-500 font-rubik text-xl py-4 px-4 rounded-3xl"
+            style={{
+              // backgroundColor: '#16d750',
+              color: colors.background.primary,
+            }}>
+            Egzersize Başla
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <CustomAlert
+        message={'Egzersizi terk etmek istediğinizden emin misiniz?'}
+        secondMessage="İlerlemeniz kaybolacaktır"
+        visible={isBackActionAlertVisible}
+        onYes={() => {
+          navigation.navigate('ExercisesUser');
+          setIsBackActionAlertVisible(false);
+        }}
+        onCancel={() => {
+          setIsBackActionAlertVisible(false);
+        }}
+      />
     </>
   );
 };

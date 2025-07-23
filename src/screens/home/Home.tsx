@@ -77,16 +77,18 @@ const Home = () => {
 
     if (isConnected && !isAdminTemp) {
       const dailyStatus = await AsyncStorage.getItem('dailyStatus');
-      if (!dailyStatus) {
+      if (!dailyStatus && user.groupId) {
         setIsModalVisible(true);
       } else {
-        const dailyStatusObject: Message = JSON.parse(dailyStatus);
-        if (
-          new Date(dailyStatusObject.createdAt!).toDateString() !==
-          new Date(Date.now()).toDateString()
-        ) {
-          await AsyncStorage.removeItem('dailyStatus');
-          setIsModalVisible(true);
+        if (dailyStatus) {
+          const dailyStatusObject: Message = JSON.parse(dailyStatus);
+          if (
+            new Date(dailyStatusObject.createdAt!).toDateString() !==
+            new Date(Date.now()).toDateString()
+          ) {
+            await AsyncStorage.removeItem('dailyStatus');
+            setIsModalVisible(true);
+          }
         }
       }
     }
@@ -151,50 +153,64 @@ const Home = () => {
 
       if (user && user.groupId) {
         const adminResponse = await getGroupAdmin(user.groupId);
+        console.log(154);
 
         if (!adminResponse) return;
         const admin = adminResponse.data as User;
+        console.log(158);
 
         const roomResponse = await isRoomExistBySenderAndReceiver(
           user.username,
           admin.username,
         );
+        console.log(163);
 
         if (roomResponse.status === 200) {
-          const roomId = roomResponse.data;
-          if (roomId !== 0) {
-            const message = 'dailyStatus' + sliderValue;
-            const newMessage: Message = {
-              message,
-              sender: user.username,
-              receiver: admin.username,
-              roomId: roomId,
-              createdAt: new Date(),
-            };
-
-            const saveResponse = await saveMessage(newMessage);
-
-            const match = message.match(/dailyStatus(\d+)/);
-            const score = parseInt(match![1], 10);
-
-            const notiResponse = await sendNotification(
-              admin.username,
-              `${
-                message ? new Date().toLocaleDateString() + '\n' : ''
-              }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`,
-            );
-
-            if (saveResponse.status === 200)
-              AsyncStorage.setItem('dailyStatus', JSON.stringify(newMessage));
-
-            setLoading(false);
-            setIsModalVisible(false);
+          let roomId = roomResponse.data;
+          if (roomId === 0) {
+            const nextRoomResponse = await getNextRoomId();
+            if (nextRoomResponse.status === 200) {
+              roomId = nextRoomResponse.data;
+            }
           }
+          const message = 'dailyStatus' + sliderValue;
+          const newMessage: Message = {
+            message,
+            sender: user.username,
+            receiver: admin.username,
+            roomId: roomId,
+            createdAt: new Date(),
+          };
+          console.log(176);
+
+          const saveResponse = await saveMessage(newMessage);
+          console.log(179);
+
+          const match = message.match(/dailyStatus(\d+)/);
+          const score = parseInt(match![1], 10);
+
+          const notiResponse = await sendNotification(
+            admin.username,
+            `${
+              message ? new Date().toLocaleDateString() + '\n' : ''
+            }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`,
+          );
+          console.log(190);
+
+          if (saveResponse.status === 200)
+            AsyncStorage.setItem('dailyStatus', JSON.stringify(newMessage));
+
+          setLoading(false);
+          setIsModalVisible(false);
         }
       }
     } catch (error) {
+      setLoading(false);
+      setIsModalVisible(false);
       ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
     }
+    setLoading(false);
+    setIsModalVisible(false);
   };
 
   return (
@@ -247,10 +263,7 @@ const Home = () => {
             </GradientText>
             {!isAdmin ? (
               <View className="flex flex-row">
-                <Image
-                  source={icons.badge1_colorful_bordered}
-                  className="size-8 mr-3"
-                />
+                <Image source={icons.patient} className="size-9 mr-3" />
                 {/* <Image source={icons.badge1_colorful} className="size-8 mr-2" />
                 <Image
                   source={icons.badge1}
@@ -262,7 +275,7 @@ const Home = () => {
               <View className="flex flex-row">
                 <Image
                   source={icons.nurse}
-                  className="size-9 mr-2"
+                  className="size-9 mr-3"
                   tintColor={colors.text.primary}
                 />
               </View>
@@ -273,7 +286,7 @@ const Home = () => {
             transparent={true}
             visible={isModalVisible}
             animationType="fade"
-            onRequestClose={() => setIsModalVisible(false)}>
+            onRequestClose={() => {}}>
             <View className="flex-1 justify-center items-center bg-black/50">
               <View
                 className="w-4/5 py-5 rounded-xl items-center"
@@ -373,8 +386,8 @@ const Home = () => {
                     style={{
                       color: colors.text.primary,
                     }}>
-                    Tamamlanan{'\n'}
-                    Günlük Egzersiz
+                    Bugün tamamlanan egzersiz oranı gözüksün, eğer bugüne
+                    egzersiz yoksa bugün egzersiz yok desin
                   </Text>
                   <View className="mt-4 mb-2 flex justify-center items-center">
                     <AnimatedCircularProgress
@@ -405,7 +418,7 @@ const Home = () => {
                 <Text
                   className="font-rubik text-2xl mb-4"
                   style={{color: colors.text.primary}}>
-                  Günlük Egzersizler
+                  Bugünkü Egzersizler{'\n'}(Bi altta egzersiz takvimi çıksın)
                 </Text>
                 <ScrollView
                   horizontal

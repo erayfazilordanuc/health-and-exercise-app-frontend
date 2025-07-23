@@ -44,6 +44,7 @@ type GroupsStackParamList = {
     fromNotification: boolean;
   };
   Achievements: {member: User};
+  Progress: {member: User};
 };
 
 type RootStackParamList = {

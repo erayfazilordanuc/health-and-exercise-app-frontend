@@ -96,18 +96,20 @@ const Launch = () => {
     <SafeAreaView style={styles.container}>
       {/* Üst sağ mavi dekor */}
       <View style={styles.topRightShape} />
-
       <Text
-        className="font-rubik-bold text-4xl text-center"
-        style={[styles.titleBlue, {paddingTop: windowHeight / 5}]}>
-        EGZERSİZ TAKİP{'\n'}VE{'\n'}SAĞLIK
+        className="font-rubik-bold text-center"
+        style={[
+          styles.titleBlue,
+          {paddingTop: windowHeight / 4, fontSize: 40},
+        ]}>
+        HopeMove
       </Text>
       <Text
-        className="font-rubik-bold text-4xl text-center"
+        className="font-rubik-semibold text-xl text-center mt-4"
         style={[styles.titleBlack, {color: colors.text.primary}]}>
-        Uygulamasına{'\n'}Hoş Geldiniz
+        HopeMove ile hemşire rehberliğinde aktivitenizi izler, iyileşme
+        sürecinizi umutla destekleriz.
       </Text>
-
       <TouchableOpacity
         className="px-6 py-3 rounded-2xl mb-2"
         style={{backgroundColor: colors.background.primary}}
@@ -122,7 +124,6 @@ const Launch = () => {
           Kullanıcı Girişi
         </Text>
       </TouchableOpacity>
-
       <TouchableOpacity
         className="px-6 py-3 rounded-2xl"
         style={{backgroundColor: colors.background.primary}}
@@ -137,7 +138,6 @@ const Launch = () => {
           Hemşire Girişi
         </Text>
       </TouchableOpacity>
-
       {/* Alt sol mavi dekor */}
       <View style={styles.bottomLeftShape} />
       <View style={styles.bottomRightShape} />

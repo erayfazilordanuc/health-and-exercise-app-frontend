@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
   ImageSourcePropType,
   Alert,
+  Platform,
+  Linking,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -116,27 +118,32 @@ const Settings = () => {
               navigation.navigate('Preferences');
             }}
           />
-          <SettingsItem
+          {/* <SettingsItem
             icon={icons.bell}
             title={'Bildirimler'}
             onPress={() => {
               navigation.navigate('Notifications');
             }}
-          />
+          /> */}
           <SettingsItem
             icon={icons.permission}
             title={'İzinler'}
             onPress={() => {
-              navigation.navigate('Permissions');
+              if (Platform.OS === 'ios') {
+                Linking.openURL('app-settings:');
+              } else {
+                Linking.openSettings();
+              }
+              // navigation.navigate('Permissions');
             }}
           />
-          <SettingsItem
+          {/* <SettingsItem
             icon={icons.shield}
             title={'Güvenlik'}
             onPress={() => {
               navigation.navigate('Security');
             }}
-          />
+          /> */}
           <SettingsItem
             icon={icons.development}
             title={'Geliştirme'}

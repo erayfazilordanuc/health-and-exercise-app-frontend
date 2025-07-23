@@ -3,6 +3,8 @@ type User = {
   username: string;
   fullName: string;
   email?: string;
+  birthDate?: string; // yyyy-mm-dd
+  gender?: string;
   role: string;
   groupId?: number;
   achievements: AchievementDTO[];
@@ -12,6 +14,7 @@ type UpdateUserDTO = {
   id: number;
   username: string;
   email?: string;
+  birthDate?: string;
   fullName: string;
   groupId?: number | null;
 };
@@ -25,7 +28,9 @@ type RegisterRequestPayload = {
   username: string;
   email?: string;
   fullName: string;
+  birthDate?: string;
   password: string;
+  gender?: string;
 };
 
 type AdminLoginRequestPayload = {

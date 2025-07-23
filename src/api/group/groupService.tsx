@@ -2,6 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 import {getUser} from '../user/userService';
 
+export const joinGroup = async (groupId: number) => {
+  const response = await apiClient.post(`/groups/id/${groupId}/join`);
+  console.log('Join group', response);
+  return response;
+};
+
 export const getAllGroups = async () => {
   const response = await apiClient.get(`/groups`);
   console.log('All groups', response);
@@ -23,6 +29,12 @@ export const getGroupSize = async (id: number) => {
 export const getGroupAdmin = async (id: number) => {
   const response = await apiClient.get(`/groups/id/${id}/admin`);
   console.log('Get group admin by group id', response);
+  return response;
+};
+
+export const getUsersByGroupId = async (groupId: number) => {
+  const response = await apiClient.get(`/groups/id/${groupId}/users`);
+  console.log('Group users', response);
   return response;
 };
 

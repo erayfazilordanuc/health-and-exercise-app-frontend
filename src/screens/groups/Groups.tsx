@@ -15,7 +15,11 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../../../src/themes/ThemeProvider';
 import icons from '../../../src/constants/icons';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import {createGroup, getAllGroups} from '../../api/group/groupService';
+import {
+  createGroup,
+  getAllGroups,
+  joinGroup,
+} from '../../api/group/groupService';
 import {getUser, updateUser} from '../../api/user/userService';
 import {color} from 'react-native-elements/dist/helpers';
 
@@ -81,7 +85,7 @@ const Groups = () => {
       style={{backgroundColor: colors.background.primary}}>
       <View className="flex flex-row justify-between">
         <Text
-          className="text-xl font-semibold dark:text-blue-300 ml-1"
+          className="text-2xl font-semibold dark:text-blue-300 ml-1"
           style={{color: colors.primary[200]}}>
           {item.name}
         </Text>
@@ -94,7 +98,7 @@ const Groups = () => {
               setIsJoinModalVisible(true);
             }}>
             <Text
-              className="text-md font-rubik-medium"
+              className="text-lg font-rubik-medium"
               style={{color: '#55CC88'}}>
               Katıl
             </Text>
@@ -130,16 +134,8 @@ const Groups = () => {
 
   const onJoinGroup = async () => {
     setLoading(true);
-    if (user && groupToJoin) {
-      const updateUserDTO: UpdateUserDTO = {
-        id: user.id!,
-        username: user.username,
-        email: user.email,
-        fullName: user.fullName,
-        groupId: groupToJoin.id,
-      };
-
-      const response = await updateUser(updateUserDTO);
+    if (user && groupToJoin && groupToJoin.id) {
+      const response = await joinGroup(groupToJoin.id);
       if (response.status === 200) {
         setTimeout(() => {
           navigation.navigate('Group', {groupId: response.data.groupId});

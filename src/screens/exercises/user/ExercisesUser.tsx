@@ -76,7 +76,7 @@ const ExercisesUser = () => {
           <Text
             className="font-rubik text-2xl mb-5"
             style={{color: colors.text.primary}}>
-            Başarımlarım
+            İlerlemelerim
           </Text>
           <View className="flex flex-row justify-between mb-4">
             <Text
@@ -253,9 +253,9 @@ const ExercisesUser = () => {
             </TouchableOpacity>
           </ScrollView>
         </View> */}
-      </View>
 
-      {/* TO DO Buraya liste şeklinde Grup maplenmeli yoksa da no result component kullanılabilir */}
+        <Text>Egzersiz Takvimi</Text>
+      </View>
     </>
   );
 };

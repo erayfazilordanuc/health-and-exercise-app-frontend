@@ -19,15 +19,12 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import {useTheme} from '../../themes/ThemeProvider';
-import {
-  getUser,
-  getUsersByGroupId,
-  updateUser,
-} from '../../api/user/userService';
+import {getUser, updateUser} from '../../api/user/userService';
 import {
   getGroupAdmin,
   getGroupById,
   getGroupSize,
+  getUsersByGroupId,
 } from '../../api/group/groupService';
 import {setGestureState} from 'react-native-reanimated';
 import CustomAlert from '../../components/CustomAlert';
@@ -76,12 +73,10 @@ const Group = () => {
       ? membersRes.data
       : [membersRes.data];
     setGroupSize(list.length);
-    const sorted = user
-      ? [
-          ...list.filter(u => u.role === 'ROLE_ADMIN'),
-          ...list.filter(u => u.role !== 'ROLE_ADMIN'),
-        ]
-      : list;
+    const sorted = [
+      ...list.filter(u => u.role === 'ROLE_ADMIN'),
+      ...list.filter(u => u.role !== 'ROLE_ADMIN'),
+    ];
     setUsers(sorted);
   };
 
@@ -111,12 +106,10 @@ const Group = () => {
           ? membersRes.data
           : [membersRes.data];
         setGroupSize(list.length);
-        const sorted = user
-          ? [
-              ...list.filter(u => u.role === 'ROLE_ADMIN'),
-              ...list.filter(u => u.role !== 'ROLE_ADMIN'),
-            ]
-          : list;
+        const sorted = [
+          ...list.filter(u => u.role === 'ROLE_ADMIN'),
+          ...list.filter(u => u.role !== 'ROLE_ADMIN'),
+        ];
         setUsers(sorted);
 
         // 4. admin’i ayıkla
@@ -181,6 +174,13 @@ const Group = () => {
             className="text-lg font-semibold dark:text-blue-300 mr-2"
             style={{color: colors.text.primary}}>
             Hemşire
+          </Text>
+        )}
+        {user && item.username === user.username && (
+          <Text
+            className="text-lg font-semibold dark:text-blue-300 mr-2"
+            style={{color: colors.text.primary}}>
+            Sen
           </Text>
         )}
         {item.role === 'ROLE_USER' && user && user.role === 'ROLE_ADMIN' && (

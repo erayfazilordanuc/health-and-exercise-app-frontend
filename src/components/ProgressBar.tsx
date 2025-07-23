@@ -10,6 +10,7 @@ type ProgressBarProps = {
   label: string;
   iconSource: any;
   color: string;
+  updateDisabled?: boolean;
   setAddModalFunction?: React.Dispatch<
     React.SetStateAction<{
       setSymptom?: React.Dispatch<React.SetStateAction<number>>;
@@ -33,7 +34,7 @@ const GradientText: React.FC<{text: string}> = ({text}) => (
       </Text>
     }>
     <LinearGradient
-      colors={['#0EC946', 'white']}
+      colors={['#27d95c', '#9debb4']}
       start={{x: 0, y: 0}}
       end={{x: 2, y: 0}}>
       <Text className="text-md font-rubik" style={{opacity: 0}}>
@@ -48,6 +49,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   label,
   iconSource,
   color,
+  updateDisabled,
   setAddModalFunction,
   setSymptom,
   onAdd,
@@ -79,7 +81,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   };
 
   const getDisplayText = (): string => {
-    if (value == null) return 'Veri yok';
+    if (value == null || value == 0) return 'Veri yok';
     if (iconSource === icons.man_walking) return `${value} adım`;
     if (iconSource === icons.sleep) {
       const hours = Math.floor(value);
@@ -117,20 +119,17 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           {getDisplayText()}
         </Text>
 
-        {label !== 'Genel Sağlık' &&
-          setAddModalFunction &&
-          setSymptom &&
-          onAdd && (
-            <TouchableOpacity
-              className="ml-1 flex-row justify-center items-center px-2 py-1 rounded-2xl"
-              style={{backgroundColor: colors.background.secondary}}
-              onPress={() => {
-                setAddModalFunction({setSymptom});
-                onAdd(true);
-              }}>
-              <GradientText text="Güncelle" />
-            </TouchableOpacity>
-          )}
+        {!updateDisabled && setAddModalFunction && setSymptom && onAdd && (
+          <TouchableOpacity
+            className="ml-1 flex-row justify-center items-center px-2 py-1 rounded-2xl"
+            style={{backgroundColor: colors.background.secondary}}
+            onPress={() => {
+              setAddModalFunction({setSymptom});
+              onAdd(true);
+            }}>
+            <GradientText text="Güncelle" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {value != null && value !== 0 && (

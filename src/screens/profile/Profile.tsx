@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   Modal,
   ToastAndroid,
+  Alert,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -28,6 +29,7 @@ import {
   getAggregatedSteps,
   getAllSleepSessions,
   getHeartRate,
+  getSymptoms,
   getTotalCaloriesBurned,
   getTotalSleepHours,
   initializeHealthConnect,
@@ -44,6 +46,8 @@ import GradientText from '../../components/GradientText';
 import {HealthService} from '../../api/health/abstraction/healthService';
 import {upsertSymptomsByDate} from '../../api/symptoms/symptomsService';
 import {Float} from 'react-native/Libraries/Types/CodegenTypes';
+import {Linking} from 'react-native';
+import CustomAlert from '../../components/CustomAlert';
 
 const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -64,19 +68,45 @@ const Profile = () => {
   const [totalSleepHours, setTotalSleepHours] = useState(0);
   const [sleepSessions, setSleepSessions] = useState<String[]>([]);
 
+  const [isHealthConnectAvailable, setIsHealthConnectAvailable] =
+    useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [addModalFunction, setAddModalFunction] = useState<{
     setSymptom?: React.Dispatch<React.SetStateAction<number>>;
   }>({});
   const [addModalValue, setAddModalValue] = useState<Float>();
+  const [showDetail, setShowDetail] = useState(false);
+  const [showHCAlert, setShowHCAlert] = useState(false);
 
   const [symptoms, setSymptoms] = useState<Symptoms>();
+
+  const [healthConnectSymptoms, setHealthConnectSymptoms] =
+    useState<Symptoms>();
 
   const [loading, setLoading] = useState(false);
 
   const today = new Date();
 
   // TO DO There should be a favorite color pair to use it on username
+
+  const calculateAge = () => {
+    if (user && user.birthDate) {
+      const birthDate = new Date(user.birthDate);
+      const today = new Date();
+
+      let age = today.getFullYear() - birthDate.getFullYear();
+
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const dayDiff = today.getDate() - birthDate.getDate();
+
+      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+      }
+
+      return age;
+    }
+    return null;
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -124,6 +154,8 @@ const Profile = () => {
         console.log('Health connect permissions not fully granted.');
         return;
       }
+
+      setIsHealthConnectAvailable(true);
       console.log('All health permissions granted. Ready to collect data.');
 
       const symptoms = await saveAndGetSymptoms();
@@ -131,6 +163,12 @@ const Profile = () => {
       if (symptoms) {
         checkAndSetSymptomsLegacy(symptoms);
         setSymptoms(symptoms);
+      }
+
+      const healthConnectSymptoms = await getSymptoms();
+
+      if (healthConnectSymptoms) {
+        setHealthConnectSymptoms(healthConnectSymptoms);
       }
     }
   };
@@ -239,10 +277,11 @@ const Profile = () => {
                 </GradientText>
                 {user && user.role === 'ROLE_USER' ? (
                   <View className="flex flex-row">
-                    <Image
+                    <Image source={icons.patient} className="size-9 mr-2" />
+                    {/* <Image
                       source={icons.badge1_colorful_bordered}
                       className="size-8 mr-2"
-                    />
+                    /> */}
                     {/* <Image
                       source={icons.badge1_colorful}
                       className="size-8 mr-2"
@@ -257,7 +296,7 @@ const Profile = () => {
                   <View className="flex flex-row">
                     <Image
                       source={icons.nurse}
-                      className="size-9 mr-1"
+                      className="size-9 mr-2"
                       tintColor={colors.text.primary}
                     />
                   </View>
@@ -268,13 +307,45 @@ const Profile = () => {
                 style={{color: colors.text.primary}}>
                 Kullanıcı Adı: {user?.username}
               </Text>
-              {/* {user && user.role === 'ROLE_USER' && (
+              <Text
+                className="text-xl font-rubik pt-3"
+                style={{color: colors.text.primary}}>
+                Yaş: {calculateAge()}
+              </Text>
+              {showDetail && (
                 <Text
                   className="text-xl font-rubik pt-3"
                   style={{color: colors.text.primary}}>
-                  Yaş: {user?.id}
+                  Doğum Tarihi:{' '}
+                  {new Date(user?.birthDate!).toLocaleDateString('tr-TR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
                 </Text>
-              )} */}
+              )}
+              {showDetail && (
+                <Text
+                  className="text-xl font-rubik pt-3"
+                  style={{color: colors.text.primary}}>
+                  Cinsiyet: {user?.gender === 'male' ? 'Erkek' : 'Kadın'}
+                </Text>
+              )}
+              <View className="flex flex-row items-center justify-end">
+                <TouchableOpacity
+                  className="py-3 px-3"
+                  style={{
+                    backgroundColor: colors.primary[200],
+                    borderRadius: 18,
+                  }}
+                  onPress={() => {
+                    setShowDetail(!showDetail);
+                  }}>
+                  <Text style={{color: colors.background.primary}}>
+                    {showDetail ? 'Detayları Gizle' : 'Detayları Göster'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
             {/* Buraya dğer bilgiler, rozetler falan filan */}
           </View>
@@ -285,16 +356,48 @@ const Profile = () => {
               <View
                 className="flex flex-col py-2 px-5 rounded-2xl mt-3"
                 style={{backgroundColor: colors.background.primary}}>
-                <Text
-                  className="font-rubik text-2xl pt-2 pb-3"
-                  style={{color: colors.text.primary}}>
-                  Bulgular
-                </Text>
+                <View className="flex flex-row justify-between items-center pt-2 pb-3">
+                  <Text
+                    className="font-rubik text-2xl"
+                    style={{color: colors.text.primary}}>
+                    Bulgular
+                  </Text>
+                  {isHealthConnectAvailable ? (
+                    <View
+                      className="flex flex-row rounded-2xl items-center"
+                      style={{backgroundColor: colors.background.primary}}>
+                      <Text style={{color: '#16d750'}}>Bağlı</Text>
+                      <Image
+                        source={icons.wearable}
+                        className="ml-2 size-7"
+                        tintColor={'#16d750'}
+                      />
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      className="flex flex-row py-3 pl-4 pr-3 rounded-2xl items-center"
+                      style={{backgroundColor: colors.background.secondary}}
+                      onPress={() => {
+                        setShowHCAlert(true);
+                      }}>
+                      <Text style={{color: colors.text.primary}}>
+                        Saat ile bağla
+                      </Text>
+                      <Image
+                        source={icons.wearable}
+                        className="ml-2 size-7"
+                        tintColor={colors.text.primary}
+                      />
+                    </TouchableOpacity>
+                  )}
+                </View>
                 <ProgressBar
                   value={93}
                   label="Genel Sağlık"
                   iconSource={icons.better_health}
-                  color="#41D16F"></ProgressBar>
+                  color="#41D16F"
+                  updateDisabled={true}
+                />
                 {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
                 <ProgressBar
                   value={heartRate}
@@ -303,18 +406,29 @@ const Profile = () => {
                   color="#FF3F3F"
                   setAddModalFunction={setAddModalFunction}
                   setSymptom={setHeartRate}
-                  onAdd={setIsAddModalVisible}></ProgressBar>
+                  onAdd={setIsAddModalVisible}
+                  updateDisabled={
+                    healthConnectSymptoms?.pulse &&
+                    healthConnectSymptoms?.pulse > 0
+                      ? true
+                      : false
+                  }
+                />
                 <ProgressBar
                   // Düzenlenecek
                   value={96}
                   label="O2 Seviyesi"
                   iconSource={icons.o2sat}
-                  color="#2CA4FF"></ProgressBar>
+                  color="#2CA4FF"
+                  // updateDisabled={symptoms?.o2Level && healthConnectSymptoms?.o2Level > 0 ? true : false}
+                />
                 {/* <ProgressBar
-            value={83}
-            label="Tansiyon"
-            iconSource={icons.blood_pressure}
-            color="#FF9900"></ProgressBar> FDEF22*/}
+                  value={83}
+                  label="Tansiyon"
+                  iconSource={icons.blood_pressure}
+                  color="#FF9900"
+                /> */}
+                {/* FDEF22 */}
                 <ProgressBar
                   value={activeCaloriesBurned}
                   label="Yakılan Kalori"
@@ -322,7 +436,14 @@ const Profile = () => {
                   color="#FF9900"
                   setAddModalFunction={setAddModalFunction}
                   setSymptom={setActiveCaloriesBurned}
-                  onAdd={setIsAddModalVisible}></ProgressBar>
+                  onAdd={setIsAddModalVisible}
+                  updateDisabled={
+                    healthConnectSymptoms?.activeCaloriesBurned &&
+                    healthConnectSymptoms?.activeCaloriesBurned > 0
+                      ? true
+                      : false
+                  }
+                />
                 <ProgressBar
                   value={steps}
                   label="Adım"
@@ -330,7 +451,14 @@ const Profile = () => {
                   color="#FDEF22"
                   setAddModalFunction={setAddModalFunction}
                   setSymptom={setSteps}
-                  onAdd={setIsAddModalVisible}></ProgressBar>
+                  onAdd={setIsAddModalVisible}
+                  updateDisabled={
+                    healthConnectSymptoms?.steps &&
+                    healthConnectSymptoms?.steps > 0
+                      ? true
+                      : false
+                  }
+                />
                 <ProgressBar
                   value={totalSleepHours}
                   label="Uyku"
@@ -338,7 +466,14 @@ const Profile = () => {
                   color="#FDEF22"
                   setAddModalFunction={setAddModalFunction}
                   setSymptom={setTotalSleepHours}
-                  onAdd={setIsAddModalVisible}></ProgressBar>
+                  onAdd={setIsAddModalVisible}
+                  updateDisabled={
+                    healthConnectSymptoms?.sleepHours &&
+                    healthConnectSymptoms?.sleepHours > 0
+                      ? true
+                      : false
+                  }
+                />
                 {sleepSessions.length > 0 && sleepSessions[0] !== '' && (
                   <>
                     <Text
@@ -362,6 +497,27 @@ const Profile = () => {
               </View>
             </>
           )}
+
+          <CustomAlert
+            message={
+              'Devam etmek için Health Connect uygulamasını indirmeniz gerekiyor. Şimdi Play Store’a gitmek istiyor musunuz?'
+            }
+            isPositive={true}
+            visible={showHCAlert}
+            onYes={() => {
+              Linking.openURL(
+                'https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata',
+              ).catch(err =>
+                console.warn('Failed to open Health Connect page:', err),
+              );
+              setShowHCAlert(false);
+            }}
+            onYesText={`Play Store'a Git`}
+            onCancel={() => {
+              setShowHCAlert(false);
+            }}
+            onCancelText="Vazgeç"
+          />
 
           <Modal
             transparent={true}

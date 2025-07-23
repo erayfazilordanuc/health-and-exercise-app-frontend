@@ -4,12 +4,25 @@ import {useTheme} from '../themes/ThemeProvider';
 
 interface CustomAlertProps {
   message: string;
+  secondMessage?: string;
   visible: boolean;
   onYes: () => void;
   onCancel: () => void;
+  isPositive?: boolean;
+  onCancelText?: string;
+  onYesText?: string;
 }
 
-const CustomAlert = ({message, visible, onYes, onCancel}: CustomAlertProps) => {
+const CustomAlert = ({
+  message,
+  secondMessage,
+  visible,
+  onYes,
+  onCancel,
+  isPositive,
+  onCancelText,
+  onYesText,
+}: CustomAlertProps) => {
   const {theme, colors, setTheme} = useTheme();
 
   return (
@@ -23,11 +36,18 @@ const CustomAlert = ({message, visible, onYes, onCancel}: CustomAlertProps) => {
           className="w-4/5 rounded-xl p-5 py-6 items-center"
           style={{backgroundColor: colors.background.primary}}>
           <Text
-            className="text-lg font-bold mb-6 text-center"
+            className="text-lg font-rubik text-center"
             style={{color: colors.text.primary}}>
             {message ? message : 'Emin misiniz?'}
           </Text>
-          <View className="flex-row justify-between w-full">
+          {secondMessage && (
+            <Text
+              className="text-sm font-rubik text-center mt-4"
+              style={{color: colors.text.primary}}>
+              {'Not: ' + secondMessage}
+            </Text>
+          )}
+          <View className="flex-row justify-between w-full mt-6">
             <TouchableOpacity
               onPress={onCancel}
               className="flex-1 p-2 rounded-lg items-center mx-1"
@@ -35,7 +55,7 @@ const CustomAlert = ({message, visible, onYes, onCancel}: CustomAlertProps) => {
               <Text
                 className="text-base font-bold"
                 style={{color: colors.text.primary}}>
-                Hayır
+                {onCancelText ? onCancelText : 'İptal'}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -43,8 +63,16 @@ const CustomAlert = ({message, visible, onYes, onCancel}: CustomAlertProps) => {
                 onYes();
                 visible = true;
               }}
-              className="flex-1 p-2 bg-red-500 rounded-lg items-center mx-1">
-              <Text className="text-base font-bold text-white">Evet</Text>
+              className="flex-1 p-2  rounded-lg items-center mx-1"
+              style={{
+                backgroundColor: isPositive ? '#16d750' : 'rgb(239 68 68)',
+              }}>
+              <Text
+                className={`text-base font-bold text-white ${
+                  onYesText ? '' : 'mr-1'
+                }`}>
+                {onYesText ? onYesText : 'Evet'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -252,16 +252,21 @@ function AdminLogin() {
                 : 40
               : 96,
         }}>
-        <Text
+        {/* <Text
           className="text-3xl text-center uppercase font-rubik-bold mt-6 mb-4"
           style={{color: '#0091ff'}}>
           EGZERSİZ TAKİP{'\n'}VE{'\n'}SAĞLIK{'\n'}
           <Text className="text-center" style={{color: colors.text.primary}}>
             Uygulaması
           </Text>
+        </Text> */}
+        <Text
+          className="text-center font-rubik-bold mt-8 mb-8"
+          style={{color: '#0091ff', fontSize: 40}}>
+          HopeMove
         </Text>
         <Text
-          className="text-3xl font-rubik-medium text-center mt-4 mb-4"
+          className="text-3xl font-rubik-semibold text-center mt-6 mb-4"
           style={{color: colors.text.primary}}>
           Hemşire Girişi
         </Text>
@@ -353,7 +358,7 @@ function AdminLogin() {
             {/* TO DO icon can be changed */}
             <Image
               source={showPassword ? icons.show : icons.hide}
-              className="size-7 mr-2"
+              className="size-6 mr-2"
               tintColor={'gray'}
             />
           </TouchableOpacity>

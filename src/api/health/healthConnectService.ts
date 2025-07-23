@@ -322,7 +322,33 @@ function withTimeout<T>(
 }
 
 export const saveAndGetSymptoms = async (symptoms?: Symptoms) => {
-  if (!(await initializeService())) return null;
+  const key = todayKey();
+  console.log('key', key);
+
+  if (!(await initializeService())) {
+    if (symptoms) {
+      const localSymptomsObjectToSave: LocalSymptoms = {
+        symptoms: symptoms,
+        isSynced: false,
+      };
+      await AsyncStorage.setItem(
+        key,
+        JSON.stringify(localSymptomsObjectToSave),
+      );
+      try {
+        const response = await upsertSymptomsByDate(new Date(), symptoms);
+        if (response.status === 200) {
+          localSymptomsObjectToSave.isSynced = true;
+        }
+        await AsyncStorage.setItem(
+          key,
+          JSON.stringify(localSymptomsObjectToSave),
+        );
+      } catch (error) {
+        return;
+      }
+    }
+  }
 
   console.log('getHeartRate start');
   const heartRate = await withTimeout(getHeartRate(), 5000, -1);
@@ -361,9 +387,6 @@ export const saveAndGetSymptoms = async (symptoms?: Symptoms) => {
   console.log('Total Sleep Hours:', totalSleepHours);
   console.log('Sleep Sessions:', sleepSessions);
   console.log('------------------------------');
-
-  const key = todayKey();
-  console.log('key', key);
 
   console.log('getAllKeys start');
   const allKeys = await AsyncStorage.getAllKeys();
@@ -449,4 +472,48 @@ export const saveAndGetSymptoms = async (symptoms?: Symptoms) => {
   }
 
   return localSymptoms;
+};
+
+export const getSymptoms = async () => {
+  if (await initializeService()) {
+    console.log('getHeartRate start');
+    const heartRate = await withTimeout(getHeartRate(), 5000, -1);
+    console.log('getHeartRate done', heartRate);
+
+    console.log('getAggregatedSteps start');
+    let aggregatedSteps = await withTimeout(getAggregatedSteps(), 5000, -1);
+    console.log('getAggregatedSteps done', aggregatedSteps);
+
+    if (aggregatedSteps === -1) {
+      console.log('getSteps start');
+      let aggregatedSteps = await withTimeout(getSteps(), 5000, -1);
+      console.log('getSteps done', aggregatedSteps);
+    }
+
+    console.log('getActiveCaloriesBurned start');
+    const activeCaloriesBurned = await withTimeout(
+      getActiveCaloriesBurned(),
+      5000,
+      -1,
+    );
+    console.log('getActiveCaloriesBurned done', activeCaloriesBurned);
+
+    console.log('getTotalSleepHours start');
+    const totalSleepHours = await withTimeout(getTotalSleepHours(), 5000, -1);
+    console.log('getTotalSleepHours done', totalSleepHours);
+
+    console.log('getAllSleepSessions start');
+    const sleepSessions = await withTimeout(getAllSleepSessions(), 5000, ['']);
+    console.log('getAllSleepSessions done', sleepSessions);
+
+    const symptoms: Symptoms = {
+      pulse: heartRate,
+      steps: aggregatedSteps,
+      activeCaloriesBurned: activeCaloriesBurned,
+      sleepHours: totalSleepHours,
+      sleepSessions: sleepSessions,
+    };
+
+    return symptoms;
+  }
 };

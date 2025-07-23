@@ -44,7 +44,7 @@ import ExercisesUser from '../screens/exercises/user/ExercisesUser';
 import ExercisesAdmin from '../screens/exercises/admin/ExercisesAdmin';
 import AllExercises from '../screens/exercises/user/AllExercises';
 import EditExercise from '../screens/exercises/admin/EditExercise';
-import Achievements from '../screens/groups/Achievements';
+import Achievements from '../screens/groups/Progress';
 
 const Tab = createBottomTabNavigator();
 

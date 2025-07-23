@@ -34,12 +34,6 @@ export const getUserById = async (id: number) => {
   return user;
 };
 
-export const getUsersByGroupId = async (groupId: number) => {
-  const response = await apiClient.get(`/users/group/id/${groupId}`);
-  console.log('users', response);
-  return response;
-};
-
 export const getUserByUsername = async (username: string) => {
   const response = await apiClient.get(`/users/${username}`);
   console.log('user by id', response);

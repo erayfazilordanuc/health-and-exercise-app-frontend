@@ -44,6 +44,7 @@ import * as Progress from 'react-native-progress';
 import CustomAlert from '../../../components/CustomAlert';
 import {createThumbnail} from 'react-native-create-thumbnail';
 import RNFS from 'react-native-fs';
+import RNBlob from 'react-native-blob-util';
 
 type EditExerciseRouteProp = RouteProp<ExercisesStackParamList, 'EditExercise'>;
 const EditExercise = () => {
@@ -297,6 +298,15 @@ const EditExercise = () => {
     return 'file://' + dest;
   }
 
+  const resolveVideoPath = async (asset: Asset) => {
+    const uri = asset.originalPath ?? asset.uri!;
+    if (Platform.OS === 'android' && uri.startsWith('content://')) {
+      const {path} = await RNBlob.fs.stat(uri); // gerçek dosya
+      return 'file://' + path;
+    }
+    return uri; // iOS veya zaten file://
+  };
+
   useEffect(() => {
     let isActive = true;
 
@@ -333,8 +343,9 @@ const EditExercise = () => {
         const uri = v.originalPath ?? v.uri;
         if (!uri || pendingThumbs[uri]) continue; // zaten üretilmiş mi?
         try {
+          const localPath = await resolveVideoPath(v);
           const {path} = await createThumbnail({
-            url: await safeUri(uri),
+            url: localPath,
             timeStamp: 1000,
             format: 'jpeg',
             maxWidth: 512,

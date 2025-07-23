@@ -21,18 +21,30 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useTheme} from '../../../themes/ThemeProvider';
-import icons from '../../../constants/icons';
-import {getAchievementsByUserId} from '../../../api/exercise/achievementService';
-import {useUser} from '../../../contexts/UserContext';
+import {useTheme} from '../../themes/ThemeProvider';
+import icons from '../../constants/icons';
+import {getProgressByUserId} from '../../api/exercise/progressService';
 
-const Achievements = () => {
+type ProgressRouteProp = RouteProp<GroupsStackParamList, 'Progress'>;
+const Progress = () => {
   const insets = useSafeAreaInsets();
+  const {params} = useRoute<ProgressRouteProp>();
+  const {member} = params;
   const {colors} = useTheme();
   const [loading, setLoading] = useState(false);
-  const navigation = useNavigation<ExercisesScreenNavigationProp>();
+  const navigation = useNavigation<GroupsScreenNavigationProp>();
 
-  const {user, setUser} = useUser();
+  const [progress, setProgress] = useState<AchievementDTO[]>([]);
+
+  const fetchProgress = async () => {
+    const progress: AchievementDTO[] = await getProgressByUserId(member.id!);
+
+    if (progress) setProgress(progress);
+  };
+
+  useEffect(() => {
+    fetchProgress();
+  }, []);
 
   return (
     <>
@@ -49,7 +61,7 @@ const Achievements = () => {
             color: colors.text.primary,
             fontSize: 24,
           }}>
-          Başarımlar ve İlerleme
+          Egzersiz İlerlemesi
         </Text>
       </View>
       <View
@@ -60,8 +72,10 @@ const Achievements = () => {
         <View
           className="px-4 pb-3 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
-          <Text className="pl-2 font-rubik text-2xl pt-3">Başarımlar</Text>
-          {user?.achievements.map((a, index) => (
+          <Text className="pl-2 font-rubik text-2xl pt-3">
+            Tamamlanan Egzersizler
+          </Text>
+          {progress.map((a, index) => (
             <View
               key={index}
               className="px-2 py-3 rounded-2xl mt-3"
@@ -78,7 +92,23 @@ const Achievements = () => {
           <Text className="pl-2 font-rubik text-2xl pt-3">
             Devam Eden Egzersiz İlerlemeleri
           </Text>
-          {user?.achievements.map((a, index) => (
+          {progress.map((a, index) => (
+            <View
+              key={index}
+              className="px-2 py-3 rounded-2xl mt-3"
+              style={{backgroundColor: colors.background.secondary}}>
+              <Text className="pl-2 font-rubik text-xl">{a.id}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View
+          className="px-4 pb-3 rounded-2xl mt-3"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text className="pl-2 font-rubik text-2xl pt-3">
+            Günlük Egzersiz İlerlemeleri
+          </Text>
+          {progress.map((a, index) => (
             <View
               key={index}
               className="px-2 py-3 rounded-2xl mt-3"
@@ -92,4 +122,4 @@ const Achievements = () => {
   );
 };
 
-export default Achievements;
+export default Progress;
