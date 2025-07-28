@@ -73,6 +73,8 @@ const EditExercise = () => {
   const [pendingThumbs, setPendingThumbs] = useState<Record<string, string>>(
     {},
   );
+  const [newVideos, setNewVideos] = useState<CreateExerciseVideoDTO[]>([]);
+  const [pendingVideoNames, setPendingVideoNames] = useState<string[]>([]);
   const [pendingVideos, setPendingVideos] = useState<Asset[]>([]);
   const [videoLoading, setVideoLoading] = useState(false);
 
@@ -170,6 +172,7 @@ const EditExercise = () => {
           const updatedExercise: ExerciseDTO = await addVideoToExercise(
             snapExerciseId!,
             publicUrl,
+            newVideos[idx].name ? newVideos[idx].name : '',
           );
           setEditedExercise(updatedExercise);
         } catch (e) {
@@ -238,6 +241,21 @@ const EditExercise = () => {
         },
       );
     });
+
+  const onAddVideoObject = async () => {
+    try {
+      const exerciseVideoDTO: CreateExerciseVideoDTO = {
+        name: '',
+        videoUrl: null,
+        exerciseId: editedExercise.id,
+      };
+      setNewVideos(prev => [...prev, exerciseVideoDTO]);
+    } catch (e) {
+      console.warn('Video seçilemedi', e);
+    } finally {
+      setVideoLoading(false);
+    }
+  };
 
   const onAddVideo = async () => {
     try {
@@ -479,16 +497,12 @@ const EditExercise = () => {
         <View
           className="px-5 py-3 rounded-2xl mb-3"
           style={{backgroundColor: colors.background.primary}}>
-          <Text
-            className="font-rubik text-2xl mb-3"
-            style={{color: colors.text.primary}}>
-            Egzersiz Puanı
-          </Text>
-          <View
-            className="flex flex-row justify-between mb-1 rounded-2xl pl-3"
-            style={{
-              backgroundColor: colors.background.secondary,
-            }}>
+          <View className="flex flex-row justify-between items-center rounded-2xl">
+            <Text
+              className="font-rubik text-2xl mr-6"
+              style={{color: colors.text.primary}}>
+              Egzersiz Puanı
+            </Text>
             <TextInput
               value={
                 editedExercise.point ? editedExercise.point.toString() : ''
@@ -499,7 +513,7 @@ const EditExercise = () => {
                 setEditedExercise(prev => ({...prev!, point: parseInt(text)}))
               }
               selectionColor={'#7AADFF'}
-              className="flex-1 font-rubik text-xl rounded-2xl"
+              className="flex-1 font-rubik text-xl rounded-2xl pl-4"
               style={{
                 backgroundColor: colors.background.secondary,
                 color: colors.text.primary,
@@ -513,7 +527,7 @@ const EditExercise = () => {
           className="px-5 pt-3 rounded-2xl mb-3"
           style={{backgroundColor: colors.background.primary}}>
           <Text
-            className="font-rubik text-2xl mb-3"
+            className="font-rubik text-2xl mb-4"
             style={{color: colors.text.primary}}>
             Egzersiz Videoları
           </Text>
@@ -523,51 +537,219 @@ const EditExercise = () => {
             editedExercise.videos.map((video, index) => (
               <View
                 key={index}
-                className="w-full rounded-xl p-3 mb-3"
+                className="w-full rounded-xl p-3 mb-2"
                 style={{backgroundColor: colors.background.secondary}}>
-                <VideoPlayer
-                  source={{uri: video.videoUrl}}
-                  autoplay={false}
-                  style={{
-                    width: '100%',
-                    aspectRatio: 16 / 9,
-                    backgroundColor: 'white',
-                  }}
-                  thumbnail={
-                    thumbs[video.videoUrl]
-                      ? {uri: thumbs[video.videoUrl]}
-                      : icons.exercise_screen
+                <Text
+                  className="font-rubik text-xl ml-2 mb-2 mr-5"
+                  style={{color: colors.text.primary}}>
+                  Video ismi
+                </Text>
+                <TextInput
+                  value={editedExercise.videos[index].name}
+                  placeholder="İsim girin"
+                  placeholderTextColor="gray"
+                  onChangeText={text =>
+                    setNewVideos(prev =>
+                      prev.map((v, i) =>
+                        i === index ? {...v, name: text} : v,
+                      ),
+                    )
                   }
-                  customStyles={{
-                    videoWrapper: {borderRadius: 10},
-                    controlButton: {opacity: 0.9},
-                    thumbnail: {
-                      borderRadius: 15,
-                      width: 125,
-                      height: 125,
-                      alignSelf: 'center',
-                      justifyContent: 'center',
-                    },
-                    thumbnailImage: {
-                      width: '100%',
-                      height: '100%',
-                      resizeMode: 'center',
-                    },
+                  selectionColor={'#7AADFF'}
+                  className="flex-1 font-rubik text-xl rounded-2xl pl-4"
+                  style={{
+                    backgroundColor: colors.background.primary,
+                    color: colors.text.primary,
                   }}
                 />
+                <View
+                  className="p-3 rounded-2xl mt-2"
+                  style={{backgroundColor: colors.background.primary}}>
+                  <VideoPlayer
+                    source={{uri: video.videoUrl}}
+                    autoplay={false}
+                    style={{
+                      width: '100%',
+                      aspectRatio: 16 / 9,
+                      backgroundColor: 'white',
+                    }}
+                    thumbnail={
+                      thumbs[video.videoUrl]
+                        ? {uri: thumbs[video.videoUrl]}
+                        : icons.exercise_screen
+                    }
+                    customStyles={{
+                      videoWrapper: {borderRadius: 10},
+                      controlButton: {opacity: 0.9},
+                      thumbnail: {
+                        borderRadius: 15,
+                        width: 125,
+                        height: 125,
+                        alignSelf: 'center',
+                        justifyContent: 'center',
+                      },
+                      thumbnailImage: {
+                        width: '100%',
+                        height: '100%',
+                        resizeMode: 'center',
+                      },
+                    }}
+                  />
 
-                <View className="flex flex-row justify-between items-center px-5 mt-3">
-                  <Text
-                    className="font-rubik text-center text-md"
-                    style={{color: colors.text.primary}}>
-                    Video {index + 1}
-                  </Text>
+                  <View className="flex flex-row justify-between items-center px-5 mt-3">
+                    <Text
+                      className="font-rubik text-center text-md"
+                      style={{color: colors.text.primary}}>
+                      Video {index + 1}
+                    </Text>
+                    <TouchableOpacity
+                      className="px-4 py-1 rounded-xl"
+                      style={{
+                        backgroundColor: '#fd5353',
+                      }}
+                      onPress={() => setIsDeleteVideoModalVisible(true)}>
+                      <Text
+                        className="font-rubik text-center text-md"
+                        style={{color: colors.background.secondary}}>
+                        Sil
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <CustomAlert
+                    message={'Videoyu silmek istediğinize emin misiniz?'}
+                    visible={isDeleteVideoModalVisible}
+                    onYes={() => {
+                      onDeleteVideoFromExercise(video.videoUrl);
+                      setIsDeleteVideoModalVisible(false);
+                    }}
+                    onCancel={() => {
+                      setIsDeleteVideoModalVisible(false);
+                    }}
+                  />
+                </View>
+              </View>
+            ))}
+
+          {newVideos.map((video, index) => (
+            <View
+              key={index}
+              className="flex flex-col justify-between mb-3 rounded-2xl pl-3 p-3"
+              style={{
+                backgroundColor: colors.background.secondary,
+              }}>
+              <Text
+                className="font-rubik text-xl ml-2 mb-2 mr-5"
+                style={{color: colors.text.primary}}>
+                Video ismi
+              </Text>
+              <TextInput
+                value={newVideos[index].name ? newVideos[index].name : ''}
+                placeholder="İsim girin"
+                placeholderTextColor="gray"
+                onChangeText={text =>
+                  setNewVideos(prev =>
+                    prev.map((v, i) => (i === index ? {...v, name: text} : v)),
+                  )
+                }
+                selectionColor={'#7AADFF'}
+                className="flex-1 font-rubik text-xl rounded-2xl pl-4"
+                style={{
+                  backgroundColor: colors.background.primary,
+                  color: colors.text.primary,
+                }}
+              />
+              {pendingVideos[index] ? (
+                <View
+                  key={index}
+                  className="w-full rounded-xl p-3 mt-2"
+                  style={{backgroundColor: colors.background.primary}}>
+                  <VideoPlayer
+                    source={{uri: pendingVideos[index].originalPath}}
+                    autoplay={false}
+                    style={{
+                      width: '100%',
+                      aspectRatio: 16 / 9,
+                      backgroundColor: 'white',
+                    }}
+                    // thumbnail={
+                    //   pendingThumbs[video.originalPath ?? video.uri!]
+                    //     ? {uri: pendingThumbs[video.originalPath ?? video.uri!]}
+                    //     : icons.exercise_screen
+                    // }
+                    thumbnail={icons.exercise_screen}
+                    // customStyles={{
+                    //   videoWrapper: {borderRadius: 10},
+                    //   controlButton: {opacity: 0.9},
+                    //   thumbnail: {
+                    //     borderRadius: 15,
+                    //     width: 80,
+                    //     height: 80,
+                    //     alignSelf: 'center',
+                    //     justifyContent: 'center',
+                    //   },
+                    //   thumbnailImage: {
+                    //     width: '100%',
+                    //     height: '100%',
+                    //     resizeMode: 'cover',
+                    //   },
+                    // }}
+                    customStyles={{
+                      videoWrapper: {borderRadius: 10},
+                      controlButton: {opacity: 0.9},
+                      thumbnail: {
+                        borderRadius: 15,
+                        width: 125,
+                        height: 125,
+                        alignSelf: 'center',
+                        justifyContent: 'center',
+                      },
+                      thumbnailImage: {
+                        width: '100%',
+                        height: '100%',
+                        resizeMode: 'center',
+                      },
+                    }}
+                  />
+
+                  <View className="flex flex-row justify-between items-center px-5 mt-3">
+                    <Text
+                      className="font-rubik text-center text-md"
+                      style={{color: colors.text.primary}}>
+                      Yeni Video
+                    </Text>
+                    <TouchableOpacity
+                      className="px-4 py-1 rounded-xl"
+                      style={{
+                        backgroundColor: '#fd5353',
+                      }}
+                      onPress={() => onDeletePendingVideo(index)}>
+                      <Text
+                        className="font-rubik text-center text-md"
+                        style={{color: colors.background.secondary}}>
+                        Sil
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <View className="flex flex-row justify-between items-center mt-2">
+                  <TouchableOpacity
+                    className="flex flex-row self-start rounded-xl p-3 items-center justify-start"
+                    style={{backgroundColor: colors.background.primary}}
+                    onPress={onAddVideo}>
+                    <Text className="font-rubik text-md pl-1">Video yükle</Text>
+                    <Image
+                      source={icons.plus_sign}
+                      tintColor={colors.text.primary}
+                      className="size-5 ml-2"
+                    />
+                  </TouchableOpacity>
                   <TouchableOpacity
                     className="px-4 py-1 rounded-xl"
                     style={{
                       backgroundColor: '#fd5353',
                     }}
-                    onPress={() => setIsDeleteVideoModalVisible(true)}>
+                    onPress={() => onDeletePendingVideo(index)}>
                     <Text
                       className="font-rubik text-center text-md"
                       style={{color: colors.background.secondary}}>
@@ -575,98 +757,14 @@ const EditExercise = () => {
                     </Text>
                   </TouchableOpacity>
                 </View>
-                <CustomAlert
-                  message={'Videoyu silmek istediğinize emin misiniz?'}
-                  visible={isDeleteVideoModalVisible}
-                  onYes={() => {
-                    onDeleteVideoFromExercise(video.videoUrl);
-                    setIsDeleteVideoModalVisible(false);
-                  }}
-                  onCancel={() => {
-                    setIsDeleteVideoModalVisible(false);
-                  }}
-                />
-              </View>
-            ))}
-          {pendingVideos.map((video, index) => (
-            <View
-              key={index}
-              className="w-full rounded-xl p-3 mb-3"
-              style={{backgroundColor: colors.background.secondary}}>
-              <VideoPlayer
-                source={{uri: video.originalPath}}
-                autoplay={false}
-                style={{
-                  width: '100%',
-                  aspectRatio: 16 / 9,
-                  backgroundColor: 'white',
-                }}
-                // thumbnail={
-                //   pendingThumbs[video.originalPath ?? video.uri!]
-                //     ? {uri: pendingThumbs[video.originalPath ?? video.uri!]}
-                //     : icons.exercise_screen
-                // }
-                thumbnail={icons.exercise_screen}
-                // customStyles={{
-                //   videoWrapper: {borderRadius: 10},
-                //   controlButton: {opacity: 0.9},
-                //   thumbnail: {
-                //     borderRadius: 15,
-                //     width: 80,
-                //     height: 80,
-                //     alignSelf: 'center',
-                //     justifyContent: 'center',
-                //   },
-                //   thumbnailImage: {
-                //     width: '100%',
-                //     height: '100%',
-                //     resizeMode: 'cover',
-                //   },
-                // }}
-                customStyles={{
-                  videoWrapper: {borderRadius: 10},
-                  controlButton: {opacity: 0.9},
-                  thumbnail: {
-                    borderRadius: 15,
-                    width: 125,
-                    height: 125,
-                    alignSelf: 'center',
-                    justifyContent: 'center',
-                  },
-                  thumbnailImage: {
-                    width: '100%',
-                    height: '100%',
-                    resizeMode: 'center',
-                  },
-                }}
-              />
-
-              <View className="flex flex-row justify-between items-center px-5 mt-3">
-                <Text
-                  className="font-rubik text-center text-md"
-                  style={{color: colors.text.primary}}>
-                  Yeni Video
-                </Text>
-                <TouchableOpacity
-                  className="px-4 py-1 rounded-xl"
-                  style={{
-                    backgroundColor: '#fd5353',
-                  }}
-                  onPress={() => onDeletePendingVideo(index)}>
-                  <Text
-                    className="font-rubik text-center text-md"
-                    style={{color: colors.background.secondary}}>
-                    Sil
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              )}
             </View>
           ))}
           {!videoLoading ? (
             <TouchableOpacity
-              className="flex flex-row self-start rounded-xl p-3 mb-4 items-center justify-start"
+              className="flex flex-row self-start rounded-xl p-3 mb-4 mt-1 items-center justify-start"
               style={{backgroundColor: colors.background.secondary}}
-              onPress={onAddVideo}>
+              onPress={onAddVideoObject}>
               <Text className="font-rubik text-md pl-1">Video ekle</Text>
               <Image
                 source={icons.plus_sign}

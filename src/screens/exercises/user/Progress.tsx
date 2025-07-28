@@ -21,9 +21,9 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useTheme} from '../../../themes/ThemeProvider';exercise arch initialization
+import {useTheme} from '../../../themes/ThemeProvider';
 import icons from '../../../constants/icons';
-import {getProgressByUserId} from '../../../api/exercise/progressService';
+import {getTodaysProgressByUserId} from '../../../api/exercise/progressService';
 
 type ProgressRouteProp = RouteProp<GroupsStackParamList, 'Progress'>;
 const Progress = () => {
@@ -37,7 +37,9 @@ const Progress = () => {
   const [progress, setProgress] = useState<AchievementDTO[]>([]);
 
   const fetchProgress = async () => {
-    const progress: AchievementDTO[] = await getProgressByUserId(member.id!);
+    const progress: AchievementDTO[] = await getTodaysProgressByUserId(
+      member.id!,
+    );
 
     if (progress) setProgress(progress);
   };

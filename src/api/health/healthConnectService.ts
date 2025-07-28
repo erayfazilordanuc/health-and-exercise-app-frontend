@@ -321,131 +321,10 @@ function withTimeout<T>(
   });
 }
 
-export const saveAndGetSymptoms = async (symptoms?: Symptoms) => {
+export const saveSymptoms = async (symptoms: Symptoms) => {
   const key = todayKey();
-  console.log('key', key);
 
-  if (!(await initializeService())) {
-    if (symptoms) {
-      const localSymptomsObjectToSave: LocalSymptoms = {
-        symptoms: symptoms,
-        isSynced: false,
-      };
-      await AsyncStorage.setItem(
-        key,
-        JSON.stringify(localSymptomsObjectToSave),
-      );
-      try {
-        const response = await upsertSymptomsByDate(new Date(), symptoms);
-        if (response.status === 200) {
-          localSymptomsObjectToSave.isSynced = true;
-        }
-        await AsyncStorage.setItem(
-          key,
-          JSON.stringify(localSymptomsObjectToSave),
-        );
-      } catch (error) {
-        return;
-      }
-    }
-  }
-
-  console.log('getHeartRate start');
-  const heartRate = await withTimeout(getHeartRate(), 5000, -1);
-  console.log('getHeartRate done', heartRate);
-
-  console.log('getAggregatedSteps start');
-  let aggregatedSteps = await withTimeout(getAggregatedSteps(), 5000, -1);
-  console.log('getAggregatedSteps done', aggregatedSteps);
-
-  if (aggregatedSteps === -1) {
-    console.log('getSteps start');
-    let aggregatedSteps = await withTimeout(getSteps(), 5000, -1);
-    console.log('getSteps done', aggregatedSteps);
-  }
-
-  console.log('getActiveCaloriesBurned start');
-  const activeCaloriesBurned = await withTimeout(
-    getActiveCaloriesBurned(),
-    5000,
-    -1,
-  );
-  console.log('getActiveCaloriesBurned done', activeCaloriesBurned);
-
-  console.log('getTotalSleepHours start');
-  const totalSleepHours = await withTimeout(getTotalSleepHours(), 5000, -1);
-  console.log('getTotalSleepHours done', totalSleepHours);
-
-  console.log('getAllSleepSessions start');
-  const sleepSessions = await withTimeout(getAllSleepSessions(), 5000, ['']);
-  console.log('getAllSleepSessions done', sleepSessions);
-
-  console.log('------ Health Data Log ------');
-  console.log('Heart Rate:', heartRate);
-  console.log('Aggregated Steps:', aggregatedSteps);
-  console.log('Active Calories Burned:', activeCaloriesBurned);
-  console.log('Total Sleep Hours:', totalSleepHours);
-  console.log('Sleep Sessions:', sleepSessions);
-  console.log('------------------------------');
-
-  console.log('getAllKeys start');
-  const allKeys = await AsyncStorage.getAllKeys();
-  console.log('getAllKeys done', allKeys);
-  if (allKeys) {
-    const outdated = allKeys.filter(k => k.startsWith(keyPrefix) && k !== key);
-    if (outdated.length) await AsyncStorage.multiRemove(outdated);
-  }
-
-  const localData = await AsyncStorage.getItem(key);
-  console.log('localData', localData);
-  let localSymptoms: Symptoms = {};
-  if (localData) {
-    const localSymptomsObject: LocalSymptoms = JSON.parse(localData);
-    localSymptoms = localSymptomsObject.symptoms;
-  }
-  localSymptoms.pulse =
-    heartRate === -1
-      ? symptoms?.pulse
-        ? symptoms.pulse
-        : localSymptoms.pulse
-      : heartRate;
-
-  localSymptoms.steps =
-    aggregatedSteps === -1
-      ? symptoms?.steps
-        ? symptoms.steps
-        : localSymptoms.steps
-      : aggregatedSteps;
-
-  localSymptoms.activeCaloriesBurned =
-    activeCaloriesBurned === -1
-      ? symptoms?.activeCaloriesBurned
-        ? symptoms.activeCaloriesBurned
-        : localSymptoms.activeCaloriesBurned
-      : activeCaloriesBurned;
-
-  localSymptoms.sleepHours =
-    totalSleepHours === -1
-      ? symptoms?.sleepHours
-        ? symptoms.sleepHours
-        : localSymptoms.sleepHours
-      : totalSleepHours;
-
-  localSymptoms.sleepSessions =
-    sleepSessions.length === 0
-      ? symptoms?.sleepSessions
-        ? symptoms.sleepSessions
-        : localSymptoms.sleepSessions
-      : sleepSessions;
-
-  console.log('Local Symptoms', localSymptoms);
-
-  const localSymptomsObjectToSave: LocalSymptoms = {
-    symptoms: localSymptoms,
-    isSynced: false,
-  };
-  await AsyncStorage.setItem(key, JSON.stringify(localSymptomsObjectToSave));
-
+  console.log();
   const state = await NetInfo.fetch();
   const isConnected = state.isConnected;
   if (!isConnected) {
@@ -461,18 +340,151 @@ export const saveAndGetSymptoms = async (symptoms?: Symptoms) => {
     return;
   }
 
+  let symptomsObjectToSave: LocalSymptoms = {
+    symptoms: symptoms,
+    isSynced: false,
+  };
+
+  // if (!(await initializeService())) {
+  //   if (symptoms) {
+  //     await AsyncStorage.setItem(key, JSON.stringify(symptomsObjectToSave));
+  //     try {
+  //       const response = await upsertSymptomsByDate(new Date(), symptoms);
+  //       if (response.status === 200) {
+  //         symptomsObjectToSave.isSynced = true;
+  //       }
+  //       await AsyncStorage.setItem(key, JSON.stringify(symptomsObjectToSave));
+  //     } catch (error) {
+  //       return;
+  //     }
+  //   }
+  // }
+
   try {
-    const response = await upsertSymptomsByDate(new Date(), localSymptoms);
+    const response = await upsertSymptomsByDate(new Date(), symptoms);
     if (response.status === 200) {
-      localSymptomsObjectToSave.isSynced = true;
+      symptomsObjectToSave.isSynced = true;
     }
-    await AsyncStorage.setItem(key, JSON.stringify(localSymptomsObjectToSave));
+
+    await AsyncStorage.setItem(key, JSON.stringify(symptomsObjectToSave));
+
+    return response.data as Symptoms;
   } catch (error) {
     return;
   }
-
-  return localSymptoms;
 };
+
+// export const getSymptoms = async () => {
+//   const key = todayKey();
+
+//   if (!(await initializeService())) {
+//     if (symptoms) {
+//       const localSymptomsObjectToSave: LocalSymptoms = {
+//         symptoms: symptoms,
+//         isSynced: false,
+//       };
+//       await AsyncStorage.setItem(
+//         key,
+//         JSON.stringify(localSymptomsObjectToSave),
+//       );
+//       try {
+//         const response = await upsertSymptomsByDate(new Date(), symptoms);
+//         if (response.status === 200) {
+//           localSymptomsObjectToSave.isSynced = true;
+//         }
+//         await AsyncStorage.setItem(
+//           key,
+//           JSON.stringify(localSymptomsObjectToSave),
+//         );
+//       } catch (error) {
+//         return;
+//       }
+//     }
+//   }
+
+//   const heartRate = await withTimeout(getHeartRate(), 5000, -1);
+//   let aggregatedSteps = await withTimeout(getAggregatedSteps(), 5000, -1);
+//   if (aggregatedSteps === -1) {
+//     aggregatedSteps = await withTimeout(getSteps(), 5000, -1);
+//   }
+//   const activeCaloriesBurned = await withTimeout(
+//     getActiveCaloriesBurned(),
+//     5000,
+//     -1,
+//   );
+//   const totalSleepHours = await withTimeout(getTotalSleepHours(), 5000, -1);
+//   const sleepSessions = await withTimeout(getAllSleepSessions(), 5000, ['']);
+
+//   const allKeys = await AsyncStorage.getAllKeys();
+//   if (allKeys) {
+//     const outdated = allKeys.filter(k => k.startsWith(keyPrefix) && k !== key);
+//     if (outdated.length) await AsyncStorage.multiRemove(outdated);
+//   }
+
+//   const localData = await AsyncStorage.getItem(key);
+//   let localSymptoms: Symptoms = {};
+//   if (localData) {
+//     const localSymptomsObject: LocalSymptoms = JSON.parse(localData);
+//     localSymptoms = localSymptomsObject.symptoms;
+//   }
+//   localSymptoms.pulse =
+//     heartRate === -1
+//       ? symptoms?.pulse
+//         ? symptoms.pulse
+//         : localSymptoms.pulse
+//       : heartRate;
+
+//   localSymptoms.steps =
+//     aggregatedSteps === -1
+//       ? symptoms?.steps
+//         ? symptoms.steps
+//         : localSymptoms.steps
+//       : aggregatedSteps;
+
+//   localSymptoms.activeCaloriesBurned =
+//     activeCaloriesBurned === -1
+//       ? symptoms?.activeCaloriesBurned
+//         ? symptoms.activeCaloriesBurned
+//         : localSymptoms.activeCaloriesBurned
+//       : activeCaloriesBurned;
+
+//   localSymptoms.sleepHours =
+//     totalSleepHours === -1
+//       ? symptoms?.sleepHours
+//         ? symptoms.sleepHours
+//         : localSymptoms.sleepHours
+//       : totalSleepHours;
+
+//   localSymptoms.sleepSessions =
+//     sleepSessions.length === 0
+//       ? symptoms?.sleepSessions
+//         ? symptoms.sleepSessions
+//         : localSymptoms.sleepSessions
+//       : sleepSessions;
+
+//   const localSymptomsObjectToSave: LocalSymptoms = {
+//     symptoms: localSymptoms,
+//     isSynced: false,
+//   };
+//   await AsyncStorage.setItem(key, JSON.stringify(localSymptomsObjectToSave));
+
+//   const state = await NetInfo.fetch();
+//   const isConnected = state.isConnected;
+//   if (!isConnected) {
+//     Toast.show({
+//       type: 'error',
+//       text1: 'İnternet bağlantısı yok',
+//       text2: 'Verileriniz senkronize edilemiyor', //'\nVerilerinizi senkronize etmek için lütfen internete bağlanın.'
+//       position: 'top',
+//       visibilityTime: 5500,
+//       text1Style: {fontSize: 18},
+//       text2Style: {fontSize: 16},
+//     });
+//     return;
+//   }
+
+//   return localSymptoms;
+// };
 
 export const getSymptoms = async () => {
   if (await initializeService()) {
@@ -486,7 +498,7 @@ export const getSymptoms = async () => {
 
     if (aggregatedSteps === -1) {
       console.log('getSteps start');
-      let aggregatedSteps = await withTimeout(getSteps(), 5000, -1);
+      aggregatedSteps = await withTimeout(getSteps(), 5000, -1);
       console.log('getSteps done', aggregatedSteps);
     }
 
@@ -506,14 +518,15 @@ export const getSymptoms = async () => {
     const sleepSessions = await withTimeout(getAllSleepSessions(), 5000, ['']);
     console.log('getAllSleepSessions done', sleepSessions);
 
-    const symptoms: Symptoms = {
-      pulse: heartRate,
-      steps: aggregatedSteps,
-      activeCaloriesBurned: activeCaloriesBurned,
-      sleepHours: totalSleepHours,
-      sleepSessions: sleepSessions,
+    const healthConnectSymptoms: Symptoms = {
+      pulse: heartRate === -1 ? null : heartRate,
+      steps: aggregatedSteps === -1 ? null : aggregatedSteps,
+      activeCaloriesBurned:
+        activeCaloriesBurned === -1 ? null : activeCaloriesBurned,
+      sleepHours: totalSleepHours === -1 ? null : totalSleepHours,
+      sleepSessions: sleepSessions.length > 0 ? sleepSessions : [],
     };
 
-    return symptoms;
+    return healthConnectSymptoms;
   }
 };

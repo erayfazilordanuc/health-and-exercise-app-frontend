@@ -9,32 +9,107 @@ import {
   Pressable,
   Modal,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../../../src/themes/ThemeProvider';
 import icons from '../../../src/constants/icons';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {
   createGroup,
+  deleteJoinGroupRequest,
   getAllGroups,
-  joinGroup,
+  getGroupAdmin,
+  getGroupRequestsByUserId,
+  sendJoinGroupRequest,
 } from '../../api/group/groupService';
 import {getUser, updateUser} from '../../api/user/userService';
 import {color} from 'react-native-elements/dist/helpers';
+import {useUser} from '../../contexts/UserContext';
+import CustomAlertSingleton, {
+  CustomAlertSingletonHandle,
+} from '../../components/CustomAlertSingleton';
 
 const Groups = () => {
   const {colors} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<User | null>();
+  const {user} = useUser();
   const [groups, setGroups] = useState<Group[]>([]);
   const [myGroup, setMyGroup] = useState<Group | null>();
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isJoinModalVisible, setIsJoinModalVisible] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [groupToJoin, setGroupToJoin] = useState<Group>();
+  const [groupJoinRequest, setGroupJoinRequest] = useState<GroupRequestDTO>();
+  const [requestedGroupAdmin, setRequestedGroupAdmin] = useState<User>();
+  const alertRef = useRef<CustomAlertSingletonHandle>(null);
+
+  const onCreateGroup = async () => {
+    setLoading(true);
+    if (user) {
+      const createGroupDTO: CreateGroupDTO = {
+        name: newGroupName.trim(),
+        adminId: user.id!,
+      };
+
+      const response = await createGroup(createGroupDTO);
+      if (response.status === 200) {
+        setIsCreateModalVisible(false);
+        setTimeout(() => {
+          navigation.replace('Group', {groupId: response.data.id});
+        }, 250);
+      }
+    }
+    setLoading(false);
+  };
+
+  const onGroupJoinRequest = async () => {
+    setLoading(true);
+    if (user && groupToJoin && groupToJoin.id) {
+      const response = await sendJoinGroupRequest(groupToJoin.id);
+      if (response.status === 200) {
+        ToastAndroid.show(
+          'Gruba katılma isteği gönderildi',
+          ToastAndroid.SHORT,
+        );
+        fetchRequest(user.id!);
+        setIsJoinModalVisible(false);
+        setLoading(false);
+        // setTimeout(() => {
+        //   navigation.replace('Group', {groupId: response.data.groupId});
+        //   setIsJoinModalVisible(false);
+        //   setLoading(false);
+        // }, 750);
+      }
+    }
+  };
+
+  const onDeleteJoinRequest = async () => {
+    alertRef.current?.show({
+      message: 'Gruba katılma isteğini iptal etmek istediğinize emin misin?',
+      // secondMessage: 'Bu işlem geri alınamaz.',
+      isPositive: false,
+      onYesText: 'Evet',
+      onCancelText: 'Vazgeç',
+      onYes: async () => {
+        if (groupJoinRequest) {
+          const response = await deleteJoinGroupRequest(groupJoinRequest.id!);
+          if (response.status === 200) {
+            setGroupJoinRequest(undefined);
+            setRequestedGroupAdmin(undefined);
+            ToastAndroid.show(
+              'Gruba katılma isteği başarıyla iptal edildi',
+              ToastAndroid.SHORT,
+            );
+          }
+        }
+      },
+      onCancel: () => console.log('❌ İPTAL'),
+    });
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -52,12 +127,28 @@ const Groups = () => {
     }, []),
   );
 
-  const fetchUser = async () => {
-    const user = await getUser();
-    setUser(user);
+  const fetchRequest = async (userId: number) => {
+    const groupRequestsResponse = await getGroupRequestsByUserId(userId);
+    if (
+      groupRequestsResponse.status >= 200 &&
+      groupRequestsResponse.status < 300 &&
+      groupRequestsResponse.data
+    ) {
+      setGroupJoinRequest(groupRequestsResponse.data);
+      console.log('aaaaaaaaaaa', groupRequestsResponse.data);
+      const admin = await getGroupAdmin(groupRequestsResponse.data.groupDTO.id);
+      if (admin) setRequestedGroupAdmin(admin);
+      // return;
+    }
   };
 
-  const fetchGroups = async () => {
+  const fetchRequestsAndGroups = async () => {
+    if (!user) return;
+
+    if (user.role === 'ROLE_USER') {
+      fetchRequest(user.id!);
+    }
+
     const response = await getAllGroups();
     if (response) {
       setGroups(response.data);
@@ -71,28 +162,24 @@ const Groups = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchGroups();
+      fetchRequestsAndGroups();
     }, [user]),
   );
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
   const renderItem = ({item}: {item: Group}) => (
     <View
-      className="flex flex-col mb-3 rounded-xl p-4 active:bg-blue-600/20"
-      style={{backgroundColor: colors.background.primary}}>
+      className="flex flex-col mt-3 rounded-2xl p-4 active:bg-blue-600/20"
+      style={{backgroundColor: colors.background.secondary}}>
       <View className="flex flex-row justify-between">
         <Text
           className="text-2xl font-semibold dark:text-blue-300 ml-1"
           style={{color: colors.primary[200]}}>
           {item.name}
         </Text>
-        {user && user.role === 'ROLE_USER' && (
+        {user && user.role === 'ROLE_USER' && !groupJoinRequest && (
           <TouchableOpacity
             className="py-3 px-4 rounded-2xl"
-            style={{backgroundColor: colors.background.secondary}}
+            style={{backgroundColor: colors.background.primary}}
             onPress={() => {
               setGroupToJoin(item);
               setIsJoinModalVisible(true);
@@ -113,39 +200,6 @@ const Groups = () => {
     </View>
   );
 
-  const onCreateGroup = async () => {
-    setLoading(true);
-    if (user) {
-      const createGroupDTO: CreateGroupDTO = {
-        name: newGroupName.trim(),
-        adminId: user.id!,
-      };
-
-      const response = await createGroup(createGroupDTO);
-      if (response.status === 200) {
-        setIsCreateModalVisible(false);
-        setTimeout(() => {
-          navigation.navigate('Group', {groupId: response.data.id});
-        }, 250);
-      }
-    }
-    setLoading(false);
-  };
-
-  const onJoinGroup = async () => {
-    setLoading(true);
-    if (user && groupToJoin && groupToJoin.id) {
-      const response = await joinGroup(groupToJoin.id);
-      if (response.status === 200) {
-        setTimeout(() => {
-          navigation.navigate('Group', {groupId: response.data.groupId});
-          setIsJoinModalVisible(false);
-          setLoading(false);
-        }, 750);
-      }
-    }
-  };
-
   return (
     <>
       <View
@@ -161,67 +215,117 @@ const Groups = () => {
             color: colors.text.primary,
             fontSize: 24,
           }}>
-          Grup
+          Gruplar
         </Text>
       </View>
       <View
-        className="h-full pb-32 px-6 pt-3"
+        className="h-full pb-32 px-5 pt-3"
         style={{
           backgroundColor: colors.background.secondary,
           // paddingTop: insets.top / 2,
         }}>
-        {/* {myGroup && (
+        {groupJoinRequest && (
           <View
-            className="p-4 mb-6 rounded-2xl"
+            className="mb-3 pt-2 pb-3 rounded-2xl flex flex-col items-center justify-center"
             style={{backgroundColor: colors.background.primary}}>
             <Text
-              className="mb-4 text-center text-xl font-rubik-medium"
-              style={{color: colors.primary[250]}}>
-              Grubum
+              className="font-rubik-medium Ftext-center"
+              style={{color: colors.text.primary, fontSize: 20}}>
+              Gönderilen İstek
             </Text>
-            <Pressable
-              className="mb-1 rounded-xl bg-blue-500/10 p-4 active:bg-blue-600/20"
-              onPress={() =>
-                navigation.navigate('Group', {groupId: myGroup.id})
-              }>
-              <Text className="text-lg font-semibold text-blue-500 dark:text-blue-300">
-                {myGroup.name}
-              </Text>
-            </Pressable>
+            <View
+              className="rounded-2xl mt-1 p-3"
+              style={{backgroundColor: colors.background.secondary}}>
+              <View className="flex flex-row">
+                <Text
+                  className="font-rubik-medium text-xl text-center"
+                  style={{color: colors.text.primary}}>
+                  Grup:{' '}
+                </Text>
+                <Text
+                  className="font-rubik text-xl text-center"
+                  style={{color: colors.text.primary}}>
+                  {groupJoinRequest.groupDTO.name}
+                </Text>
+              </View>
+              <View className="flex flex-row">
+                <Text
+                  className="font-rubik-medium text-xl text-center"
+                  style={{color: colors.text.primary}}>
+                  Hemşire:{' '}
+                </Text>
+                <Text
+                  className="font-rubik text-xl text-center"
+                  style={{color: colors.text.primary}}>
+                  {requestedGroupAdmin?.fullName}
+                </Text>
+              </View>
+              <View className="flex flex-row">
+                <Text
+                  className="font-rubik-medium text-xl text-center"
+                  style={{color: colors.text.primary}}>
+                  Durum:{' '}
+                </Text>
+                <Text
+                  className="font-rubik text-xl text-center"
+                  style={{color: colors.text.primary}}>
+                  Beklemede
+                </Text>
+              </View>
+              <TouchableOpacity
+                className="px-4 py-1 mt-3 rounded-xl self-center"
+                style={{
+                  backgroundColor: '#fd5353',
+                }}
+                onPress={() => onDeleteJoinRequest()}>
+                <Text
+                  className="font-rubik text-center text-md"
+                  style={{color: colors.background.secondary}}>
+                  İptal Et
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        )} */}
-        <View className="flex flex-row justify-center items-center">
-          <View
-            className="flex flex-row justify-between items-center rounded-2xl w-3/4" // border
-            style={{
-              backgroundColor: colors.background.primary,
-              borderColor: colors.primary[300],
-            }}>
-            <Image source={icons.search} className="size-6 ml-4 mr-2" />
-            <TextInput
-              className="flex-1 font-rubik w-full"
-              style={{color: colors.text.primary}}
-              multiline={false}
-              placeholder="Grupları ara"
-              placeholderClassName="pl-4"
-              placeholderTextColor={colors.text.secondary}
-              selectionColor={colors.primary[300]}
+        )}
+
+        <View
+          className="p-3 rounded-2xl"
+          style={{backgroundColor: colors.background.primary}}>
+          <View className="flex flex-row justify-center items-center">
+            <View
+              className="flex flex-row justify-between items-center rounded-2xl w-3/4" // border
+              style={{
+                backgroundColor: colors.background.secondary,
+                borderColor: colors.primary[300],
+              }}>
+              <Image source={icons.search} className="size-6 ml-4 mr-2" />
+              <TextInput
+                className="flex-1 font-rubik w-full"
+                style={{color: colors.text.primary}}
+                multiline={false}
+                placeholder="Grupları ara"
+                placeholderClassName="pl-4"
+                placeholderTextColor={colors.text.secondary}
+                selectionColor={colors.primary[300]}
+              />
+            </View>
+          </View>
+
+          <View>
+            <FlatList
+              data={groups}
+              keyExtractor={item => (item.id ? item.id.toString() : '')}
+              renderItem={renderItem}
+              // ListEmptyComponent={
+              //   <Text className="text-center text-zinc-400">
+              //     Henüz bir grup yok
+              //   </Text>
+              // }
             />
           </View>
         </View>
 
-        <View className="mt-4">
-          <FlatList
-            data={groups}
-            keyExtractor={item => (item.id ? item.id.toString() : '')}
-            renderItem={renderItem}
-            // ListEmptyComponent={
-            //   <Text className="text-center text-zinc-400">
-            //     Henüz bir grup yok
-            //   </Text>
-            // }
-          />
-        </View>
+        <CustomAlertSingleton ref={alertRef} />
 
         <Modal
           transparent={true}
@@ -244,12 +348,12 @@ const Groups = () => {
                 {!loading ? (
                   <>
                     <TouchableOpacity
-                      onPress={onJoinGroup}
+                      onPress={onGroupJoinRequest}
                       className="flex-1 p-2 rounded-xl items-center mx-1"
                       style={{backgroundColor: '#0EC946'}}>
                       {/* #55CC88 */}
                       <Text className="text-base font-rubik text-white">
-                        Katıl
+                        İstek Gönder
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity

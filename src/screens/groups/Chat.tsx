@@ -271,14 +271,18 @@ const Chat = () => {
                   msg.sender === sender ? 'justify-end' : 'justify-start'
                 }`}>
                 <View
-                  className={`flex  py-2 rounded-2xl flex-row
-                  ${msg.message.length > 30 ? 'w-3/4' : ''} ${
+                  className={`flex py-2 ${
+                    msg.message.startsWith('dailyStatus')
+                      ? 'rounded-3xl'
+                      : 'rounded-2xl'
+                  } flex-row ${
                     msg.sender === sender ? 'justify-end' : 'justify-start'
                   }`}
                   style={{
                     backgroundColor: colors.background.primary,
                     paddingLeft: msg.sender === sender ? 12 : 10,
                     paddingRight: msg.sender === sender ? 4 : 12,
+                    maxWidth: width * 0.8,
                   }}>
                   {!msg.message.startsWith('dailyStatus') ? (
                     <Text
@@ -290,9 +294,8 @@ const Chat = () => {
                     </Text>
                   ) : (
                     <Text
-                      className="text-lg font-rubik ml-2 text-center"
+                      className="text-lg font-rubik text-center"
                       style={{
-                        width: (width * 2) / 3,
                         color: colors.primary[250],
                       }}>
                       {(() => {

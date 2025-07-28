@@ -102,6 +102,7 @@ import nurse from '../assets/icons/nurse.png';
 import dumbell_up from '../assets/icons/dumbell_up.png';
 import exercise_screen from '../assets/icons/exercise_screen.png';
 import patient from '../assets/icons/patient.png';
+import system_default_theme from '../assets/icons/system_default_theme.png';
 
 export default {
   google,
@@ -208,4 +209,5 @@ export default {
   dumbell_up,
   exercise_screen,
   patient,
+  system_default_theme,
 };

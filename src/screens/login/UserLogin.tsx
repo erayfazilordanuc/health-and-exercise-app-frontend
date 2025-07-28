@@ -25,12 +25,14 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
 import {Dropdown} from 'react-native-element-dropdown';
+import DatePicker from 'react-native-date-picker';
 
 function UserLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
   const {theme, colors, setTheme} = useTheme();
   const netInfo = useNetInfo();
   const [loading, setLoading] = useState(false);
+  const [date, setDate] = useState<Date>(new Date());
 
   enum LoginMethod {
     'default',
@@ -142,7 +144,9 @@ function UserLogin() {
     try {
       setLoading(true);
 
-      if (!(username && fullName && password)) {
+      if (
+        !(fullName && username && fullName && password && gender && birthDate)
+      ) {
         ToastAndroid.show('Lütfen tüm alanları doldurunuz', ToastAndroid.SHORT);
         return;
       }
@@ -156,6 +160,14 @@ function UserLogin() {
       // }
 
       console.log(username);
+
+      if (fullName.split(' ').length < 2) {
+        ToastAndroid.show(
+          'Lütfen ad ve soyadınızı, arada boşluk olacak şekilde yazınız',
+          ToastAndroid.LONG,
+        );
+        return;
+      }
 
       if (username.length < 4) {
         ToastAndroid.show(
@@ -243,8 +255,9 @@ function UserLogin() {
       style={{backgroundColor: colors.background.secondary}}>
       <ScrollView
         contentContainerClassName={`pb-12 ${
-          loginMethod === LoginMethod.registration ? 'pt-8' : 'pt-32'
-        }`}>
+          loginMethod === LoginMethod.registration ? 'pt-4' : 'pt-32'
+        }`}
+        keyboardShouldPersistTaps>
         <View className={`px-10`}>
           {/* <Text
             className="text-3xl text-center uppercase font-rubik-bold mt-8 mb-4"
@@ -332,22 +345,30 @@ function UserLogin() {
                   }}
                   className="p-2 rounded-2xl mr-4"
                   style={{backgroundColor: colors.background.secondary}}>
-                  <Image source={icons.calendar} className="size-8" />
+                  <Image
+                    source={icons.calendar}
+                    className="size-8"
+                    tintColor={colors.text.primary}
+                  />
                 </TouchableOpacity>
               </View>
               {showDatePicker && (
-                <DateTimePicker
-                  value={
-                    birthDate
-                      ? new Date(birthDate)
-                      : new Date(
-                          new Date().setFullYear(new Date().getFullYear() - 10),
-                        )
-                  }
-                  mode="date"
-                  display="default"
-                  maximumDate={new Date()}
-                  onChange={handleDateChange}
+                <DatePicker
+                  modal // Yerleşik pop‑up
+                  locale="tr" // Türkçe
+                  mode="date" // Doğum tarihi = tarih
+                  title="Tarih Seçin"
+                  confirmText="Tamam"
+                  cancelText="İptal"
+                  open={showDatePicker}
+                  date={date}
+                  maximumDate={fiveYearsAgo} // 5 yıldan küçük seçilemesin
+                  onConfirm={d => {
+                    setShowDatePicker(false);
+                    setDate(d);
+                    setBirthDate(d.toISOString().slice(0, 10));
+                  }}
+                  onCancel={() => setShowDatePicker(false)}
                 />
               )}
               <View
@@ -386,6 +407,7 @@ function UserLogin() {
                   }}
                   containerStyle={{
                     borderRadius: 20,
+                    borderColor: 'gray',
                     backgroundColor: colors.background.primary,
                   }}
                   activeColor={colors.primary?.[100] ?? '#D6EFFF'}

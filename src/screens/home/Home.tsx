@@ -22,7 +22,9 @@ import LinearGradient from 'react-native-linear-gradient';
 import {getUser} from '../../api/user/userService';
 import GradientText from '../../components/GradientText';
 import {
+  getLastMessageBySenderAndReceiver,
   getNextRoomId,
+  isDailyStatusExistForToday,
   isRoomExistBySenderAndReceiver,
   saveMessage,
 } from '../../api/message/messageService';
@@ -38,6 +40,11 @@ import images from '../../constants/images';
 import Slider from '@react-native-community/slider';
 import {useUser} from '../../contexts/UserContext';
 import {getGroupAdmin} from '../../api/group/groupService';
+import CustomWeeklyProgressCalendar from '../../components/CustomWeeklyProgressCalendar';
+import {
+  getTodaysProgress,
+  getWeeklyActiveDaysProgress,
+} from '../../api/exercise/progressService';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -52,11 +59,18 @@ const Home = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
   const {user} = useUser();
+  const [admin, setAdmin] = useState<User>();
+  const [lastMessage, setLastMessage] = useState<Message | null>();
 
   const [loading, setLoading] = useState(false);
 
   const healthProgressPercent = 93;
-  const exerciseProgressPercent = 59;
+
+  const [todaysExerciseProgress, setTodaysExerciseProgress] =
+    useState<ExerciseProgressDTO | null>();
+  const [weeklyExerciseProgress, setWeeklyEersiseProgress] = useState<
+    ExerciseProgressDTO[]
+  >([]);
 
   const scrollViewHeight = SCREEN_HEIGHT / 8;
 
@@ -78,7 +92,13 @@ const Home = () => {
     if (isConnected && !isAdminTemp) {
       const dailyStatus = await AsyncStorage.getItem('dailyStatus');
       if (!dailyStatus && user.groupId) {
-        setIsModalVisible(true);
+        const groupAdmin: User = await getGroupAdmin(user.groupId);
+        setAdmin(groupAdmin);
+        const response = await isDailyStatusExistForToday(
+          user.username,
+          groupAdmin.username,
+        );
+        if (!response.data) setIsModalVisible(true);
       } else {
         if (dailyStatus) {
           const dailyStatusObject: Message = JSON.parse(dailyStatus);
@@ -120,6 +140,23 @@ const Home = () => {
     }
   };
 
+  const fetchProgress = async () => {
+    if (!user?.groupId) return;
+    const todaysExerciseProgress: ExerciseProgressDTO =
+      await getTodaysProgress();
+    setTodaysExerciseProgress(todaysExerciseProgress);
+
+    const weeklyExerciseProgress: ExerciseProgressDTO[] =
+      await getWeeklyActiveDaysProgress();
+    setWeeklyEersiseProgress(weeklyExerciseProgress);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProgress();
+    }, []),
+  );
+
   useEffect(() => {
     fetchUserAndSaveFCMToken();
   }, [user]);
@@ -152,20 +189,14 @@ const Home = () => {
       console.log(sliderValue);
 
       if (user && user.groupId) {
-        const adminResponse = await getGroupAdmin(user.groupId);
-        console.log(154);
-
-        if (!adminResponse) return;
-        const admin = adminResponse.data as User;
-        console.log(158);
+        const admin: User = await getGroupAdmin(user.groupId);
 
         const roomResponse = await isRoomExistBySenderAndReceiver(
           user.username,
           admin.username,
         );
-        console.log(163);
 
-        if (roomResponse.status === 200) {
+        if (roomResponse && roomResponse.status === 200) {
           let roomId = roomResponse.data;
           if (roomId === 0) {
             const nextRoomResponse = await getNextRoomId();
@@ -181,10 +212,8 @@ const Home = () => {
             roomId: roomId,
             createdAt: new Date(),
           };
-          console.log(176);
 
           const saveResponse = await saveMessage(newMessage);
-          console.log(179);
 
           const match = message.match(/dailyStatus(\d+)/);
           const score = parseInt(match![1], 10);
@@ -195,7 +224,6 @@ const Home = () => {
               message ? new Date().toLocaleDateString() + '\n' : ''
             }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`,
           );
-          console.log(190);
 
           if (saveResponse.status === 200)
             AsyncStorage.setItem('dailyStatus', JSON.stringify(newMessage));
@@ -208,10 +236,37 @@ const Home = () => {
       setLoading(false);
       setIsModalVisible(false);
       ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
+      console.log(error);
     }
     setLoading(false);
     setIsModalVisible(false);
   };
+
+  const fetchLastMessage = async (user: User) => {
+    if (!admin) return;
+
+    const lastMessage: Message = await getLastMessageBySenderAndReceiver(
+      admin.username,
+      user.username,
+    );
+
+    if (lastMessage.message.startsWith('dailyStatus')) {
+      const match = lastMessage.message.match(/dailyStatus(\d+)/);
+      const score = parseInt(match![1], 10);
+
+      lastMessage.message =
+        '\n' +
+        new Date().toLocaleDateString() +
+        `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+    }
+    setLastMessage(lastMessage);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user) fetchLastMessage(user);
+    }, [admin]),
+  );
 
   return (
     <>
@@ -263,7 +318,11 @@ const Home = () => {
             </GradientText>
             {!isAdmin ? (
               <View className="flex flex-row">
-                <Image source={icons.patient} className="size-9 mr-3" />
+                <Image
+                  source={icons.patient}
+                  className="size-9 mr-3"
+                  tintColor={colors.text.primary}
+                />
                 {/* <Image source={icons.badge1_colorful} className="size-8 mr-2" />
                 <Image
                   source={icons.badge1}
@@ -339,19 +398,18 @@ const Home = () => {
 
           {user && user.role === 'ROLE_USER' && (
             <>
-              <View className="flex flex-row justify-between my-1">
+              <View className="flex flex-row justify-center my-1">
                 <View
-                  className="flex flex-col px-3 py-3 rounded-3xl mb-2"
+                  className="flex flex-col px-3 pr-4 py-3 rounded-3xl mb-2 mr-2"
                   style={{
                     backgroundColor: colors.background.primary,
-                    width: SCREEN_WIDTH / 2 - 16,
                   }}>
                   <Text
                     className="pl-2 text-2xl font-rubik"
                     style={{
                       color: colors.text.primary,
                     }}>
-                    Sağlık
+                    Sağlık Durumu
                   </Text>
                   <View className="mt-4 mb-2 flex justify-center items-center">
                     <AnimatedCircularProgress
@@ -375,226 +433,169 @@ const Home = () => {
                     </AnimatedCircularProgress>
                   </View>
                 </View>
-                <View
-                  className="flex flex-col px-3 py-3 rounded-3xl mb-2"
-                  style={{
-                    backgroundColor: colors.background.primary,
-                    width: SCREEN_WIDTH / 2 - 16,
-                  }}>
-                  <Text
-                    className="pl-2 text-xl font-rubik text-center"
+                {user.groupId && (
+                  <View
+                    className="flex flex-column justify-between rounded-3xl px-5 py-3 mb-3 ml-2"
                     style={{
-                      color: colors.text.primary,
+                      backgroundColor: colors.background.primary,
                     }}>
-                    Bugün tamamlanan egzersiz oranı gözüksün, eğer bugüne
-                    egzersiz yoksa bugün egzersiz yok desin
-                  </Text>
-                  <View className="mt-4 mb-2 flex justify-center items-center">
-                    <AnimatedCircularProgress
-                      size={100}
-                      width={8}
-                      fill={exerciseProgressPercent}
-                      tintColor={colors.primary[300]}
-                      onAnimationComplete={() =>
-                        console.log('onAnimationComplete')
-                      }
-                      backgroundColor={colors.background.secondary}>
-                      {() => (
+                    <View className="flex flex-col justify-between flex-1">
+                      {lastMessage &&
+                        !lastMessage.message.startsWith('dailyStatus') && (
+                          <View className="flex flex-col items-center justify-center">
+                            <Text
+                              className="font-rubik text-2xl"
+                              style={{color: colors.primary[200]}}>
+                              En Son Mesaj
+                            </Text>
+                            <Text
+                              className="font-rubik text-lg mt-1"
+                              style={{color: colors.text.primary}}>
+                              {lastMessage.receiver === user?.username
+                                ? user?.fullName + ' : ' + lastMessage.message
+                                : 'Siz : ' + lastMessage.message}
+                            </Text>
+                          </View>
+                        )}
+                      <TouchableOpacity
+                        className="p-3 mb-1 bg-blue-500 rounded-full flex items-center justify-center"
+                        onPress={async () => {
+                          if (admin && user) {
+                            const response =
+                              await isRoomExistBySenderAndReceiver(
+                                admin.username,
+                                user.username,
+                              );
+                            if (response && response.status === 200) {
+                              const roomId = response.data;
+                              if (roomId !== 0) {
+                                navigation.navigate('Groups', {
+                                  screen: 'Chat', // 👈 string
+                                  params: {
+                                    roomId,
+                                    sender: user?.username,
+                                    receiver: admin, // user string mi? objeyse user.username
+                                    fromNotification: false,
+                                  },
+                                });
+                              } else {
+                                const nextRoomResponse = await getNextRoomId();
+                                if (nextRoomResponse.status === 200) {
+                                  const nextRoomId = nextRoomResponse.data;
+                                  navigation.navigate('Chat', {
+                                    roomId: nextRoomId,
+                                    sender: user.username,
+                                    receiver: admin,
+                                    fromNotification: false,
+                                  });
+                                }
+                              }
+                            }
+                          }
+                        }}>
                         <Text
-                          className="text-2xl font-rubik"
-                          style={{
-                            color: colors.text.primary,
-                          }}>
-                          %{exerciseProgressPercent}
+                          className="font-rubik text-lg"
+                          style={{color: colors.background.secondary}}>
+                          Sohbete git
                         </Text>
-                      )}
-                    </AnimatedCircularProgress>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
+                )}
               </View>
               <View
                 className="px-5 py-3 rounded-2xl mb-3"
                 style={{backgroundColor: colors.background.primary}}>
-                <Text
-                  className="font-rubik text-2xl mb-4"
-                  style={{color: colors.text.primary}}>
-                  Bugünkü Egzersizler{'\n'}(Bi altta egzersiz takvimi çıksın)
-                </Text>
-                <ScrollView
-                  horizontal
-                  style={{height: scrollViewHeight}}
-                  showsHorizontalScrollIndicator={false}>
-                  <TouchableOpacity
-                    className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-                    style={{backgroundColor: '#48AAFF'}}
-                    // onPress={() => navigateToPhysicalExercises('Exercise2')}
-                  >
-                    <Image source={icons.back} className="size-20" />
-                  </TouchableOpacity>
+                {new Date().getDay() === 1 ||
+                new Date().getDay() === 3 ||
+                new Date().getDay() === 5 ||
+                new Date().getDay() === 6 ? (
+                  <>
+                    <>
+                      <Text
+                        className="font-rubik text-2xl mb-1"
+                        style={{color: colors.text.primary}}>
+                        Bugünün Egzersizi
+                      </Text>
 
-                  <TouchableOpacity
-                    className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-                    style={{backgroundColor: '#55CC88'}}
-                    onPress={() => {}}>
-                    <Image source={icons.stretching} className="size-20" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-                    style={{backgroundColor: '#FFAA33'}}
-                    onPress={() =>
-                      exercisesNavigation.navigate('Exercises', {
-                        screen: 'Exercise1',
-                      })
-                    }>
-                    <Image source={icons.gymnastic_1} className="size-20" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-                    style={{backgroundColor: '#48AAFF'}}
-                    onPress={() =>
-                      exercisesNavigation.navigate('Exercises', {
-                        screen: 'Exercise2',
-                      })
-                    }>
-                    <Image source={icons.chronometer} className="size-20" />
-                  </TouchableOpacity>
-                </ScrollView>
+                      <View className="flex flex-row justify-between items-center mt-4 mb-2">
+                        <TouchableOpacity
+                          disabled={
+                            todaysExerciseProgress?.progressRatio !== null &&
+                            todaysExerciseProgress?.progressRatio === 100
+                          }
+                          className="flex flex-row justify-center items-center rounded-2xl ml-1 py-3 pl-3"
+                          style={{
+                            backgroundColor:
+                              todaysExerciseProgress?.progressRatio &&
+                              todaysExerciseProgress.progressRatio === 100
+                                ? '#55CC88'
+                                : todaysExerciseProgress?.progressRatio &&
+                                  todaysExerciseProgress.progressRatio > 0
+                                ? '#FFAA33'
+                                : colors.primary[175],
+                          }}
+                          onPress={() =>
+                            navigation.navigate('Exercises', {
+                              screen: 'ExercisesUser',
+                            })
+                          }>
+                          <Text className="text-xl font-rubik ml-1">
+                            {todaysExerciseProgress?.progressRatio &&
+                            todaysExerciseProgress.progressRatio === 100
+                              ? 'Tamamlandı'
+                              : todaysExerciseProgress?.progressRatio &&
+                                todaysExerciseProgress.progressRatio > 0
+                              ? 'Egzersize git'
+                              : 'Egzersize git'}
+                          </Text>
+                          <Image
+                            source={icons.gymnastic_1}
+                            className="size-20"
+                          />
+                        </TouchableOpacity>
+                        {todaysExerciseProgress?.progressRatio &&
+                          todaysExerciseProgress.progressRatio > 0 && (
+                            <View className="flex justify-center items-center mr-5">
+                              <AnimatedCircularProgress
+                                size={100}
+                                width={8}
+                                fill={
+                                  todaysExerciseProgress?.progressRatio &&
+                                  todaysExerciseProgress.progressRatio
+                                }
+                                tintColor={colors.primary[300]}
+                                onAnimationComplete={() =>
+                                  console.log('onAnimationComplete')
+                                }
+                                backgroundColor={colors.background.secondary}>
+                                {() => (
+                                  <Text
+                                    className="text-2xl font-rubik"
+                                    style={{
+                                      color: colors.text.primary,
+                                    }}>
+                                    %
+                                    {todaysExerciseProgress?.progressRatio &&
+                                      todaysExerciseProgress.progressRatio}
+                                  </Text>
+                                )}
+                              </AnimatedCircularProgress>
+                            </View>
+                          )}
+                      </View>
+                    </>
+                  </>
+                ) : (
+                  <Text
+                    className="font-rubik text-xl mb-1"
+                    style={{color: colors.text.primary}}>
+                    Bugün için planlanan egzersiziniz yok. İyi dinlenmeler!
+                  </Text>
+                )}
               </View>
             </>
           )}
-
-          {/* {user && user.role === 'ROLE_USER' && user.groupId && (
-            <View
-              className="flex flex-column justify-start rounded-2xl pl-5 p-3" // border
-              style={{
-                backgroundColor: colors.background.primary,
-                borderColor: colors.primary[300],
-              }}>
-              <View className="flex flex-row justify-between">
-                <Text
-                  className="font-rubik text-2xl"
-                  style={{color: colors.text.primary}}>
-                  Hemşireden Gelen İleti
-                </Text>
-                <TouchableOpacity
-                  className="py-1 px-3 bg-blue-500 rounded-3xl flex items-center justify-center"
-                  onPress={() => {
-                    async () => {
-                      const response = await isRoomExistBySenderAndReceiver(
-                        user.username,
-                        admin?.username!,
-                      );
-                      if (response.status === 200) {
-                        const roomId = response.data;
-                        if (roomId !== 0) {
-                          navigation.navigate('Chat', {
-                            roomId: roomId,
-                            sender: user.username,
-                            receiver: admin?.username,
-                          });
-                        } else {
-                          const nextRoomResponse = await getNextRoomId();
-                          if (nextRoomResponse.status === 200) {
-                            const nextRoomId = nextRoomResponse.data;
-                            navigation.navigate('Chat', {
-                              roomId: nextRoomId,
-                              sender: user.username,
-                              receiver: admin?.username,
-                            });
-                          }
-                        }
-                      }
-                    };
-                  }}>
-                  <Text
-                    className="font-rubik text-lg"
-                    style={{color: colors.background.secondary}}>
-                    Sohbet
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <Text
-                className="font-rubik text-lg mt-3"
-                style={{color: colors.text.primary}}>
-                Sağlıklı günler!
-              </Text>
-            </View>
-          )} */}
-
-          {user && user.role === 'ROLE_ADMIN' && user.groupId && (
-            <View
-              className="flex flex-column justify-start rounded-2xl pl-5 p-3 mt-1"
-              style={{
-                backgroundColor: colors.background.primary,
-              }}>
-              <View className="flex flex-row justify-between">
-                <Text
-                  className="font-rubik text-2xl"
-                  style={{color: colors.text.primary}}>
-                  Öncelikli Geri Bildirimler
-                </Text>
-              </View>
-              <Text
-                className="font-rubik text-lg mt-3"
-                style={{color: colors.text.primary}}>
-                Bir hastadan gelen öncelikli geri bildirim
-              </Text>
-            </View>
-          )}
-
-          {/* EĞER GROUP ID VARSA BURADA DUYURULAR FALAN ÇIKSIN */}
-          {/* <View
-            className="px-5 py-3 rounded-2xl"
-            style={{backgroundColor: colors.background.primary}}>
-            <Text className="font-rubik text-2xl mb-4" style={{color: colors.text.primary}}>
-              Zeka Oyunları
-            </Text>
-            <ScrollView
-              horizontal
-              style={{height: scrollViewHeight}}
-              showsHorizontalScrollIndicator={false}>
-              <TouchableOpacity
-                className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-                style={{backgroundColor: '#FF8B8B'}}
-                onPress={() => navigateToMindGames('WordGame')}>
-                <Image source={icons.wordle} className="size-20" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-                style={{backgroundColor: '#FF8B8B'}}
-                // onPress={() => navigateToMindGames('MindGame2')}
-              >
-                <Image source={icons.brickwall} className="size-20" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-                style={{backgroundColor: '#FF8B8B'}}>
-                <Image source={icons.piano} className="size-20" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-                style={{backgroundColor: '#FF8B8B'}}>
-                <Image source={icons.xox} className="size-20" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-                style={{backgroundColor: '#FF8B8B'}}>
-                <Image source={icons.board_game} className="size-20" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-                style={{backgroundColor: '#FF8B8B'}}>
-                <Image source={icons.brain} className="size-20" />
-              </TouchableOpacity>
-            </ScrollView>
-          </View> */}
         </ScrollView>
       </View>
     </>

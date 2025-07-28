@@ -3,6 +3,7 @@ import apiClient from '../axios/axios';
 import {jwtDecode} from 'jwt-decode';
 import {Platform} from 'react-native';
 import {useUser} from '../../contexts/UserContext';
+import {themes} from '../../themes/themes';
 
 export const login = async (credentials: LoginRequestPayload) => {
   const response = await apiClient.post('/auth/login', credentials);
@@ -25,6 +26,14 @@ export const register = async (credentials: RegisterRequestPayload) => {
   await AsyncStorage.setItem('user', JSON.stringify(user));
   await AsyncStorage.setItem('accessToken', accessToken);
   await AsyncStorage.setItem('refreshToken', refreshToken);
+  const newUserTheme: UserTheme = {
+    theme: themes.primary.light,
+    isDefault: true,
+  };
+  await AsyncStorage.setItem(
+    `${user!.username}-main-theme`,
+    JSON.stringify(newUserTheme),
+  );
   return response;
 };
 
@@ -54,6 +63,14 @@ export const registerAdmin = async (
     await AsyncStorage.setItem('user', JSON.stringify(user));
     await AsyncStorage.setItem('accessToken', accessToken);
     await AsyncStorage.setItem('refreshToken', refreshToken);
+    const newUserTheme: UserTheme = {
+      theme: themes.primary.light,
+      isDefault: true,
+    };
+    await AsyncStorage.setItem(
+      `${user!.username}-main-theme`,
+      JSON.stringify(newUserTheme),
+    );
   }
   return response;
 };

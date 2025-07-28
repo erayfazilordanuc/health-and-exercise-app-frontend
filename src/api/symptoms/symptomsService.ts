@@ -14,11 +14,21 @@ export const getAllSymptoms = async () => {
   return response;
 };
 
-export const getAllSymptomsByDate = async (date: Date) => {
-  const dateVariable = date.toISOString().slice(0, 10);
-  const response = await apiClient.get(`/symptoms/date/${dateVariable}`);
-  console.log('Get all symptoms by date response', response);
-  return response;
+export const getSymptomsByDate = async (date: Date) => {
+  try {
+    const dateVariable = date.toISOString().slice(0, 10);
+    const response = await apiClient.get(`/symptoms/date/${dateVariable}`);
+    console.log('Get symptoms by date response', response);
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching symptoms:', error);
+    return null;
+  }
 };
 
 export const upsertSymptomsById = async (id: number) => {};
@@ -28,8 +38,8 @@ export const upsertSymptomsByDate = async (date: Date, symptoms: Symptoms) => {
   const upsertDTO: UpdateSymptomsDTO = {
     pulse: symptoms.pulse,
     steps: symptoms.steps,
-    activeCaloriesBurned: symptoms.activeCaloriesBurned,
-    sleepHours: symptoms.sleepHours,
+    activeCaloriesBurned: symptoms.activeCaloriesBurned!,
+    sleepHours: symptoms.sleepHours!,
     sleepSessions: symptoms.sleepSessions,
   };
   console.log('upsertDTO', upsertDTO);

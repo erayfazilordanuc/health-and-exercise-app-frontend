@@ -10,6 +10,11 @@ type User = {
   achievements: AchievementDTO[];
 };
 
+type UserTheme = {
+  theme: Theme;
+  isDefault: boolean;
+};
+
 type UpdateUserDTO = {
   id: number;
   username: string;
@@ -47,8 +52,8 @@ type Symptoms = {
   id?: number;
   pulse?: number;
   steps?: number;
-  activeCaloriesBurned?: number;
-  sleepHours?: number;
+  activeCaloriesBurned?: number | null;
+  sleepHours?: number | null;
   sleepSessions?: string[];
   createdAt?: Date | null;
   updatedAt?: Date | null;
@@ -78,6 +83,18 @@ type CreateGroupDTO = {
   adminId: number;
 };
 
+type GroupDTO = {
+  id: number;
+  name: string;
+  adminId: number;
+};
+
+type GroupRequestDTO = {
+  id?: number;
+  userDTO: UserDTO;
+  groupDTO: GroupDTO;
+};
+
 type Message = {
   id?: number;
   message: string;
@@ -97,9 +114,16 @@ type FCMToken = {
 
 type ExerciseVideoDTO = {
   id?: number;
+  name?: string;
   videoUrl: string;
   exerciseId: number;
   createdAt: Date;
+};
+
+type CreateExerciseVideoDTO = {
+  name: string;
+  videoUrl: string | null;
+  exerciseId: number | null;
 };
 
 type Exercise = {
@@ -134,6 +158,15 @@ type UpdateExerciseDTO = {
   name: string;
   description: string;
   point: number;
+};
+
+type ExerciseProgressDTO = {
+  id: number;
+  userId: number;
+  exerciseDTO: ExerciseDTO;
+  progressRatio: number;
+  createdAt: Date;
+  updatedA?: Date | null;
 };
 
 type AchievementDTO = {

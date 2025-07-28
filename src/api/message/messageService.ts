@@ -22,11 +22,15 @@ export const isRoomExistBySenderAndReceiver = async (
   sender: string,
   receiver: string,
 ) => {
-  const response = await apiClient.get(
-    `/messages/room/sender/${sender}/receiver/${receiver}`,
-  );
-  console.log('Is room exist by sender and receiver', response);
-  return response;
+  try {
+    const response = await apiClient.get(
+      `/messages/room/sender/${sender}/receiver/${receiver}`,
+    );
+    console.log('Is room exist by sender and receiver', response);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const getNextRoomId = async () => {
@@ -81,6 +85,20 @@ export const getLastMessageBySenderAndReceiver = async (
     console.error('Error fetching exercises:', error);
     return null;
   }
+};
+
+export const isDailyStatusExistForToday = async (
+  sender: string,
+  receiver: string,
+) => {
+  const response = await apiClient.get(
+    `/messages/exists/sender/${sender}/receiver/${receiver}/today/daily-status`,
+  );
+  console.log(
+    'Is daily status exists for today by sender and receiver',
+    response,
+  );
+  return response;
 };
 
 export const deleteMessage = async (id: number) => {

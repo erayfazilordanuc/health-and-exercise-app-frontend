@@ -251,7 +251,8 @@ function AdminLogin() {
                 ? 0
                 : 40
               : 96,
-        }}>
+        }}
+        keyboardShouldPersistTaps>
         {/* <Text
           className="text-3xl text-center uppercase font-rubik-bold mt-6 mb-4"
           style={{color: '#0091ff'}}>

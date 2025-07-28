@@ -2,9 +2,31 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 import {getUser} from '../user/userService';
 
-export const joinGroup = async (groupId: number) => {
-  const response = await apiClient.post(`/groups/id/${groupId}/join`);
-  console.log('Join group', response);
+export const sendJoinGroupRequest = async (groupId: number) => {
+  const response = await apiClient.post(`/groups/id/${groupId}/join-request`);
+  console.log('Send group request', response);
+  return response;
+};
+
+export const deleteJoinGroupRequest = async (groupRequestId: number) => {
+  const response = await apiClient.delete(
+    `/groups/join-request/id/${groupRequestId}`,
+  );
+  console.log('Delete group request', response);
+  return response;
+};
+
+export const getGroupRequestsByGroupId = async (groupId: number) => {
+  const response = await apiClient.get(`/groups/id/${groupId}/join-request`);
+  console.log('Get group request by group id', response);
+  return response;
+};
+
+export const getGroupRequestsByUserId = async (userId: number) => {
+  const response = await apiClient.get(
+    `/groups/join-request/user/id/${userId}`,
+  );
+  console.log('Get group request by user id', response);
   return response;
 };
 
@@ -29,7 +51,8 @@ export const getGroupSize = async (id: number) => {
 export const getGroupAdmin = async (id: number) => {
   const response = await apiClient.get(`/groups/id/${id}/admin`);
   console.log('Get group admin by group id', response);
-  return response;
+  if (response.status >= 200 && response.status < 300) return response.data;
+  else return null;
 };
 
 export const getUsersByGroupId = async (groupId: number) => {

@@ -1,4 +1,11 @@
-import {View, Text, ScrollView, TouchableOpacity, Image} from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  useColorScheme,
+} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Theme, themes} from '../../../themes/themes';
@@ -10,29 +17,64 @@ const Preferences = () => {
   const insets = useSafeAreaInsets();
 
   const [user, setUser] = useState<User | null>(null);
-
+  const [isThemeDefault, setIsThemeDefault] = useState(false);
   const {theme, colors, setTheme} = useTheme();
+  const colorScheme = useColorScheme();
+
+  const isLightActive = !isThemeDefault && theme.name === 'Light';
+  const isDarkActive = !isThemeDefault && theme.name === 'Dark';
+  const isSystemActive = isThemeDefault;
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndTheme = async () => {
       const userData = await AsyncStorage.getItem('user');
       const user: User = JSON.parse(userData!);
       setUser(user);
+
+      const userThemeJson = await AsyncStorage.getItem(
+        `${user!.username}-main-theme`,
+      );
+      const userTheme: UserTheme = JSON.parse(userThemeJson!);
+      setIsThemeDefault(userTheme.isDefault);
+      console.log(userTheme);
     };
 
-    fetchUser();
+    fetchUserAndTheme();
   }, []);
 
-  useEffect(() => {
-    const setUserTheme = async () => {
-      await AsyncStorage.setItem(
-        `${user!.username}-main-theme`,
-        JSON.stringify(theme),
-      );
+  const handleThemeChange = async (theme: Theme, isDefault?: boolean) => {
+    const newUserTheme: UserTheme = {
+      theme: theme,
+      isDefault: !!isDefault,
     };
+    console.log(newUserTheme);
 
-    setUserTheme();
-  }, [theme]);
+    console.log(isThemeDefault);
+    setIsThemeDefault(!!isDefault);
+
+    if (isDefault) {
+      setTheme(
+        colorScheme === 'dark' ? themes.primary.dark : themes.primary.light,
+      );
+    } else {
+      setTheme(theme);
+    }
+
+    await AsyncStorage.setItem(
+      `${user!.username}-main-theme`,
+      JSON.stringify(newUserTheme),
+    );
+
+    console.log(theme);
+  };
+
+  const isDarkSelected = () => {
+    return theme.name === 'dark' && !isThemeDefault;
+  };
+
+  const isLightSelected = () => {
+    return theme.name === 'light' && !isThemeDefault;
+  };
 
   return (
     <View
@@ -42,56 +84,61 @@ const Preferences = () => {
         <View
           className="rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
-          <Text
-            className="text-xl font-rubik-medium p-4"
-            style={{
-              color: colors.text.primary,
-            }}>
-            Tema :{'  '}
-            <Text selectable className="text-xl font-rubik">
-              {theme.name == 'Dark' ? 'Koyu' : 'Açık'}
-            </Text>
-          </Text>
-          <Text
-            className="text-xl font-rubik-medium p-4"
-            style={{
-              color: colors.text.primary,
-            }}>
-            Renkler :{'  '}
-            <Text selectable className="text-xl font-rubik">
-              {colors.primary[100]}
-            </Text>
-          </Text>
-          <Text
-            className="text-xl font-rubik-medium p-4"
-            style={{
-              color: colors.text.primary,
-            }}>
-            Arkaplan rengi :{'  '}
-            <Text selectable className="text-xl font-rubik">
-              {colors.background.primary}
-            </Text>
-          </Text>
-          <View className="flex flex-row items-center px-3 pt-3 pb-3">
+          {user && user.username === 'erayfazilordanuc' && (
+            <>
+              <Text
+                className="text-xl font-rubik-medium p-4"
+                style={{
+                  color: colors.text.primary,
+                }}>
+                Tema :{'  '}
+                <Text selectable className="text-xl font-rubik">
+                  {theme.name == 'Dark' ? 'Koyu' : 'Açık'}
+                </Text>
+              </Text>
+              <Text
+                className="text-xl font-rubik-medium p-4"
+                style={{
+                  color: colors.text.primary,
+                }}>
+                Renkler :{'  '}
+                <Text selectable className="text-xl font-rubik">
+                  {colors.primary[100]}
+                </Text>
+              </Text>
+              <Text
+                className="text-xl font-rubik-medium p-4"
+                style={{
+                  color: colors.text.primary,
+                }}>
+                Arkaplan rengi :{'  '}
+                <Text selectable className="text-xl font-rubik">
+                  {colors.background.primary}
+                </Text>
+              </Text>
+            </>
+          )}
+          <View className="flex flex-col items-between justify-center px-3 pt-3 pb-3">
             <Text
-              className="text-xl font-rubik-medium"
+              className="text-2xl font-rubik-medium ml-2 mb-2"
               style={{
                 color: colors.text.primary,
               }}>
-              Temayı değiştir :
+              Tema
             </Text>
-            <View className="flex flex-row ml-3">
+            <View className="flex flex-row items-center justify-between">
               <TouchableOpacity
-                className="text-xl font-rubik-medium p-2 rounded-2xl"
+                className="py-3 px-3 rounded-3xl flex flex-row"
                 style={{
-                  backgroundColor:
-                    theme.name === 'Light'
-                      ? colors.background.primary
-                      : colors.background.secondary,
+                  // backgroundColor:
+                  //   theme.name === 'Light'
+                  //     ? colors.background.primary
+                  //     : colors.background.secondary,
+                  backgroundColor: !isLightActive
+                    ? colors.background.secondary
+                    : colors.background.primary,
                 }}
-                onPress={() => {
-                  setTheme(themes.primary.light);
-                }}>
+                onPress={() => handleThemeChange(themes.primary.light)}>
                 <Image
                   source={
                     theme.name === 'Light'
@@ -101,18 +148,20 @@ const Preferences = () => {
                   className="size-8"
                   tintColor={colors.text.primary}
                 />
+                <Text
+                  className="ml-3 text-lg font-rubik"
+                  style={{color: colors.text.primary}}>
+                  Açık
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="text-xl font-rubik-medium ml-2 mr-1 p-2 rounded-2xl"
+                className="py-3 px-4 rounded-3xl flex flex-row"
                 style={{
-                  backgroundColor:
-                    theme.name === 'Dark'
-                      ? colors.background.primary
-                      : colors.background.secondary,
+                  backgroundColor: !isDarkActive
+                    ? colors.background.secondary
+                    : colors.background.primary,
                 }}
-                onPress={() => {
-                  setTheme(themes.primary.dark);
-                }}>
+                onPress={() => handleThemeChange(themes.primary.dark)}>
                 <Image
                   source={
                     theme.name === 'Dark' // theme.name === "Light" is not working
@@ -122,10 +171,34 @@ const Preferences = () => {
                   className="size-8"
                   tintColor={colors.text.primary}
                 />
+                <Text
+                  className="ml-3 text-lg font-rubik"
+                  style={{color: colors.text.primary}}>
+                  Koyu
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="py-3 px-4 rounded-3xl flex flex-row"
+                style={{
+                  backgroundColor: isThemeDefault
+                    ? colors.background.primary
+                    : colors.background.secondary,
+                }}
+                onPress={() => handleThemeChange(themes.primary.light, true)}>
+                <Image
+                  source={icons.system_default_theme}
+                  className="size-8"
+                  tintColor={colors.text.primary}
+                />
+                <Text
+                  className="ml-3 text-lg font-rubik"
+                  style={{color: colors.text.primary}}>
+                  Sistem
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
-          <View className="p-4 pb-5 flex flex-row items-center">
+          {/* <View className="p-4 pb-5 flex flex-row items-center">
             <Text
               className="text-xl font-rubik-medium"
               style={{
@@ -146,7 +219,7 @@ const Preferences = () => {
             <View
               className="ml-1 w-5 h-5 rounded-md"
               style={{backgroundColor: colors.primary[300]}}></View>
-          </View>
+          </View> */}
         </View>
       </ScrollView>
     </View>

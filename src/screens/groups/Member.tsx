@@ -41,7 +41,7 @@ import {
 } from '../../api/message/messageService';
 import {useUser} from '../../contexts/UserContext';
 
-const Group = () => {
+const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
   const {params} = useRoute<MemberRouteProp>();
   const {memberId, fromNotification} = params;
@@ -54,6 +54,25 @@ const Group = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [lastMessage, setLastMessage] = useState<Message | null>();
   const [isExerciseModalVisible, setIsExerciseModalVisible] = useState(false);
+
+  const calculateAge = () => {
+    if (member && member.birthDate) {
+      const birthDate = new Date(member.birthDate);
+      const today = new Date();
+
+      let age = today.getFullYear() - birthDate.getFullYear();
+
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const dayDiff = today.getDate() - birthDate.getDate();
+
+      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+      }
+
+      return age;
+    }
+    return null;
+  };
 
   const checkAndSetSymptoms = (newSymptoms: Symptoms) => {
     let isUpdated = false;
@@ -208,22 +227,74 @@ const Group = () => {
           borderColor: colors.primary[300],
         }}>
         <Text
-          className="font-rubik text-2xl"
-          style={{color: colors.primary[175]}}>
+          className="font-rubik-medium"
+          style={{fontSize: 20, color: colors.text.primary}}>
           Hasta Bilgileri
         </Text>
-        <Text
-          className="font-rubik text-lg mt-3 mb-1"
-          style={{color: colors.primary[175]}}>
-          Adı Soyadı:{'  '}
-          <Text style={{color: colors.text.primary}}>{member?.fullName}</Text>
-        </Text>
-        <Text
-          className="font-rubik text-lg mt-1 mb-1"
-          style={{color: colors.primary[175]}}>
-          Kullanıcı Adı:{'  '}
-          <Text style={{color: colors.text.primary}}>{member?.username}</Text>
-        </Text>
+        <View className="flex flex-row items-center mt-1 mb-1">
+          <Text
+            className="font-rubik-medium text-lg"
+            style={{color: colors.text.primary}}>
+            Adı Soyadı:{'  '}
+          </Text>
+          <Text
+            className="font-rubik text-lg"
+            style={{color: colors.text.primary}}>
+            {member?.fullName}
+          </Text>
+        </View>
+        <View className="flex flex-row items-center mt-1 mb-1">
+          <Text
+            className="font-rubik-medium text-lg"
+            style={{color: colors.text.primary}}>
+            Kullanıcı Adı:{'  '}
+          </Text>
+          <Text
+            className="font-rubik text-lg"
+            style={{color: colors.text.primary}}>
+            {member?.username}
+          </Text>
+        </View>
+        <View className="flex flex-row items-center mt-1 mb-1">
+          <Text
+            className="font-rubik-medium text-lg"
+            style={{color: colors.text.primary}}>
+            Yaş:{'  '}
+          </Text>
+          <Text
+            className="font-rubik text-lg"
+            style={{color: colors.text.primary}}>
+            {calculateAge()}
+          </Text>
+        </View>
+        <View className="flex flex-row items-center mt-1 mb-1">
+          <Text
+            className="font-rubik-medium text-lg"
+            style={{color: colors.text.primary}}>
+            Doğum Tarihi:{'  '}
+          </Text>
+          <Text
+            className="font-rubik text-lg"
+            style={{color: colors.text.primary}}>
+            {new Date(member?.birthDate!).toLocaleDateString('tr-TR', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </Text>
+        </View>
+        <View className="flex flex-row items-center mt-1 mb-1">
+          <Text
+            className="font-rubik-medium text-lg"
+            style={{color: colors.text.primary}}>
+            Cinsiyet:{'  '}
+          </Text>
+          <Text
+            className="font-rubik text-lg"
+            style={{color: colors.text.primary}}>
+            {member?.gender === 'male' ? 'Erkek' : 'Kadın'}
+          </Text>
+        </View>
       </View>
       <View
         className="flex flex-column justify-start rounded-2xl pl-5 p-3 mb-3"
@@ -233,20 +304,20 @@ const Group = () => {
         <View className="flex flex-row justify-between">
           {lastMessage && !lastMessage.message.startsWith('dailyStatus') && (
             <Text
-              className="font-rubik text-2xl"
+              className="font-rubik text-2xl mt-1"
               style={{color: colors.primary[200]}}>
-              Son Mesaj
+              En Son Mesaj
             </Text>
           )}
           <TouchableOpacity
-            className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center"
+            className="py-2 px-3 mb-1 bg-blue-500 rounded-2xl flex items-center justify-center"
             onPress={async () => {
               if (admin && member) {
                 const response = await isRoomExistBySenderAndReceiver(
                   admin.username,
                   member.username,
                 );
-                if (response.status === 200) {
+                if (response && response.status === 200) {
                   const roomId = response.data;
                   if (roomId !== 0) {
                     navigation.navigate('Chat', {
@@ -301,7 +372,7 @@ const Group = () => {
           <TouchableOpacity
             className="py-2 px-10 bg-blue-500 rounded-2xl flex items-center justify-center"
             onPress={() => {
-              navigation.navigate('Achievements', {member: member});
+              navigation.navigate('Progress', {member: member});
             }}>
             {/* <Text
               className="font-rubik text-lg"
@@ -351,7 +422,11 @@ const Group = () => {
             iconSource={icons.blood_pressure}
             color="#FF9900"></ProgressBar> FDEF22*/}
         <ProgressBar
-          value={symptoms?.activeCaloriesBurned}
+          value={
+            symptoms?.activeCaloriesBurned
+              ? symptoms?.activeCaloriesBurned
+              : undefined
+          }
           label="Yakılan Kalori"
           iconSource={icons.kcal}
           color="#FF9900"></ProgressBar>
@@ -361,7 +436,7 @@ const Group = () => {
           iconSource={icons.man_walking}
           color="#FDEF22"></ProgressBar>
         <ProgressBar
-          value={symptoms?.sleepHours}
+          value={symptoms?.sleepHours ? symptoms?.sleepHours : undefined}
           label="Uyku"
           iconSource={icons.sleep}
           color="#FDEF22"></ProgressBar>
@@ -392,4 +467,4 @@ const Group = () => {
   );
 };
 
-export default Group;
+export default Member;

@@ -1,7 +1,164 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "automatic",
-    "terminal.integrated.defaultProfile.windows": "PowerShell"
-    // "java.jdt.ls.java.home": "C:\\Program Files\\Java\\jdk-17",
-    // "kotlin.java.home": "C:\\Program Files\\Java\\jdk-17",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "terminal.integrated.defaultProfile.windows": "PowerShell"
+  // "java.jdt.ls.java.home": "C:\\Program Files\\Java\\jdk-17",
+  // "kotlin.java.home": "C:\\Program Files\\Java\\jdk-17",
 }
+
+// {
+//   "java.configuration.runtimes": [
+//     // {
+//     //   "name": "JavaSE-1.8",
+//     //   "path": "C:\\Users\\Eray\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\8"
+//     // },
+//     // {
+//     //   "name": "JavaSE-11",
+//     //   "path": "C:\\Users\\Eray\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\11"
+//     // },
+//     {
+//       "name": "JavaSE-17",
+//       "path": "C:\\Program Files\\Microsoft\\jdk-17.0.14.7-hotspot"
+//     },
+//     {
+//       "name": "JavaSE-21",
+//       "path": "C:\\Program Files\\Java\\jdk-21"
+//     },
+//     {
+//       "name": "JavaSE-24",
+//       "path": "C:\\Program Files\\Java\\jdk-24",
+//       "default": true
+//     }
+//   ],
+//   "java.jdt.ls.java.home": "C:\\Program Files\\Java\\jdk-21",
+//   // "java.home": "C:\\Program Files\\Java\\jdk-17",
+//   "kotlin.java.home": "C:\\Program Files\\Java\\jdk-21",
+//   "files.autoSave": "afterDelay",
+//   "editor.linkedEditing": true,
+//   "java.import.gradle.home": "C:\\Program Files\\Java\\jdk-21",
+//   "terminal.integrated.profiles.windows": {
+//     "JavaSE-1.8 LTS": {
+//       "overrideName": true,
+//       "env": {
+//         "PATH": "C:\\Users\\Eray\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\8\\bin;${env:PATH}",
+//         "JAVA_HOME": "C:\\Users\\Eray\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\8"
+//       },
+//       "path": "cmd"
+//     },
+//     "JavaSE-11 LTS": {
+//       "overrideName": true,
+//       "env": {
+//         "PATH": "C:\\Users\\Eray\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\11\\bin;${env:PATH}",
+//         "JAVA_HOME": "C:\\Users\\Eray\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\11"
+//       },
+//       "path": "cmd"
+//     },
+//     "JavaSE-17 LTS": {
+//       "overrideName": true,
+//       "env": {
+//         "PATH": "C:\\Program Files\\Microsoft\\jdk-17.0.14.7-hotspot\\bin;${env:PATH}",
+//         "JAVA_HOME": "C:\\Program Files\\Microsoft\\jdk-17.0.14.7-hotspot"
+//       },
+//       "path": "cmd"
+//     },
+//     "JavaSE-21 LTS": {
+//       "overrideName": true,
+//       "env": {
+//         "PATH": "C:\\Program Files\\Java\\jdk-21\\bin;${env:PATH}",
+//         "JAVA_TOOL_OPTIONS": "-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8",
+//         "JAVA_HOME": "C:\\Program Files\\Java\\jdk-21"
+//       },
+//       "path": "cmd",
+//       "args": ["/k", "chcp", "65001"]
+//     },
+//     "JavaSE-24": {
+//       "overrideName": true,
+//       "env": {
+//         "PATH": "C:\\Program Files\\Java\\jdk-24\\bin;${env:PATH}",
+//         "JAVA_TOOL_OPTIONS": "-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8",
+//         "JAVA_HOME": "C:\\Program Files\\Java\\jdk-24"
+//       },
+//       "path": "cmd",
+//       "args": ["/k", "chcp", "65001"]
+//     }
+//   },
+//   "terminal.integrated.automationProfile.windows": {
+//     "path": "cmd"
+//   },
+//   "terminal.integrated.defaultProfile.windows": "JavaSE-24",
+//   "java.test.config": {
+//     "vmArgs": ["-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"]
+//   },
+//   "terminal.integrated.env.windows": {
+//     "JAVA_HOME": "C:\\Program Files\\Java\\jdk-21",
+//     "PATH": "C:\\Program Files\\Java\\jdk-21\\bin;${env:PATH}"
+//   },
+//   "maven.terminal.customEnv": [
+//     {
+//       "environmentVariable": "JAVA_HOME",
+//       "value": "C:\\Program Files\\Java\\jdk-21"
+//     }
+//   ],
+//   "java.import.gradle.java.home": "C:\\Program Files\\Java\\jdk-21",
+//   "maven.executable.path": "C:\\Program Files\\Maven\\apache-maven-3.9.9\\apache-maven-3.9.9\\bin\\mvn",
+//   "cSpell.reportUnknownWords": false,
+//   "[typescript]": {
+//     "editor.defaultFormatter": "esbenp.prettier-vscode"
+//   },
+//   "[typescriptreact]": {
+//     "editor.defaultFormatter": "esbenp.prettier-vscode"
+//   },
+//   "workbench.settings.applyToAllProfiles": [
+//     "terminal.integrated.defaultProfile.windows"
+//   ],
+//   "editor.defaultFormatter": "esbenp.prettier-vscode",
+//   "notebook.defaultFormatter": "esbenp.prettier-vscode",
+//   "typescript.updateImportsOnFileMove.enabled": "always",
+//   "javascript.updateImportsOnFileMove.enabled": "always",
+//   "editor.minimap.enabled": false,
+//   "editor.rulers": [
+//     {
+//       "column": 80,
+//       "color": "#00FF0010"
+//     },
+//     {
+//       "column": 100,
+//       "color": "#BDB76B15"
+//     },
+//     {
+//       "column": 120,
+//       "color": "#FA807219"
+//     }
+//   ],
+//   "editor.unicodeHighlight.includeComments": true,
+//   "workbench.colorCustomizations": {
+//     "[Default Dark Modern]": {
+//       "tab.activeBorderTop": "#00FF00",
+//       "tab.unfocusedActiveBorderTop": "#00FF0088",
+//       "textCodeBlock.background": "#00000055"
+//     },
+//     "editor.wordHighlightStrongBorder": "#FF6347",
+//     "editor.wordHighlightBorder": "#FFD700",
+//     "editor.selectionHighlightBorder": "#A9A9A9"
+//   },
+//   "workbench.editor.revealIfOpen": true,
+//   "files.eol": "\n",
+//   "[bat]": {
+//     "files.eol": "\r\n"
+//   },
+//   "emmet.variables": {
+//     "lang": "en"
+//   },
+//   "cSpell.diagnosticLevel": "Hint",
+//   "trailing-spaces.backgroundColor": "rgba(255,0,0,0.1)",
+//   "trailing-spaces.includeEmptyLines": false,
+//   "terminal.integrated.tabs.hideCondition": "never",
+//   "terminal.integrated.enablePersistentSessions": false,
+//   "java.compile.nullAnalysis.mode": "automatic",
+//   "java.configuration.detectJdksAtStart": false,
+//   "java.configuration.updateBuildConfiguration": "automatic",
+//   "java.debug.settings.hotCodeReplace": "auto",
+//   "java.dependency.packagePresentation": "hierarchical",
+//   "java.maxConcurrentBuilds": 16,
+//   "java.sources.organizeImports.staticStarThreshold": 1
+// }

@@ -14,10 +14,7 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTheme} from '../../themes/ThemeProvider';
 import {Theme, themes} from '../../themes/themes';
-import {
-  checkHealthConnectAvailable,
-  saveAndGetSymptoms,
-} from '../../api/health/healthConnectService';
+import {checkHealthConnectAvailable} from '../../api/health/healthConnectService';
 import {useNotificationNavigation} from '../../hooks/useNotificationNavigation';
 import {useUser} from '../../contexts/UserContext';
 
@@ -42,16 +39,16 @@ const Launch = () => {
     const user: User = JSON.parse(userData!);
 
     if (user) {
-      const defaultThemeJson = await AsyncStorage.getItem(
+      const userThemeJson = await AsyncStorage.getItem(
         `${user.username}-main-theme`,
       );
       setUser(user);
-      if (defaultThemeJson) {
-        const defaultTheme: Theme = defaultThemeJson
-          ? JSON.parse(defaultThemeJson)
+      if (userThemeJson) {
+        const userTheme: UserTheme = userThemeJson
+          ? JSON.parse(userThemeJson)
           : null;
         if (theme) {
-          setTheme(defaultTheme);
+          setTheme(userTheme.theme);
         }
       }
     }
@@ -63,7 +60,7 @@ const Launch = () => {
       if (user.role === 'ROLE_USER') {
         console.log('bura59');
         const isHealthConnectInstalled = await checkHealthConnectAvailable();
-        if (isHealthConnectInstalled) await saveAndGetSymptoms();
+        // if (isHealthConnectInstalled) await saveSymptoms();
         console.log('bura62');
       }
       navigation.navigate('App');

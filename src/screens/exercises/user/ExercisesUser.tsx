@@ -7,13 +7,21 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Modal,
 } from 'react-native';
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../../../themes/ThemeProvider';
 import icons from '../../../constants/icons';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
+import {Calendar, WeekCalendar} from 'react-native-calendars';
+import dayjs from 'dayjs';
+import {
+  getTodaysProgress,
+  getWeeklyActiveDaysProgress,
+} from '../../../api/exercise/progressService';
+import CustomWeeklyProgressCalendar from '../../../components/CustomWeeklyProgressCalendar';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -22,6 +30,14 @@ const ExercisesUser = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const scrollViewHeight = SCREEN_HEIGHT / 8;
+
+  const [todaysExerciseProgress, setTodaysExerciseProgress] =
+    useState<ExerciseProgressDTO | null>();
+  const [weeklyExerciseProgress, setWeeklyEersiseProgress] = useState<
+    ExerciseProgressDTO[]
+  >([]);
+
+  const [showModal, setShowModal] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -39,12 +55,45 @@ const ExercisesUser = () => {
     }, []),
   );
 
-  const navigateToPhysicalExercises = async (routeName: string) => {
-    navigation.navigate('PhysicalExercises', {screen: 'Exercise1'});
+  const fetchProgress = async () => {
+    const todaysExerciseProgress: ExerciseProgressDTO =
+      await getTodaysProgress();
+    setTodaysExerciseProgress(todaysExerciseProgress);
+
+    const weeklyExerciseProgress: ExerciseProgressDTO[] =
+      await getWeeklyActiveDaysProgress();
+    setWeeklyEersiseProgress(weeklyExerciseProgress);
   };
 
-  const navigateToMindGames = async (routeName: string) => {
-    navigation.navigate('MindGames', {screen: 'WordGame'});
+  useFocusEffect(
+    useCallback(() => {
+      fetchProgress();
+    }, []),
+  );
+
+  // böyle pair değil de daha basit ["done", "not-yet", "not-yet"] gibi bir dizi gelecek
+  const exerciseStatusByDate: Record<string, 'done' | 'missed'> = {
+    '2025-07-21': 'done',
+    '2025-07-22': 'missed',
+    // …
+  };
+
+  const getMarked = () => {
+    const marks: {[key: string]: any} = {};
+    Object.entries(exerciseStatusByDate).forEach(([date, status]) => {
+      marks[date] = {
+        selected: true,
+        disableTouchEvent: true,
+        selectedColor: status === 'done' ? '#55CC88' : '#FFCCCC80', // %80 opacity
+      };
+    });
+    return marks;
+  };
+
+  const onOpenExercise = async () => {
+    setShowModal(true);
+    // ayakta ya da oturarak olmasına göre o tür exercise id ile progress oluştursun
+    // Egzersiz ayakta mı oturarak mı olacak sorulsun ona göre exercise id bulunsun
   };
 
   return (
@@ -73,189 +122,161 @@ const ExercisesUser = () => {
         <View
           className="px-5 py-3 rounded-2xl mb-3"
           style={{backgroundColor: colors.background.primary}}>
-          <Text
-            className="font-rubik text-2xl mb-5"
-            style={{color: colors.text.primary}}>
-            İlerlemelerim
-          </Text>
-          <View className="flex flex-row justify-between mb-4">
+          {new Date().getDay() === 1 ||
+          new Date().getDay() === 3 ||
+          new Date().getDay() === 5 ||
+          new Date().getDay() === 6 ? (
+            <>
+              <>
+                <Text
+                  className="font-rubik text-2xl mb-1"
+                  style={{color: colors.text.primary}}>
+                  Bugünün Egzersizi
+                </Text>
+
+                <View className="flex flex-row justify-between items-center mt-4 mb-2">
+                  <TouchableOpacity
+                    disabled={
+                      todaysExerciseProgress?.progressRatio !== null &&
+                      todaysExerciseProgress?.progressRatio === 100
+                    }
+                    className="flex flex-row justify-center items-center rounded-2xl ml-1 py-3 pl-3"
+                    style={{
+                      backgroundColor:
+                        todaysExerciseProgress?.progressRatio &&
+                        todaysExerciseProgress.progressRatio === 100
+                          ? '#55CC88'
+                          : todaysExerciseProgress?.progressRatio &&
+                            todaysExerciseProgress.progressRatio > 0
+                          ? '#FFAA33'
+                          : colors.primary[175],
+                    }}
+                    onPress={() => onOpenExercise()}>
+                    <Text className="text-xl font-rubik">
+                      {todaysExerciseProgress?.progressRatio &&
+                      todaysExerciseProgress.progressRatio === 100
+                        ? 'Tamamlandı'
+                        : todaysExerciseProgress?.progressRatio &&
+                          todaysExerciseProgress.progressRatio > 0
+                        ? 'Devam Et'
+                        : 'Başla'}
+                    </Text>
+                    <Image source={icons.gymnastic_1} className="size-20" />
+                  </TouchableOpacity>
+                  {todaysExerciseProgress?.progressRatio &&
+                    todaysExerciseProgress.progressRatio > 0 && (
+                      <View className="flex justify-center items-center mr-5">
+                        <AnimatedCircularProgress
+                          size={100}
+                          width={8}
+                          fill={
+                            todaysExerciseProgress?.progressRatio &&
+                            todaysExerciseProgress.progressRatio
+                          }
+                          tintColor={colors.primary[300]}
+                          onAnimationComplete={() =>
+                            console.log('onAnimationComplete')
+                          }
+                          backgroundColor={colors.background.secondary}>
+                          {() => (
+                            <Text
+                              className="text-2xl font-rubik"
+                              style={{
+                                color: colors.text.primary,
+                              }}>
+                              %
+                              {todaysExerciseProgress?.progressRatio &&
+                                todaysExerciseProgress.progressRatio}
+                            </Text>
+                          )}
+                        </AnimatedCircularProgress>
+                      </View>
+                    )}
+                </View>
+              </>
+            </>
+          ) : (
             <Text
-              className="font-rubik text-xl"
+              className="font-rubik text-xl mb-1"
               style={{color: colors.text.primary}}>
-              Başarım 1
+              Bugün için planlanan egzersiziniz yok. İyi dinlenmeler!
             </Text>
-            <Image
-              source={icons.badge1_colorful_bordered}
-              className="size-8 mr-2"
-            />
-          </View>
-          <View className="flex flex-row justify-between mb-4">
-            <Text
-              className="font-rubik text-xl"
-              style={{color: colors.text.primary}}>
-              Başarım 2
-            </Text>
-            <Image source={icons.badge1_colorful} className="size-8 mr-2" />
-          </View>
-          <View className="flex flex-row justify-between mb-4">
-            <Text
-              className="font-rubik text-xl"
-              style={{color: colors.text.primary}}>
-              Başarım 3
-            </Text>
-            <Image
-              source={icons.badge1}
-              tintColor={colors.text.primary} // Eğer renkli değilse tintColor verilsin
-              className="size-8 mr-2"
-            />
-          </View>
+          )}
         </View>
 
         <View
-          className="px-5 py-3 rounded-2xl mb-3"
+          className="px-3 py-3 rounded-2xl mb-3"
           style={{backgroundColor: colors.background.primary}}>
-          <View className="flex flex-row justify-between items-start">
-            <Text
-              className="font-rubik text-2xl mb-3"
-              style={{color: colors.text.primary}}>
-              Günlük Egzersizler
-            </Text>
-            <View className="flex flex-col items-center justify-center">
-              <AnimatedCircularProgress
-                size={50}
-                width={4}
-                fill={59}
-                tintColor={colors.primary[300]}
-                onAnimationComplete={() => console.log('onAnimationComplete')}
-                backgroundColor={colors.background.secondary}>
-                {() => (
-                  <Text
-                    className="text-lg font-rubik"
-                    style={{
-                      color: colors.text.primary,
-                    }}>
-                    %{59}
-                  </Text>
-                )}
-              </AnimatedCircularProgress>
-              <Text
-                className="text-lg font-rubik"
-                style={{
-                  color: colors.text.primary,
-                }}>
-                tamamlandı
-              </Text>
-            </View>
-          </View>
-          <ScrollView
-            className="mt-4"
-            horizontal
-            style={{height: scrollViewHeight}}
-            showsHorizontalScrollIndicator={false}>
-            {/* <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#48AAFF'}}
-              // onPress={() => navigateToPhysicalExercises('Exercise2')}
-            >
-              <Image source={icons.back} className="size-20" />
-            </TouchableOpacity> */}
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#55CC88'}}
-              onPress={() => {}}>
-              <Image source={icons.stretching} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FFAA33'}}
-              onPress={() => navigation.navigate('Exercise')}>
-              <Image source={icons.gymnastic_1} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#48AAFF'}}>
-              <Image source={icons.dumbell_up} className="size-16" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#55CC88'}}
-              onPress={() => navigation.navigate('Exercise')}>
-              <Image source={icons.chronometer} className="size-20" />
-            </TouchableOpacity>
-          </ScrollView>
+          <Text
+            className="font-rubik text-2xl mb-3 mt-1 ml-2"
+            style={{color: colors.text.primary}}>
+            Egzersiz Takvimi
+          </Text>
+          <CustomWeeklyProgressCalendar progress={weeklyExerciseProgress} />
+          {/*<View className="mt-5">
+            <WeekCalendar
+              firstDay={1} // Pazartesi ile başlat
+              current={dayjs().format('YYYY-MM-DD')} // Bu hafta
+              markedDates={getMarked()}
+              hideDayNames={false}
+              allowShadow
+              theme={{
+                calendarBackground: colors.background.primary,
+                monthTextColor: colors.text.primary,
+                dayTextColor: colors.text.primary,
+                todayTextColor: colors.primary[200],
+                arrowColor: colors.primary[300],
+              }}
+              style={{borderRadius: 20, elevation: 2}}
+            />
+          </View>*/}
         </View>
-
-        <TouchableOpacity
-          className="flex flex-row items-center justify-between px-5 py-4 rounded-2xl mb-3"
-          style={{backgroundColor: colors.background.primary}}
-          onPress={() => navigation.navigate('AllExercises')}>
-          <Text
-            className="font-rubik text-2xl"
-            style={{color: colors.text.primary}}>
-            Tüm Egzersizler
-          </Text>
-          <Image source={icons.arrow} className="size-5 mr-3" />
-        </TouchableOpacity>
-
-        {/* <View
-          className="px-5 py-3 rounded-2xl"
-          style={{backgroundColor: colors.background.primary}}>
-          <Text
-            className="font-rubik text-2xl mb-4"
-            style={{color: colors.text.primary}}>
-            Zeka Oyunları
-          </Text>
-          <ScrollView
-            horizontal
-            style={{height: scrollViewHeight}}
-            showsHorizontalScrollIndicator={false}>
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FF8B8B'}}
-              onPress={() => navigateToMindGames('WordGame')}>
-              <Image source={icons.wordle} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FF8B8B'}}
-              // onPress={() => navigateToMindGames('MindGame2')}
-            >
-              <Image source={icons.brickwall} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FF8B8B'}}>
-              <Image source={icons.piano} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FF8B8B'}}>
-              <Image source={icons.xox} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FF8B8B'}}>
-              <Image source={icons.board_game} className="size-20" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
-              style={{backgroundColor: '#FF8B8B'}}>
-              <Image source={icons.brain} className="size-20" />
-            </TouchableOpacity>
-          </ScrollView>
-        </View> */}
-
-        <Text>Egzersiz Takvimi</Text>
       </View>
+
+      <Modal
+        transparent
+        visible={showModal}
+        animationType="fade"
+        onRequestClose={() => {}}>
+        <View className="flex-1 justify-center items-center">
+          <View
+            className="w-11/12 max-w-lg rounded-3xl p-6 items-center"
+            style={{
+              backgroundColor: colors.background.primary,
+              shadowColor: '#000',
+              shadowOpacity: 0.25,
+              shadowRadius: 10,
+              elevation: 10,
+            }}>
+            <Text
+              className="font-rubik-semibold text-2xl mb-4 text-center"
+              style={{color: colors.primary[200]}}>
+              Egzersiz Türü Seçimi
+            </Text>
+            <Text
+              className="font-rubik-semibold text-2xl mb-4 text-center"
+              style={{color: colors.primary[200]}}>
+              Egzersizinizi ayakta mı yapmak istersiniz yoksa oturarak mı?
+            </Text>
+            <Text
+              className="font-rubik-semibold text-2xl mb-4 text-center"
+              style={{color: colors.primary[200]}}>
+              Ayakta
+            </Text>
+            <Text
+              className="font-rubik-semibold text-2xl mb-4 text-center"
+              style={{color: colors.primary[200]}}>
+              Oturarak
+            </Text>
+            <TouchableOpacity
+              className="py-2 px-4 rounded-2xl"
+              style={{backgroundColor: colors.background.secondary}}
+              onPress={() => setShowModal(false)}>
+              <Text className="font-rubik text-xl text-center">Geri Dön</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };

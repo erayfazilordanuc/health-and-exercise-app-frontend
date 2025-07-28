@@ -121,7 +121,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 
         {!updateDisabled && setAddModalFunction && setSymptom && onAdd && (
           <TouchableOpacity
-            className="ml-1 flex-row justify-center items-center px-2 py-1 rounded-2xl"
+            className="ml-1 flex-row justify-center items-center px-3 py-1 rounded-2xl"
             style={{backgroundColor: colors.background.secondary}}
             onPress={() => {
               setAddModalFunction({setSymptom});

@@ -28,7 +28,7 @@ import {
   adminGetSymptomsById,
   adminGetSymptomsByUserId,
   getAllSymptoms,
-  getAllSymptomsByDate,
+  getSymptomsByDate,
   getSymptomsById,
 } from '../../../api/symptoms/symptomsService';
 
@@ -258,7 +258,7 @@ const Development = () => {
 
   const testGetAllSymptomsByDate = async () => {
     try {
-      const symptomsResponse = await getAllSymptomsByDate(today);
+      const symptomsResponse = await getSymptomsByDate(today);
 
       const symptomsData = JSON.stringify(symptomsResponse.data, null, 2);
       console.log('symptomsData', symptomsData);

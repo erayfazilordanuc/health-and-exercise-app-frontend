@@ -75,3 +75,93 @@ const Exercise2: React.FC = () => {
 };
 
 export default Exercise2;
+
+{
+  /* <View
+          className="px-5 py-3 rounded-2xl"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="font-rubik text-2xl mb-4"
+            style={{color: colors.text.primary}}>
+            Zeka Oyunları
+          </Text>
+          <ScrollView
+            horizontal
+            style={{height: scrollViewHeight}}
+            showsHorizontalScrollIndicator={false}>
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#FF8B8B'}}
+              onPress={() => navigateToMindGames('WordGame')}>
+              <Image source={icons.wordle} className="size-20" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#FF8B8B'}}
+              // onPress={() => navigateToMindGames('MindGame2')}
+            >
+              <Image source={icons.brickwall} className="size-20" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#FF8B8B'}}>
+              <Image source={icons.piano} className="size-20" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#FF8B8B'}}>
+              <Image source={icons.xox} className="size-20" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#FF8B8B'}}>
+              <Image source={icons.board_game} className="size-20" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#FF8B8B'}}>
+              <Image source={icons.brain} className="size-20" />
+            </TouchableOpacity>
+          </ScrollView>
+        </View> */
+}
+
+{
+  /* <ScrollView
+            className="mt-4"
+            horizontal
+            style={{height: scrollViewHeight}}
+            showsHorizontalScrollIndicator={false}>
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#55CC88'}}
+              onPress={() => {}}>
+              <Image source={icons.stretching} className="size-20" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#FFAA33'}}
+              onPress={() => navigation.navigate('Exercise')}>
+              <Image source={icons.gymnastic_1} className="size-20" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#48AAFF'}}>
+              <Image source={icons.dumbell_up} className="size-16" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="justify-center items-center rounded-2xl mr-3 w-28 h-28"
+              style={{backgroundColor: '#55CC88'}}
+              onPress={() => navigation.navigate('Exercise')}>
+              <Image source={icons.chronometer} className="size-20" />
+            </TouchableOpacity>
+          </ScrollView>*/
+}

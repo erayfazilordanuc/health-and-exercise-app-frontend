@@ -30,6 +30,7 @@ import {setGestureState} from 'react-native-reanimated';
 import CustomAlert from '../../components/CustomAlert';
 import icons from '../../constants/icons';
 import {
+  getLastMessageBySenderAndReceiver,
   getNextRoomId,
   isRoomExistBySenderAndReceiver,
 } from '../../api/message/messageService';
@@ -48,6 +49,8 @@ const Group = () => {
   const [admin, setAdmin] = useState<User | null>();
   const [groupSize, setGroupSize] = useState(0);
   const [isLeaveAlertVisible, setIsLeaveAlertVisible] = useState(false);
+  const [lastMessage, setLastMessage] = useState<Message | null>();
+  const [joinRequests, setJoinRequests] = useState<GroupRequestDTO[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -65,19 +68,24 @@ const Group = () => {
     }, []),
   );
 
-  const fetchUsers = async () => {
-    if (!groupId) return;
-    const membersRes = await getUsersByGroupId(groupId);
-    if (membersRes.status !== 200) return;
-    const list: User[] = Array.isArray(membersRes.data)
-      ? membersRes.data
-      : [membersRes.data];
-    setGroupSize(list.length);
-    const sorted = [
-      ...list.filter(u => u.role === 'ROLE_ADMIN'),
-      ...list.filter(u => u.role !== 'ROLE_ADMIN'),
-    ];
-    setUsers(sorted);
+  const fetchLastMessage = async (user: User) => {
+    if (!admin) return;
+
+    const lastMessage: Message = await getLastMessageBySenderAndReceiver(
+      admin.username,
+      user.username,
+    );
+
+    if (lastMessage.message.startsWith('dailyStatus')) {
+      const match = lastMessage.message.match(/dailyStatus(\d+)/);
+      const score = parseInt(match![1], 10);
+
+      lastMessage.message =
+        '\n' +
+        new Date().toLocaleDateString() +
+        `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+    }
+    setLastMessage(lastMessage);
   };
 
   useEffect(() => {
@@ -115,6 +123,12 @@ const Group = () => {
         // 4. admin’i ayıkla
         const adminUser: User = sorted[0];
         setAdmin(adminUser);
+
+        fetchLastMessage(u);
+
+        if (u.role === 'ROLE_USER') {
+          // istekleri çek
+        }
       } catch (e) {
         console.error('Group screen load error', e);
       }
@@ -127,12 +141,6 @@ const Group = () => {
       isActive = false;
     };
   }, [groupId]);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchUsers();
-    }, []),
-  );
 
   const onLeaveGroup = async () => {
     ToastAndroid.show(
@@ -169,7 +177,7 @@ const Group = () => {
           style={{color: colors.primary[200]}}>
           {item.fullName}
         </Text>
-        {item.role === 'ROLE_ADMIN' && (
+        {user?.role === 'ROLE_USER' && item.role === 'ROLE_ADMIN' && (
           <Text
             className="text-lg font-semibold dark:text-blue-300 mr-2"
             style={{color: colors.text.primary}}>
@@ -180,7 +188,7 @@ const Group = () => {
           <Text
             className="text-lg font-semibold dark:text-blue-300 mr-2"
             style={{color: colors.text.primary}}>
-            Sen
+            Siz
           </Text>
         )}
         {item.role === 'ROLE_USER' && user && user.role === 'ROLE_ADMIN' && (
@@ -284,31 +292,42 @@ const Group = () => {
 
         {user && user.role === 'ROLE_USER' && (
           <View
-            className="flex flex-column justify-start rounded-2xl pl-5 p-3" // border
+            className="flex flex-row justify-between rounded-3xl px-5 py-3"
             style={{
               backgroundColor: colors.background.primary,
-              borderColor: colors.primary[300],
             }}>
-            <View className="flex flex-row justify-between">
-              <Text
-                className="font-rubik text-2xl"
-                style={{color: colors.text.primary}}>
-                Hemşireden Gelen İleti
-              </Text>
+            <View className="flex flex-col justify-center items-start flex-1">
+              {lastMessage &&
+                !lastMessage.message.startsWith('dailyStatus') && (
+                  <View className="flex flex-col">
+                    <Text
+                      className="font-rubik text-2xl"
+                      style={{color: colors.primary[200]}}>
+                      En Son Mesaj
+                    </Text>
+                    <Text
+                      className="font-rubik text-lg mt-1"
+                      style={{color: colors.text.primary}}>
+                      {lastMessage.receiver === user?.username
+                        ? user?.fullName + ' : ' + lastMessage.message
+                        : 'Siz : ' + lastMessage.message}
+                    </Text>
+                  </View>
+                )}
               <TouchableOpacity
-                className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center"
+                className="px-4 bg-blue-500 rounded-full flex items-center justify-center h-12 mt-3"
                 onPress={async () => {
-                  try {
+                  if (admin && user) {
                     const response = await isRoomExistBySenderAndReceiver(
+                      admin.username,
                       user.username,
-                      admin?.username!,
                     );
-                    if (response.status === 200) {
+                    if (response && response.status === 200) {
                       const roomId = response.data;
                       if (roomId !== 0) {
                         navigation.navigate('Chat', {
                           roomId: roomId,
-                          sender: user.username,
+                          sender: user?.username,
                           receiver: admin,
                           fromNotification: false,
                         });
@@ -325,45 +344,21 @@ const Group = () => {
                         }
                       }
                     }
-                  } catch (error) {
-                    ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
                   }
                 }}>
                 <Text
                   className="font-rubik text-lg"
                   style={{color: colors.background.secondary}}>
-                  Sohbet
+                  Sohbete git
                 </Text>
               </TouchableOpacity>
             </View>
-            <Text
-              className="font-rubik text-lg mt-3"
-              style={{color: colors.text.primary}}>
-              Sağlıklı günler!
-            </Text>
           </View>
         )}
 
-        {user && user.role === 'ROLE_ADMIN' && (
-          <View
-            className="flex flex-column justify-start rounded-2xl pl-5 p-3 mt-3"
-            style={{
-              backgroundColor: colors.background.primary,
-            }}>
-            <View className="flex flex-row justify-between">
-              <Text
-                className="font-rubik text-2xl"
-                style={{color: colors.text.primary}}>
-                Öncelikli Geri Bildirimler
-              </Text>
-            </View>
-            <Text
-              className="font-rubik text-lg mt-3"
-              style={{color: colors.text.primary}}>
-              Bir hastadan gelen öncelikli geri bildirim
-            </Text>
-          </View>
-        )}
+        <View>
+          <Text>Katılma istekleri cart curt, satır 130</Text>
+        </View>
 
         <View
           className="flex flex-column justify-start rounded-2xl pl-4 p-3 mt-3" // border

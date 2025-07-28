@@ -127,6 +127,7 @@ export const uploadVideoToS3 = async (
 export const addVideoToExercise = async (
   exerciseId: number,
   videoUrl: string,
+  videoName: string,
 ): Promise<ExerciseDTO> => {
   return apiClient
     .post(`/exercises/${exerciseId}/videos`, {videoUrl})

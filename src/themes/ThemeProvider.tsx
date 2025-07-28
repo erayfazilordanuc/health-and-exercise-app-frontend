@@ -43,15 +43,23 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({children}) => {
     const user: User = JSON.parse(userData!);
 
     if (user) {
-      const defaultThemeJson = await AsyncStorage.getItem(
+      const userThemeJson = await AsyncStorage.getItem(
         `${user.username}-main-theme`,
       );
-      if (defaultThemeJson) {
-        const defaultTheme: Theme = defaultThemeJson
-          ? JSON.parse(defaultThemeJson)
+      if (userThemeJson) {
+        const userTheme: UserTheme = userThemeJson
+          ? JSON.parse(userThemeJson)
           : null;
         if (theme) {
-          setTheme(defaultTheme);
+          if (userTheme.isDefault) {
+            setTheme(
+              colorScheme === 'dark'
+                ? themes.primary.dark
+                : themes.primary.light,
+            );
+          } else {
+            setTheme(userTheme.theme);
+          }
           return;
         }
       }
