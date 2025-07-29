@@ -20,7 +20,8 @@ type ProgressBarProps = {
   onAdd?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const MAX_SLEEP_HOURS = 15;
+const MAX_SLEEP_HOURS = 16;
+const MAX_SLEEP_MINUTES = MAX_SLEEP_HOURS * 60;
 const INITIAL_MAX_STEPS = 2500;
 const INITIAL_MAX_CALORIES = 2000;
 
@@ -73,7 +74,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       if (value > maxCalories) maxCalories += 500;
       ratio = Math.min((value / maxCalories) * 100, 100);
     } else if (iconSource === icons.sleep) {
-      ratio = Math.min((value / MAX_SLEEP_HOURS) * 100, 100);
+      ratio = Math.min((value / MAX_SLEEP_MINUTES) * 100, 100);
     } else {
       ratio = Math.min(value, 100);
     }
@@ -84,8 +85,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     if (value == null || value == 0) return 'Veri yok';
     if (iconSource === icons.man_walking) return `${value} adım`;
     if (iconSource === icons.sleep) {
-      const hours = Math.floor(value);
-      const minutes = Math.round((value - hours) * 60);
+      const hours = Math.floor(value / 60); // toplam dakikadan saat çıkar
+      const minutes = Math.round(value % 60); // kalan dakikayı al
       return `${hours} saat ${minutes} dk`;
     }
     if (iconSource === icons.pulse) return `${value} bpm`;

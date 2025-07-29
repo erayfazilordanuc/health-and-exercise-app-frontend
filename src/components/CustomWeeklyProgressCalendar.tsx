@@ -50,7 +50,7 @@ const CustomWeeklyProgressCalendar = ({
   useEffect(() => {
     if (scrollRef.current && todayIndex !== -1) {
       scrollRef.current.scrollTo({
-        x: todayIndex * 100, // yaklaşık kutu genişliği
+        x: todayIndex * 80, // yaklaşık kutu genişliği
         animated: true,
       });
     }

@@ -31,15 +31,23 @@ const CustomAlert = ({
       visible={visible}
       animationType="fade"
       onRequestClose={onCancel}>
-      <View className="flex-1 justify-center items-center bg-black/50">
+      <View className="flex-1 justify-center items-center">
         <View
-          className="w-4/5 rounded-xl p-5 py-6 items-center"
-          style={{backgroundColor: colors.background.primary}}>
+          className="w-4/5 rounded-2xl p-5 py-5 items-center"
+          style={{
+            backgroundColor: colors.background.primary,
+            shadowColor: 'gray', // ✅ iOS için
+            shadowOffset: {width: 0, height: 4},
+            shadowOpacity: 0.25,
+            shadowRadius: 6,
+            elevation: 4, // ✅ Android için
+          }}>
           <Text
             className="text-lg font-rubik text-center"
             style={{color: colors.text.primary}}>
             {message ? message : 'Emin misiniz?'}
           </Text>
+
           {secondMessage && (
             <Text
               className="text-sm font-rubik text-center mt-4"
@@ -47,30 +55,31 @@ const CustomAlert = ({
               {'Not: ' + secondMessage}
             </Text>
           )}
-          <View className="flex-row justify-between w-full mt-6">
+
+          <View className="flex flex-row justify-between mt-6">
             <TouchableOpacity
               onPress={onCancel}
-              className="flex-1 p-2 rounded-lg items-center mx-1"
+              className="py-2 px-4 rounded-2xl items-center mx-1 mr-3"
               style={{backgroundColor: colors.background.secondary}}>
               <Text
-                className="text-base font-bold"
+                className="text-lg font-rubik-semibold"
                 style={{color: colors.text.primary}}>
                 {onCancelText ? onCancelText : 'İptal'}
               </Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               onPress={() => {
                 onYes();
                 visible = true;
               }}
-              className="flex-1 p-2  rounded-lg items-center mx-1"
+              className="py-2 px-4 rounded-2xl items-center mx-1 ml-3"
               style={{
                 backgroundColor: isPositive ? '#16d750' : 'rgb(239 68 68)',
               }}>
               <Text
-                className={`text-base font-bold text-white ${
-                  onYesText ? '' : 'mr-1'
-                }`}>
+                className={`text-lg font-rubik-semibold `}
+                style={{color: colors.background.primary}}>
                 {onYesText ? onYesText : 'Evet'}
               </Text>
             </TouchableOpacity>

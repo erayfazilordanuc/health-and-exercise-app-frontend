@@ -234,7 +234,7 @@ const Groups = () => {
               Gönderilen İstek
             </Text>
             <View
-              className="rounded-2xl mt-1 p-3"
+              className="rounded-2xl mt-1 py-3 px-5"
               style={{backgroundColor: colors.background.secondary}}>
               <View className="flex flex-row">
                 <Text

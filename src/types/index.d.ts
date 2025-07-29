@@ -126,12 +126,17 @@ type CreateExerciseVideoDTO = {
   exerciseId: number | null;
 };
 
+type NewVideoDTO = {
+  name: string;
+  videoUrl: string | null;
+};
+
 type Exercise = {
   id?: number;
   name: string;
   description: string;
   point: number;
-  videos: ExerciseVideo[];
+  videos: ExerciseVideoDTO[];
   admin: User;
   createdAt: Date | null;
   updatedAt: Date | null;

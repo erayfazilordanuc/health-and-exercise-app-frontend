@@ -17,9 +17,19 @@ export const deleteJoinGroupRequest = async (groupRequestId: number) => {
 };
 
 export const getGroupRequestsByGroupId = async (groupId: number) => {
-  const response = await apiClient.get(`/groups/id/${groupId}/join-request`);
-  console.log('Get group request by group id', response);
-  return response;
+  try {
+    const response = await apiClient.get(`/groups/id/${groupId}/join-request`);
+    console.log('Get group request by group id', response);
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    return null;
+  }
 };
 
 export const getGroupRequestsByUserId = async (userId: number) => {
@@ -59,6 +69,29 @@ export const getUsersByGroupId = async (groupId: number) => {
   const response = await apiClient.get(`/groups/id/${groupId}/users`);
   console.log('Group users', response);
   return response;
+};
+
+export const respondToJoinRequest = async (
+  joinRequestId: number,
+  approved: boolean,
+) => {
+  try {
+    const response = await apiClient.post(
+      `/groups/join-request/id/${joinRequestId}/response`,
+      {},
+      {params: {approved}},
+    );
+    console.log('Respond to join request by id', response);
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    return null;
+  }
 };
 
 export const createGroup = async (createGroupDTO: CreateGroupDTO) => {

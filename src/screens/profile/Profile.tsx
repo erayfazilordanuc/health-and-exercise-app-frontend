@@ -31,7 +31,7 @@ import {
   getHeartRate,
   getSymptoms,
   getTotalCaloriesBurned,
-  getTotalSleepHours,
+  getTotalSleepMinutes,
   initializeHealthConnect,
   saveSymptoms,
 } from '../../api/health/healthConnectService';
@@ -53,6 +53,8 @@ import {Linking} from 'react-native';
 import CustomAlert from '../../components/CustomAlert';
 import {useUser} from '../../contexts/UserContext';
 import plugin from 'tailwindcss';
+import DatePicker from 'react-native-date-picker';
+// import DateTimePicker from '@react-native-community/datetimepicker';
 
 const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -71,7 +73,7 @@ const Profile = () => {
   const [steps, setSteps] = useState(0);
   const [totalCaloriesBurned, setTotalCaloriesBurned] = useState(0);
   const [activeCaloriesBurned, setActiveCaloriesBurned] = useState(0);
-  const [totalSleepHours, setTotalSleepHours] = useState(0);
+  const [totalSleepMinutes, setTotalSleepMinutes] = useState(0);
   const [sleepSessions, setSleepSessions] = useState<String[]>([]);
 
   const [isHealthConnectAvailable, setIsHealthConnectAvailable] =
@@ -90,8 +92,25 @@ const Profile = () => {
     useState<Symptoms>();
 
   const [loading, setLoading] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
+
+  const [time, setTime] = useState(() => {
+    const initial = new Date();
+    initial.setHours(8);
+    initial.setMinutes(30);
+    initial.setSeconds(0);
+    return initial;
+  });
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const today = new Date();
+
+  const onTimeChange = (event: any, selectedTime?: Date) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      setTime(selectedTime);
+    }
+  };
 
   // TO DO There should be a favorite color pair to use it on username
 
@@ -152,10 +171,10 @@ const Profile = () => {
       }
 
       if (merged.sleepHours) {
-        if (totalSleepHours !== merged.sleepHours)
-          setTotalSleepHours(merged.sleepHours);
+        if (totalSleepMinutes !== merged.sleepHours)
+          setTotalSleepMinutes(merged.sleepHours);
       } else if (syncedSymptoms && syncedSymptoms.sleepHours) {
-        setTotalSleepHours(syncedSymptoms.sleepHours);
+        setTotalSleepMinutes(syncedSymptoms.sleepHours);
         merged.sleepHours = syncedSymptoms.sleepHours;
       }
 
@@ -237,18 +256,31 @@ const Profile = () => {
     fetchAndUpsertAll();
   }, [user]);
 
+  const bulguLimits = new Map<
+    React.Dispatch<React.SetStateAction<number>> | undefined,
+    {min: number; max: number}
+  >([
+    [setHeartRate, {min: 30, max: 220}], // bpm aralığı
+    [setSteps, {min: 0, max: 100000}], // adım sayısı
+    [setActiveCaloriesBurned, {min: 0, max: 10000}], // kcal
+    [setTotalSleepMinutes, {min: 0, max: 24 * 60}], // uyku (dakika)
+  ]);
+
   const bulguMap = new Map<
     React.Dispatch<React.SetStateAction<number>> | undefined,
-    string
+    {label: string; unit: string}
   >([
-    [setHeartRate, 'Nabız'],
-    [setSteps, 'Adım Sayısı'],
-    [setActiveCaloriesBurned, 'Yakılan Kalori'],
-    [setTotalSleepHours, 'Uyku'],
-    [undefined, 'Bulgu'], // fallback
+    [setHeartRate, {label: 'Nabız', unit: 'bpm'}],
+    [setSteps, {label: 'Adım Sayısı', unit: 'adım'}],
+    [setActiveCaloriesBurned, {label: 'Yakılan Kalori', unit: 'kcal'}],
+    [setTotalSleepMinutes, {label: 'Uyku', unit: 'saat'}],
+    [undefined, {label: 'Bulgu', unit: ''}], // fallback
   ]);
-  const getBulguLabel = () =>
-    bulguMap.get(addModalFunction?.setSymptom) ?? 'Bulgu';
+
+  const getBulguLabel = () => {
+    const bulgu = bulguMap.get(addModalFunction?.setSymptom);
+    return bulgu ? `${bulgu.label} (${bulgu.unit})` : 'Bulgu';
+  };
 
   return (
     <>
@@ -288,10 +320,11 @@ const Profile = () => {
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
-            paddingBottom: 250,
+            paddingBottom: 175,
             // paddingTop: insets.top / 2,
           }}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -519,13 +552,13 @@ const Profile = () => {
                       }
                     />
                     <ProgressBar
-                      value={totalSleepHours}
+                      value={totalSleepMinutes}
                       label="Uyku"
                       iconSource={icons.sleep}
                       color="#FDEF22"
                       setAddModalFunction={setAddModalFunction}
-                      setSymptom={setTotalSleepHours}
-                      onAdd={setIsAddModalVisible}
+                      setSymptom={setTotalSleepMinutes}
+                      onAdd={setShowTimePicker}
                       updateDisabled={
                         healthConnectSymptoms?.sleepHours &&
                         healthConnectSymptoms?.sleepHours > 0
@@ -631,12 +664,37 @@ const Profile = () => {
                   />
                 </View>
                 <View className="flex-row justify-between w-full">
-                  {!loading ? (
+                  {!updateLoading ? (
                     <>
                       <TouchableOpacity
                         onPress={async () => {
-                          // setLoading(true);
+                          setUpdateLoading(true);
                           if (addModalValue) {
+                            const limits = bulguLimits.get(
+                              addModalFunction?.setSymptom,
+                            );
+                            if (addModalValue == null || isNaN(addModalValue)) {
+                              ToastAndroid.show(
+                                'Lütfen geçerli bir değer giriniz.',
+                                ToastAndroid.SHORT,
+                              );
+                              setUpdateLoading(false);
+                              return;
+                            }
+
+                            if (
+                              limits &&
+                              (addModalValue < limits.min ||
+                                addModalValue > limits.max)
+                            ) {
+                              ToastAndroid.show(
+                                `Değer ${limits.min} ile ${limits.max} arasında olmalıdır.`,
+                                ToastAndroid.LONG,
+                              );
+                              setUpdateLoading(false);
+                              return;
+                            }
+
                             addModalFunction?.setSymptom?.(addModalValue);
 
                             // Güncellenmiş symptoms objesi
@@ -659,7 +717,7 @@ const Profile = () => {
                                 addModalValue;
                             } else if (
                               addModalFunction?.setSymptom ===
-                              setTotalSleepHours
+                              setTotalSleepMinutes
                             ) {
                               updatedSymptoms.sleepHours = addModalValue;
                             }
@@ -679,7 +737,7 @@ const Profile = () => {
                               ToastAndroid.SHORT,
                             );
                           }
-                          setLoading(false);
+                          setUpdateLoading(false);
                         }}
                         className="flex-1 p-2 rounded-xl items-center mx-1"
                         style={{backgroundColor: '#0EC946'}}>
@@ -714,6 +772,43 @@ const Profile = () => {
               </View>
             </View>
           </Modal>
+          <DatePicker
+            modal
+            open={showTimePicker}
+            date={time}
+            title="Uyku sürenizi seçiniz"
+            mode="time" // ✅ sadece saat seçimi
+            locale="tr" // ✅ Türkçe dil
+            is24hourSource="device" // ✅ 24 saat formatı
+            onConfirm={async selectedTime => {
+              const totalMinutes =
+                selectedTime.getHours() * 60 + selectedTime.getMinutes();
+              console.log(totalMinutes);
+              if (totalMinutes <= 0 || totalMinutes > 960) {
+                ToastAndroid.show(
+                  'Uyku süresi 0–16 saat arasında olmalıdır.',
+                  ToastAndroid.LONG,
+                );
+                setShowTimePicker(false);
+                return;
+              }
+
+              const updatedSymptoms: Symptoms = {
+                ...symptoms,
+              };
+              updatedSymptoms.sleepHours = totalMinutes;
+              setTotalSleepMinutes(totalMinutes);
+              setTime(selectedTime);
+
+              const savedSymptoms = await saveSymptoms(updatedSymptoms);
+              if (savedSymptoms) setSymptoms(savedSymptoms);
+
+              setShowTimePicker(false);
+            }}
+            onCancel={() => setShowTimePicker(false)}
+            confirmText="Onayla" // ✅ buton Türkçe
+            cancelText="İptal" // ✅ buton Türkçe
+          />
         </ScrollView>
       </View>
     </>

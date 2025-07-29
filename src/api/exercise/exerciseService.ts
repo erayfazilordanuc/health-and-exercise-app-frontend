@@ -126,11 +126,10 @@ export const uploadVideoToS3 = async (
 
 export const addVideoToExercise = async (
   exerciseId: number,
-  videoUrl: string,
-  videoName: string,
+  newVideoDTO: NewVideoDTO,
 ): Promise<ExerciseDTO> => {
   return apiClient
-    .post(`/exercises/${exerciseId}/videos`, {videoUrl})
+    .post(`/exercises/${exerciseId}/videos`, newVideoDTO)
     .then(({data}) => {
       console.log('✅ Video başarıyla eklendi:', data);
       return data as ExerciseDTO;
@@ -146,16 +145,40 @@ export const addVideoToExercise = async (
     });
 };
 
-export const deleteVideoFromExercise = async (
+export const updateExerciseVideoName = async (
+  videoId: number,
   exerciseId: number,
-  videoUrl: string,
+  videoName: string,
+): Promise<ExerciseDTO> => {
+  const videoDTO: NewVideoDTO = {
+    name: videoName,
+    videoUrl: null,
+  };
+  return apiClient
+    .put(`/exercises/${exerciseId}/videos/id/${videoId}`, videoDTO)
+    .then(({data}) => {
+      console.log('✅ Video başarıyla eklendi:', data);
+      return data as ExerciseDTO;
+    })
+    .catch((err: AxiosError<any>) => {
+      const {response} = err;
+
+      const message =
+        response?.data?.message || response?.data?.error || err.message;
+      console.error('🚨 Video kaydederken hata:', message, response);
+
+      throw {response, message};
+    });
+};
+
+export const deleteVideoFromExercise = async (
+  id: number,
+  exerciseId: number,
 ) => {
   try {
-    const response = await apiClient.delete(`/exercises/${exerciseId}/videos`, {
-      params: {
-        videoUrl,
-      },
-    });
+    const response = await apiClient.delete(
+      `/exercises/${exerciseId}/videos/id/${id}`,
+    );
     console.log('Delete video from exercise', response);
     if (response.status >= 200 && response.status < 300) {
       return response.data;

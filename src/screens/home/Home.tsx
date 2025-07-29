@@ -92,11 +92,9 @@ const Home = () => {
     if (isConnected && !isAdminTemp) {
       const dailyStatus = await AsyncStorage.getItem('dailyStatus');
       if (!dailyStatus && user.groupId) {
-        const groupAdmin: User = await getGroupAdmin(user.groupId);
-        setAdmin(groupAdmin);
         const response = await isDailyStatusExistForToday(
           user.username,
-          groupAdmin.username,
+          admin!.username,
         );
         if (!response.data) setIsModalVisible(true);
       } else {
@@ -142,6 +140,12 @@ const Home = () => {
 
   const fetchProgress = async () => {
     if (!user?.groupId) return;
+
+    if (!admin) {
+      const groupAdmin: User = await getGroupAdmin(user.groupId);
+      setAdmin(groupAdmin);
+    }
+
     const todaysExerciseProgress: ExerciseProgressDTO =
       await getTodaysProgress();
     setTodaysExerciseProgress(todaysExerciseProgress);
@@ -398,9 +402,12 @@ const Home = () => {
 
           {user && user.role === 'ROLE_USER' && (
             <>
-              <View className="flex flex-row justify-center my-1">
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator
+                className="flex-1 mt-1 mb-1 pb-2 rounded-2xl">
                 <View
-                  className="flex flex-col px-3 pr-4 py-3 rounded-3xl mb-2 mr-2"
+                  className="flex flex-col px-3 pr-4 py-3 rounded-3xl mr-1"
                   style={{
                     backgroundColor: colors.background.primary,
                   }}>
@@ -435,14 +442,14 @@ const Home = () => {
                 </View>
                 {user.groupId && (
                   <View
-                    className="flex flex-column justify-between rounded-3xl px-5 py-3 mb-3 ml-2"
+                    className="flex flex-column justify-between rounded-3xl px-5 py-3 ml-2"
                     style={{
                       backgroundColor: colors.background.primary,
                     }}>
                     <View className="flex flex-col justify-between flex-1">
                       {lastMessage &&
                         !lastMessage.message.startsWith('dailyStatus') && (
-                          <View className="flex flex-col items-center justify-center">
+                          <View className="flex flex-col items-start justify-center max-w-64">
                             <Text
                               className="font-rubik text-2xl"
                               style={{color: colors.primary[200]}}>
@@ -458,7 +465,8 @@ const Home = () => {
                           </View>
                         )}
                       <TouchableOpacity
-                        className="p-3 mb-1 bg-blue-500 rounded-full flex items-center justify-center"
+                        className="px-3 py-2 mt-2 bg-blue-500 flex self-start items-start justify-center"
+                        style={{borderRadius: 17}}
                         onPress={async () => {
                           if (admin && user) {
                             const response =
@@ -474,8 +482,9 @@ const Home = () => {
                                   params: {
                                     roomId,
                                     sender: user?.username,
-                                    receiver: admin, // user string mi? objeyse user.username
-                                    fromNotification: false,
+                                    receiver: admin,
+                                    fromNotification: true,
+                                    navigatedInApp: true,
                                   },
                                 });
                               } else {
@@ -486,7 +495,8 @@ const Home = () => {
                                     roomId: nextRoomId,
                                     sender: user.username,
                                     receiver: admin,
-                                    fromNotification: false,
+                                    fromNotification: true,
+                                    navigatedInApp: true,
                                   });
                                 }
                               }
@@ -502,7 +512,7 @@ const Home = () => {
                     </View>
                   </View>
                 )}
-              </View>
+              </ScrollView>
               <View
                 className="px-5 py-3 rounded-2xl mb-3"
                 style={{backgroundColor: colors.background.primary}}>

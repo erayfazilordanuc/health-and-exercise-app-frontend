@@ -23,8 +23,10 @@ import {getUser, updateUser} from '../../api/user/userService';
 import {
   getGroupAdmin,
   getGroupById,
+  getGroupRequestsByGroupId,
   getGroupSize,
   getUsersByGroupId,
+  respondToJoinRequest,
 } from '../../api/group/groupService';
 import {setGestureState} from 'react-native-reanimated';
 import CustomAlert from '../../components/CustomAlert';
@@ -68,24 +70,48 @@ const Group = () => {
     }, []),
   );
 
-  const fetchLastMessage = async (user: User) => {
-    if (!admin) return;
-
+  const fetchLastMessage = async (user: User, admin: User) => {
     const lastMessage: Message = await getLastMessageBySenderAndReceiver(
       admin.username,
       user.username,
     );
+    if (lastMessage && lastMessage.message) {
+      if (lastMessage.message.startsWith('dailyStatus')) {
+        const match = lastMessage.message.match(/dailyStatus(\d+)/);
+        const score = parseInt(match![1], 10);
 
-    if (lastMessage.message.startsWith('dailyStatus')) {
-      const match = lastMessage.message.match(/dailyStatus(\d+)/);
-      const score = parseInt(match![1], 10);
-
-      lastMessage.message =
-        '\n' +
-        new Date().toLocaleDateString() +
-        `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+        lastMessage.message =
+          '\n' +
+          new Date().toLocaleDateString() +
+          `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+      }
+      setLastMessage(lastMessage);
     }
-    setLastMessage(lastMessage);
+  };
+
+  const fetchMembersAndSetAdmin = async (
+    groupId: number,
+    isActive: boolean,
+  ) => {
+    const membersRes = await getUsersByGroupId(groupId);
+    if (!isActive || membersRes.status !== 200) return;
+    const list: User[] = Array.isArray(membersRes.data)
+      ? membersRes.data
+      : [membersRes.data];
+    setGroupSize(list.length);
+    const sorted = [
+      ...list.filter(u => u.role === 'ROLE_ADMIN'),
+      ...list.filter(u => u.role !== 'ROLE_ADMIN'),
+    ];
+    setUsers(sorted);
+
+    if (!admin) {
+      const adminUser: User = sorted[0];
+      setAdmin(adminUser);
+      return adminUser;
+    }
+
+    return admin;
   };
 
   useEffect(() => {
@@ -108,26 +134,17 @@ const Group = () => {
         setGroup(grpRes.data);
 
         // 3. üye listesini çek
-        const membersRes = await getUsersByGroupId(groupId);
-        if (!isActive || membersRes.status !== 200) return;
-        const list: User[] = Array.isArray(membersRes.data)
-          ? membersRes.data
-          : [membersRes.data];
-        setGroupSize(list.length);
-        const sorted = [
-          ...list.filter(u => u.role === 'ROLE_ADMIN'),
-          ...list.filter(u => u.role !== 'ROLE_ADMIN'),
-        ];
-        setUsers(sorted);
+        const adminUser = await fetchMembersAndSetAdmin(groupId, isActive);
 
         // 4. admin’i ayıkla
-        const adminUser: User = sorted[0];
-        setAdmin(adminUser);
 
-        fetchLastMessage(u);
+        if (adminUser) fetchLastMessage(u, adminUser);
 
-        if (u.role === 'ROLE_USER') {
-          // istekleri çek
+        if (u.role === 'ROLE_ADMIN') {
+          const groupRequests = await getGroupRequestsByGroupId(groupId);
+          if (groupRequests) {
+            setJoinRequests(groupRequests);
+          }
         }
       } catch (e) {
         console.error('Group screen load error', e);
@@ -163,6 +180,14 @@ const Group = () => {
     //     navigation.navigate('Groups');
     //   }
     // }
+  };
+
+  const respondToRequest = async (joinRequestId: number, approved: boolean) => {
+    await respondToJoinRequest(joinRequestId, approved);
+    setJoinRequests(prevRequests =>
+      prevRequests.filter(req => req.id !== joinRequestId),
+    );
+    if (groupId) fetchMembersAndSetAdmin(groupId, true);
   };
 
   const renderItem = ({item}: {item: User}) => (
@@ -255,36 +280,35 @@ const Group = () => {
             {admin && (
               <>
                 <Text
-                  className="font-rubik text-2xl"
-                  style={{color: colors.primary[175]}}>
+                  className="font-rubik-medium"
+                  style={{fontSize: 20, color: colors.text.primary}}>
                   Hemşire Bilgileri
                 </Text>
-                <Text
-                  className="font-rubik text-lg mt-3 mb-1"
-                  style={{color: colors.primary[175]}}>
-                  Adı Soyadı:{'  '}
-                  <Text style={{color: colors.text.primary}}>
+                <View className="flex flex-row items-center mt-1 mb-1">
+                  <Text
+                    className="font-rubik-medium text-lg"
+                    style={{color: colors.text.primary}}>
+                    Adı Soyadı:{'  '}
+                  </Text>
+                  <Text
+                    className="font-rubik text-lg"
+                    style={{color: colors.text.primary}}>
                     {admin?.fullName}
                   </Text>
-                </Text>
-                {/* <Text
-                  className="font-rubik text-lg mt-1 mb-1"
-                  style={{color: colors.primary[175]}}>
-                  Kullanıcı Adı:{'  '}
-                  <Text style={{color: colors.text.primary}}>
-                    yagmurberktas
+                </View>
+                <View className="flex flex-row items-center mt-1 mb-1">
+                  <Text
+                    className="font-rubik-medium text-lg"
+                    style={{color: colors.text.primary}}>
+                    E-posta:{'  '}
                   </Text>
-                </Text> */}
-                {/* {admin?.username} */}
-                <Text
-                  className="font-rubik text-lg mt-1 mb-1"
-                  style={{color: colors.primary[175]}}>
-                  E-posta:{'  '}
-                  <Text style={{color: colors.text.primary}}>
-                    {'(Hemşirenin e-posta adresi)'}
+                  <Text
+                    className="font-rubik text-lg"
+                    style={{color: colors.text.primary}}>
                     {/* {admin?.email} */}
+                    {'(Hemşirenin e-posta adresi)'}
                   </Text>
-                </Text>
+                </View>
               </>
             )}
           </View>
@@ -292,30 +316,21 @@ const Group = () => {
 
         {user && user.role === 'ROLE_USER' && (
           <View
-            className="flex flex-row justify-between rounded-3xl px-5 py-3"
+            className="flex flex-column justify-start rounded-2xl pl-5 p-3"
             style={{
               backgroundColor: colors.background.primary,
             }}>
-            <View className="flex flex-col justify-center items-start flex-1">
+            <View className="flex flex-row justify-between">
               {lastMessage &&
                 !lastMessage.message.startsWith('dailyStatus') && (
-                  <View className="flex flex-col">
-                    <Text
-                      className="font-rubik text-2xl"
-                      style={{color: colors.primary[200]}}>
-                      En Son Mesaj
-                    </Text>
-                    <Text
-                      className="font-rubik text-lg mt-1"
-                      style={{color: colors.text.primary}}>
-                      {lastMessage.receiver === user?.username
-                        ? user?.fullName + ' : ' + lastMessage.message
-                        : 'Siz : ' + lastMessage.message}
-                    </Text>
-                  </View>
+                  <Text
+                    className="font-rubik text-2xl mt-1"
+                    style={{color: colors.primary[200]}}>
+                    En Son Mesaj
+                  </Text>
                 )}
               <TouchableOpacity
-                className="px-4 bg-blue-500 rounded-full flex items-center justify-center h-12 mt-3"
+                className="py-2 px-3 mb-1 bg-blue-500 rounded-2xl flex items-center justify-center"
                 onPress={async () => {
                   if (admin && user) {
                     const response = await isRoomExistBySenderAndReceiver(
@@ -327,7 +342,7 @@ const Group = () => {
                       if (roomId !== 0) {
                         navigation.navigate('Chat', {
                           roomId: roomId,
-                          sender: user?.username,
+                          sender: user.username,
                           receiver: admin,
                           fromNotification: false,
                         });
@@ -349,19 +364,90 @@ const Group = () => {
                 <Text
                   className="font-rubik text-lg"
                   style={{color: colors.background.secondary}}>
-                  Sohbete git
+                  Sohbete Git
                 </Text>
               </TouchableOpacity>
             </View>
+            {lastMessage && !lastMessage.message.startsWith('dailyStatus') && (
+              <Text
+                className="font-rubik text-lg"
+                style={{color: colors.text.primary}}>
+                {lastMessage.receiver === user?.username
+                  ? user?.fullName + ' : ' + lastMessage.message
+                  : 'Siz : ' + lastMessage.message}
+              </Text>
+            )}
           </View>
         )}
 
-        <View>
-          <Text>Katılma istekleri cart curt, satır 130</Text>
-        </View>
+        {user && user.role === 'ROLE_ADMIN' && joinRequests.length > 0 && (
+          <View
+            className="flex flex-col justify-start /*items-center*/ rounded-2xl pl-4 pr-4 p-3 mb-3 mt-3" // border
+            style={{
+              backgroundColor: colors.background.primary,
+              borderColor: colors.primary[300],
+            }}>
+            <Text
+              className="font-rubik text-2xl ml-1 mb-1"
+              style={{color: colors.text.primary}}>
+              Gruba katılma istekleri
+            </Text>
+            {joinRequests.map(jr => (
+              <View
+                className="flex flex-col items-stretch justify-center rounded-2xl pl-4 p-2 mt-2"
+                style={{
+                  backgroundColor: colors.background.secondary,
+                }}>
+                <View className="flex flex-row">
+                  <Text className="font-rubik-medium text-lg ml-1">
+                    Adı Soyadı:{' '}
+                  </Text>
+                  <Text className="font-rubik text-lg ml-1">
+                    {jr.userDTO.fullName}
+                  </Text>
+                </View>
+                <View className="flex flex-row">
+                  <Text className="font-rubik-medium text-lg ml-1">
+                    Kullanıcı Adı:{' '}
+                  </Text>
+                  <Text className="font-rubik text-lg ml-1">
+                    {jr.userDTO.username}
+                  </Text>
+                </View>
+
+                <View className="flex flex-row items-center justify-center mt-2 mb-1">
+                  <TouchableOpacity
+                    className="rounded-2xl mr-1 px-3 py-1"
+                    style={{
+                      backgroundColor: '#16d750',
+                    }}
+                    onPress={() => respondToRequest(jr.id!, true)}>
+                    <Text
+                      className="font-rubik text-md"
+                      style={{color: colors.background.primary}}>
+                      Onayla
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className="rounded-2xl ml-1 px-3 py-1"
+                    style={{
+                      backgroundColor: '#fd5353',
+                    }}
+                    onPress={() => respondToRequest(jr.id!, false)}>
+                    <Text
+                      className="font-rubik text-md"
+                      style={{color: colors.background.primary}}>
+                      Reddet
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
 
         <View
-          className="flex flex-column justify-start rounded-2xl pl-4 p-3 mt-3" // border
+          className="flex flex-col justify-start rounded-2xl pl-4 p-3 mt-3" // border
           style={{
             backgroundColor: colors.background.primary,
             borderColor: colors.primary[300],

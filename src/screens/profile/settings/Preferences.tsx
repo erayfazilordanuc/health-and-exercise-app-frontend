@@ -128,7 +128,7 @@ const Preferences = () => {
             </Text>
             <View className="flex flex-row items-center justify-between">
               <TouchableOpacity
-                className="py-3 px-3 rounded-3xl flex flex-row"
+                className="py-3 px-4 rounded-3xl flex flex-row items-center justify-center"
                 style={{
                   // backgroundColor:
                   //   theme.name === 'Light'
@@ -155,7 +155,7 @@ const Preferences = () => {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="py-3 px-4 rounded-3xl flex flex-row"
+                className="py-3 px-4 rounded-3xl flex flex-row items-center justify-center"
                 style={{
                   backgroundColor: !isDarkActive
                     ? colors.background.secondary
@@ -178,7 +178,7 @@ const Preferences = () => {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="py-3 px-4 rounded-3xl flex flex-row"
+                className="py-3 px-4 rounded-3xl flex flex-row items-center justify-center"
                 style={{
                   backgroundColor: isThemeDefault
                     ? colors.background.primary

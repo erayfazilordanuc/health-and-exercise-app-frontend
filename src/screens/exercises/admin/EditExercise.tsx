@@ -36,6 +36,7 @@ import {
   deleteVideoFromExercise,
   getPresignedUrl,
   updateExercise,
+  updateExerciseVideoName,
   uploadVideoToS3,
 } from '../../../api/exercise/exerciseService';
 import {Asset, launchImageLibrary} from 'react-native-image-picker';
@@ -123,10 +124,34 @@ const EditExercise = () => {
           setEditedExercise(createdExerciseDTO);
         }
       } catch (error) {
+        setLoading(false);
         ToastAndroid.show('Bir hata oluştu', ToastAndroid.LONG);
       }
     } else {
       if (JSON.stringify(exercise) !== JSON.stringify(editedExercise)) {
+        for (const video of editedExercise.videos) {
+          if (video.name?.length === 0) {
+            setLoading(false);
+            ToastAndroid.show(
+              'Lütfen her videoya bir isim ekleyiniz',
+              ToastAndroid.LONG,
+            );
+            return;
+          }
+        }
+
+        for (const video of editedExercise.videos) {
+          try {
+            const response = await updateExerciseVideoName(
+              video.id!,
+              editedExercise.id!,
+              video.name!,
+            );
+          } catch (error) {
+            setLoading(false);
+          }
+        }
+
         const updateExerciseDTO: UpdateExerciseDTO = {
           name: editedExercise.name,
           description: editedExercise.description,
@@ -144,12 +169,22 @@ const EditExercise = () => {
             setEditedExercise(updatedExerciseDTO);
           }
         } catch (error) {
+          setLoading(false);
           ToastAndroid.show('Bir hata oluştu', ToastAndroid.LONG);
         }
       }
     }
 
     if (pendingVideos.length) {
+      if (pendingVideos.length !== newVideos.length) {
+        ToastAndroid.show(
+          'Lütfen her videoya bir isim ekleyiniz',
+          ToastAndroid.SHORT,
+        );
+        setLoading(false);
+        return;
+      }
+
       setIsVideoUploadModalVisible(true);
       for (let idx = 0; idx < pendingVideos.length; idx++) {
         const video = pendingVideos[idx];
@@ -169,10 +204,13 @@ const EditExercise = () => {
         console.log('public url', publicUrl);
 
         try {
+          const newVideoDTO: NewVideoDTO = {
+            name: newVideos[idx].name ? newVideos[idx].name : '',
+            videoUrl: publicUrl,
+          };
           const updatedExercise: ExerciseDTO = await addVideoToExercise(
             snapExerciseId!,
-            publicUrl,
-            newVideos[idx].name ? newVideos[idx].name : '',
+            newVideoDTO,
           );
           setEditedExercise(updatedExercise);
         } catch (e) {
@@ -181,6 +219,7 @@ const EditExercise = () => {
           );
           console.log('video upload error', e);
           ToastAndroid.show('Video yüklenemedi', ToastAndroid.LONG);
+          setLoading(false);
         }
       }
 
@@ -232,6 +271,7 @@ const EditExercise = () => {
       launchImageLibrary(
         {
           mediaType: 'video',
+          selectionLimit: 1,
           quality: 1,
           videoQuality: 'high',
         },
@@ -258,6 +298,11 @@ const EditExercise = () => {
   };
 
   const onAddVideo = async () => {
+    if (editedExercise.videos?.length > 0 || pendingVideos.length > 0) {
+      ToastAndroid.show('Sadece 1 video ekleyebilirsiniz', ToastAndroid.LONG);
+      return;
+    }
+
     try {
       const ok = await requestVideoPerm();
       if (!ok) {
@@ -287,10 +332,16 @@ const EditExercise = () => {
     setPendingVideos(prev => prev.filter((_, i) => i !== idx));
   };
 
-  const onDeleteVideoFromExercise = async (videoUrl: string) => {
+  const onDeleteVideoFromExercise = async (videoId: number) => {
     try {
-      if (editedExercise.id)
-        await deleteVideoFromExercise(editedExercise.id, videoUrl);
+      if (editedExercise.id) {
+        await deleteVideoFromExercise(videoId, editedExercise.id);
+
+        setEditedExercise(prev => ({
+          ...prev,
+          videos: prev.videos.filter(v => v.id !== videoId),
+        }));
+      }
     } catch (e) {
       console.warn('Video silinemedi', e);
     }
@@ -325,20 +376,44 @@ const EditExercise = () => {
     return uri; // iOS veya zaten file://
   };
 
+  const isValidUrl = (url?: string): boolean => {
+    if (!url) return false;
+
+    // ✅ http veya https ile başlamalı
+    const pattern = /^(https?:\/\/)[\w\-]+(\.[\w\-]+)+[/#?]?.*$/;
+    if (!pattern.test(url)) return false;
+
+    // ✅ videoya uygun uzantı kontrolü (mp4, mov vs.)
+    const validExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm'];
+    const lower = url.toLowerCase();
+    return validExtensions.some(ext => lower.includes(ext));
+  };
+
   useEffect(() => {
     let isActive = true;
 
     const loadSequentialExerciseVideosThumbs = async () => {
       if (!exercise?.videos?.length) return;
 
-      // İçerik etkileşimi bitsin, sonra başla
       await new Promise<void>(res =>
         InteractionManager.runAfterInteractions(() => res()),
       );
 
       for (const v of exercise.videos) {
         if (!isActive) break;
-        if (thumbs[v.videoUrl]) continue; // zaten var
+        if (thumbs[v.videoUrl]) continue;
+
+        // ✅ URL geçerli mi kontrol et
+        console.log(v.videoUrl, isValidUrl(v.videoUrl));
+        if (!v.videoUrl || !isValidUrl(v.videoUrl)) {
+          console.warn(`[thumb] Geçersiz URL atlandı: ${v.videoUrl}`);
+          setThumbs(prev => ({
+            ...prev,
+            [v.videoUrl]: 'fallback_thumbnail_path',
+          }));
+          continue;
+        }
+
         try {
           const {path} = await createThumbnail({
             url: v.videoUrl,
@@ -346,11 +421,20 @@ const EditExercise = () => {
             format: 'jpeg',
             maxWidth: 512,
           });
+
           if (!isActive) break;
-          // anında state'e ekle – merge costu küçük
+
           setThumbs(prev => ({...prev, [v.videoUrl]: path}));
         } catch (err) {
-          console.warn('[thumb] failed', (err as Error).message);
+          console.warn(
+            `[thumb] Thumbnail oluşturulamadı: ${v.videoUrl}`,
+            (err as Error).message,
+          );
+          // ✅ hata olsa bile fallback ata, crash olmaz
+          setThumbs(prev => ({
+            ...prev,
+            [v.videoUrl]: 'fallback_thumbnail_path',
+          }));
         }
       }
     };
@@ -378,6 +462,8 @@ const EditExercise = () => {
 
     loadSequentialExerciseVideosThumbs();
     // loadPendingVideosThumbs();
+
+    console.log(editedExercise);
 
     return () => {
       isActive = false;
@@ -549,11 +635,14 @@ const EditExercise = () => {
                   placeholder="İsim girin"
                   placeholderTextColor="gray"
                   onChangeText={text =>
-                    setNewVideos(prev =>
-                      prev.map((v, i) =>
-                        i === index ? {...v, name: text} : v,
+                    setEditedExercise(prev => ({
+                      ...prev,
+                      videos: prev.videos.map(video =>
+                        video.id === editedExercise.videos[index].id
+                          ? {...video, name: text}
+                          : video,
                       ),
-                    )
+                    }))
                   }
                   selectionColor={'#7AADFF'}
                   className="flex-1 font-rubik text-xl rounded-2xl pl-4"
@@ -619,7 +708,7 @@ const EditExercise = () => {
                     message={'Videoyu silmek istediğinize emin misiniz?'}
                     visible={isDeleteVideoModalVisible}
                     onYes={() => {
-                      onDeleteVideoFromExercise(video.videoUrl);
+                      onDeleteVideoFromExercise(video.id!);
                       setIsDeleteVideoModalVisible(false);
                     }}
                     onCancel={() => {
@@ -737,7 +826,13 @@ const EditExercise = () => {
                     className="flex flex-row self-start rounded-xl p-3 items-center justify-start"
                     style={{backgroundColor: colors.background.primary}}
                     onPress={onAddVideo}>
-                    <Text className="font-rubik text-md pl-1">Video yükle</Text>
+                    <Text
+                      className="font-rubik text-md pl-1"
+                      style={{
+                        color: colors.text.primary,
+                      }}>
+                      Video yükle
+                    </Text>
                     <Image
                       source={icons.plus_sign}
                       tintColor={colors.text.primary}

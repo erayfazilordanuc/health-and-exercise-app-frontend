@@ -122,16 +122,18 @@ const Member = () => {
       member.username,
     );
 
-    if (lastMessage.message.startsWith('dailyStatus')) {
-      const match = lastMessage.message.match(/dailyStatus(\d+)/);
-      const score = parseInt(match![1], 10);
+    if (lastMessage && lastMessage.message) {
+      if (lastMessage.message.startsWith('dailyStatus')) {
+        const match = lastMessage.message.match(/dailyStatus(\d+)/);
+        const score = parseInt(match![1], 10);
 
-      lastMessage.message =
-        '\n' +
-        new Date().toLocaleDateString() +
-        `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+        lastMessage.message =
+          '\n' +
+          new Date().toLocaleDateString() +
+          `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+      }
+      setLastMessage(lastMessage);
     }
-    setLastMessage(lastMessage);
   };
 
   useFocusEffect(

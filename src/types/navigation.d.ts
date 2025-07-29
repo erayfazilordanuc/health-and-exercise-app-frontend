@@ -42,6 +42,7 @@ type GroupsStackParamList = {
     sender: string;
     receiver: User;
     fromNotification: boolean;
+    navigatedInApp: boolean;
   };
   Achievements: {member: User};
   Progress: {member: User};

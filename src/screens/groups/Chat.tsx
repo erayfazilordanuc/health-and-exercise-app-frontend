@@ -36,7 +36,7 @@ type ChatRouteProp = RouteProp<GroupsStackParamList, 'Chat'>;
 const Chat = () => {
   const insets = useSafeAreaInsets();
   const {params} = useRoute<ChatRouteProp>();
-  const {roomId, sender, receiver, fromNotification} = params;
+  const {roomId, sender, receiver, fromNotification, navigatedInApp} = params;
   const {colors} = useTheme();
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation<GroupsScreenNavigationProp>();
@@ -59,16 +59,24 @@ const Chat = () => {
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
-        if (!fromNotification && navigation.canGoBack()) {
+        if (!navigatedInApp && !fromNotification && navigation.canGoBack()) {
           return false;
         }
 
-        if (receiver.role === 'ROLE_USER') {
-          navigation.navigate('Group');
+        // console.log(navigatedInApp, receiver);
+
+        if (navigatedInApp) {
+          if (receiver.role === 'ROLE_ADMIN') {
+            navigation.replace('Group');
+          }
         }
 
-        if (receiver.role === 'ROLE_ADMIN') {
-          navigation.navigate('Member', {
+        if (!navigatedInApp && receiver.role === 'ROLE_USER') {
+          navigation.replace('Group');
+        }
+
+        if (!navigatedInApp && receiver.role === 'ROLE_ADMIN') {
+          navigation.replace('Member', {
             memberId: receiver.id,
             fromNotification,
           });

@@ -216,7 +216,7 @@ export const getTotalCaloriesBurned = async () => {
   return totalKcal;
 };
 
-export const getTotalSleepHours = async () => {
+export const getTotalSleepMinutes = async () => {
   const result: any = await readSampleData('SleepSession');
 
   if (!result.records || result.records.length === 0) return -1;
@@ -230,9 +230,10 @@ export const getTotalSleepHours = async () => {
     return sum + (end - start);
   }, 0);
 
-  const totalHours = totalMs / (1000 * 60 * 60);
+  // ✅ toplam dakikaya çevir
+  const totalMinutes = totalMs / (1000 * 60);
 
-  return parseFloat(totalHours.toFixed(2));
+  return Math.round(totalMinutes); // tam sayı olarak
 };
 
 export const getLastSleepSession = async () => {
@@ -412,7 +413,7 @@ export const saveSymptoms = async (symptoms: Symptoms) => {
 //     5000,
 //     -1,
 //   );
-//   const totalSleepHours = await withTimeout(getTotalSleepHours(), 5000, -1);
+//   const totalSleepMinutes = await withTimeout(getTotalSleepMinutes(), 5000, -1);
 //   const sleepSessions = await withTimeout(getAllSleepSessions(), 5000, ['']);
 
 //   const allKeys = await AsyncStorage.getAllKeys();
@@ -449,11 +450,11 @@ export const saveSymptoms = async (symptoms: Symptoms) => {
 //       : activeCaloriesBurned;
 
 //   localSymptoms.sleepHours =
-//     totalSleepHours === -1
+//     totalSleepMinutes === -1
 //       ? symptoms?.sleepHours
 //         ? symptoms.sleepHours
 //         : localSymptoms.sleepHours
-//       : totalSleepHours;
+//       : totalSleepMinutes;
 
 //   localSymptoms.sleepSessions =
 //     sleepSessions.length === 0
@@ -510,9 +511,13 @@ export const getSymptoms = async () => {
     );
     console.log('getActiveCaloriesBurned done', activeCaloriesBurned);
 
-    console.log('getTotalSleepHours start');
-    const totalSleepHours = await withTimeout(getTotalSleepHours(), 5000, -1);
-    console.log('getTotalSleepHours done', totalSleepHours);
+    console.log('getTotalSleepMinutes start');
+    const totalSleepMinutes = await withTimeout(
+      getTotalSleepMinutes(),
+      5000,
+      -1,
+    );
+    console.log('getTotalSleepMinutes done', totalSleepMinutes);
 
     console.log('getAllSleepSessions start');
     const sleepSessions = await withTimeout(getAllSleepSessions(), 5000, ['']);
@@ -523,7 +528,7 @@ export const getSymptoms = async () => {
       steps: aggregatedSteps === -1 ? null : aggregatedSteps,
       activeCaloriesBurned:
         activeCaloriesBurned === -1 ? null : activeCaloriesBurned,
-      sleepHours: totalSleepHours === -1 ? null : totalSleepHours,
+      sleepHours: totalSleepMinutes === -1 ? null : totalSleepMinutes,
       sleepSessions: sleepSessions.length > 0 ? sleepSessions : [],
     };
 
