@@ -64,7 +64,7 @@ This project bridges that gap by offering:
 | Layer    | Repo |
 |----------|------|
 | **Mobile (React Native)** | _this repo_ |
-| **Backend (Spring Boot)** | [health-exercise-backend](https://github.com/<username>/health-exercise-backend) |
+| **Backend (Spring Boot)** | [health-exercise-backend](https://github.com/<username>/health-and-exercise-app-backend) |
 
 
 ## App Images
