@@ -2,9 +2,11 @@
 
 > **A patient-focused mobile app that brings live Health Connect/HealthKit tracking, a weekly exercise calendar, and nurse chat together—plus an admin panel for managing workouts and monitoring patient progress.**  
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Platform](https://img.shields.io/badge/platform-ios%20%7C%20android-lightgrey)
-![Made with](https://img.shields.io/badge/❤️-clean%20code-critical)
+<!-- ───── Badge Row ───── -->
+[![License](https://img.shields.io/github/license/erayfazilordanuc/health-and-exercise-app-frontend?style=for-the-badge&color=blue)](LICENSE)
+[![Contributors](https://img.shields.io/github/contributors/erayfazilordanuc/health-and-exercise-app-frontend?label=CONTRIBS&logo=github&style=for-the-badge)](https://github.com/erayfazilordanuc/health-and-exercise-app-frontend/graphs/contributors)
+[![Platform](https://img.shields.io/badge/iOS%20%7C%20Android-React%20Native-8B5CF6?logo=react&logoColor=white&style=for-the-badge)](#)
+<!-- ───────────────────── -->
 
 ## Table of Contents
 1. [Why this project?](#why-this-project)
