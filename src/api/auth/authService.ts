@@ -5,6 +5,9 @@ import {Platform} from 'react-native';
 import {useUser} from '../../contexts/UserContext';
 import {themes} from '../../themes/themes';
 
+const REMINDER_FLAG = 'EXERCISE_REMINDER_SCHEDULED';
+const TEST_REMINDER_FLAG = 'EXERCISE_REMINDER_TEST_SET';
+
 export const login = async (credentials: LoginRequestPayload) => {
   const response = await apiClient.post('/auth/login', credentials);
   console.log('login', response);
@@ -119,6 +122,9 @@ export const logout = async () => {
   await AsyncStorage.removeItem('refreshToken');
   await AsyncStorage.removeItem('fcmToken');
   await AsyncStorage.removeItem('dailyStatus');
+  await AsyncStorage.removeItem(REMINDER_FLAG);
+  await AsyncStorage.removeItem(TEST_REMINDER_FLAG);
+  // await AsyncStorage.removeItem('exerciseProgress');
 };
 
 export const getTokenExpirationTime = (token: string): number | null => {

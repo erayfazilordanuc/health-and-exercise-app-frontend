@@ -13,8 +13,9 @@ import {
   Modal,
   ToastAndroid,
   Alert,
+  Platform,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import icons from '../../constants/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -33,6 +34,7 @@ import {
   getTotalCaloriesBurned,
   getTotalSleepMinutes,
   initializeHealthConnect,
+  isHealthConnectInstalled,
   saveSymptoms,
 } from '../../api/health/healthConnectService';
 import {RecordType} from 'react-native-health-connect';
@@ -54,6 +56,10 @@ import CustomAlert from '../../components/CustomAlert';
 import {useUser} from '../../contexts/UserContext';
 import plugin from 'tailwindcss';
 import DatePicker from 'react-native-date-picker';
+import Toast from 'react-native-toast-message';
+import CustomAlertSingleton, {
+  CustomAlertSingletonHandle,
+} from '../../components/CustomAlertSingleton';
 // import DateTimePicker from '@react-native-community/datetimepicker';
 
 const Profile = () => {
@@ -75,9 +81,10 @@ const Profile = () => {
   const [activeCaloriesBurned, setActiveCaloriesBurned] = useState(0);
   const [totalSleepMinutes, setTotalSleepMinutes] = useState(0);
   const [sleepSessions, setSleepSessions] = useState<String[]>([]);
-
-  const [isHealthConnectAvailable, setIsHealthConnectAvailable] =
+  const alertRef = useRef<CustomAlertSingletonHandle>(null);
+  const [isHealthConnectInsatlled, setIsHealthConnectInsatlled] =
     useState(false);
+  const [isHealthConnectReady, setIsHealthConnectReady] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [addModalFunction, setAddModalFunction] = useState<{
     setSymptom?: React.Dispatch<React.SetStateAction<number>>;
@@ -207,12 +214,17 @@ const Profile = () => {
         setSymptoms(localSymptoms);
       }
 
+      const healthConnectInstalled = await isHealthConnectInstalled();
+      if (!healthConnectInstalled) return;
+
+      setIsHealthConnectInsatlled(true);
+
       const isHealthConnectReady = await initializeHealthConnect();
       if (!isHealthConnectReady) {
         return;
       }
 
-      setIsHealthConnectAvailable(true);
+      setIsHealthConnectReady(true);
 
       const healthConnectSymptoms = await getSymptoms();
       setHealthConnectSymptoms(healthConnectSymptoms);
@@ -254,7 +266,7 @@ const Profile = () => {
 
   useEffect(() => {
     fetchAndUpsertAll();
-  }, [user]);
+  }, [, user]);
 
   const bulguLimits = new Map<
     React.Dispatch<React.SetStateAction<number>> | undefined,
@@ -442,7 +454,7 @@ const Profile = () => {
                     style={{color: colors.text.primary}}>
                     Bulgular
                   </Text>
-                  {isHealthConnectAvailable ? (
+                  {isHealthConnectReady ? (
                     <View
                       className="flex flex-row rounded-2xl items-center"
                       style={{backgroundColor: colors.background.primary}}>
@@ -458,7 +470,30 @@ const Profile = () => {
                       className="flex flex-row py-3 pl-4 pr-3 rounded-2xl items-center"
                       style={{backgroundColor: colors.background.secondary}}
                       onPress={() => {
-                        setShowHCAlert(true);
+                        if (!isHealthConnectInsatlled) {
+                          setShowHCAlert(true);
+                        } else if (!isHealthConnectReady) {
+                          alertRef.current?.show({
+                            message:
+                              'Verilerinizi senkronize edebilmek için Health Connect uygulamasına gerekli izinleri vermeniz gerekiyor.',
+                            // secondMessage: 'Bu işlem geri alınamaz.',
+                            isPositive: true,
+                            isInfo: true,
+                            onYesText: 'İzinlere Git',
+                            onCancelText: 'Vazgeç',
+                            onYes: () => {
+                              if (Platform.OS === 'ios') {
+                                Linking.openURL('app-settings:');
+                              } else {
+                                Linking.openSettings();
+                              }
+                              alertRef.current?.hide();
+                            },
+                            onCancel: () => {
+                              console.log('❌ İPTAL');
+                            },
+                          });
+                        }
                       }}>
                       <Text style={{color: colors.text.primary}}>
                         Saat ile bağla
@@ -601,10 +636,13 @@ const Profile = () => {
             </>
           )}
 
+          <CustomAlertSingleton ref={alertRef} />
+
           <CustomAlert
             message={
-              'Devam etmek için Health Connect uygulamasını indirmeniz gerekiyor. Şimdi Play Store’a gitmek istiyor musunuz?'
+              'Devam etmek için Health Connect uygulamasını indirmeniz gerekiyor.\nŞimdi Play Store’a gitmek istiyor musunuz?'
             }
+            secondMessage="İndirme işlemi tamamlandıktan sonra bu uygulamaya yeniden giriş yapmanız gerekecek."
             isPositive={true}
             visible={showHCAlert}
             onYes={() => {

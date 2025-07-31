@@ -2,11 +2,33 @@ import {Asset} from 'react-native-image-picker';
 import apiClient from '../axios/axios';
 import RNBlob from 'react-native-blob-util';
 import {AxiosError} from 'axios';
+import {ExercisePosition} from '../../screens/exercises/user/ExercisesUser';
 
 export const getAllExercises = async () => {
   try {
     const response = await apiClient.get('/exercises');
     console.log('get all exercises', response);
+
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    return [];
+  }
+};
+
+export const getTodayExerciseByPosition = async (
+  postition: ExercisePosition,
+) => {
+  try {
+    const response = await apiClient.get(
+      `/exercises/weekly-active-days/progress`,
+    );
+    console.log('weekly active days exercise progress', response);
 
     if (response.status >= 200 && response.status < 300) {
       return response.data;

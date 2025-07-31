@@ -8,7 +8,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import icons from '../../../constants/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -31,6 +31,12 @@ import {
   getSymptomsByDate,
   getSymptomsById,
 } from '../../../api/symptoms/symptomsService';
+import {
+  cancelTestReminder,
+  isTestReminderScheduled,
+  registerTestReminder,
+} from '../../../api/notification/localNotificationService';
+import {useFocusEffect} from '@react-navigation/native';
 
 const Development = () => {
   const insets = useSafeAreaInsets();
@@ -49,6 +55,8 @@ const Development = () => {
 
   const [showAccessToken, setShowAccessToken] = useState(false);
   const [showRefreshToken, setShowRefreshToken] = useState(false);
+
+  const [isReminderScheduled, setIsReminderScheduled] = useState(false);
 
   const [apiBaseUrl, setApiBaseUrl] = useState('');
   const [IPv4, setIPv4] = useState('');
@@ -102,6 +110,19 @@ const Development = () => {
 
     fetchApiBaseUrl();
   }, []);
+
+  const checkTestReminderScheduled = async () => {
+    const isScheduled = await isTestReminderScheduled();
+    if (isScheduled) {
+      setIsReminderScheduled(true);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      checkTestReminderScheduled();
+    }, [loading]),
+  );
 
   const testGetUser = async () => {
     try {
@@ -308,18 +329,9 @@ const Development = () => {
     }
   };
 
-  const testActivityIndicatorLoadingState = async () => {
+  const testLocalScheduledNotifications = async () => {
     setLoading(true);
-    const loginDTO: LoginRequestPayload = {
-      username: 'erayfazilordanuc',
-      password: 'Bismillah1*',
-    };
-    const credentials: AdminLoginRequestPayload = {
-      loginDTO: loginDTO,
-      code: null,
-    };
-    const response = await apiClient.post('/auth/admin/login', credentials);
-    console.log('test login admin', response);
+    await registerTestReminder();
     setLoading(false);
   };
 
@@ -821,7 +833,7 @@ const Development = () => {
         </View>
 
         <View
-          className="p-3 mt-1 mb-2 rounded-2xl"
+          className="p-3 mt-1 mb-4 rounded-2xl"
           style={{
             backgroundColor: colors.background.primary,
           }}>
@@ -830,13 +842,13 @@ const Development = () => {
             style={{
               backgroundColor: colors.background.secondary,
             }}
-            onPress={testActivityIndicatorLoadingState}>
+            onPress={testLocalScheduledNotifications}>
             <GradientText
               className="text-lg font-rubik-medium ml-2"
               start={{x: 0, y: 0}}
               end={{x: 0.3, y: 0}}
               colors={[colors.primary[300], '#40E0D0']}>
-              Activity Indicator Loading State Test
+              Local Scheduled Notifications Test
             </GradientText>
           </TouchableOpacity>
           {loading && (
@@ -847,6 +859,26 @@ const Development = () => {
                 color={colors.primary[300] ?? colors.primary}
               />
             </View>
+          )}
+          {isReminderScheduled && (
+            <TouchableOpacity
+              className="p-2 rounded-2xl mt-3"
+              style={{
+                backgroundColor: colors.background.secondary,
+              }}
+              onPress={async () => {
+                setLoading(true);
+                await cancelTestReminder();
+                setLoading(false);
+              }}>
+              <GradientText
+                className="text-lg font-rubik-medium ml-2"
+                start={{x: 0, y: 0}}
+                end={{x: 0.3, y: 0}}
+                colors={[colors.primary[300], '#40E0D0']}>
+                Remove Local Reminder
+              </GradientText>
+            </TouchableOpacity>
           )}
         </View>
       </ScrollView>

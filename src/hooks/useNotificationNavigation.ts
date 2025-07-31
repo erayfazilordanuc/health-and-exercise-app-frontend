@@ -31,6 +31,21 @@ export const useNotificationNavigation = () => {
               },
             });
           }
+        } else if (remoteMessage.data?.screen === 'Exercise') {
+          const userString = await AsyncStorage.getItem('user');
+          if (userString) {
+            const user: User = JSON.parse(userString);
+            console.log(
+              'App opened by reminder notification:',
+              remoteMessage.data,
+            );
+            navigation.navigate('App', {
+              screen: 'Exercises',
+              params: {
+                screen: 'ExercisesUser',
+              },
+            });
+          }
         }
       },
     );
@@ -62,6 +77,21 @@ export const useNotificationNavigation = () => {
                     receiver: receiver,
                     fromNotification: true,
                   },
+                },
+              });
+            }
+          } else if (remoteMessage.data?.screen === 'Exercise') {
+            const userString = await AsyncStorage.getItem('user');
+            if (userString) {
+              const user: User = JSON.parse(userString);
+              console.log(
+                'App opened by reminder notification:',
+                remoteMessage.data,
+              );
+              navigation.navigate('App', {
+                screen: 'Exercises',
+                params: {
+                  screen: 'ExercisesUser',
                 },
               });
             }

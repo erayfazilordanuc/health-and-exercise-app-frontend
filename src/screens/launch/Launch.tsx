@@ -57,12 +57,12 @@ const Launch = () => {
     const refreshToken = await AsyncStorage.getItem('refreshToken');
 
     if (accessToken || refreshToken || userData) {
-      if (user.role === 'ROLE_USER') {
-        console.log('bura59');
-        const isHealthConnectInstalled = await checkHealthConnectAvailable();
-        // if (isHealthConnectInstalled) await saveSymptoms();
-        console.log('bura62');
-      }
+      // if (user.role === 'ROLE_USER') {
+      //   console.log('bura59');
+      //   const isHealthConnectInstalled = await checkHealthConnectAvailable();
+      //   // if (isHealthConnectInstalled) await saveSymptoms();
+      //   console.log('bura62');
+      // }
       navigation.navigate('App');
     } else {
       setLoading(false);

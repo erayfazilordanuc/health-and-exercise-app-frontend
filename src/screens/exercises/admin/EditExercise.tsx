@@ -46,6 +46,7 @@ import CustomAlert from '../../../components/CustomAlert';
 import {createThumbnail} from 'react-native-create-thumbnail';
 import RNFS from 'react-native-fs';
 import RNBlob from 'react-native-blob-util';
+import {activate, deactivate} from '@thehale/react-native-keep-awake';
 
 type EditExerciseRouteProp = RouteProp<ExercisesStackParamList, 'EditExercise'>;
 const EditExercise = () => {
@@ -75,7 +76,6 @@ const EditExercise = () => {
     {},
   );
   const [newVideos, setNewVideos] = useState<CreateExerciseVideoDTO[]>([]);
-  const [pendingVideoNames, setPendingVideoNames] = useState<string[]>([]);
   const [pendingVideos, setPendingVideos] = useState<Asset[]>([]);
   const [videoLoading, setVideoLoading] = useState(false);
 
@@ -92,6 +92,38 @@ const EditExercise = () => {
 
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(60);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      event => {
+        setKeyboardHeight(event.endCoordinates.height);
+        setIsKeyboardVisible(true); // Klavye açıldı
+      },
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+        setIsKeyboardVisible(false); // Klavye kapandı
+      },
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isVideoUploadModalVisible) {
+      activate();
+    } else {
+      deactivate();
+    }
+    return () => deactivate();
+  }, [isVideoUploadModalVisible]);
 
   const onSaveExercise = async () => {
     if (
@@ -205,7 +237,7 @@ const EditExercise = () => {
 
         try {
           const newVideoDTO: NewVideoDTO = {
-            name: newVideos[idx].name ? newVideos[idx].name : '',
+            name: newVideos[idx].name ? newVideos[idx].name.trim() : '',
             videoUrl: publicUrl,
           };
           const updatedExercise: ExerciseDTO = await addVideoToExercise(
@@ -223,6 +255,7 @@ const EditExercise = () => {
         }
       }
 
+      setNewVideos([]);
       setPendingVideos([]);
       setIsVideoUploadModalVisible(false);
       setUploadingVideoIndex(1);
@@ -298,11 +331,6 @@ const EditExercise = () => {
   };
 
   const onAddVideo = async () => {
-    if (editedExercise.videos?.length > 0 || pendingVideos.length > 0) {
-      ToastAndroid.show('Sadece 1 video ekleyebilirsiniz', ToastAndroid.LONG);
-      return;
-    }
-
     try {
       const ok = await requestVideoPerm();
       if (!ok) {
@@ -330,6 +358,9 @@ const EditExercise = () => {
 
   const onDeletePendingVideo = async (idx: number) => {
     setPendingVideos(prev => prev.filter((_, i) => i !== idx));
+    setNewVideos(prev => prev.filter((_, i) => i !== idx));
+    console.log('silindi');
+    console.log(pendingVideos);
   };
 
   const onDeleteVideoFromExercise = async (videoId: number) => {
@@ -515,7 +546,10 @@ const EditExercise = () => {
       <ScrollView
         className="px-3 mt-3"
         style={{backgroundColor: colors.background.secondary}}
-        contentContainerStyle={{paddingBottom: 60, flexGrow: 1}}
+        contentContainerStyle={{
+          paddingBottom: keyboardHeight ? 120 : 60,
+          flexGrow: 1,
+        }}
         keyboardShouldPersistTaps="handled">
         <View
           className="px-5 py-3 rounded-2xl mb-3"
@@ -710,6 +744,7 @@ const EditExercise = () => {
                     onYes={() => {
                       onDeleteVideoFromExercise(video.id!);
                       setIsDeleteVideoModalVisible(false);
+                      ToastAndroid.show('Video silindi', ToastAndroid.SHORT);
                     }}
                     onCancel={() => {
                       setIsDeleteVideoModalVisible(false);
@@ -822,23 +857,35 @@ const EditExercise = () => {
                 </View>
               ) : (
                 <View className="flex flex-row justify-between items-center mt-2">
-                  <TouchableOpacity
-                    className="flex flex-row self-start rounded-xl p-3 items-center justify-start"
-                    style={{backgroundColor: colors.background.primary}}
-                    onPress={onAddVideo}>
-                    <Text
-                      className="font-rubik text-md pl-1"
-                      style={{
-                        color: colors.text.primary,
-                      }}>
-                      Video yükle
-                    </Text>
-                    <Image
-                      source={icons.plus_sign}
-                      tintColor={colors.text.primary}
-                      className="size-5 ml-2"
-                    />
-                  </TouchableOpacity>
+                  {videoLoading ? (
+                    <View
+                      className="flex flex-row self-start rounded-xl p-3 px-12 items-center justify-start"
+                      style={{backgroundColor: colors.background.primary}}>
+                      <ActivityIndicator
+                        className="self-center"
+                        size="small"
+                        color={colors.text.primary}
+                      />
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      className="flex flex-row self-start rounded-xl p-3 items-center justify-start"
+                      style={{backgroundColor: colors.background.primary}}
+                      onPress={onAddVideo}>
+                      <Text
+                        className="font-rubik text-md pl-1"
+                        style={{
+                          color: colors.text.primary,
+                        }}>
+                        Video yükle
+                      </Text>
+                      <Image
+                        source={icons.plus_sign}
+                        tintColor={colors.text.primary}
+                        className="size-5 ml-2"
+                      />
+                    </TouchableOpacity>
+                  )}
                   <TouchableOpacity
                     className="px-4 py-1 rounded-xl"
                     style={{
@@ -855,29 +902,22 @@ const EditExercise = () => {
               )}
             </View>
           ))}
-          {!videoLoading ? (
-            <TouchableOpacity
-              className="flex flex-row self-start rounded-xl p-3 mb-4 mt-1 items-center justify-start"
-              style={{backgroundColor: colors.background.secondary}}
-              onPress={onAddVideoObject}>
-              <Text className="font-rubik text-md pl-1">Video ekle</Text>
-              <Image
-                source={icons.plus_sign}
-                tintColor={colors.text.primary}
-                className="size-5 ml-2"
-              />
-            </TouchableOpacity>
-          ) : (
-            <View
-              className="flex flex-row self-start rounded-xl py-3 px-12 mb-4 items-center justify-start"
-              style={{backgroundColor: colors.background.secondary}}>
-              <ActivityIndicator
-                className="self-center"
-                size="small"
-                color={colors.text.primary}
-              />
-            </View>
-          )}
+
+          <TouchableOpacity
+            className="flex flex-row self-start rounded-xl p-3 mb-4 mt-1 items-center justify-start"
+            style={{backgroundColor: colors.background.secondary}}
+            onPress={onAddVideoObject}>
+            <Text
+              className="font-rubik text-md pl-1"
+              style={{color: colors.text.primary}}>
+              Video ekle
+            </Text>
+            <Image
+              source={icons.plus_sign}
+              tintColor={colors.text.primary}
+              className="size-5 ml-2"
+            />
+          </TouchableOpacity>
         </View>
         <TouchableOpacity
           className="self-center rounded-xl p-3 mb-4"

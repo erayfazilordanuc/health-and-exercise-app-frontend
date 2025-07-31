@@ -9,8 +9,10 @@ export const requestPermission = async () => {
   );
   if (granted === PermissionsAndroid.RESULTS.GRANTED) {
     console.log('Notifcitaion permission granted');
+    return true;
   } else {
     console.log('Notification permission denied');
+    return false;
   }
 };
 

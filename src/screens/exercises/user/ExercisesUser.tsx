@@ -22,11 +22,17 @@ import {
   getWeeklyActiveDaysProgress,
 } from '../../../api/exercise/progressService';
 import CustomWeeklyProgressCalendar from '../../../components/CustomWeeklyProgressCalendar';
+import {getTodayExerciseByPosition} from '../../../api/exercise/exerciseService';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
+export enum ExercisePosition {
+  STANDING,
+  SEATED,
+}
+
 const ExercisesUser = () => {
-  const {colors} = useTheme();
+  const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const scrollViewHeight = SCREEN_HEIGHT / 8;
@@ -71,30 +77,16 @@ const ExercisesUser = () => {
     }, []),
   );
 
-  // böyle pair değil de daha basit ["done", "not-yet", "not-yet"] gibi bir dizi gelecek
-  const exerciseStatusByDate: Record<string, 'done' | 'missed'> = {
-    '2025-07-21': 'done',
-    '2025-07-22': 'missed',
-    // …
+  const onStartExercise = async (position: ExercisePosition) => {
+    // Backendden çekilecek:
+    // Ayakta egzersizin idsi:
+    // Oturarak egzersizin idsi:
+
+    const todayExercise = await getTodayExerciseByPosition(position);
+    if (todayExercise) navigation.navigate('Exercise', {todayExercise});
   };
 
-  const getMarked = () => {
-    const marks: {[key: string]: any} = {};
-    Object.entries(exerciseStatusByDate).forEach(([date, status]) => {
-      marks[date] = {
-        selected: true,
-        disableTouchEvent: true,
-        selectedColor: status === 'done' ? '#55CC88' : '#FFCCCC80', // %80 opacity
-      };
-    });
-    return marks;
-  };
-
-  const onOpenExercise = async () => {
-    setShowModal(true);
-    // ayakta ya da oturarak olmasına göre o tür exercise id ile progress oluştursun
-    // Egzersiz ayakta mı oturarak mı olacak sorulsun ona göre exercise id bulunsun
-  };
+  const onContinueExercise = async () => {};
 
   return (
     <>
@@ -151,7 +143,15 @@ const ExercisesUser = () => {
                           ? '#FFAA33'
                           : colors.primary[175],
                     }}
-                    onPress={() => onOpenExercise()}>
+                    onPress={() => {
+                      if (
+                        !todaysExerciseProgress ||
+                        !todaysExerciseProgress.progressRatio ||
+                        todaysExerciseProgress.progressRatio === 0
+                      ) {
+                        setShowModal(true);
+                      } else onContinueExercise();
+                    }}>
                     <Text className="text-xl font-rubik">
                       {todaysExerciseProgress?.progressRatio &&
                       todaysExerciseProgress.progressRatio === 100
@@ -213,23 +213,6 @@ const ExercisesUser = () => {
             Egzersiz Takvimi
           </Text>
           <CustomWeeklyProgressCalendar progress={weeklyExerciseProgress} />
-          {/*<View className="mt-5">
-            <WeekCalendar
-              firstDay={1} // Pazartesi ile başlat
-              current={dayjs().format('YYYY-MM-DD')} // Bu hafta
-              markedDates={getMarked()}
-              hideDayNames={false}
-              allowShadow
-              theme={{
-                calendarBackground: colors.background.primary,
-                monthTextColor: colors.text.primary,
-                dayTextColor: colors.text.primary,
-                todayTextColor: colors.primary[200],
-                arrowColor: colors.primary[300],
-              }}
-              style={{borderRadius: 20, elevation: 2}}
-            />
-          </View>*/}
         </View>
       </View>
 
@@ -238,41 +221,69 @@ const ExercisesUser = () => {
         visible={showModal}
         animationType="fade"
         onRequestClose={() => {}}>
-        <View className="flex-1 justify-center items-center">
+        <View
+          className="flex-1 justify-center items-center"
+          style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
           <View
-            className="w-11/12 max-w-lg rounded-3xl p-6 items-center"
+            className="w-11/12 max-w-lg rounded-3xl p-4 items-center"
             style={{
               backgroundColor: colors.background.primary,
-              shadowColor: '#000',
-              shadowOpacity: 0.25,
+              shadowColor: theme.name === 'Light' ? 'black' : '#707070',
+              shadowOpacity: 2,
               shadowRadius: 10,
-              elevation: 10,
+              elevation: 3,
             }}>
             <Text
               className="font-rubik-semibold text-2xl mb-4 text-center"
-              style={{color: colors.primary[200]}}>
+              style={{color: colors.text.primary}}>
               Egzersiz Türü Seçimi
             </Text>
             <Text
-              className="font-rubik-semibold text-2xl mb-4 text-center"
-              style={{color: colors.primary[200]}}>
-              Egzersizinizi ayakta mı yapmak istersiniz yoksa oturarak mı?
+              className="font-rubik text-lg mb-3 text-center"
+              style={{color: colors.text.secondary}}>
+              Bugünkü egzersizinizi ayakta mı yoksa oturarak mı yapmak
+              istediğinizi seçiniz.
             </Text>
-            <Text
-              className="font-rubik-semibold text-2xl mb-4 text-center"
-              style={{color: colors.primary[200]}}>
-              Ayakta
-            </Text>
-            <Text
-              className="font-rubik-semibold text-2xl mb-4 text-center"
-              style={{color: colors.primary[200]}}>
-              Oturarak
-            </Text>
+            <View className="flex flex-row justify-between items-center">
+              <TouchableOpacity
+                className="flex-1 py-3 rounded-2xl mt-2 mr-1 border"
+                style={{
+                  backgroundColor: colors.background.secondary,
+                  borderColor: colors.primary[150],
+                }}
+                onPress={() => onStartExercise(ExercisePosition.STANDING)}>
+                <Text
+                  className="font-rubik-semibold text-2xl text-center"
+                  style={{color: colors.primary[200]}}>
+                  Ayakta
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="flex-1 py-3 rounded-2xl mt-2 ml-2 border"
+                style={{
+                  backgroundColor: colors.background.secondary,
+                  borderColor: colors.primary[150],
+                }}
+                onPress={() => onStartExercise(ExercisePosition.SEATED)}>
+                <Text
+                  className="font-rubik-semibold text-2xl text-center"
+                  style={{color: colors.primary[200]}}>
+                  Oturarak
+                </Text>
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity
-              className="py-2 px-4 rounded-2xl"
-              style={{backgroundColor: colors.background.secondary}}
+              className="py-2 px-4 rounded-2xl mt-6 border"
+              style={{
+                backgroundColor: colors.background.secondary,
+                borderColor: colors.primary[125],
+              }}
               onPress={() => setShowModal(false)}>
-              <Text className="font-rubik text-xl text-center">Geri Dön</Text>
+              <Text
+                className="font-rubik text-md text-center"
+                style={{color: colors.text.secondary}}>
+                Geri Dön
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

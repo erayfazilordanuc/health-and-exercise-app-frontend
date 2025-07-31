@@ -159,6 +159,12 @@ const Group = () => {
     };
   }, [groupId]);
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchLastMessage(user!, admin!);
+    }, [user, admin]),
+  );
+
   const onLeaveGroup = async () => {
     ToastAndroid.show(
       'Gruptan ayrılma isteğiniz hemşireye iletildi.',
@@ -269,7 +275,7 @@ const Group = () => {
           backgroundColor: colors.background.secondary,
           // paddingTop: insets.top / 2,
         }}
-        contentContainerClassName="pb-20">
+        contentContainerClassName="pb-16">
         {user && user.role === 'ROLE_USER' && (
           <View
             className="flex flex-column justify-start rounded-2xl pl-5 p-3 mb-3 mt-3" // border
@@ -398,26 +404,34 @@ const Group = () => {
                 style={{
                   backgroundColor: colors.background.secondary,
                 }}>
-                <View className="flex flex-row">
-                  <Text className="font-rubik-medium text-lg ml-1">
+                <View className="flex flex-row mt-1">
+                  <Text
+                    className="font-rubik-medium text-lg ml-1"
+                    style={{color: colors.text.primary}}>
                     Adı Soyadı:{' '}
                   </Text>
-                  <Text className="font-rubik text-lg ml-1">
+                  <Text
+                    className="font-rubik text-lg ml-1"
+                    style={{color: colors.text.primary}}>
                     {jr.userDTO.fullName}
                   </Text>
                 </View>
-                <View className="flex flex-row">
-                  <Text className="font-rubik-medium text-lg ml-1">
+                <View className="flex flex-row mb-1">
+                  <Text
+                    className="font-rubik-medium text-lg ml-1"
+                    style={{color: colors.text.primary}}>
                     Kullanıcı Adı:{' '}
                   </Text>
-                  <Text className="font-rubik text-lg ml-1">
+                  <Text
+                    className="font-rubik text-lg ml-1"
+                    style={{color: colors.text.primary}}>
                     {jr.userDTO.username}
                   </Text>
                 </View>
 
                 <View className="flex flex-row items-center justify-center mt-2 mb-1">
                   <TouchableOpacity
-                    className="rounded-2xl mr-1 px-3 py-1"
+                    className="rounded-xl mr-1 px-3 py-1"
                     style={{
                       backgroundColor: '#16d750',
                     }}
@@ -429,7 +443,7 @@ const Group = () => {
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    className="rounded-2xl ml-1 px-3 py-1"
+                    className="rounded-xl ml-1 px-3 py-1"
                     style={{
                       backgroundColor: '#fd5353',
                     }}

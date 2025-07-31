@@ -7,11 +7,13 @@ export type CustomAlertSingletonHandle = {
     message: string;
     secondMessage?: string;
     isPositive?: boolean;
+    isInfo?: boolean;
     onYes?: () => void;
     onCancel?: () => void;
     onYesText?: string;
     onCancelText?: string;
   }) => void;
+  hide: () => void;
 };
 
 const CustomAlertSingleton = forwardRef<CustomAlertSingletonHandle>(
@@ -24,6 +26,9 @@ const CustomAlertSingleton = forwardRef<CustomAlertSingletonHandle>(
       show: options => {
         setOpts(options);
         setVisible(true);
+      },
+      hide: () => {
+        setVisible(false);
       },
     }));
 
@@ -45,7 +50,7 @@ const CustomAlertSingleton = forwardRef<CustomAlertSingletonHandle>(
         onRequestClose={handleCancel}>
         <View className="flex-1 justify-center items-center bg-black/50">
           <View
-            className="w-4/5 rounded-xl p-5 py-6 items-center"
+            className="w-4/5 rounded-xl p-5 py-5 items-center"
             style={{backgroundColor: colors.background.primary}}>
             <Text
               className="text-lg font-rubik text-center"
@@ -61,31 +66,59 @@ const CustomAlertSingleton = forwardRef<CustomAlertSingletonHandle>(
               </Text>
             )}
 
-            <View className="flex-row justify-between w-full mt-6">
-              <TouchableOpacity
-                onPress={handleCancel}
-                className="flex-1 p-2 rounded-lg items-center mx-1"
-                style={{backgroundColor: colors.background.secondary}}>
-                <Text
-                  className="text-base font-bold"
-                  style={{color: colors.text.primary}}>
-                  {opts.onCancelText || 'İptal'}
-                </Text>
-              </TouchableOpacity>
+            {opts.isInfo ? (
+              <View className="flex-row justify-center items-center w-full mt-6">
+                <TouchableOpacity
+                  onPress={handleCancel}
+                  className="py-2 px-8 rounded-lg items-center mr-2"
+                  style={{backgroundColor: colors.background.secondary}}>
+                  <Text
+                    className="text-lg font-rubik"
+                    style={{color: colors.text.primary}}>
+                    {opts.onCancelText || 'Kapat'}
+                  </Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={handleYes}
-                className="flex-1 p-2 rounded-lg items-center mx-1"
-                style={{
-                  backgroundColor: opts.isPositive
-                    ? '#16d750'
-                    : 'rgb(239 68 68)',
-                }}>
-                <Text className="text-base font-bold text-white">
-                  {opts.onYesText || 'Evet'}
-                </Text>
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity
+                  onPress={handleYes}
+                  className="flex-1 p-2 rounded-lg items-center ml-2"
+                  style={{
+                    backgroundColor: opts.isPositive
+                      ? '#16d750'
+                      : 'rgb(239 68 68)',
+                  }}>
+                  <Text className="text-lg font-rubik text-white">
+                    {opts.onYesText || 'Evet'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View className="flex-row justify-between w-full mt-6">
+                <TouchableOpacity
+                  onPress={handleCancel}
+                  className="flex-1 p-2 rounded-lg items-center mr-2"
+                  style={{backgroundColor: colors.background.secondary}}>
+                  <Text
+                    className="text-lg font-rubik"
+                    style={{color: colors.text.primary}}>
+                    {opts.onCancelText || 'İptal'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={handleYes}
+                  className="flex-1 p-2 rounded-lg items-center ml-2"
+                  style={{
+                    backgroundColor: opts.isPositive
+                      ? '#16d750'
+                      : 'rgb(239 68 68)',
+                  }}>
+                  <Text className="text-lg font-rubik text-white">
+                    {opts.onYesText || 'Evet'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
       </Modal>

@@ -354,15 +354,16 @@ function UserLogin() {
               </View>
               {showDatePicker && (
                 <DatePicker
-                  modal // Yerleşik pop‑up
-                  locale="tr" // Türkçe
-                  mode="date" // Doğum tarihi = tarih
+                  modal
+                  locale="tr"
+                  mode="date"
                   title="Tarih Seçin"
                   confirmText="Tamam"
                   cancelText="İptal"
                   open={showDatePicker}
                   date={date}
-                  maximumDate={fiveYearsAgo} // 5 yıldan küçük seçilemesin
+                  maximumDate={fiveYearsAgo} // 5 yıldan küçük seçilemez
+                  minimumDate={new Date(1950, 0, 1)} // 1950 öncesi seçilemez
                   onConfirm={d => {
                     setShowDatePicker(false);
                     setDate(d);

@@ -115,10 +115,8 @@ const Member = () => {
   };
 
   const fetchLastMessage = async (member: User) => {
-    if (!admin) return;
-
     const lastMessage: Message = await getLastMessageBySenderAndReceiver(
-      admin.username,
+      admin!.username,
       member.username,
     );
 
@@ -159,8 +157,8 @@ const Member = () => {
   useFocusEffect(
     useCallback(() => {
       fetchSymptoms();
-      if (member) fetchLastMessage(member);
-    }, []),
+      fetchLastMessage(member!);
+    }, [member]),
   );
 
   useEffect(() => {

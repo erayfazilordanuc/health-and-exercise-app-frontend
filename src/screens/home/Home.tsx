@@ -9,8 +9,9 @@ import {
   TouchableOpacity,
   Modal,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../../../src/themes/ThemeProvider';
 import icons from '../../../src/constants/icons';
@@ -45,6 +46,13 @@ import {
   getTodaysProgress,
   getWeeklyActiveDaysProgress,
 } from '../../api/exercise/progressService';
+import CustomAlertSingleton, {
+  CustomAlertSingletonHandle,
+} from '../../components/CustomAlertSingleton';
+// import {
+//   isExerciseReminderScheduled,
+//   registerExerciseReminder,
+// } from '../../api/notification/localNotificationService';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -61,6 +69,7 @@ const Home = () => {
   const {user} = useUser();
   const [admin, setAdmin] = useState<User>();
   const [lastMessage, setLastMessage] = useState<Message | null>();
+  const alertRef = useRef<CustomAlertSingletonHandle>(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -74,7 +83,7 @@ const Home = () => {
 
   const scrollViewHeight = SCREEN_HEIGHT / 8;
 
-  const fetchUserAndSaveFCMToken = async () => {
+  const initializeAppContents = async () => {
     if (!user) return;
 
     let isAdminTemp = false;
@@ -84,7 +93,27 @@ const Home = () => {
     }
 
     // For notifications
-    requestPermission();
+    const notificationPermissionsGranted = await requestPermission();
+    if (!notificationPermissionsGranted) {
+      alertRef.current?.show({
+        message: 'Bildirimlere izin vermediniz.',
+        secondMessage:
+          user.role === 'ROLE_USER'
+            ? 'Egzersiz hatırlatmaları ve mesaj bildirimleri almak için bildirim izinlerini etkinleştirmeniz gerekmektedir.'
+            : 'Mesaj bildirimleri almak için bildirim izinlerini etkinleştirmeniz gerekmektedir.',
+        isPositive: true,
+        onYesText: 'Etkinleştir',
+        onCancelText: 'Kapat',
+        onYes: async () => {
+          if (Platform.OS === 'ios') {
+            Linking.openURL('app-settings:');
+          } else {
+            Linking.openSettings();
+          }
+        },
+        onCancel: () => {},
+      });
+    }
 
     const state = await NetInfo.fetch();
     const isConnected = state.isConnected;
@@ -111,6 +140,8 @@ const Home = () => {
       }
     }
 
+    if (!notificationPermissionsGranted) return;
+
     const localFcmTokenString = await AsyncStorage.getItem('fcmToken');
     console.log('localFcmTokenString', localFcmTokenString);
 
@@ -136,6 +167,13 @@ const Home = () => {
         }
       }
     }
+
+    // if (user && user.role === 'ROLE_USER') {
+    //   const scheduled = await isExerciseReminderScheduled();
+    //   if (scheduled) return;
+
+    //   await registerExerciseReminder();
+    // }
   };
 
   const fetchProgress = async () => {
@@ -162,7 +200,7 @@ const Home = () => {
   );
 
   useEffect(() => {
-    fetchUserAndSaveFCMToken();
+    initializeAppContents();
   }, [user]);
 
   useFocusEffect(
@@ -399,6 +437,8 @@ const Home = () => {
               </View>
             </View>
           </Modal>
+
+          <CustomAlertSingleton ref={alertRef} />
 
           {user && user.role === 'ROLE_USER' && (
             <>

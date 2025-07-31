@@ -59,10 +59,10 @@ const CustomAlert = ({
           <View className="flex flex-row justify-between mt-6">
             <TouchableOpacity
               onPress={onCancel}
-              className="py-2 px-4 rounded-2xl items-center mx-1 mr-3"
+              className="py-2 px-5 rounded-xl items-center mr-2"
               style={{backgroundColor: colors.background.secondary}}>
               <Text
-                className="text-lg font-rubik-semibold"
+                className="text-lg font-rubik"
                 style={{color: colors.text.primary}}>
                 {onCancelText ? onCancelText : 'İptal'}
               </Text>
@@ -73,12 +73,12 @@ const CustomAlert = ({
                 onYes();
                 visible = true;
               }}
-              className="py-2 px-4 rounded-2xl items-center mx-1 ml-3"
+              className="py-2 px-5 rounded-xl items-center ml-2"
               style={{
                 backgroundColor: isPositive ? '#16d750' : 'rgb(239 68 68)',
               }}>
               <Text
-                className={`text-lg font-rubik-semibold `}
+                className={`text-lg font-rubik`}
                 style={{color: colors.background.primary}}>
                 {onYesText ? onYesText : 'Evet'}
               </Text>

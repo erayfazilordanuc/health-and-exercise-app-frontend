@@ -9,8 +9,40 @@ import {
 } from 'react-native-health-connect';
 import {upsertSymptomsByDate} from '../symptoms/symptomsService';
 import NetInfo from '@react-native-community/netinfo';
-import {Alert, ToastAndroid} from 'react-native';
+import {Alert, Linking, Platform, ToastAndroid} from 'react-native';
 import Toast from 'react-native-toast-message';
+import DeviceInfo from 'react-native-device-info';
+import {getInstalledApps} from 'react-native-get-app-list';
+
+// export const isHealthConnectInstalled = async (): Promise<boolean> => {
+//   if (Platform.OS !== 'android') return false;
+
+//   try {
+//     // Android Package Name → Health Connect
+//     const packageName = 'com.google.android.apps.healthdata';
+//     const canOpen = await Linking.canOpenURL(`package:${packageName}`);
+//     return canOpen;
+//   } catch (err) {
+//     console.log('[HC] Package check failed', err);
+//     return false;
+//   }
+// };
+
+export const isHealthConnectInstalled = async (): Promise<boolean> => {
+  if (Platform.OS !== 'android') return false;
+  try {
+    const apps = await getInstalledApps();
+    console.log(apps);
+    const isInstalled = apps.some(
+      app => app.packageName === 'com.google.android.apps.healthdata',
+    );
+    console.log(isInstalled);
+    return isInstalled;
+  } catch (err) {
+    console.log('[HC] check failed', err);
+    return false;
+  }
+};
 
 export const checkHealthConnectAvailable = async (): Promise<boolean> => {
   try {
