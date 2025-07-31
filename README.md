@@ -1,6 +1,51 @@
-This application 
+# 🏃‍♂️ Health & Exercise Tracker
 
-## Tech Stack
+> **A patient-centred mobile app that combines personalised exercise plans, real-time progress tracking, and Health Connect data to make staying healthy effortless.**  
+> Built with **React Native (TypeScript)** on the front-end and **Spring Boot (Java)** + **PostgreSQL** on the back-end.
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](#license)
+![Platform](https://img.shields.io/badge/platform-ios%20%7C%20android-lightgrey)
+![Made with](https://img.shields.io/badge/❤️-clean%20code-critical)
+
+## Table of Contents
+1. [Why this project?](#why-this-project)
+2. [Core Features](#core-features)
+3. [Tech Stack & Architecture](#tech-stack--architecture)
+4. [Screenshots](#screenshots)
+5. [Getting Started](#getting-started)
+6. [Environment Variables](#environment-variables)
+7. [Running the App](#running-the-app)
+8. [API Overview](#api-overview)
+9. [Contributing](#contributing)
+10. [License](#license)
+
+---
+
+## Why this project?
+Traditional exercise apps rarely cater to patients who need **doctor-prescribed, low-impact routines** and **fine-grained progress monitoring**.  
+This project bridges that gap by offering:
+
+* **Prescription-level scheduling** (e.g. _Mon / Wed / Fri_ workouts with adjustable intensity).
+* **Seamless Health Connect sync** for vitals & activity data.
+* **Role-based dashboards** for patients, physiotherapists, and admins.
+
+---
+
+## Core Features
+| Category | Highlights |
+|----------|------------|
+| **Personalised Plans** | Auto-generated daily routines based on user profile & doctor feedback. |
+| **Weekly Progress Rings** | Animated circular charts track completion % for each scheduled day. |
+| **Health Connect Integration** | Reads steps, heart-rate, sleep (with explicit user consent & KVKK compliance). |
+| **Secure Video Library** | HD exercise demonstrations streamed from **AWS S3** via pre-signed URLs. |
+| **Real-time Chat** | Socket.io-powered messaging for patient-trainer support. |
+| **Notifications** | Firebase Cloud Messaging for session reminders & milestone achievements. |
+| **Group System** | Join/leave groups; admins approve requests & broadcast announcements. |
+| **Dark / Light Themes** | Fully dynamic theming with smooth modal transitions. |
+
+---
+
+## Tech Stack & Architecture
   # Frontend
   - Typescript
   - React Native
