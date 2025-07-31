@@ -11,13 +11,7 @@
 1. [Why this project?](#why-this-project)
 2. [Core Features](#core-features)
 3. [Tech Stack & Architecture](#tech-stack--architecture)
-4. [Screenshots](#screenshots)
-5. [Getting Started](#getting-started)
-6. [Environment Variables](#environment-variables)
-7. [Running the App](#running-the-app)
-8. [API Overview](#api-overview)
-9. [Contributing](#contributing)
-10. [License](#license)
+4. [App Images](#app-images)
 
 ---
 
