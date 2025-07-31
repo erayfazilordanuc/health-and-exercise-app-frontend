@@ -1,7 +1,6 @@
 # 🏃‍♂️ Health & Exercise Tracker
 
-> **A patient-centred mobile app that combines personalised exercise plans, real-time progress tracking, and Health Connect data to make staying healthy effortless.**  
-> Built with **React Native (TypeScript)** on the front-end and **Spring Boot (Java)** + **PostgreSQL** on the back-end.
+> **A patient-focused mobile app that brings live Health Connect/HealthKit tracking, a weekly exercise calendar, and nurse chat together—plus an admin panel for managing workouts and monitoring patient progress.**  
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-ios%20%7C%20android-lightgrey)
@@ -9,20 +8,40 @@
 
 ## Table of Contents
 1. [Why this project?](#why-this-project)
-2. [Core Features](#core-features)
-3. [Tech Stack & Architecture](#tech-stack--architecture)
-4. [Repositories](#repositories)
-5. [App Images](#app-images)
+2. [About](#about)
+3. [Core Features](#core-features)
+4. [Tech Stack & Architecture](#tech-stack--architecture)
+5. [Repositories](#repositories)
+6. [App Images](#app-images)
 
 ---
 
 ## Why this project?
-Traditional exercise apps rarely cater to patients who need **doctor-prescribed, low-impact routines** and **fine-grained progress monitoring**.  
-This project bridges that gap by offering:
+Most fitness apps focus on healthy athletes and overlook patients who need **low-impact rehab routines** and **close, professional oversight**.  
+This app closes that gap by providing:
 
-* **Prescription-level scheduling** (e.g. _Mon / Wed / Fri_ workouts with adjustable intensity).
-* **Seamless Health Connect sync** for vitals & activity data.
-* **Role-based dashboards** for patients, physiotherapists, and admins.
+* **Weekly rehab calendar** – a ready-made _Mon / Wed / Fri_ exercise schedule patients can check off as they go.  
+* **Live vitals sync** – automatic import of steps, heart-rate and sleep via **Health Connect / HealthKit**.  
+* **Manual symptom logging** – patients can quickly record pain, fatigue or other symptoms whenever they occur.  
+* **In-app nurse chat** – secure messaging keeps patients motivated and lets nurses respond in real time.  
+* **Role-based dashboards** – admins add or edit exercises and monitor each patient’s progress at a glance.
+
+---
+
+## About
+**Health & Exercise Tracker** is a cross-platform mobile app that helps
+patients follow doctor-approved rehab routines while giving healthcare
+staff full visibility into recovery.
+
+### Patient Module
+- **Live self-tracking** of steps, heart-rate and sleep via **Health Connect / HealthKit**. Users can add their additional symptoms manually whenever needed
+- **Weekly exercise calendar** shows the non-customised programme (e.g. Mon/Wed/Fri) and marks completed sessions.  
+- **Group nurse chat** lets patients talk directly with assigned nurses for motivation and quick feedback.
+
+### Admin Module
+- **Exercise manager** to add, edit or retire workouts in the catalogue.  
+- **Real-time patient symptoms dashboard** that lists each patient’s adherence and latest vitals inside the admin’s group.  
+- **Messaging with patient** so nurses can guide patients and track progress without leaving the app.
 
 ---
 
