@@ -11,7 +11,8 @@
 1. [Why this project?](#why-this-project)
 2. [Core Features](#core-features)
 3. [Tech Stack & Architecture](#tech-stack--architecture)
-4. [App Images](#app-images)
+4. [Repositories](#repositories)
+5. [App Images](#app-images)
 
 ---
 
@@ -40,14 +41,14 @@ This project bridges that gap by offering:
 ---
 
 ## Tech Stack & Architecture
-  # Frontend
+  ### Frontend
   - Typescript
   - React Native
   - Nativewind
   - Async Storage
   - Health Connect and Health Kit
 
- # Backend
+ ### Backend
  - Java
  - Spring Boot
  - PostgreSQL
@@ -55,7 +56,7 @@ This project bridges that gap by offering:
  - Socket.io
  - Firebase
 
-### Repositories
+## Repositories
 | Layer    | Repo |
 |----------|------|
 | **Mobile (React Native)** | _this repo_ |
