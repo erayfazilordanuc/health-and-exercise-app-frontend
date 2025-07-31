@@ -60,7 +60,13 @@ This project bridges that gap by offering:
  - AWS Cloud EC2 and S3
  - Firebase
 
-   
+### Repositories
+| Layer    | Repo |
+|----------|------|
+| **Mobile (React Native)** | _this repo_ |
+| **Backend (Spring Boot)** | [health-exercise-backend](https://github.com/<username>/health-exercise-backend) |
+
+
 ## App Images
 ### User Module
 <img src="https://github.com/user-attachments/assets/0212ace4-e755-41fa-aa47-2e7af36ac769" width="200" />
