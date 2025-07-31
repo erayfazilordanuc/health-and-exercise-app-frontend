@@ -3,7 +3,7 @@
 > **A patient-centred mobile app that combines personalised exercise plans, real-time progress tracking, and Health Connect data to make staying healthy effortless.**  
 > Built with **React Native (TypeScript)** on the front-end and **Spring Boot (Java)** + **PostgreSQL** on the back-end.
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](#license)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-ios%20%7C%20android-lightgrey)
 ![Made with](https://img.shields.io/badge/❤️-clean%20code-critical)
 
@@ -58,6 +58,7 @@ This project bridges that gap by offering:
  - Spring Boot
  - PostgreSQL
  - AWS Cloud EC2 and S3
+ - Socket.io
  - Firebase
 
 ### Repositories
