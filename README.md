@@ -1,97 +1,100 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# 🏃‍♂️ Health & Exercise Tracker
 
-# Getting Started
+> **A patient-focused mobile app that brings live Health Connect/HealthKit tracking, a weekly exercise calendar, and nurse chat together—plus an admin panel for managing workouts and monitoring patient progress.**  
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+<!-- ───── Badge Row ───── -->
+[![License](https://img.shields.io/github/license/erayfazilordanuc/health-and-exercise-app-frontend?style=for-the-badge&color=blue)](LICENSE)
+[![Contributors](https://img.shields.io/github/contributors/erayfazilordanuc/health-and-exercise-app-frontend?label=CONTRIBS&logo=github&style=for-the-badge)](https://github.com/erayfazilordanuc/health-and-exercise-app-frontend/graphs/contributors)
+[![Platform](https://img.shields.io/badge/iOS%20%7C%20Android-React%20Native-8B5CF6?logo=react&logoColor=white&style=for-the-badge)](#)
+<!-- ───────────────────── -->
 
-## Step 1: Start Metro
+## Table of Contents
+1. [Why this project?](#why-this-project)
+2. [About](#about)
+3. [Core Features](#core-features)
+4. [Tech Stack & Architecture](#tech-stack--architecture)
+5. [Repositories](#repositories)
+6. [App Images](#app-images)
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+---
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Why this project?
+Most fitness apps focus on healthy athletes and overlook patients who need **low-impact rehab routines** and **close, professional oversight**.  
+This app closes that gap by providing:
 
-```sh
-# Using npm
-npm start
+* **Weekly rehab calendar** – a ready-made _Mon / Wed / Fri_ exercise schedule patients can check off as they go.  
+* **Live vitals sync** – automatic import of steps, heart-rate and sleep via **Health Connect / HealthKit**.  
+* **Manual symptom logging** – patients can quickly record pain, fatigue or other symptoms whenever they occur.  
+* **In-app nurse chat** – secure messaging keeps patients motivated and lets nurses respond in real time.  
+* **Role-based dashboards** – admins add or edit exercises and monitor each patient’s progress at a glance.
 
-# OR using Yarn
-yarn start
-```
+---
 
-## Step 2: Build and run your app
+## About
+**Health & Exercise Tracker** is a cross-platform mobile app that helps
+patients follow doctor-approved rehab routines while giving healthcare
+staff full visibility into recovery.
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### Patient Module
+- **Live self-tracking** of steps, heart-rate and sleep via **Health Connect / HealthKit**. Users can add their additional symptoms manually whenever needed
+- **Weekly exercise calendar** shows the non-customised programme (e.g. Mon/Wed/Fri) and marks completed sessions.  
+- **Group nurse chat** lets patients talk directly with assigned nurses for motivation and quick feedback.
 
-### Android
+### Admin Module
+- **Exercise manager** to add, edit or retire workouts in the catalogue.  
+- **Real-time patient symptoms dashboard** that lists each patient’s adherence and latest vitals inside the admin’s group.  
+- **Messaging with patient** so nurses can guide patients and track progress without leaving the app.
 
-```sh
-# Using npm
-npm run android
+---
 
-# OR using Yarn
-yarn android
-```
+## Core Features
+| Category | Highlights |
+|----------|------------|
+| **Personalised Plans** | Auto-generated daily routines based on user profile & doctor feedback. |
+| **Weekly Progress Rings** | Animated circular charts track completion % for each scheduled day. |
+| **Health Connect Integration** | Reads steps, heart-rate, sleep (with explicit user consent & KVKK compliance). |
+| **Secure Video Library** | HD exercise demonstrations streamed from **AWS S3** via pre-signed URLs. |
+| **Real-time Chat** | Socket.io-powered messaging for patient-trainer support. |
+| **Notifications** | Firebase Cloud Messaging for session reminders & milestone achievements. |
+| **Group System** | Join/leave groups; admins approve requests & broadcast announcements. |
+| **Dark / Light Themes** | Fully dynamic theming with smooth modal transitions. |
 
-### iOS
+---
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+## Tech Stack & Architecture
+  ### Frontend
+  - Typescript
+  - React Native
+  - Nativewind
+  - Async Storage
+  - Health Connect and Health Kit
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+ ### Backend
+ - Java
+ - Spring Boot
+ - PostgreSQL
+ - AWS Cloud EC2 and S3
+ - Socket.io
+ - Firebase
 
-```sh
-bundle install
-```
+## Repositories
+| Layer    | Repo |
+|----------|------|
+| **Mobile (React Native)** | _this repo_ |
+| **Backend (Spring Boot)** | [health-and-exercise-app-backend](https://github.com/erayfazilordanuc/health-and-exercise-app-backend) |
 
-Then, and every time you update your native dependencies, run:
 
-```sh
-bundle exec pod install
-```
+## App Images
+### User Module
+<img src="https://github.com/user-attachments/assets/0212ace4-e755-41fa-aa47-2e7af36ac769" width="200" />
+<img src="https://github.com/user-attachments/assets/fe1c89c2-986c-497a-8b34-96af84b20dde" width="200" />
+<img src="https://github.com/user-attachments/assets/3f00d5c7-d0b2-40cb-985b-b789c4d1f439" width="200" />
+<img src="https://github.com/user-attachments/assets/4158aaf1-0b72-4ddf-9082-82c9b6a13ffc" width="200" />
+<img src="https://github.com/user-attachments/assets/1a0f8cf6-2b4e-499b-ad68-c9c114c87711" width="200" />
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+### Admin Module
+<img src="https://github.com/user-attachments/assets/11a37875-b9ab-4215-afec-1b7d215edfa9" width="200" />
+<img src="https://github.com/user-attachments/assets/01852a36-b375-4b28-87e5-50851821ae9c" width="200" />
+<img src="https://github.com/user-attachments/assets/5ddb6aad-7f2a-47db-b3d0-65ba76429468" width="200" />
+<img src="https://github.com/user-attachments/assets/6651198c-81c0-4669-9996-bfdf47645994" width="200" />
+<img src="https://github.com/user-attachments/assets/bfba83c9-f1f0-4b41-8c73-1a5404941e58" width="200" />
