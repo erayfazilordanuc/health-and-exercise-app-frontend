@@ -234,7 +234,7 @@ const Chat = () => {
             justifyContent: 'space-between',
           }}>
           <Text
-            className="pl-4 font-rubik-semibold"
+            className="pl-3 font-rubik-semibold"
             style={{
               color: colors.text.primary,
               fontSize: 24,

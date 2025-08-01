@@ -518,7 +518,7 @@ const Home = () => {
                               const roomId = response.data;
                               if (roomId !== 0) {
                                 navigation.navigate('Groups', {
-                                  screen: 'Chat', // 👈 string
+                                  screen: 'Chat',
                                   params: {
                                     roomId,
                                     sender: user?.username,
@@ -531,12 +531,15 @@ const Home = () => {
                                 const nextRoomResponse = await getNextRoomId();
                                 if (nextRoomResponse.status === 200) {
                                   const nextRoomId = nextRoomResponse.data;
-                                  navigation.navigate('Chat', {
-                                    roomId: nextRoomId,
-                                    sender: user.username,
-                                    receiver: admin,
-                                    fromNotification: true,
-                                    navigatedInApp: true,
+                                  navigation.navigate('Groups', {
+                                    screen: 'Chat',
+                                    params: {
+                                      roomId: nextRoomId,
+                                      sender: user?.username,
+                                      receiver: admin,
+                                      fromNotification: true,
+                                      navigatedInApp: true,
+                                    },
                                   });
                                 }
                               }

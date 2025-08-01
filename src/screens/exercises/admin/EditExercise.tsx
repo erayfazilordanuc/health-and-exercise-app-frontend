@@ -252,6 +252,9 @@ const EditExercise = () => {
           console.log('video upload error', e);
           ToastAndroid.show('Video yüklenemedi', ToastAndroid.LONG);
           setLoading(false);
+        } finally {
+          const localPath = await resolveVideoPath(video);
+          RNFS.unlink(localPath).catch(() => {});
         }
       }
 

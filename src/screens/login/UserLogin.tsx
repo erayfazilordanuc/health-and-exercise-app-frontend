@@ -32,8 +32,6 @@ function UserLogin() {
   const {theme, colors, setTheme} = useTheme();
   const netInfo = useNetInfo();
   const [loading, setLoading] = useState(false);
-  const [date, setDate] = useState<Date>(new Date());
-
   enum LoginMethod {
     'default',
     'registration',
@@ -49,6 +47,7 @@ function UserLogin() {
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [date, setDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [gender, setGender] = useState('');
   const [password, setPassword] = useState('');
@@ -67,18 +66,6 @@ function UserLogin() {
     d.setFullYear(d.getFullYear() - 5);
     return d; // 5 yıl önce bugün
   }, []);
-
-  const handleDateChange = (_event: DateTimePickerEvent, date?: Date) => {
-    setShowDatePicker(false);
-    if (date) {
-      if (date > fiveYearsAgo) {
-        // ↪ 5 yıldan yeni ise
-        ToastAndroid.show('Geçerli bir tarih girin', ToastAndroid.SHORT);
-        return; // değeri set etmeden çık
-      }
-      setBirthDate(date.toISOString().slice(0, 10));
-    }
-  };
 
   const handleGoogleLogin = async () => {};
 

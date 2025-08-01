@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {CommonActions, useNavigation} from '@react-navigation/native';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import icons from '../../constants/icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import axios from 'axios';
@@ -25,6 +25,8 @@ import {
   registerAdmin,
 } from '../../api/auth/authService';
 import {useUser} from '../../contexts/UserContext';
+import DatePicker from 'react-native-date-picker';
+import {Dropdown} from 'react-native-element-dropdown';
 
 function AdminLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
@@ -46,6 +48,10 @@ function AdminLogin() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [date, setDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [gender, setGender] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [code, setCode] = useState<string | null>(null);
@@ -59,6 +65,12 @@ function AdminLogin() {
     setUsername('');
     setPassword('');
   };
+
+  const fiveYearsAgo = useMemo(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 5);
+    return d; // 5 yıl önce bugün
+  }, []);
 
   const handleGoogleLogin = async () => {};
 
@@ -169,7 +181,9 @@ function AdminLogin() {
         username: username.trim(),
         email: email.trim(),
         fullName: fullName.trim(),
+        birthDate: birthDate,
         password: password.trim(),
+        gender: gender,
       };
 
       const requestPayload: AdminRegisterRequestPayload = {
@@ -316,24 +330,118 @@ function AdminLogin() {
           />
         </View>
         {loginMethod === LoginMethod.registration && (
-          <View
-            className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
-            style={{
-              backgroundColor: colors.background.primary,
-            }}>
-            <TextInput
-              placeholderTextColor={'gray'}
-              selectionColor={'#7AADFF'}
-              autoCapitalize="none"
-              value={email}
-              onChangeText={(value: string) => {
-                setEmail(value);
-              }}
-              placeholder="E-posta"
-              className="text-lg font-rubik ml-5 flex-1"
-              style={{color: colors.text.primary}}
-            />
-          </View>
+          <>
+            <View
+              className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
+              style={{
+                backgroundColor: colors.background.primary,
+              }}>
+              <TextInput
+                placeholderTextColor={'gray'}
+                selectionColor={'#7AADFF'}
+                autoCapitalize="none"
+                value={email}
+                onChangeText={(value: string) => {
+                  setEmail(value);
+                }}
+                placeholder="E-posta"
+                className="text-lg font-rubik ml-5 flex-1"
+                style={{color: colors.text.primary}}
+              />
+            </View>
+            <View
+              className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
+              style={{
+                borderColor: '#7AADFF',
+                backgroundColor: colors.background.primary,
+              }}>
+              <Text
+                className="text-lg font-rubik ml-6 py-3 flex-1"
+                style={{color: birthDate ? colors.text.primary : 'gray'}}>
+                {birthDate
+                  ? new Date(birthDate).toLocaleDateString('tr-TR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })
+                  : 'Doğum Tarihi'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowDatePicker(true);
+                }}
+                className="p-2 rounded-2xl mr-4"
+                style={{backgroundColor: colors.background.secondary}}>
+                <Image
+                  source={icons.calendar}
+                  className="size-8"
+                  tintColor={colors.text.primary}
+                />
+              </TouchableOpacity>
+            </View>
+            {showDatePicker && (
+              <DatePicker
+                modal
+                locale="tr"
+                mode="date"
+                title="Tarih Seçin"
+                confirmText="Tamam"
+                cancelText="İptal"
+                open={showDatePicker}
+                date={date}
+                maximumDate={fiveYearsAgo} // 5 yıldan küçük seçilemez
+                minimumDate={new Date(1950, 0, 1)} // 1950 öncesi seçilemez
+                onConfirm={d => {
+                  setShowDatePicker(false);
+                  setDate(d);
+                  setBirthDate(d.toISOString().slice(0, 10));
+                }}
+                onCancel={() => setShowDatePicker(false)}
+              />
+            )}
+            <View
+              className="z-50 mt-2"
+              style={{
+                backgroundColor: colors.background.primary,
+                borderRadius: 25,
+                paddingHorizontal: 22,
+                zIndex: 3000,
+              }}>
+              <Dropdown
+                data={[
+                  {label: 'Kadın', value: 'female'},
+                  {label: 'Erkek', value: 'male'},
+                ]}
+                labelField="label"
+                valueField="value"
+                placeholder="Cinsiyet"
+                value={gender}
+                onChange={item => setGender(item.value)}
+                style={{
+                  backgroundColor: 'transparent', // dış View zaten arka planı taşıyor
+                  height: 52,
+                }}
+                placeholderStyle={{
+                  color: 'gray',
+                  fontSize: 16,
+                  fontFamily: 'Rubik',
+                }}
+                selectedTextStyle={{
+                  color: colors.text.primary,
+                  fontSize: 16,
+                }}
+                itemTextStyle={{
+                  color: colors.text.primary,
+                }}
+                containerStyle={{
+                  borderRadius: 20,
+                  borderColor: 'gray',
+                  backgroundColor: colors.background.primary,
+                }}
+                activeColor={colors.primary?.[100] ?? '#D6EFFF'}
+              />
+            </View>
+          </>
         )}
         <View
           className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"

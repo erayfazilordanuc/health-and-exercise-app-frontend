@@ -204,7 +204,7 @@ const Profile = () => {
   };
 
   const fetchAndUpsertAll = async () => {
-    // setLoading(true);
+    setLoading(true);
     if (user && user.role === 'ROLE_USER') {
       const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
       const localData = await AsyncStorage.getItem(key);
@@ -465,6 +465,15 @@ const Profile = () => {
                         tintColor={'#16d750'}
                       />
                     </View>
+                  ) : loading ? (
+                    <View
+                      className="flex flex-row py-3 px-10 rounded-2xl items-center"
+                      style={{backgroundColor: colors.background.secondary}}>
+                      <ActivityIndicator
+                        size="small"
+                        color={colors.text.primary}
+                      />
+                    </View>
                   ) : (
                     <TouchableOpacity
                       className="flex flex-row py-3 pl-4 pr-3 rounded-2xl items-center"
@@ -512,9 +521,6 @@ const Profile = () => {
                       size="large"
                       color={colors.primary[300]}
                     />
-                    {/* <Text style={{marginLeft: 10, color: colors.text.primary}}>
-                      Yükleniyor...
-                    </Text> */}
                   </View>
                 ) : (
                   <>
