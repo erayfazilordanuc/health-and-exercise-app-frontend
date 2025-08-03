@@ -30,8 +30,13 @@ const CustomAlert = ({
       transparent={true}
       visible={visible}
       animationType="fade"
+      statusBarTranslucent // tam ekrana yayılsın
+      hardwareAccelerated // Android flicker fix
+      presentationStyle="overFullScreen"
       onRequestClose={onCancel}>
-      <View className="flex-1 justify-center items-center">
+      <View
+        className="flex-1 justify-center items-center"
+        style={{backgroundColor: 'rgba(0,0,0,0.6)'}}>
         <View
           className="w-4/5 rounded-2xl p-5 py-5 items-center"
           style={{

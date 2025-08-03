@@ -82,13 +82,16 @@ const Preferences = () => {
       style={{backgroundColor: colors.background.secondary}}>
       <ScrollView>
         <View
-          className="rounded-2xl"
-          style={{backgroundColor: colors.background.primary}}>
+          style={{
+            borderRadius: 17,
+            backgroundColor: colors.background.primary,
+          }}>
           {user && user.username === 'erayfazilordanuc' && (
             <>
               <Text
-                className="text-xl font-rubik-medium p-4"
+                className="font-rubik-medium p-4"
                 style={{
+                  fontSize: 18,
                   color: colors.text.primary,
                 }}>
                 Tema :{'  '}
@@ -120,15 +123,16 @@ const Preferences = () => {
           )}
           <View className="flex flex-col items-between justify-center px-3 pt-3 pb-3">
             <Text
-              className="text-2xl font-rubik-medium ml-2 mb-2"
+              className="font-rubik-medium ml-2 mb-2"
               style={{
+                fontSize: 18,
                 color: colors.text.primary,
               }}>
               Tema
             </Text>
-            <View className="flex flex-row items-center justify-between">
+            <View className="flex flex-row items-center justify-center">
               <TouchableOpacity
-                className="py-3 px-4 rounded-3xl flex flex-row items-center justify-center"
+                className="mr-1 py-2 px-4 rounded-3xl flex flex-row items-center justify-center"
                 style={{
                   // backgroundColor:
                   //   theme.name === 'Light'
@@ -145,17 +149,20 @@ const Preferences = () => {
                       ? icons.lightMode
                       : icons.lightModeFilled
                   }
-                  className="size-8"
+                  className="size-7"
                   tintColor={colors.text.primary}
                 />
                 <Text
-                  className="ml-3 text-lg font-rubik"
-                  style={{color: colors.text.primary}}>
+                  className="ml-3 font-rubik"
+                  style={{
+                    fontSize: 15,
+                    color: colors.text.primary,
+                  }}>
                   Açık
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="py-3 px-4 rounded-3xl flex flex-row items-center justify-center"
+                className="mx-1 py-2 px-4 rounded-3xl flex flex-row items-center justify-center"
                 style={{
                   backgroundColor: !isDarkActive
                     ? colors.background.secondary
@@ -168,17 +175,20 @@ const Preferences = () => {
                       ? icons.darkMode
                       : icons.darkModeFilled
                   }
-                  className="size-8"
+                  className="size-7"
                   tintColor={colors.text.primary}
                 />
                 <Text
-                  className="ml-3 text-lg font-rubik"
-                  style={{color: colors.text.primary}}>
+                  className="ml-3 font-rubik"
+                  style={{
+                    fontSize: 15,
+                    color: colors.text.primary,
+                  }}>
                   Koyu
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="py-3 px-4 rounded-3xl flex flex-row items-center justify-center"
+                className="ml-1 py-2 px-4 rounded-3xl flex flex-row items-center justify-center"
                 style={{
                   backgroundColor: isThemeDefault
                     ? colors.background.primary
@@ -187,12 +197,15 @@ const Preferences = () => {
                 onPress={() => handleThemeChange(themes.primary.light, true)}>
                 <Image
                   source={icons.system_default_theme}
-                  className="size-8"
+                  className="size-7"
                   tintColor={colors.text.primary}
                 />
                 <Text
-                  className="ml-3 text-lg font-rubik"
-                  style={{color: colors.text.primary}}>
+                  className="ml-3 font-rubik"
+                  style={{
+                    fontSize: 15,
+                    color: colors.text.primary,
+                  }}>
                   Sistem
                 </Text>
               </TouchableOpacity>

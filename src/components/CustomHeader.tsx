@@ -34,8 +34,9 @@ const CustomHeader = ({
         backgroundColor: colors.background.secondary,
       }}>
       <View
-        className={`flex flex-row items-center justify-start rounded-2xl p-4`}
+        className={`flex flex-row items-center justify-start p-4`}
         style={{
+          borderRadius: 17,
           backgroundColor: colors.background.primary,
         }}>
         {backArrowEnable && (

@@ -50,6 +50,19 @@ const Launch = () => {
         if (theme) {
           setTheme(userTheme.theme);
         }
+      } else {
+        const newUserTheme: UserTheme = {
+          theme:
+            colorScheme === 'dark' ? themes.primary.dark : themes.primary.light,
+          isDefault: true,
+        };
+        setTheme(
+          colorScheme === 'dark' ? themes.primary.dark : themes.primary.light,
+        );
+        await AsyncStorage.setItem(
+          `${user!.username}-main-theme`,
+          JSON.stringify(newUserTheme),
+        );
       }
     }
 

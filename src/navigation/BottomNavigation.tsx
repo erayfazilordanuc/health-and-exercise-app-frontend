@@ -23,11 +23,10 @@ import Profile from '../screens/profile/Profile';
 import {useTheme} from '../themes/ThemeProvider';
 import {themes} from '../themes/themes';
 import Exercises from '../screens/exercises/user/ExercisesUser';
-import Exercise from '../screens/exercises/user/Exercise';
 import Home from '../screens/home/Home';
 import Permissions from '../screens/profile/settings/Permissions';
 import ExercisesHome from '../screens/exercises/user/ExercisesUser';
-import Exercise1 from '../screens/exercises/user/Exercise';
+import Exercise1 from '../screens/exercises/user/ExerciseDetail';
 import WordGame from '../screens/exercises/mindGames/WordGame';
 import Exercise2 from '../screens/exercises/mindGames/Exercise2';
 import MindGame2 from '../screens/exercises/mindGames/MindGame2';
@@ -45,6 +44,9 @@ import ExercisesAdmin from '../screens/exercises/admin/ExercisesAdmin';
 import AllExercises from '../screens/exercises/user/AllExercises';
 import EditExercise from '../screens/exercises/admin/EditExercise';
 import Achievements from '../screens/groups/Progress';
+import Workout from '../screens/exercises/user/Exercise';
+import ExerciseDetail from '../screens/exercises/user/ExerciseDetail';
+import Exercise from '../screens/exercises/user/Exercise';
 
 const Tab = createBottomTabNavigator();
 
@@ -496,6 +498,20 @@ function ExercisesStack() {
             header: () => (
               <CustomHeader
                 title={'Tüm Egzersizler'}
+                icon={icons.todo}
+                className="border-primary-300"
+              />
+            ),
+          }}
+        />
+        <ExercisesNativeStack.Screen
+          name="ExerciseDetail"
+          component={ExerciseDetail}
+          options={{
+            headerShown: false,
+            header: () => (
+              <CustomHeader
+                title={'Egzersiz Detay'}
                 icon={icons.todo}
                 className="border-primary-300"
               />

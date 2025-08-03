@@ -21,14 +21,31 @@ export const getAllExercises = async () => {
   }
 };
 
+export const getExerciseById = async (id: number) => {
+  try {
+    const response = await apiClient.get(`/exercises/${id}`);
+    console.log('get exercise by id', response);
+
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    return [];
+  }
+};
+
 export const getTodayExerciseByPosition = async (
-  postition: ExercisePosition,
+  position: ExercisePosition,
 ) => {
   try {
-    const response = await apiClient.get(
-      `/exercises/weekly-active-days/progress`,
-    );
-    console.log('weekly active days exercise progress', response);
+    const response = await apiClient.get(`/exercises/today`, {
+      params: {position: ExercisePosition[position]},
+    });
+    console.log('today exercise', response);
 
     if (response.status >= 200 && response.status < 300) {
       return response.data;
@@ -175,6 +192,7 @@ export const updateExerciseVideoName = async (
   const videoDTO: NewVideoDTO = {
     name: videoName,
     videoUrl: null,
+    durationSeconds: null,
   };
   return apiClient
     .put(`/exercises/${exerciseId}/videos/id/${videoId}`, videoDTO)

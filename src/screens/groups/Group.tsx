@@ -202,29 +202,29 @@ const Group = () => {
       style={{backgroundColor: colors.background.secondary}}
       onPress={() => {}}>
       {/* Basınca modal çıksın user bilgilerinin gösterildiği */}
-      <View className="flex flex-row justify-between">
+      <View className="flex flex-row justify-between items-center">
         <Text
-          className="text-lg font-semibold dark:text-blue-300 ml-2"
+          className="text-lg font-rubik-medium dark:text-blue-300 ml-2"
           style={{color: colors.primary[200]}}>
           {item.fullName}
         </Text>
         {user?.role === 'ROLE_USER' && item.role === 'ROLE_ADMIN' && (
           <Text
-            className="text-lg font-semibold dark:text-blue-300 mr-2"
+            className="text-lg font-rubik-medium dark:text-blue-300 mr-2"
             style={{color: colors.text.primary}}>
             Hemşire
           </Text>
         )}
         {user && item.username === user.username && (
           <Text
-            className="text-lg font-semibold dark:text-blue-300 mr-2"
+            className="text-lg font-rubik-medium dark:text-blue-300 mr-2"
             style={{color: colors.text.primary}}>
             Siz
           </Text>
         )}
         {item.role === 'ROLE_USER' && user && user.role === 'ROLE_ADMIN' && (
           <TouchableOpacity
-            className="p-1 px-4 rounded-2xl"
+            className="p-1 px-4 rounded-3xl"
             style={{backgroundColor: colors.background.primary}}
             onPress={() => {
               if (user && user.role === 'ROLE_ADMIN') {
@@ -233,7 +233,7 @@ const Group = () => {
               /* member a navigate etmeli id ile */
             }}>
             <Text
-              className="text-lg font-semibold dark:text-blue-300"
+              className="text-lg font-rubik-medium dark:text-blue-300"
               style={{color: colors.text.primary}}>
               Detay
             </Text>
@@ -241,7 +241,7 @@ const Group = () => {
         )}
       </View>
       {/* <Text
-        className="text-lg font-semibold dark:text-blue-300 ml-2"
+        className="text-lg font-rubik-medium dark:text-blue-300 ml-2"
         style={{color: colors.primary[200]}}>
         {item.username} Yaş olmalı
       </Text> */}
@@ -278,8 +278,9 @@ const Group = () => {
         contentContainerClassName="pb-16">
         {user && user.role === 'ROLE_USER' && (
           <View
-            className="flex flex-column justify-start rounded-2xl pl-5 p-3 mb-3 mt-3" // border
+            className="flex flex-column justify-start pl-5 p-3 mb-3 mt-3" // border
             style={{
+              borderRadius: 17,
               backgroundColor: colors.background.primary,
               borderColor: colors.primary[300],
             }}>
@@ -287,7 +288,7 @@ const Group = () => {
               <>
                 <Text
                   className="font-rubik-medium"
-                  style={{fontSize: 20, color: colors.text.primary}}>
+                  style={{fontSize: 19, color: colors.text.primary}}>
                   Hemşire Bilgileri
                 </Text>
                 <View className="flex flex-row items-center mt-1 mb-1">
@@ -322,21 +323,23 @@ const Group = () => {
 
         {user && user.role === 'ROLE_USER' && (
           <View
-            className="flex flex-column justify-start rounded-2xl pl-5 p-3"
+            className="flex flex-column justify-start pl-5 p-3"
             style={{
+              borderRadius: 17,
               backgroundColor: colors.background.primary,
             }}>
             <View className="flex flex-row justify-between">
               {lastMessage &&
                 !lastMessage.message.startsWith('dailyStatus') && (
                   <Text
-                    className="font-rubik text-2xl mt-1"
-                    style={{color: colors.primary[200]}}>
+                    className="font-rubik mt-1"
+                    style={{fontSize: 20, color: colors.primary[200]}}>
                     En Son Mesaj
                   </Text>
                 )}
               <TouchableOpacity
-                className="py-2 px-3 mb-1 bg-blue-500 rounded-2xl flex items-center justify-center"
+                className="py-2 px-3 mb-1 bg-blue-500 flex items-center justify-center"
+                style={{borderRadius: 17}}
                 onPress={async () => {
                   if (admin && user) {
                     const response = await isRoomExistBySenderAndReceiver(
@@ -388,19 +391,20 @@ const Group = () => {
 
         {user && user.role === 'ROLE_ADMIN' && joinRequests.length > 0 && (
           <View
-            className="flex flex-col justify-start /*items-center*/ rounded-2xl pl-4 pr-4 p-3 mb-3 mt-3" // border
+            className="flex flex-col justify-start /*items-center*/ pl-4 pr-4 p-3 mb-3 mt-3" // border
             style={{
+              borderRadius: 17,
               backgroundColor: colors.background.primary,
               borderColor: colors.primary[300],
             }}>
             <Text
-              className="font-rubik text-2xl ml-1 mb-1"
-              style={{color: colors.text.primary}}>
+              className="font-rubik ml-1 mb-1"
+              style={{fontSize: 20, color: colors.text.primary}}>
               Gruba katılma istekleri
             </Text>
             {joinRequests.map(jr => (
               <View
-                className="flex flex-col items-stretch justify-center rounded-2xl pl-4 p-2 mt-2"
+                className="flex flex-col items-stretch justify-center pl-4 p-2 mt-2"
                 style={{
                   backgroundColor: colors.background.secondary,
                 }}>
@@ -461,15 +465,16 @@ const Group = () => {
         )}
 
         <View
-          className="flex flex-col justify-start rounded-2xl pl-4 p-3 mt-3" // border
+          className="flex flex-col justify-start pl-4 p-3 mt-3" // border
           style={{
+            borderRadius: 17,
             backgroundColor: colors.background.primary,
             borderColor: colors.primary[300],
           }}>
           <View className="flex flex-row justify-between">
             <Text
-              className="font-rubik text-2xl ml-1"
-              style={{color: colors.text.primary}}>
+              className="font-rubik ml-1"
+              style={{fontSize: 20, color: colors.text.primary}}>
               Üyeler
             </Text>
             <Text
@@ -497,7 +502,7 @@ const Group = () => {
             /> */}
           </View>
         </View>
-        <View className="mt-4 rounded-2xl w-1/2">
+        <View className="mt-4 w-1/2">
           <CustomAlert
             message={'Gruptan ayrılmak istediğinize emin misiniz?'}
             visible={isLeaveAlertVisible}
@@ -513,7 +518,7 @@ const Group = () => {
               onPress={() => {
                 setIsLeaveAlertVisible(true);
               }}
-              className="flex flex-row items-center justify-between py-4 px-5 rounded-2xl">
+              className="flex flex-row items-center justify-between py-4 px-5 rounded-3xl">
               <View className="flex flex-row items-center gap-3">
                 <Image
                   source={icons.logout}
@@ -539,7 +544,7 @@ const Group = () => {
                 onPress={() => {
                   setIsLeaveAlertVisible(true);
                 }}
-                className="flex flex-row items-center justify-between py-4 px-5 rounded-2xl">
+                className="flex flex-row items-center justify-between py-4 px-5 rounded-3xl">
                 <View className="flex flex-row items-center gap-3">
                   <Image
                     source={icons.logout}

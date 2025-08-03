@@ -116,6 +116,7 @@ type ExerciseVideoDTO = {
   id?: number;
   name?: string;
   videoUrl: string;
+  durationSeconds: number;
   exerciseId: number;
   createdAt: Date;
 };
@@ -123,12 +124,14 @@ type ExerciseVideoDTO = {
 type CreateExerciseVideoDTO = {
   name: string;
   videoUrl: string | null;
+  durationSeconds: number | null;
   exerciseId: number | null;
 };
 
 type NewVideoDTO = {
   name: string;
   videoUrl: string | null;
+  durationSeconds: number | null;
 };
 
 type Exercise = {

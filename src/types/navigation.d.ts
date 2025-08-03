@@ -17,7 +17,9 @@ type SettingsStackParamList = {
 type ExercisesStackParamList = {
   ExercisesUser: any;
   AllExercises: any;
-  Exercise: {exercise: ExerciseDTO | null};
+  ExerciseDetail: {exercise: ExerciseDTO | null; progressRatio: number};
+  Exercise: {exercise: ExerciseDTO | null; progressRatio: number};
+  ExercisesAdmin: any;
   ExercisesAdmin: any;
   EditExercise: {exercise: ExerciseDTO | null}; // burada Exercise parametresi almalı
   // MindGames: any;

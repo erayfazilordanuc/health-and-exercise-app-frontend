@@ -79,8 +79,15 @@ function AdminLogin() {
       setLoading(true);
 
       if (!(username && password)) {
-        // Alert
         ToastAndroid.show('Lütfen tüm alanları doldurunuz', ToastAndroid.SHORT);
+        return;
+      }
+
+      if (isCodeStep && !code) {
+        ToastAndroid.show(
+          'Lütfen doğrulama kodunu giriniz',
+          ToastAndroid.SHORT,
+        );
         return;
       }
 
@@ -172,6 +179,14 @@ function AdminLogin() {
       if (password.length < 8) {
         ToastAndroid.show(
           'Lütfen en az 8 karakter içeren bir şifre giriniz',
+          ToastAndroid.SHORT,
+        );
+        return;
+      }
+
+      if (isCodeStep && !code) {
+        ToastAndroid.show(
+          'Lütfen doğrulama kodunu giriniz',
           ToastAndroid.SHORT,
         );
         return;

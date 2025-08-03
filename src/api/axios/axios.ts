@@ -82,16 +82,17 @@ apiClient.interceptors.response.use(
     console.log('Error', error);
 
     if (error.message === 'Network Error') {
-      console.log('🚨 İnternet bağlantısı yok!');
-      ToastAndroid.show('İnternet bağlantısı yok', ToastAndroid.LONG);
+      console.log('🚨 İnternet bağlantınızı kontrol edin!');
+      ToastAndroid.show(
+        'İnternet bağlantınızı kontrol edin',
+        ToastAndroid.LONG,
+      );
     }
 
     const originalRequest = error.config;
 
     if (
-      (error.response?.status === 500 ||
-        error.response?.status === 401 ||
-        error.response?.status === 403) &&
+      error.response?.status === 500 && //  || error.response?.status === 401 || error.response?.status === 403
       !originalRequest._retry &&
       !noAuthRequired.some(url => originalRequest.url?.includes(url))
     ) {

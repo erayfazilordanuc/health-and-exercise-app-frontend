@@ -351,8 +351,11 @@ const Profile = () => {
             />
           }>
           <View
-            className="flex flex-col rounded-2xl"
-            style={{backgroundColor: colors.background.primary}}>
+            className="flex flex-col"
+            style={{
+              borderRadius: 17,
+              backgroundColor: colors.background.primary,
+            }}>
             <View className="flex flex-col justify-center pl-5 pr-4 py-3">
               <View className="flex flex-row justify-between">
                 <GradientText
@@ -393,39 +396,67 @@ const Profile = () => {
                   </View>
                 )}
               </View>
-              <Text
-                className="text-xl font-rubik pt-3"
-                style={{color: colors.text.primary}}>
-                Kullanıcı Adı: {user?.username}
-              </Text>
-              <Text
-                className="text-xl font-rubik pt-3"
-                style={{color: colors.text.primary}}>
-                Yaş: {calculateAge()}
-              </Text>
-              {showDetail && (
+              <View className="flex flex-row items-center mt-3 mb-1">
                 <Text
-                  className="text-xl font-rubik pt-3"
+                  className="font-rubik-medium text-xl"
                   style={{color: colors.text.primary}}>
-                  Doğum Tarihi:{' '}
-                  {new Date(user?.birthDate!).toLocaleDateString('tr-TR', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                  Kullanıcı Adı:{'  '}
                 </Text>
-              )}
-              {showDetail && (
                 <Text
-                  className="text-xl font-rubik pt-3"
+                  className="font-rubik text-xl"
                   style={{color: colors.text.primary}}>
-                  Cinsiyet: {user?.gender === 'male' ? 'Erkek' : 'Kadın'}
+                  {user?.username}
                 </Text>
+              </View>
+              <View className="flex flex-row items-center mt-1 mb-1">
+                <Text
+                  className="font-rubik-medium text-lg"
+                  style={{color: colors.text.primary}}>
+                  Yaş:{'  '}
+                </Text>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  {calculateAge()}
+                </Text>
+              </View>
+              {showDetail && (
+                <>
+                  <View className="flex flex-row items-center mt-1 mb-1">
+                    <Text
+                      className="font-rubik-medium text-lg"
+                      style={{color: colors.text.primary}}>
+                      Doğum Tarihi:{'  '}
+                    </Text>
+                    <Text
+                      className="font-rubik text-lg"
+                      style={{color: colors.text.primary}}>
+                      {new Date(user?.birthDate!).toLocaleDateString('tr-TR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </Text>
+                  </View>
+                  <View className="flex flex-row items-center mt-1 mb-1">
+                    <Text
+                      className="font-rubik-medium text-lg"
+                      style={{color: colors.text.primary}}>
+                      Cinsiyet:{'  '}
+                    </Text>
+                    <Text
+                      className="font-rubik text-lg"
+                      style={{color: colors.text.primary}}>
+                      {user?.gender === 'male' ? 'Erkek' : 'Kadın'}
+                    </Text>
+                  </View>
+                </>
               )}
               <View className="flex flex-row items-center justify-end">
                 <TouchableOpacity
-                  className="py-2 px-3 rounded-2xl"
+                  className="py-2 px-3"
                   style={{
+                    borderRadius: 17,
                     backgroundColor: colors.primary[200],
                   }}
                   onPress={() => {
@@ -446,18 +477,24 @@ const Profile = () => {
           {user && user.role === 'ROLE_USER' && (
             <>
               <View
-                className="flex flex-col py-2 px-5 rounded-2xl mt-3"
-                style={{backgroundColor: colors.background.primary}}>
-                <View className="flex flex-row justify-between items-center pt-2 pb-3">
+                className="flex flex-col py-2 px-5 mt-3"
+                style={{
+                  borderRadius: 17,
+                  backgroundColor: colors.background.primary,
+                }}>
+                <View className="flex flex-row justify-between items-center pt-2 pb-2">
                   <Text
-                    className="font-rubik text-2xl"
-                    style={{color: colors.text.primary}}>
+                    className="font-rubik"
+                    style={{fontSize: 20, color: colors.text.primary}}>
                     Bulgular
                   </Text>
                   {isHealthConnectReady ? (
                     <View
-                      className="flex flex-row rounded-2xl items-center"
-                      style={{backgroundColor: colors.background.primary}}>
+                      className="flex flex-row items-center"
+                      style={{
+                        borderRadius: 17,
+                        backgroundColor: colors.background.primary,
+                      }}>
                       <Text style={{color: '#16d750'}}>Bağlı</Text>
                       <Image
                         source={icons.wearable}
@@ -467,8 +504,11 @@ const Profile = () => {
                     </View>
                   ) : loading ? (
                     <View
-                      className="flex flex-row py-3 px-10 rounded-2xl items-center"
-                      style={{backgroundColor: colors.background.secondary}}>
+                      className="flex flex-row py-3 px-10 items-center"
+                      style={{
+                        borderRadius: 17,
+                        backgroundColor: colors.background.secondary,
+                      }}>
                       <ActivityIndicator
                         size="small"
                         color={colors.text.primary}
@@ -476,8 +516,11 @@ const Profile = () => {
                     </View>
                   ) : (
                     <TouchableOpacity
-                      className="flex flex-row py-3 pl-4 pr-3 rounded-2xl items-center"
-                      style={{backgroundColor: colors.background.secondary}}
+                      className="flex flex-row py-3 pl-4 pr-3 items-center"
+                      style={{
+                        borderRadius: 17,
+                        backgroundColor: colors.background.secondary,
+                      }}
                       onPress={() => {
                         if (!isHealthConnectInsatlled) {
                           setShowHCAlert(true);
@@ -630,8 +673,8 @@ const Profile = () => {
                 )}
                 {/* Uyku da minimalist bir grafik ile gösterilsin */}
                 {/* <TouchableOpacity
-                  className="p-3 rounded-2xl self-end"
-                  style={{backgroundColor: colors.background.secondary}}>
+                  className="p-3 self-end"
+                  style={{borderRadius: 17, backgroundColor: colors.background.secondary}}>
                   <Text
                     className="font-rubik text-lg"
                     style={{color: colors.text.primary}}>
@@ -673,7 +716,7 @@ const Profile = () => {
             onRequestClose={() => setIsAddModalVisible(false)}>
             <View className="flex-1 justify-center items-center bg-black/50">
               <View
-                className="w-4/5 rounded-xl p-5 py-6 items-center"
+                className="w-4/5 rounded-3xl p-5 py-6 items-center"
                 style={{backgroundColor: colors.background.primary}}>
                 <Text
                   className="text-lg font-bold mb-4 text-center"
@@ -681,8 +724,9 @@ const Profile = () => {
                   {getBulguLabel()}
                 </Text>
                 <View
-                  className="flex flex-row items-center justify-start z-50 rounded-2xl mb-4"
+                  className="flex flex-row items-center justify-start z-50 mb-4"
                   style={{
+                    borderRadius: 17,
                     backgroundColor: colors.background.secondary,
                   }}>
                   <TextInput
@@ -783,7 +827,7 @@ const Profile = () => {
                           }
                           setUpdateLoading(false);
                         }}
-                        className="flex-1 p-2 rounded-xl items-center mx-1"
+                        className="flex-1 p-2 rounded-2xl items-center mx-1"
                         style={{backgroundColor: '#0EC946'}}>
                         <Text className="font-rubik text-lg text-white">
                           Güncelle
@@ -794,7 +838,7 @@ const Profile = () => {
                           setIsAddModalVisible(false);
                           setAddModalValue(0);
                         }}
-                        className="flex-1 p-2 rounded-xl items-center mx-1"
+                        className="flex-1 p-2 rounded-2xl items-center mx-1"
                         style={{backgroundColor: colors.background.secondary}}>
                         <Text
                           className="font-rubik text-lg"

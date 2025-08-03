@@ -22,7 +22,10 @@ import {
   getWeeklyActiveDaysProgress,
 } from '../../../api/exercise/progressService';
 import CustomWeeklyProgressCalendar from '../../../components/CustomWeeklyProgressCalendar';
-import {getTodayExerciseByPosition} from '../../../api/exercise/exerciseService';
+import {
+  getExerciseById,
+  getTodayExerciseByPosition,
+} from '../../../api/exercise/exerciseService';
 
 const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -78,15 +81,29 @@ const ExercisesUser = () => {
   );
 
   const onStartExercise = async (position: ExercisePosition) => {
-    // Backendden çekilecek:
-    // Ayakta egzersizin idsi:
-    // Oturarak egzersizin idsi:
-
     const todayExercise = await getTodayExerciseByPosition(position);
-    if (todayExercise) navigation.navigate('Exercise', {todayExercise});
+    if (todayExercise) {
+      navigation.navigate('ExerciseDetail', {
+        exercise: todayExercise,
+        progressRatio: 0,
+      });
+      setShowModal(false);
+    }
   };
 
-  const onContinueExercise = async () => {};
+  const onContinueExercise = async () => {
+    if (
+      todaysExerciseProgress?.progressRatio &&
+      todaysExerciseProgress?.progressRatio > 0 &&
+      todaysExerciseProgress?.exerciseDTO
+    ) {
+      navigation.navigate('ExerciseDetail', {
+        exercise: todaysExerciseProgress?.exerciseDTO,
+        progressRatio: todaysExerciseProgress.progressRatio,
+      });
+      setShowModal(false);
+    }
+  };
 
   return (
     <>
@@ -112,8 +129,11 @@ const ExercisesUser = () => {
           backgroundColor: colors.background.secondary,
         }}>
         <View
-          className="px-5 py-3 rounded-2xl mb-3"
-          style={{backgroundColor: colors.background.primary}}>
+          className="px-5 py-3 mb-3"
+          style={{
+            borderRadius: 17,
+            backgroundColor: colors.background.primary,
+          }}>
           {new Date().getDay() === 1 ||
           new Date().getDay() === 3 ||
           new Date().getDay() === 5 ||
@@ -127,42 +147,51 @@ const ExercisesUser = () => {
                 </Text>
 
                 <View className="flex flex-row justify-between items-center mt-4 mb-2">
-                  <TouchableOpacity
-                    disabled={
-                      todaysExerciseProgress?.progressRatio !== null &&
-                      todaysExerciseProgress?.progressRatio === 100
-                    }
-                    className="flex flex-row justify-center items-center rounded-2xl ml-1 py-3 pl-3"
-                    style={{
-                      backgroundColor:
-                        todaysExerciseProgress?.progressRatio &&
-                        todaysExerciseProgress.progressRatio === 100
-                          ? '#55CC88'
-                          : todaysExerciseProgress?.progressRatio &&
-                            todaysExerciseProgress.progressRatio > 0
-                          ? '#FFAA33'
-                          : colors.primary[175],
-                    }}
-                    onPress={() => {
-                      if (
-                        !todaysExerciseProgress ||
-                        !todaysExerciseProgress.progressRatio ||
-                        todaysExerciseProgress.progressRatio === 0
-                      ) {
+                  {!(
+                    todaysExerciseProgress &&
+                    todaysExerciseProgress.progressRatio
+                  ) ? (
+                    <TouchableOpacity
+                      className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
+                      style={{
+                        borderRadius: 17,
+                        backgroundColor: colors.primary[175],
+                      }}
+                      onPress={() => {
                         setShowModal(true);
-                      } else onContinueExercise();
-                    }}>
-                    <Text className="text-xl font-rubik">
-                      {todaysExerciseProgress?.progressRatio &&
-                      todaysExerciseProgress.progressRatio === 100
-                        ? 'Tamamlandı'
-                        : todaysExerciseProgress?.progressRatio &&
-                          todaysExerciseProgress.progressRatio > 0
-                        ? 'Devam Et'
-                        : 'Başla'}
-                    </Text>
-                    <Image source={icons.gymnastic_1} className="size-20" />
-                  </TouchableOpacity>
+                      }}>
+                      <Text className="text-xl font-rubik">
+                        Egzersize başla
+                      </Text>
+                      <Image source={icons.gymnastic_1} className="size-20" />
+                    </TouchableOpacity>
+                  ) : todaysExerciseProgress?.progressRatio === 100 ? (
+                    <TouchableOpacity
+                      className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
+                      style={{
+                        borderRadius: 17,
+                        backgroundColor: '#3BC476',
+                      }}
+                      onPress={onContinueExercise}>
+                      <Text className="text-xl font-rubik">
+                        Tamamlandı{'\n'}Egzersizi gör
+                      </Text>
+                      <Image source={icons.gymnastic_1} className="size-20" />
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
+                      style={{
+                        backgroundColor: '#FFAA33',
+                      }}
+                      onPress={onContinueExercise}>
+                      <Text className="text-xl font-rubik">
+                        Egzersize devam et
+                      </Text>
+                      <Image source={icons.gymnastic_1} className="size-20" />
+                    </TouchableOpacity>
+                  )}
+
                   {todaysExerciseProgress?.progressRatio &&
                     todaysExerciseProgress.progressRatio > 0 && (
                       <View className="flex justify-center items-center mr-5">
@@ -196,22 +225,43 @@ const ExercisesUser = () => {
               </>
             </>
           ) : (
-            <Text
-              className="font-rubik text-xl mb-1"
-              style={{color: colors.text.primary}}>
-              Bugün için planlanan egzersiziniz yok. İyi dinlenmeler!
-            </Text>
+            <>
+              <Text
+                className="font-rubik text-center"
+                style={{fontSize: 18, color: colors.text.primary}}>
+                Bugün için planlanan egzersiziniz yok.
+              </Text>
+              <Text
+                className="font-rubik mt-1 text-center"
+                style={{fontSize: 18, color: colors.text.primary}}>
+                İyi dinlenmeler!
+              </Text>
+            </>
           )}
         </View>
 
         <View
-          className="px-3 py-3 rounded-2xl mb-3"
-          style={{backgroundColor: colors.background.primary}}>
-          <Text
-            className="font-rubik text-2xl mb-3 mt-1 ml-2"
-            style={{color: colors.text.primary}}>
-            Egzersiz Takvimi
-          </Text>
+          className="flex flex-col px-3 py-3 mb-3"
+          style={{
+            borderRadius: 17,
+            backgroundColor: colors.background.primary,
+          }}>
+          <View className="flex flex-row items-center justify-between">
+            <Text
+              className="font-rubik mb-2 mt-1 ml-2"
+              style={{fontSize: 19, color: colors.text.primary}}>
+              Egzersiz Takvimi
+            </Text>
+            <Text
+              className="font-rubik mb-3 mt-1 ml-2"
+              style={{fontSize: 17, color: colors.text.primary}}>
+              {new Date().toLocaleDateString('tr-TR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+            </Text>
+          </View>
           <CustomWeeklyProgressCalendar progress={weeklyExerciseProgress} />
         </View>
       </View>
@@ -225,8 +275,9 @@ const ExercisesUser = () => {
           className="flex-1 justify-center items-center"
           style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
           <View
-            className="w-11/12 max-w-lg rounded-3xl p-4 items-center"
+            className="w-11/12 max-w-lg p-4 items-center"
             style={{
+              borderRadius: 17,
               backgroundColor: colors.background.primary,
               shadowColor: theme.name === 'Light' ? 'black' : '#707070',
               shadowOpacity: 2,
@@ -246,8 +297,9 @@ const ExercisesUser = () => {
             </Text>
             <View className="flex flex-row justify-between items-center">
               <TouchableOpacity
-                className="flex-1 py-3 rounded-2xl mt-2 mr-1 border"
+                className="flex-1 py-3 mt-2 mr-1 border"
                 style={{
+                  borderRadius: 17,
                   backgroundColor: colors.background.secondary,
                   borderColor: colors.primary[150],
                 }}
@@ -259,8 +311,9 @@ const ExercisesUser = () => {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="flex-1 py-3 rounded-2xl mt-2 ml-2 border"
+                className="flex-1 py-3 mt-2 ml-2 border"
                 style={{
+                  borderRadius: 17,
                   backgroundColor: colors.background.secondary,
                   borderColor: colors.primary[150],
                 }}
@@ -273,8 +326,9 @@ const ExercisesUser = () => {
               </TouchableOpacity>
             </View>
             <TouchableOpacity
-              className="py-2 px-4 rounded-2xl mt-6 border"
+              className="py-2 px-4 mt-6 border"
               style={{
+                borderRadius: 17,
                 backgroundColor: colors.background.secondary,
                 borderColor: colors.primary[125],
               }}

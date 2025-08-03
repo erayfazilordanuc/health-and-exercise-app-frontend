@@ -31,11 +31,6 @@ import {
   getSymptomsByDate,
   getSymptomsById,
 } from '../../../api/symptoms/symptomsService';
-import {
-  cancelTestReminder,
-  isTestReminderScheduled,
-  registerTestReminder,
-} from '../../../api/notification/localNotificationService';
 import {useFocusEffect} from '@react-navigation/native';
 
 const Development = () => {
@@ -94,10 +89,12 @@ const Development = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUser();
-    fetchTokens();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUser();
+      fetchTokens();
+    }, []),
+  );
 
   useEffect(() => {
     const fetchApiBaseUrl = async () => {
@@ -111,18 +108,18 @@ const Development = () => {
     fetchApiBaseUrl();
   }, []);
 
-  const checkTestReminderScheduled = async () => {
-    const isScheduled = await isTestReminderScheduled();
-    if (isScheduled) {
-      setIsReminderScheduled(true);
-    }
-  };
+  // const checkTestReminderScheduled = async () => {
+  //   const isScheduled = await isTestReminderScheduled();
+  //   if (isScheduled) {
+  //     setIsReminderScheduled(true);
+  //   }
+  // };
 
-  useFocusEffect(
-    useCallback(() => {
-      checkTestReminderScheduled();
-    }, [loading]),
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     checkTestReminderScheduled();
+  //   }, [loading]),
+  // );
 
   const testGetUser = async () => {
     try {
@@ -329,11 +326,11 @@ const Development = () => {
     }
   };
 
-  const testLocalScheduledNotifications = async () => {
-    setLoading(true);
-    await registerTestReminder();
-    setLoading(false);
-  };
+  // const testLocalScheduledNotifications = async () => {
+  //   setLoading(true);
+  //   await registerTestReminder();
+  //   setLoading(false);
+  // };
 
   return (
     <View
@@ -832,7 +829,7 @@ const Development = () => {
           </View>
         </View>
 
-        <View
+        {/* <View
           className="p-3 mt-1 mb-4 rounded-2xl"
           style={{
             backgroundColor: colors.background.primary,
@@ -880,7 +877,7 @@ const Development = () => {
               </GradientText>
             </TouchableOpacity>
           )}
-        </View>
+        </View> */}
       </ScrollView>
     </View>
   );

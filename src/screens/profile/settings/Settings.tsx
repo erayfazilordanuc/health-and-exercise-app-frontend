@@ -22,6 +22,7 @@ import CustomAvatar from '../../../components/CustomAvatar';
 import {useTheme} from '../../../themes/ThemeProvider';
 import CustomAlert from '../../../components/CustomAlert';
 import {logout} from '../../../api/auth/authService';
+import NotificationSetting from 'react-native-open-notification';
 
 interface SettingsItemProps {
   icon: ImageSourcePropType;
@@ -107,8 +108,9 @@ const Settings = () => {
       }}>
       <View className="flex flex-col px-3">
         <View
-          className="rounded-2xl py-1"
+          className="py-1"
           style={{
+            borderRadius: 17,
             backgroundColor: colors.background.primary,
           }}>
           <SettingsItem
@@ -129,11 +131,12 @@ const Settings = () => {
             icon={icons.permission}
             title={'İzinler'}
             onPress={() => {
-              if (Platform.OS === 'ios') {
-                Linking.openURL('app-settings:');
-              } else {
-                Linking.openSettings();
-              }
+              NotificationSetting.open();
+              // if (Platform.OS === 'ios') {
+              //   Linking.openURL('app-settings:');
+              // } else {
+              //   Linking.openSettings();
+              // }
               // navigation.navigate('Permissions');
             }}
           />
@@ -160,7 +163,7 @@ const Settings = () => {
           /> */}
         </View>
       </View>
-      <View className="mt-3 px-3 rounded-2xl">
+      <View className="mt-3 px-3" style={{borderRadius: 17}}>
         <CustomAlert
           message={'Çıkmak istediğinize emin misiniz?'}
           visible={isAlertVisible}

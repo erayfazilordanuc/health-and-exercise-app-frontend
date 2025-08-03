@@ -29,6 +29,7 @@ import {
 import {useTheme} from '../../themes/ThemeProvider';
 import icons from '../../constants/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useUser} from '../../contexts/UserContext';
 
 const {width, height} = Dimensions.get('window');
 
@@ -37,6 +38,7 @@ const Chat = () => {
   const insets = useSafeAreaInsets();
   const {params} = useRoute<ChatRouteProp>();
   const {roomId, sender, receiver, fromNotification, navigatedInApp} = params;
+  const {user} = useUser();
   const {colors} = useTheme();
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation<GroupsScreenNavigationProp>();
@@ -63,23 +65,24 @@ const Chat = () => {
           return false;
         }
 
-        // console.log(navigatedInApp, receiver);
+        if (!user) return true;
 
         if (navigatedInApp) {
-          if (receiver.role === 'ROLE_ADMIN') {
+          if (user.role === 'ROLE_USER') {
             navigation.replace('Group');
           }
         }
 
-        if (!navigatedInApp && receiver.role === 'ROLE_USER') {
-          navigation.replace('Group');
-        }
-
-        if (!navigatedInApp && receiver.role === 'ROLE_ADMIN') {
-          navigation.replace('Member', {
-            memberId: receiver.id,
-            fromNotification,
-          });
+        if (fromNotification) {
+          if (user.role === 'ROLE_ADMIN') {
+            navigation.replace('Group');
+            navigation.replace('Member', {
+              memberId: receiver.id,
+              fromNotification,
+            });
+          } else {
+            navigation.replace('Group');
+          }
         }
 
         socketService.emit('leave_room', {room: roomId, username: sender});
@@ -96,6 +99,58 @@ const Chat = () => {
       return () => backHandler.remove();
     }, []),
   );
+
+  //  useFocusEffect(
+  //   useCallback(() => {
+  //     const backAction = () => {
+  //
+  //       if (!user) return;
+  //
+
+  //       if (fromNotification) {
+  //
+  //         if (user.role === 'ROLE_USER') {
+  //           navigation.replace('Group');
+  //
+  //         } else {
+  //
+  //           navigation.replace('Member', {
+  //             memberId: receiver.id,
+  //             fromNotification,
+  //           });
+  //         }
+  //       }
+  //
+  //       if (navigatedInApp) {
+  //         if (user.role === 'ROLE_USER') {
+  //
+  //           navigation.replace('Group');
+  //         } else {
+  //           navigation.replace('Member', {memberId: receiver.id});
+  //
+  //         }
+  //       }
+  //
+  //       if (navigation.canGoBack()) {
+  //         return false;
+  //       }
+  //
+
+  //       socketService.emit('leave_room', {room: roomId, username: sender});
+  //       socketService.disconnect();
+  //
+
+  //       return true;
+  //     };
+
+  //     const backHandler = BackHandler.addEventListener(
+  //       'hardwareBackPress',
+  //       backAction,
+  //     );
+
+  //     return () => backHandler.remove();
+  //   }, []),
+  // );
 
   const sendMessage = async () => {
     const newMessage: Message = {
@@ -234,7 +289,7 @@ const Chat = () => {
             justifyContent: 'space-between',
           }}>
           <Text
-            className="pl-3 font-rubik-semibold"
+            className="font-rubik-semibold"
             style={{
               color: colors.text.primary,
               fontSize: 24,

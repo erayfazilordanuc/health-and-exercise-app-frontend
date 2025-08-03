@@ -47,6 +47,7 @@ import {createThumbnail} from 'react-native-create-thumbnail';
 import RNFS from 'react-native-fs';
 import RNBlob from 'react-native-blob-util';
 import {activate, deactivate} from '@thehale/react-native-keep-awake';
+import {getVideoDuration} from 'react-native-video-duration';
 
 type EditExerciseRouteProp = RouteProp<ExercisesStackParamList, 'EditExercise'>;
 const EditExercise = () => {
@@ -220,25 +221,28 @@ const EditExercise = () => {
       setIsVideoUploadModalVisible(true);
       for (let idx = 0; idx < pendingVideos.length; idx++) {
         const video = pendingVideos[idx];
+        const localPath = await resolveVideoPath(video);
 
         setUploadingVideoIndex(idx);
-        setVideoUploadPercent(0); // ← reset
+        setVideoUploadPercent(0);
 
         const presigned = await getPresignedUrl(
           snapExerciseId!,
           video.fileName!,
         );
-
         const publicUrl = await uploadVideoToS3(presigned, video, pct =>
           setVideoUploadPercent(pct),
         );
-
         console.log('public url', publicUrl);
 
         try {
+          const seconds = Math.round(
+            (await getVideoDuration(localPath)) as number,
+          );
           const newVideoDTO: NewVideoDTO = {
             name: newVideos[idx].name ? newVideos[idx].name.trim() : '',
             videoUrl: publicUrl,
+            durationSeconds: seconds,
           };
           const updatedExercise: ExerciseDTO = await addVideoToExercise(
             snapExerciseId!,
@@ -283,7 +287,7 @@ const EditExercise = () => {
     const granted = await PermissionsAndroid.request(perm, {
       title: 'Video Erişimi',
       message: 'Uygulamanın galerinizdeki videolara erişmesine izin verin.',
-      buttonPositive: 'Tamam',
+      buttonPositive: 'İzin ver',
       buttonNegative: 'İptal',
     });
 
@@ -323,6 +327,7 @@ const EditExercise = () => {
       const exerciseVideoDTO: CreateExerciseVideoDTO = {
         name: '',
         videoUrl: null,
+        durationSeconds: null,
         exerciseId: editedExercise.id,
       };
       setNewVideos(prev => [...prev, exerciseVideoDTO]);

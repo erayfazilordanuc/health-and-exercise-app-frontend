@@ -22,18 +22,14 @@ import icons from '../../../constants/icons';
 import VideoPlayer from 'react-native-video-player';
 import {createThumbnail} from 'react-native-create-thumbnail';
 import CustomAlert from '../../../components/CustomAlert';
-import Orientation from 'react-native-orientation-locker'; // yarn add
-import KeepAwake from 'react-native-keep-awake';
 
-type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'Exercise'>;
-const Exercise = () => {
+type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'ExerciseDetail'>;
+const ExerciseDetail = () => {
   const insets = useSafeAreaInsets();
   const {colors} = useTheme();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const {params} = useRoute<ExerciseRouteProp>();
   const {exercise, progressRatio} = params;
-  const [isBackActionAlertVisible, setIsBackActionAlertVisible] =
-    useState(false);
 
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [exerciseStarted, setExerciseStarted] = useState(false);
@@ -48,16 +44,12 @@ const Exercise = () => {
       : '#FFAA33';
   const isDone = progressRatio === 100;
 
-  const [playerOpen, setPlayerOpen] = useState(false); // tam-ekran modu
-  const [playIdx, setPlayIdx] = useState(0); // o anki video
-  const [showNext, setShowNext] = useState(false); // Sonrakine butonu
-
   const findDoneVideos = async () => {
     if (!exercise) return;
 
     let doneVideos = [];
 
-    const total = exercise!.videos.reduce(
+    const total = exercise.videos.reduce(
       (sum, v) => sum + (v.durationSeconds ?? 0),
       0,
     );
@@ -65,8 +57,8 @@ const Exercise = () => {
     const progressRatioAsDuration = (total * progressRatio) / 100;
 
     let durationSum = 0;
-    for (let i = 0; i < exercise!.videos.length; i++) {
-      durationSum += exercise!.videos[i].durationSeconds;
+    for (let i = 0; i < exercise.videos.length; i++) {
+      durationSum += exercise.videos[i].durationSeconds;
       if (durationSum <= progressRatioAsDuration) doneVideos.push(i);
       else break;
     }
@@ -77,35 +69,6 @@ const Exercise = () => {
   useEffect(() => {
     findDoneVideos();
   }, [, exercise]);
-
-  useFocusEffect(
-    useCallback(() => {
-      const backAction = () => {
-        setIsBackActionAlertVisible(true);
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        backAction,
-      );
-
-      return () => backHandler.remove();
-    }, []),
-  );
-
-  useEffect(() => {
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (playerOpen) {
-        setPlayerOpen(false);
-        Orientation.lockToPortrait();
-        KeepAwake.deactivate(); // 👈 serbest bırak
-        return true;
-      }
-      return false;
-    });
-    return () => sub.remove();
-  }, [playerOpen]);
 
   const isValidUrl = (url?: string): boolean => {
     if (!url) return false;
@@ -130,7 +93,7 @@ const Exercise = () => {
         InteractionManager.runAfterInteractions(() => res()),
       );
 
-      for (const v of exercise!.videos) {
+      for (const v of exercise.videos) {
         if (!isActive) break;
         if (thumbs[v.videoUrl]) continue;
 
@@ -177,6 +140,12 @@ const Exercise = () => {
     };
   }, [exercise, exercise!.videos]);
 
+  // egzersizin toplam video uzunluğuna göre oranla bir progress ratio oluşturulup kaydedilsin
+
+  // progressExercise isteği useEffect falan filan ile, kaç saniyede bir olmalı?
+
+  // egzersize devam etme ve başlama mantığı
+
   return (
     <>
       <View
@@ -192,7 +161,7 @@ const Exercise = () => {
             color: colors.text.primary,
             fontSize: 24,
           }}>
-          Egzersiz
+          Egzersiz Detayı
         </Text>
       </View>
 
@@ -251,8 +220,8 @@ const Exercise = () => {
           className="px-5 pt-3 rounded-2xl mb-3"
           style={{backgroundColor: colors.background.primary}}>
           {exercise?.videos &&
-            exercise!.videos.length > 0 &&
-            exercise!.videos.map((video, index) => (
+            exercise.videos.length > 0 &&
+            exercise.videos.map((video, index) => (
               <View
                 key={index}
                 className="w-full rounded-xl p-3 mb-3"
@@ -349,67 +318,29 @@ const Exercise = () => {
         </View>
       </ScrollView>
 
-      {playerOpen && (
-        <View className="absolute inset-0 bg-black justify-center">
-          <VideoPlayer
-            source={{uri: exercise!.videos[playIdx].videoUrl}}
-            autoplay
-            // resizeMode="contain"
-            style={{width: '100%', aspectRatio: 16 / 9}}
-            videoWidth={1280}
-            videoHeight={720}
-            onEnd={() => setShowNext(true)}
-            onPlayPress={() => setShowNext(false)}
-          />
-
-          {showNext && (
-            <TouchableOpacity
-              className="absolute bottom-10 self-center bg-amber-400 px-10 py-3 rounded-full"
-              onPress={() => {
-                if (playIdx + 1 < exercise!.videos.length) {
-                  setPlayIdx(i => i + 1);
-                  setShowNext(false);
-                } else {
-                  setPlayerOpen(false);
-                  Orientation.lockToPortrait();
-                  KeepAwake.deactivate(); // 👈
-                  /* burada progress güncelle */
-                }
-              }}>
-              <Text className="text-white text-lg font-semibold">
-                {playIdx + 1 < exercise!.videos.length
-                  ? 'Sonrakine Geç'
-                  : 'Bitti'}
-              </Text>
-            </TouchableOpacity>
-          )}
-
+      {!isDone && (
+        <View className="absolute bottom-20 right-3 items-center">
           <TouchableOpacity
-            className="absolute top-8 right-4 bg-white/20 p-3 rounded-full"
-            onPress={() => {
-              setPlayerOpen(false);
-              Orientation.lockToPortrait();
-              KeepAwake.deactivate(); // 👈
-            }}>
-            <Text className="text-white text-lg">✕</Text>
+            className="flex flex-row justify-center items-center mt-3"
+            onPress={() =>
+              navigation.navigate('Exercise', {
+                exercise: exercise,
+                progressRatio: progressRatio,
+              })
+            }>
+            <Text
+              className=" font-rubik text-2xl p-4 rounded-3xl" // bg-blue-500 '#55CC88' '#FFAA33'
+              style={{
+                backgroundColor: color,
+                color: colors.background.primary,
+              }}>
+              {progressRatio < 100 && progressRatio > 0 ? 'Devam et' : 'Başla'}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
-
-      <CustomAlert
-        message={'Egzersizi terk etmek istediğinizden emin misiniz?'}
-        secondMessage="İlerlemeniz kaybolacaktır"
-        visible={isBackActionAlertVisible}
-        onYes={() => {
-          navigation.goBack();
-          setIsBackActionAlertVisible(false);
-        }}
-        onCancel={() => {
-          setIsBackActionAlertVisible(false);
-        }}
-      />
     </>
   );
 };
 
-export default Exercise;
+export default ExerciseDetail;

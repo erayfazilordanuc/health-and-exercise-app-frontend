@@ -111,7 +111,7 @@ const CustomWeeklyProgressCalendar = ({
       {/* Scrollable Week */}
       <ScrollView
         ref={scrollRef}
-        className="px-3 py-2 rounded-2xl"
+        className="px-3 py-2 rounded-2xl mt-1"
         horizontal
         showsHorizontalScrollIndicator={true}
         style={{backgroundColor: colors.background.secondary}}>
@@ -139,10 +139,12 @@ const CustomWeeklyProgressCalendar = ({
           return (
             <View
               key={label}
-              className={`flex flex-col p-3 m-1 rounded-2xl ${
+              className={`flex flex-col pb-3 pt-2 rounded-2xl ${
                 index === fullWeek.length - 1 ? 'mr-7' : ''
               }`}
               style={{
+                margin: 5,
+                width: 90,
                 backgroundColor: isToday
                   ? theme.name === 'Light'
                     ? '#B9E2FE'
@@ -160,8 +162,8 @@ const CustomWeeklyProgressCalendar = ({
                 {label}
               </Text>
               <View
-                className="flex flex-row items-center justify-center p-3 rounded-full mr-1 mt-2"
-                style={{backgroundColor: bgColor}}>
+                className="self-center flex flex-row items-center justify-center py-2 rounded-full mr-1 mt-2"
+                style={{width: 50, backgroundColor: bgColor}}>
                 <Text
                   className="text-md text-center font-rubik"
                   style={{color: colors.text.primary}}>
