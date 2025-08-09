@@ -1,82 +1,76 @@
-import React, {useState, useRef, useCallback, useEffect} from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  BackHandler,
-  ScrollView,
-  InteractionManager,
-  ToastAndroid,
-  Image,
-} from 'react-native';
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useRef,
+} from 'react';
+import {View, BackHandler, StatusBar} from 'react-native';
 import {
   RouteProp,
   useFocusEffect,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import Video from 'react-native-video';
+import Orientation from 'react-native-orientation-locker';
+import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomAlert from '../../../components/CustomAlert';
+import CustomVideoPlayer from '../../../components/CustomVideoPlayer';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../../../themes/ThemeProvider';
-import icons from '../../../constants/icons';
-import VideoPlayer from 'react-native-video-player';
-import {createThumbnail} from 'react-native-create-thumbnail';
-import CustomAlert from '../../../components/CustomAlert';
-import Orientation from 'react-native-orientation-locker'; // yarn add
-import KeepAwake from 'react-native-keep-awake';
+import {useUser} from '../../../contexts/UserContext';
+import {progressExercise} from '../../../api/exercise/progressService';
 
 type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'Exercise'>;
+
 const Exercise = () => {
   const insets = useSafeAreaInsets();
   const {colors} = useTheme();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const {params} = useRoute<ExerciseRouteProp>();
-  const {exercise, progressRatio} = params;
+  const {user} = useUser();
+  const {exercise, progress, videoIdx, startSec} = params;
+
+  const [updatedProgress, setUpdatedProgress] = useState(progress);
+  const [totalProgressDuration, setTotalProgressDuration] = useState(
+    progress.totalProgressDuration,
+  );
+  const [doneVideosDuration, setDoneVideosDuration] = useState(
+    progress.videoProgress
+      .filter(vp => vp.isCompeleted)
+      .reduce((sum, vp) => sum + vp.progressDuration, 0),
+  );
+  const [videoIdxToShow, setVideoIdxToShow] = useState(videoIdx);
+  const [startSecSync, setStartSecSync] = useState(startSec);
+
+  const lastSyncRef = useRef(0);
+  const [paused, setPaused] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+
   const [isBackActionAlertVisible, setIsBackActionAlertVisible] =
     useState(false);
 
-  const [thumbs, setThumbs] = useState<Record<string, string>>({});
-  const [exerciseStarted, setExerciseStarted] = useState(false);
-  const [exerciseFinished, setExerciseFinished] = useState(false);
-  const [doneVideos, setDoneVideos] = useState<number[]>([]);
-
-  const color =
-    progressRatio === 100
-      ? '#3BC476'
-      : progressRatio === 0
-      ? colors.primary[200]
-      : '#FFAA33';
-  const isDone = progressRatio === 100;
-
-  const [playerOpen, setPlayerOpen] = useState(false); // tam-ekran modu
-  const [playIdx, setPlayIdx] = useState(0); // o anki video
-  const [showNext, setShowNext] = useState(false); // Sonrakine butonu
-
-  const findDoneVideos = async () => {
-    if (!exercise) return;
-
-    let doneVideos = [];
-
-    const total = exercise!.videos.reduce(
-      (sum, v) => sum + (v.durationSeconds ?? 0),
-      0,
-    );
-
-    const progressRatioAsDuration = (total * progressRatio) / 100;
-
-    let durationSum = 0;
-    for (let i = 0; i < exercise!.videos.length; i++) {
-      durationSum += exercise!.videos[i].durationSeconds;
-      if (durationSum <= progressRatioAsDuration) doneVideos.push(i);
-      else break;
-    }
-
-    setDoneVideos(doneVideos);
+  const defaultTabBarStyle = {
+    backgroundColor: colors.background.primary,
+    borderColor: colors.background.primary,
+    position: 'absolute',
+    minHeight: 60,
+    borderTopWidth: 0,
   };
 
-  useEffect(() => {
-    findDoneVideos();
-  }, [, exercise]);
+  useLayoutEffect(() => {
+    const parentNav = navigation.getParent();
+
+    parentNav?.setOptions({
+      tabBarStyle: {...defaultTabBarStyle, display: 'none'},
+    });
+
+    return () =>
+      parentNav?.setOptions({
+        tabBarStyle: defaultTabBarStyle,
+      });
+  }, [navigation]);
 
   useFocusEffect(
     useCallback(() => {
@@ -84,331 +78,180 @@ const Exercise = () => {
         setIsBackActionAlertVisible(true);
         return true;
       };
-
       const backHandler = BackHandler.addEventListener(
         'hardwareBackPress',
         backAction,
       );
-
       return () => backHandler.remove();
     }, []),
   );
 
   useEffect(() => {
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (playerOpen) {
-        setPlayerOpen(false);
-        Orientation.lockToPortrait();
-        KeepAwake.deactivate(); // 👈 serbest bırak
-        return true;
+    Orientation.unlockAllOrientations();
+    StatusBar.setHidden(true, 'fade');
+    return () => {
+      Orientation.lockToPortrait();
+      StatusBar.setHidden(false, 'fade');
+    };
+  }, []);
+
+  const syncExerciseProgress = useCallback(
+    async (time: number, doneDuration?: number) => {
+      if (
+        paused ||
+        (progress.videoProgress[videoIdxToShow] &&
+          time < progress.videoProgress[videoIdxToShow].progressDuration)
+      )
+        return;
+      const done = doneDuration ?? doneVideosDuration;
+
+      if (doneDuration) setDoneVideosDuration(done);
+
+      const newTotalProgressDuration = done + time;
+      console.log('newTotal', newTotalProgressDuration);
+      setTotalProgressDuration(newTotalProgressDuration);
+
+      try {
+        const netInfo = await NetInfo.fetch();
+        console.log('time', time);
+        if (netInfo.isConnected) {
+          const response = await progressExercise(
+            exercise.id!,
+            exercise.videos[videoIdx].id!,
+            time,
+          );
+
+          setUpdatedProgress(prev => {
+            // Eğer dizi boş veya undefined/null ise:
+            if (!prev.videoProgress || prev.videoProgress.length === 0) {
+              console.log('1', {
+                ...prev,
+                totalProgressDuration: newTotalProgressDuration,
+                videoProgress: [
+                  {
+                    ...response, // burada gerekli alanları doldur
+                    durationSeconds: time,
+                  },
+                ],
+              });
+              return {
+                ...prev,
+                totalProgressDuration: newTotalProgressDuration,
+                videoProgress: [
+                  {
+                    ...response, // burada gerekli alanları doldur
+                    durationSeconds: time,
+                  },
+                ],
+              };
+            }
+
+            // Doluysa map ile ilgili index'i güncelle
+            console.log('2', {
+              ...prev,
+              totalProgressDuration: newTotalProgressDuration,
+              videoProgress: prev.videoProgress.map((item, idx) =>
+                idx === videoIdxToShow
+                  ? {...item, durationSeconds: time}
+                  : item,
+              ),
+            });
+            return {
+              ...prev,
+              totalProgressDuration: newTotalProgressDuration,
+              videoProgress: prev.videoProgress.map((item, idx) =>
+                idx === videoIdxToShow
+                  ? {...item, durationSeconds: time}
+                  : item,
+              ),
+            };
+          });
+        }
+
+        console.log('updatedProgress', updatedProgress);
+        const key = `exerciseProgress_${new Date().toISOString().slice(0, 10)}`;
+        await AsyncStorage.setItem(key, JSON.stringify(updatedProgress));
+      } catch (error) {
+        console.error('❌ Sync error:', error);
       }
-      return false;
-    });
-    return () => sub.remove();
-  }, [playerOpen]);
+    },
+    [currentTime, doneVideosDuration],
+  );
 
-  const isValidUrl = (url?: string): boolean => {
-    if (!url) return false;
+  const handleDurationProgress = (time: number) => {
+    if (time > 0.5) {
+      setCurrentTime(time);
 
-    // ✅ http veya https ile başlamalı
-    const pattern = /^(https?:\/\/)[\w\-]+(\.[\w\-]+)+[/#?]?.*$/;
-    if (!pattern.test(url)) return false;
-
-    // ✅ videoya uygun uzantı kontrolü (mp4, mov vs.)
-    const validExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm'];
-    const lower = url.toLowerCase();
-    return validExtensions.some(ext => lower.includes(ext));
+      const now = Date.now();
+      if (now - lastSyncRef.current >= 3000) {
+        // 3 saniye geçtiyse
+        lastSyncRef.current = now;
+        syncExerciseProgress(time);
+      }
+    }
   };
 
-  useEffect(() => {
-    let isActive = true;
-
-    const loadSequentialExerciseVideosThumbs = async () => {
-      if (!exercise?.videos?.length) return;
-
-      await new Promise<void>(res =>
-        InteractionManager.runAfterInteractions(() => res()),
-      );
-
-      for (const v of exercise!.videos) {
-        if (!isActive) break;
-        if (thumbs[v.videoUrl]) continue;
-
-        // ✅ URL geçerli mi kontrol et
-        console.log(v.videoUrl, isValidUrl(v.videoUrl));
-        if (!v.videoUrl || !isValidUrl(v.videoUrl)) {
-          console.warn(`[thumb] Geçersiz URL atlandı: ${v.videoUrl}`);
-          setThumbs(prev => ({
-            ...prev,
-            [v.videoUrl]: 'fallback_thumbnail_path',
-          }));
-          continue;
-        }
-
-        try {
-          const {path} = await createThumbnail({
-            url: v.videoUrl,
-            timeStamp: 1000,
-            format: 'jpeg',
-            maxWidth: 512,
-          });
-
-          if (!isActive) break;
-
-          setThumbs(prev => ({...prev, [v.videoUrl]: path}));
-        } catch (err) {
-          console.warn(
-            `[thumb] Thumbnail oluşturulamadı: ${v.videoUrl}`,
-            (err as Error).message,
-          );
-          // ✅ hata olsa bile fallback ata, crash olmaz
-          setThumbs(prev => ({
-            ...prev,
-            [v.videoUrl]: 'fallback_thumbnail_path',
-          }));
-        }
-      }
-    };
-
-    loadSequentialExerciseVideosThumbs();
-
-    return () => {
-      isActive = false;
-    };
-  }, [exercise, exercise!.videos]);
+  // useEffect(() => {
+  //   const interval = setInterval(syncExerciseProgress, 5000);
+  //   return () => clearInterval(interval);
+  // }, [syncExerciseProgress]);
 
   return (
-    <>
-      <View
-        style={{
-          backgroundColor: colors.background.secondary,
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-          paddingTop: insets.top * 1.3,
-        }}>
-        <Text
-          className="pl-7 font-rubik-semibold"
-          style={{
-            color: colors.text.primary,
-            fontSize: 24,
-          }}>
-          Egzersiz
-        </Text>
-      </View>
-
-      {exerciseFinished && (
-        <>
-          <TouchableOpacity
-            className="bg-blue-600 rounded-2xl px-10 py-3 mt-6 shadow-lg self-center w-1/2"
-            // onPress={() => navigation.navigate('NextExercise')}
-          >
-            <Text className="text-white text-base">Sonraki Egzersiz</Text>
-          </TouchableOpacity>
-          <Text className="text-green-600 font-bold">
-            Tebrikler, bu egzersizi tamamladın! 🎉
-          </Text>
-        </>
-      )}
-
-      <View
-        className="mt-3 mx-3 px-5 pt-3 pb-5 rounded-2xl flex flex-col items-center justify-center"
-        style={{backgroundColor: colors.background.primary}}>
-        <Text
-          className="text-xl font-rubik-medium mb-2"
-          style={{color: colors.text.primary}}>
-          Mevcut İlerleme
-        </Text>
-        <Text className="text-xl font-rubik-medium mt-1" style={{color: color}}>
-          {/* %{progressRatio} */}
-          {`%${progressRatio}`}
-        </Text>
-        {progressRatio === 100 && (
-          <Text className="text-xl font-rubik-medium" style={{color: color}}>
-            {/* %{progressRatio} */}
-            Egzersiz Tamamlandı!
-          </Text>
-        )}
-        <View
-          className="w-full h-1 rounded-full overflow-hidden mt-3"
-          style={{backgroundColor: colors.background.secondary}}>
-          <View
-            className="h-1 rounded-full"
-            style={{
-              width: `${progressRatio}%`,
-              backgroundColor: color,
-            }}
-          />
-        </View>
-      </View>
-
-      <ScrollView
-        className="h-full px-3 mt-3"
-        style={{
-          backgroundColor: colors.background.secondary,
-          marginBottom: 60,
-        }}>
-        <View
-          className="px-5 pt-3 rounded-2xl mb-3"
-          style={{backgroundColor: colors.background.primary}}>
-          {exercise?.videos &&
-            exercise!.videos.length > 0 &&
-            exercise!.videos.map((video, index) => (
-              <View
-                key={index}
-                className="w-full rounded-xl p-3 mb-3"
-                style={{backgroundColor: colors.background.secondary}}>
-                {!isDone ? (
-                  <View className="pt-1 flex flex-row items-center justify-center">
-                    <Image
-                      source={
-                        thumbs[video.videoUrl]
-                          ? {uri: thumbs[video.videoUrl]}
-                          : undefined // fallback
-                      }
-                      style={{
-                        width: '85%',
-                        aspectRatio: 16 / 9,
-                        borderRadius: 10,
-                        resizeMode: 'cover',
-                        backgroundColor: '#000', // thumb yüklenirken boşluk siyah kalsın
-                      }}
-                    />
-                  </View>
-                ) : (
-                  <VideoPlayer
-                    source={{uri: video.videoUrl}}
-                    autoplay={false}
-                    style={{
-                      width: '100%',
-                      aspectRatio: 16 / 9,
-                      backgroundColor: 'white',
-                    }}
-                    thumbnail={
-                      thumbs[video.videoUrl]
-                        ? {uri: thumbs[video.videoUrl]}
-                        : icons.exercise_screen
-                    }
-                    // paused={isDone}
-                    // disableSeek={isDone}
-                    // hideControlsOnStart={isDone}
-                    // onPlayPress={() => {
-                    //   if (isDone) {
-                    //     ToastAndroid.show(
-                    //       'Önce "Başla / Devam et" butonuna basmalısın 🚀',
-                    //       ToastAndroid.SHORT,
-                    //     );
-                    //     return;
-                    //   }
-                    // }}
-                    customStyles={{
-                      videoWrapper: {borderRadius: 10},
-                      controlButton: {opacity: 0.9},
-                      thumbnail: {
-                        borderRadius: 15,
-                        width: 110,
-                        height: 110,
-                        alignSelf: 'center',
-                        justifyContent: 'center',
-                      },
-                      thumbnailImage: {
-                        width: '100%',
-                        height: '100%',
-                        resizeMode: 'center',
-                        borderRadius: 15,
-                      },
-                    }}
-                  />
-                )}
-
-                <View className="flex flex-row justify-between items-center px-5 mt-3">
-                  <Text
-                    className="font-rubik text-center text-lg"
-                    style={{color: colors.text.primary}}>
-                    {video.name}
-                  </Text>
-                  {doneVideos.includes(index) && (
-                    <View className="flex flex-row items-center justify-center">
-                      <Text
-                        className="font-rubik text-sm mr-2"
-                        style={{color: '#3BC476'}}>
-                        Tamamlandı
-                      </Text>
-                      <Image
-                        source={icons.check}
-                        className="size-5 mb-1"
-                        tintColor={'#3BC476'}
-                      />
-                    </View>
-                  )}
-                  {/*Tamamlandı yazabilir */}
-                  {/* Eğer progress ratio şuana kadar olan video indexlerindeki videoların uzunluğunun toplamı 
-                  video uzunluğuna olan oranından büyük ise video tamamlandı anlamına gelen tik iconu konsun */}
-                </View>
-              </View>
-            ))}
-        </View>
-      </ScrollView>
-
-      {playerOpen && (
-        <View className="absolute inset-0 bg-black justify-center">
-          <VideoPlayer
-            source={{uri: exercise!.videos[playIdx].videoUrl}}
-            autoplay
-            // resizeMode="contain"
-            style={{width: '100%', aspectRatio: 16 / 9}}
-            videoWidth={1280}
-            videoHeight={720}
-            onEnd={() => setShowNext(true)}
-            onPlayPress={() => setShowNext(false)}
-          />
-
-          {showNext && (
-            <TouchableOpacity
-              className="absolute bottom-10 self-center bg-amber-400 px-10 py-3 rounded-full"
-              onPress={() => {
-                if (playIdx + 1 < exercise!.videos.length) {
-                  setPlayIdx(i => i + 1);
-                  setShowNext(false);
-                } else {
-                  setPlayerOpen(false);
-                  Orientation.lockToPortrait();
-                  KeepAwake.deactivate(); // 👈
-                  /* burada progress güncelle */
-                }
-              }}>
-              <Text className="text-white text-lg font-semibold">
-                {playIdx + 1 < exercise!.videos.length
-                  ? 'Sonrakine Geç'
-                  : 'Bitti'}
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity
-            className="absolute top-8 right-4 bg-white/20 p-3 rounded-full"
-            onPress={() => {
-              setPlayerOpen(false);
-              Orientation.lockToPortrait();
-              KeepAwake.deactivate(); // 👈
-            }}>
-            <Text className="text-white text-lg">✕</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+    <View
+      style={{flex: 1, backgroundColor: '#171717', justifyContent: 'center'}}
+      removeClippedSubviews={false}>
+      <CustomVideoPlayer
+        videoDTO={exercise.videos[videoIdxToShow]}
+        startAt={startSecSync}
+        isLast={videoIdxToShow === exercise.videos.length - 1}
+        pausedParent={paused}
+        onDurationProgress={handleDurationProgress}
+        onVideoEnd={() => {
+          if (videoIdxToShow + 1 < exercise.videos.length) {
+            console.log(videoIdxToShow);
+            setDoneVideosDuration(
+              prev => prev + exercise.videos[videoIdxToShow].durationSeconds,
+            );
+            setVideoIdxToShow(prev => prev + 1);
+            setStartSecSync(0);
+            syncExerciseProgress(
+              1,
+              doneVideosDuration +
+                exercise.videos[videoIdxToShow].durationSeconds,
+            );
+          } else {
+            navigation.navigate('ExercisesUser');
+          }
+        }}
+        onExit={() => setIsBackActionAlertVisible(true)}
+      />
 
       <CustomAlert
-        message={'Egzersizi terk etmek istediğinizden emin misiniz?'}
-        secondMessage="İlerlemeniz kaybolacaktır"
+        message="Egzersizi terk etmek istediğinize emin misiniz?"
+        // message="Egzersizi sonlandırmak istediğinizden emin misiniz?"
+        // secondMessage="Merak etmeyin, şu ana kadarki ilerlemeniz otomatik olarak kaydedilecek."
+        secondMessage="İlerlemeniz kaydedilecektir"
         visible={isBackActionAlertVisible}
         onYes={() => {
-          navigation.goBack();
+          const parentNav = navigation.getParent();
+          parentNav?.setOptions({
+            tabBarStyle: defaultTabBarStyle,
+          });
+
+          setPaused(true);
+
+          navigation.navigate('ExerciseDetail', {
+            progress: updatedProgress,
+            totalDurationSec: exercise.videos.reduce(
+              (sum, v) => sum + (v.durationSeconds ?? 0),
+              0,
+            ),
+          });
           setIsBackActionAlertVisible(false);
         }}
-        onCancel={() => {
-          setIsBackActionAlertVisible(false);
-        }}
+        onCancel={() => setIsBackActionAlertVisible(false)}
       />
-    </>
+    </View>
   );
 };
 

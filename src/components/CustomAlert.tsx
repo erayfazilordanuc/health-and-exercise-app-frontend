@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, Modal} from 'react-native';
+import {View, Text, TouchableOpacity, Dimensions} from 'react-native';
 import {useTheme} from '../themes/ThemeProvider';
 
 interface CustomAlertProps {
@@ -23,76 +23,105 @@ const CustomAlert = ({
   onCancelText,
   onYesText,
 }: CustomAlertProps) => {
-  const {theme, colors, setTheme} = useTheme();
+  const {colors} = useTheme();
+  const {width} = Dimensions.get('window');
 
   return (
-    <Modal
-      transparent={true}
-      visible={visible}
-      animationType="fade"
-      statusBarTranslucent // tam ekrana yayılsın
-      hardwareAccelerated // Android flicker fix
-      presentationStyle="overFullScreen"
-      onRequestClose={onCancel}>
+    <View
+      style={{
+        flex: 1,
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        opacity: visible ? 1 : 0,
+        zIndex: 999,
+      }}
+      pointerEvents={visible ? 'auto' : 'none'}>
       <View
-        className="flex-1 justify-center items-center"
-        style={{backgroundColor: 'rgba(0,0,0,0.6)'}}>
-        <View
-          className="w-4/5 rounded-2xl p-5 py-5 items-center"
+        style={{
+          width: (width / 14) * 12,
+          maxWidth: 400,
+          backgroundColor: colors.background.primary,
+          borderRadius: 20,
+          padding: 20,
+          shadowColor: '#000',
+          shadowOffset: {width: 0, height: 4},
+          shadowOpacity: 0.25,
+          shadowRadius: 6,
+          elevation: 5,
+          alignItems: 'center',
+        }}>
+        <Text
           style={{
-            backgroundColor: colors.background.primary,
-            shadowColor: 'gray', // ✅ iOS için
-            shadowOffset: {width: 0, height: 4},
-            shadowOpacity: 0.25,
-            shadowRadius: 6,
-            elevation: 4, // ✅ Android için
+            color: colors.text.primary,
+            fontSize: 18,
+            textAlign: 'center',
+            fontWeight: '600',
           }}>
+          {message || 'Emin misiniz?'}
+        </Text>
+
+        {secondMessage && (
           <Text
-            className="text-lg font-rubik text-center"
-            style={{color: colors.text.primary}}>
-            {message ? message : 'Emin misiniz?'}
+            style={{
+              color: colors.text.secondary,
+              fontSize: 14,
+              textAlign: 'center',
+              marginTop: 10,
+            }}>
+            {secondMessage}
           </Text>
+        )}
 
-          {secondMessage && (
+        <View style={{flexDirection: 'row', marginTop: 20}}>
+          <TouchableOpacity
+            onPress={onCancel}
+            style={{
+              flex: 1,
+              marginRight: 5,
+              backgroundColor: colors.background.secondary,
+              borderRadius: 12,
+              paddingVertical: 10,
+            }}>
             <Text
-              className="text-sm font-rubik text-center mt-4"
-              style={{color: colors.text.primary}}>
-              {'Not: ' + secondMessage}
-            </Text>
-          )}
-
-          <View className="flex flex-row justify-between mt-6">
-            <TouchableOpacity
-              onPress={onCancel}
-              className="py-2 px-5 rounded-xl items-center mr-2"
-              style={{backgroundColor: colors.background.secondary}}>
-              <Text
-                className="text-lg font-rubik"
-                style={{color: colors.text.primary}}>
-                {onCancelText ? onCancelText : 'İptal'}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                onYes();
-                visible = true;
-              }}
-              className="py-2 px-5 rounded-xl items-center ml-2"
               style={{
-                backgroundColor: isPositive ? '#16d750' : 'rgb(239 68 68)',
+                color: colors.text.primary,
+                fontSize: 16,
+                textAlign: 'center',
               }}>
-              <Text
-                className={`text-lg font-rubik`}
-                style={{color: colors.background.primary}}>
-                {onYesText ? onYesText : 'Evet'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+              {onCancelText || 'İptal'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={onYes} // ❌ visible değiştirme, parent yönetecek
+            style={{
+              flex: 1,
+              marginLeft: 5,
+              backgroundColor: isPositive ? '#16d750' : 'rgb(239 68 68)',
+              borderRadius: 12,
+              paddingVertical: 10,
+            }}>
+            <Text
+              style={{
+                color: colors.background.primary,
+                fontSize: 16,
+                textAlign: 'center',
+              }}>
+              {onYesText || 'Evet'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
-    </Modal>
+    </View>
   );
 };
 
-export default CustomAlert;
+export default React.memo(CustomAlert);

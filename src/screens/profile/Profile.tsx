@@ -205,41 +205,41 @@ const Profile = () => {
 
   const fetchAndUpsertAll = async () => {
     setLoading(true);
-    if (user && user.role === 'ROLE_USER') {
-      const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
-      const localData = await AsyncStorage.getItem(key);
-      if (localData) {
-        const localSymptoms: Symptoms = JSON.parse(localData);
-        console.log(localSymptoms);
-        setSymptoms(localSymptoms);
+    try {
+      if (user && user.role === 'ROLE_USER') {
+        const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
+        const localData = await AsyncStorage.getItem(key);
+        if (localData) {
+          const localSymptoms: Symptoms = JSON.parse(localData);
+          console.log(localSymptoms);
+          setSymptoms(localSymptoms);
+        }
+
+        const healthConnectInstalled = await isHealthConnectInstalled();
+        if (!healthConnectInstalled) return;
+
+        setIsHealthConnectInsatlled(true);
+
+        const isHealthConnectReady = await initializeHealthConnect();
+        if (!isHealthConnectReady) return;
+
+        setIsHealthConnectReady(true);
+
+        const healthConnectSymptoms = await getSymptoms();
+        setHealthConnectSymptoms(healthConnectSymptoms);
+
+        console.log(healthConnectSymptoms);
+
+        const syncedSymptoms = await getSymptomsByDate(new Date());
+        const combinedSymptoms = await combineAndSetSymptoms(
+          healthConnectSymptoms!,
+          syncedSymptoms,
+        );
+        if (combinedSymptoms) saveSymptoms(combinedSymptoms);
       }
-
-      const healthConnectInstalled = await isHealthConnectInstalled();
-      if (!healthConnectInstalled) return;
-
-      setIsHealthConnectInsatlled(true);
-
-      const isHealthConnectReady = await initializeHealthConnect();
-      if (!isHealthConnectReady) {
-        return;
-      }
-
-      setIsHealthConnectReady(true);
-
-      const healthConnectSymptoms = await getSymptoms();
-      setHealthConnectSymptoms(healthConnectSymptoms);
-
-      console.log(healthConnectSymptoms);
-
-      const syncedSymptoms = await getSymptomsByDate(new Date());
-
-      const combinedSymptoms = await combineAndSetSymptoms(
-        healthConnectSymptoms!,
-        syncedSymptoms,
-      );
-      if (combinedSymptoms) saveSymptoms(combinedSymptoms);
+    } finally {
+      setLoading(false); // ✅ her durumda çalışır
     }
-    setLoading(false);
   };
 
   useFocusEffect(

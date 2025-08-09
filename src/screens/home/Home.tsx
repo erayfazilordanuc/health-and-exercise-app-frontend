@@ -74,10 +74,11 @@ const Home = () => {
   const alertRef = useRef<CustomAlertSingletonHandle>(null);
 
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const healthProgressPercent = 93;
 
-  const [todaysExerciseProgress, setTodaysExerciseProgress] =
+  const [todayExerciseProgress, setTodayExerciseProgress] =
     useState<ExerciseProgressDTO | null>();
   const [weeklyExerciseProgress, setWeeklyEersiseProgress] = useState<
     ExerciseProgressDTO[]
@@ -101,41 +102,6 @@ const Home = () => {
         onCancelText: 'Kapat',
         onYes: async () => {
           NotificationSetting.open();
-          // if (Platform.OS === 'android') {
-          //   Linking.openSettings();
-
-          //   try {
-          //     const pkg = 'com.health_connect_test'; // ✅ senin package name
-
-          //     if (Platform.Version >= 26) {
-          //       // ✅ Android 8.0 (API 26) ve üzeri
-          //       NativeModules.IntentLauncher?.startActivity({
-          //         action: 'android.settings.APP_NOTIFICATION_SETTINGS',
-          //         extra: {
-          //           'android.provider.extra.APP_PACKAGE': pkg,
-          //         },
-          //       });
-          //     } else if (Platform.Version >= 21) {
-          //       // ✅ Android 5.0 - 7.1
-          //       NativeModules.IntentLauncher?.startActivity({
-          //         action: 'android.settings.APP_NOTIFICATION_SETTINGS',
-          //         extra: {
-          //           app_package: pkg,
-          //           app_uid: NativeModules.ApplicationInfo?.uid,
-          //         },
-          //       });
-          //     } else {
-          //       // ✅ Daha eski cihazlar için fallback
-          //       Linking.openSettings();
-          //     }
-          //   } catch (err) {
-          //     console.log('❌ Bildirim ayarları açılamadı:', err);
-          //     Linking.openSettings(); // fallback
-          //   }
-          // } else {
-          //   // ✅ iOS sadece uygulama ayarlarını açabilir
-          //   Linking.openURL('app-settings:');
-          // }
         },
         onCancel: () => {},
       });
@@ -206,21 +172,39 @@ const Home = () => {
     // }
   };
 
+  const calcPercent = (p?: ExerciseProgressDTO | null): number => {
+    if (!p) return 0;
+    const total = p.exerciseDTO.videos.reduce(
+      (sum, v) => sum + (v.durationSeconds ?? 0),
+      0,
+    );
+    return total === 0
+      ? 0
+      : Math.round((p.totalProgressDuration / total) * 100);
+  };
+
   const fetchProgress = async () => {
     if (!user?.groupId) return;
 
-    if (!admin) {
-      const groupAdmin: User = await getGroupAdmin(user.groupId);
-      setAdmin(groupAdmin);
+    try {
+      if (!admin) {
+        const groupAdmin: User = await getGroupAdmin(user.groupId);
+        setAdmin(groupAdmin);
+      }
+
+      const todayExerciseProgress: ExerciseProgressDTO =
+        await getTodaysProgress();
+      setTodayExerciseProgress(todayExerciseProgress);
+
+      const weeklyExerciseProgress: ExerciseProgressDTO[] =
+        await getWeeklyActiveDaysProgress();
+      setWeeklyEersiseProgress(weeklyExerciseProgress);
+    } catch (error) {
+      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
+      console.log(error);
+    } finally {
+      if (!initialized) setInitialized(true);
     }
-
-    const todaysExerciseProgress: ExerciseProgressDTO =
-      await getTodaysProgress();
-    setTodaysExerciseProgress(todaysExerciseProgress);
-
-    const weeklyExerciseProgress: ExerciseProgressDTO[] =
-      await getWeeklyActiveDaysProgress();
-    setWeeklyEersiseProgress(weeklyExerciseProgress);
   };
 
   useFocusEffect(
@@ -299,39 +283,41 @@ const Home = () => {
 
           if (saveResponse.status === 200)
             AsyncStorage.setItem('dailyStatus', JSON.stringify(newMessage));
-
-          setLoading(false);
-          setIsModalVisible(false);
         }
       }
     } catch (error) {
-      setLoading(false);
-      setIsModalVisible(false);
       ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
       console.log(error);
+    } finally {
+      setLoading(false);
+      setIsModalVisible(false);
     }
-    setLoading(false);
-    setIsModalVisible(false);
   };
 
   const fetchLastMessage = async (user: User) => {
     if (!admin) return;
 
-    const lastMessage: Message = await getLastMessageBySenderAndReceiver(
-      admin.username,
-      user.username,
-    );
+    try {
+      const lastMessage: Message = await getLastMessageBySenderAndReceiver(
+        admin.username,
+        user.username,
+      );
 
-    if (lastMessage.message.startsWith('dailyStatus')) {
-      const match = lastMessage.message.match(/dailyStatus(\d+)/);
-      const score = parseInt(match![1], 10);
+      if (lastMessage.message.startsWith('dailyStatus')) {
+        const match = lastMessage.message.match(/dailyStatus(\d+)/);
+        const score = parseInt(match![1], 10);
 
-      lastMessage.message =
-        '\n' +
-        new Date().toLocaleDateString() +
-        `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+        lastMessage.message =
+          '\n' +
+          new Date().toLocaleDateString() +
+          `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+      }
+      setLastMessage(lastMessage);
+    } catch (error) {
+      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
+      console.log(error);
+    } finally {
     }
-    setLastMessage(lastMessage);
   };
 
   useFocusEffect(
@@ -422,6 +408,11 @@ const Home = () => {
               <View
                 className="w-4/5 py-5 rounded-xl items-center"
                 style={{backgroundColor: colors.background.primary}}>
+                <Text
+                  className="font-rubik-semibold text-2xl text-center"
+                  style={{color: colors.text.secondary}}>
+                  Bugün kendinizi nasıl hissediyorsunuz?
+                </Text>
                 <Image
                   source={
                     theme.name === 'Light'
@@ -430,8 +421,8 @@ const Home = () => {
                   }
                   style={{
                     width: '90%', // ekranın %90'ı
-                    height: undefined,
-                    aspectRatio: 1.5, // oran koruma (örnek)
+                    height: 125,
+                    aspectRatio: 2.2, // oran koruma (örnek)
                   }}
                   resizeMode="contain"
                 />
@@ -492,6 +483,7 @@ const Home = () => {
                     <AnimatedCircularProgress
                       size={80}
                       width={5}
+                      rotation={0}
                       fill={healthProgressPercent}
                       tintColor={'#3EDA87'}
                       onAnimationComplete={() =>
@@ -523,76 +515,61 @@ const Home = () => {
                       <>
                         <Text
                           className="font-rubik text-xl mb-1"
-                          style={{color: colors.text.primary}}>
+                          style={{color: colors.text.primary, marginTop: 2}}>
                           Bugünün Egzersizi
                         </Text>
 
-                        <View className="flex flex-row justify-between items-center mt-4 mb-2">
-                          <TouchableOpacity
-                            disabled={
-                              todaysExerciseProgress?.progressRatio !== null &&
-                              todaysExerciseProgress?.progressRatio === 100
-                            }
-                            className="flex flex-row justify-center items-center rounded-2xl py-3 pl-2"
-                            style={{
-                              backgroundColor:
-                                todaysExerciseProgress?.progressRatio &&
-                                todaysExerciseProgress.progressRatio === 100
-                                  ? '#55CC88'
-                                  : todaysExerciseProgress?.progressRatio &&
-                                    todaysExerciseProgress.progressRatio > 0
-                                  ? '#FFAA33'
-                                  : colors.primary[175],
-                            }}
-                            onPress={() =>
-                              navigation.navigate('Exercises', {
-                                screen: 'ExercisesUser',
-                              })
-                            }>
-                            <Text className="text-xl font-rubik ml-1">
-                              {todaysExerciseProgress?.progressRatio &&
-                              todaysExerciseProgress.progressRatio === 100
-                                ? 'Tamamlandı'
-                                : todaysExerciseProgress?.progressRatio &&
-                                  todaysExerciseProgress.progressRatio > 0
-                                ? 'Egzersize git'
-                                : 'Egzersize git'}
-                            </Text>
-                            <Image
-                              source={icons.gymnastic_1}
-                              className="size-12"
-                            />
-                          </TouchableOpacity>
-                          {todaysExerciseProgress?.progressRatio &&
-                            todaysExerciseProgress.progressRatio > 0 && (
-                              <View className="flex justify-center items-center mr-5">
-                                <AnimatedCircularProgress
-                                  size={100}
-                                  width={8}
-                                  fill={
-                                    todaysExerciseProgress?.progressRatio &&
-                                    todaysExerciseProgress.progressRatio
-                                  }
-                                  tintColor={colors.primary[300]}
-                                  onAnimationComplete={() =>
-                                    console.log('onAnimationComplete')
-                                  }
-                                  backgroundColor={colors.background.secondary}>
-                                  {() => (
-                                    <Text
-                                      className="text-2xl font-rubik"
-                                      style={{
-                                        color: colors.text.primary,
-                                      }}>
-                                      %
-                                      {todaysExerciseProgress?.progressRatio &&
-                                        todaysExerciseProgress.progressRatio}
-                                    </Text>
-                                  )}
-                                </AnimatedCircularProgress>
-                              </View>
-                            )}
-                        </View>
+                        {initialized ? (
+                          <View className="flex flex-row justify-between items-center mt-5 mb-2">
+                            <TouchableOpacity
+                              disabled={
+                                todayExerciseProgress?.totalProgressDuration !==
+                                  null &&
+                                todayExerciseProgress?.totalProgressDuration ===
+                                  calcPercent(todayExerciseProgress)
+                              }
+                              className="flex flex-row justify-center items-center rounded-2xl py-3 pl-2"
+                              style={{
+                                backgroundColor:
+                                  todayExerciseProgress?.totalProgressDuration &&
+                                  todayExerciseProgress.totalProgressDuration ===
+                                    calcPercent(todayExerciseProgress)
+                                    ? '#55CC88'
+                                    : todayExerciseProgress?.totalProgressDuration &&
+                                      todayExerciseProgress.totalProgressDuration >
+                                        0
+                                    ? '#FFAA33'
+                                    : colors.primary[175],
+                              }}
+                              onPress={() =>
+                                navigation.navigate('Exercises', {
+                                  screen: 'ExercisesUser',
+                                })
+                              }>
+                              <Text className="text-xl font-rubik ml-1">
+                                {todayExerciseProgress?.totalProgressDuration &&
+                                todayExerciseProgress.totalProgressDuration ===
+                                  calcPercent(todayExerciseProgress)
+                                  ? 'Tamamlandı'
+                                  : todayExerciseProgress?.totalProgressDuration &&
+                                    todayExerciseProgress.totalProgressDuration >
+                                      0
+                                  ? 'Egzersize git'
+                                  : 'Egzersize git'}
+                              </Text>
+                              <Image
+                                source={icons.gymnastic_1}
+                                className="size-12"
+                              />
+                            </TouchableOpacity>
+                          </View>
+                        ) : (
+                          <ActivityIndicator
+                            className="self-center mt-10"
+                            size="small"
+                            color={colors.primary[300]}
+                          />
+                        )}
                       </>
                     </>
                   ) : (

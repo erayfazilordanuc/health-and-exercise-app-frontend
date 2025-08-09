@@ -1,17 +1,16 @@
 import React, {useEffect, useRef} from 'react';
 import {View, Text, ScrollView} from 'react-native';
 import {useTheme} from '../themes/ThemeProvider';
-
-interface ExerciseProgressDTO {
-  progressRatio: number;
-}
+import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
 interface CustomWeeklyProgressCalendarProps {
-  progress: ExerciseProgressDTO[]; // 0: Pazartesi, 1: Çarşamba, 2: Cuma
+  todayProgressPercent?: number;
+  weeklyProgressPercents: number[]; // 0: Pazartesi, 1: Çarşamba, 2: Cuma
 }
 
 const CustomWeeklyProgressCalendar = ({
-  progress,
+  todayProgressPercent,
+  weeklyProgressPercents,
 }: CustomWeeklyProgressCalendarProps) => {
   const {colors, theme} = useTheme();
   const today = new Date();
@@ -60,51 +59,51 @@ const CustomWeeklyProgressCalendar = ({
     <View className="flex flex-col">
       {/* Legend (Açıklama) */}
       <View className="flex flex-row items-center justify-between mb-2 px-4">
-        <View className="flex-row items-center space-x-2">
-          <View
-            className="p-2 rounded-full mr-1"
-            style={{backgroundColor: '#B9E2FE'}}
-          />
-          <Text
-            className="text-sm font-rubik"
-            style={{color: colors.text.primary}}>
-            Bugün
-          </Text>
-        </View>
-        <View className="flex-row items-center space-x-2">
-          <View
-            className="p-2 rounded-full mr-1"
-            style={{backgroundColor: '#4f9cff'}}
-          />
-          <Text
-            className="text-sm font-rubik"
-            style={{color: colors.text.primary}}>
-            Yapılacak
-          </Text>
-        </View>
-        <View className="flex-col items-start space-x-2">
-          <View className="flex flex-row items-center space-x-2 mb-1">
+        <View className="flex-col items-start space-x-2 mb-1">
+          <View className="flex flex-row items-center space-x-2 mb-1 mr-1">
             <View
               className="p-2 rounded-full mr-1"
               style={{backgroundColor: '#16d750'}}
             />
             <Text
-              className="text-sm font-rubik"
+              className="text-xs font-rubik"
               style={{color: colors.text.primary}}>
               Tamamlandı
             </Text>
           </View>
-          <View className="flex-row items-center space-x-2">
+          <View className="flex-row items-center space-x-2 mt-1">
             <View
               className="p-2 rounded-full mr-1"
               style={{backgroundColor: '#fd5353'}}
             />
             <Text
-              className="text-sm font-rubik"
+              className="text-xs font-rubik"
               style={{color: colors.text.primary}}>
               Tamamlanmadı
             </Text>
           </View>
+        </View>
+        <View className="flex-row items-center space-x-2">
+          <View
+            className="p-2 rounded-full mr-1"
+            style={{backgroundColor: colors.primary[300] /*'#4f9cff' */}}
+          />
+          <Text
+            className="text-xs font-rubik"
+            style={{color: colors.text.primary}}>
+            Yapılacak
+          </Text>
+        </View>
+        <View className="flex-row items-center space-x-2 mr-1">
+          <View
+            className="p-2 rounded-full mr-1"
+            style={{backgroundColor: '#B9E2FE'}}
+          />
+          <Text
+            className="text-xs font-rubik"
+            style={{color: colors.text.primary}}>
+            Bugün
+          </Text>
         </View>
       </View>
 
@@ -121,11 +120,11 @@ const CustomWeeklyProgressCalendar = ({
 
           const isToday = isSameDay(date, today);
           const isFuture = date > today;
+
           let bgColor = colors.background.secondary;
 
           if (isActive) {
-            const progressDay = progress?.[progressIndex ?? -1];
-            if (progressDay?.progressRatio === 100) {
+            if (todayProgressPercent === 100) {
               bgColor = '#16d750';
             } else if (isToday) {
               bgColor = '#4f9cff';
@@ -139,20 +138,22 @@ const CustomWeeklyProgressCalendar = ({
           return (
             <View
               key={label}
-              className={`flex flex-col pb-3 pt-2 rounded-2xl ${
+              className={`flex flex-col items-center pb-3 pt-2 rounded-2xl ${
                 index === fullWeek.length - 1 ? 'mr-7' : ''
               }`}
               style={{
                 margin: 5,
-                width: 90,
+                height: 77,
+                width: 77,
                 backgroundColor: isToday
                   ? theme.name === 'Light'
                     ? '#B9E2FE'
                     : '#B9E2FE'
                   : colors.background.primary,
               }}>
+              {/* ───────── Başlık (gün adı) ───────── */}
               <Text
-                className="text-md text-center font-rubik"
+                className="text-sm text-center font-rubik"
                 style={{
                   color:
                     isToday && theme.name === 'Dark'
@@ -161,15 +162,79 @@ const CustomWeeklyProgressCalendar = ({
                 }}>
                 {label}
               </Text>
-              <View
-                className="self-center flex flex-row items-center justify-center py-2 rounded-full mr-1 mt-2"
-                style={{width: 50, backgroundColor: bgColor}}>
-                <Text
-                  className="text-md text-center font-rubik"
-                  style={{color: colors.text.primary}}>
-                  {date.getDate()}
-                </Text>
-              </View>
+
+              {/* ───────── Gün içeriği ───────── */}
+              {isToday && isActive ? (
+                /* Bugün → Daire içine ilerleme */ <View
+                  className="flex flex-row items-center justify-center"
+                  style={{
+                    marginTop: 8,
+                    borderRadius: 100,
+                    alignSelf: 'center',
+                    width: 35,
+                    height: 35,
+                    backgroundColor: colors.primary[300],
+                  }}>
+                  <AnimatedCircularProgress
+                    size={37} // kutu kadar
+                    width={2}
+                    fill={todayProgressPercent ?? 0}
+                    tintColor={colors.primary[300]}
+                    backgroundColor={colors.background.secondary}
+                    rotation={0} // tepe noktasından başlasın
+                    style={{alignSelf: 'center'}}>
+                    {() => (
+                      <Text
+                        className="text-xs font-rubik"
+                        style={{color: colors.text.primary}}>
+                        %{todayProgressPercent ?? 0}
+                      </Text>
+                    )}
+                  </AnimatedCircularProgress>
+                </View>
+              ) : isActive &&
+                !isFuture &&
+                weeklyProgressPercents?.[progressIndex!] !== 100 ? (
+                <View
+                  className="flex flex-row items-center justify-center"
+                  style={{
+                    marginTop: 8,
+                    borderRadius: 100,
+                    alignSelf: 'center',
+                    width: 35,
+                    height: 35,
+                    backgroundColor: '#fd5353',
+                  }}>
+                  <AnimatedCircularProgress
+                    size={37}
+                    width={2}
+                    fill={weeklyProgressPercents?.[progressIndex!] ?? 0}
+                    tintColor="#fd5353" /* kırmızı halkalı */
+                    backgroundColor={colors.background.secondary}
+                    rotation={0}
+                    style={{
+                      alignSelf: 'center',
+                    }}>
+                    {() => (
+                      <Text style={{color: colors.text.primary, fontSize: 11}}>
+                        %{weeklyProgressPercents?.[progressIndex!] ?? 0}
+                      </Text>
+                    )}
+                  </AnimatedCircularProgress>
+                </View>
+              ) : (
+                /* ───── DİĞER ───── */
+                /* Diğer günler → Eski kare */
+                <View
+                  className="self-center flex flex-row items-center justify-center py-2 rounded-full mt-2"
+                  style={{width: 37, height: 37, backgroundColor: bgColor}}>
+                  <Text
+                    className="text-sm text-center font-rubik"
+                    style={{color: colors.text.primary}}>
+                    {date.getDate()}
+                  </Text>
+                </View>
+              )}
             </View>
           );
         })}

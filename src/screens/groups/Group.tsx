@@ -9,6 +9,7 @@ import {
   ScrollView,
   Image,
   ToastAndroid,
+  RefreshControl,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -45,6 +46,7 @@ const Group = () => {
   const {groupId} = params;
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<User | null>();
   const [group, setGroup] = useState<Group | null>();
   const [users, setUsers] = useState<User[]>([]);
@@ -161,7 +163,7 @@ const Group = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchLastMessage(user!, admin!);
+      if (user && user.role === 'ROLE_USER') fetchLastMessage(user, admin!);
     }, [user, admin]),
   );
 
@@ -275,7 +277,25 @@ const Group = () => {
           backgroundColor: colors.background.secondary,
           // paddingTop: insets.top / 2,
         }}
-        contentContainerClassName="pb-16">
+        contentContainerClassName="pb-16"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={async () => {
+              setRefreshing(true);
+              try {
+                if (groupId) await fetchMembersAndSetAdmin(groupId, true);
+              } catch (error) {
+                console.log(error);
+              } finally {
+                setRefreshing(false);
+              }
+            }}
+            progressBackgroundColor={colors.background.secondary}
+            colors={[colors.primary[300]]} // Android (array!)
+            tintColor={colors.primary[300]}
+          />
+        }>
         {user && user.role === 'ROLE_USER' && (
           <View
             className="flex flex-column justify-start pl-5 p-3 mb-3 mt-3" // border
@@ -379,7 +399,7 @@ const Group = () => {
             </View>
             {lastMessage && !lastMessage.message.startsWith('dailyStatus') && (
               <Text
-                className="font-rubik text-lg"
+                className="font-rubik text-md"
                 style={{color: colors.text.primary}}>
                 {lastMessage.receiver === user?.username
                   ? user?.fullName + ' : ' + lastMessage.message
@@ -391,7 +411,7 @@ const Group = () => {
 
         {user && user.role === 'ROLE_ADMIN' && joinRequests.length > 0 && (
           <View
-            className="flex flex-col justify-start /*items-center*/ pl-4 pr-4 p-3 mb-3 mt-3" // border
+            className="flex flex-col justify-start /*items-center*/ pl-4 pr-4 pt-3 pb-4 mt-3" // border
             style={{
               borderRadius: 17,
               backgroundColor: colors.background.primary,
@@ -404,8 +424,9 @@ const Group = () => {
             </Text>
             {joinRequests.map(jr => (
               <View
-                className="flex flex-col items-stretch justify-center pl-4 p-2 mt-2"
+                className="flex flex-col items-stretch justify-center pl-4 p-2 mt-3"
                 style={{
+                  borderRadius: 15,
                   backgroundColor: colors.background.secondary,
                 }}>
                 <View className="flex flex-row mt-1">

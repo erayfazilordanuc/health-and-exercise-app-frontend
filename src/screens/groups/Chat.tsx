@@ -40,7 +40,7 @@ const Chat = () => {
   const {roomId, sender, receiver, fromNotification, navigatedInApp} = params;
   const {user} = useUser();
   const {colors} = useTheme();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigation = useNavigation<GroupsScreenNavigationProp>();
 
   const [message, setMessage] = useState<string>('');

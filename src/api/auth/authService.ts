@@ -124,7 +124,11 @@ export const logout = async () => {
   await AsyncStorage.removeItem('dailyStatus');
   await AsyncStorage.removeItem(REMINDER_FLAG);
   await AsyncStorage.removeItem(TEST_REMINDER_FLAG);
-  // await AsyncStorage.removeItem('exerciseProgress');
+  await AsyncStorage.multiRemove(
+    (
+      await AsyncStorage.getAllKeys()
+    ).filter(key => key.startsWith('exerciseProgress_')),
+  );
 };
 
 export const getTokenExpirationTime = (token: string): number | null => {

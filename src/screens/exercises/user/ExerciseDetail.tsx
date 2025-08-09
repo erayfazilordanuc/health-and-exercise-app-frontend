@@ -22,6 +22,8 @@ import icons from '../../../constants/icons';
 import VideoPlayer from 'react-native-video-player';
 import {createThumbnail} from 'react-native-create-thumbnail';
 import CustomAlert from '../../../components/CustomAlert';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useUser} from '../../../contexts/UserContext';
 
 type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'ExerciseDetail'>;
 const ExerciseDetail = () => {
@@ -29,55 +31,73 @@ const ExerciseDetail = () => {
   const {colors} = useTheme();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const {params} = useRoute<ExerciseRouteProp>();
-  const {exercise, progressRatio} = params;
-
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
-  const [exerciseStarted, setExerciseStarted] = useState(false);
-  const [exerciseFinished, setExerciseFinished] = useState(false);
-  const [doneVideos, setDoneVideos] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+  const {user} = useUser();
+  const {progress, totalDurationSec} = params;
 
-  const color =
-    progressRatio === 100
-      ? '#3BC476'
-      : progressRatio === 0
-      ? colors.primary[200]
-      : '#FFAA33';
-  const isDone = progressRatio === 100;
+  const [startAt, setStartAt] = useState(0);
+  const [videoIdxToShow, setVideoIdxToShow] = useState(0);
 
-  const findDoneVideos = async () => {
-    if (!exercise) return;
+  const calculateNavPayloads = () => {
+    setLoading(true);
+    for (const [i, vp] of progress.videoProgress.entries()) {
+      if (!vp.isCompeleted && vp.id) {
+        setVideoIdxToShow(i);
+        console.log('duraation', vp.progressDuration);
+        setStartAt(vp.progressDuration);
+        break;
+      }
+    }
+    setLoading(false);
+  };
 
-    let doneVideos = [];
-
-    const total = exercise.videos.reduce(
+  const calcPercent = (): number => {
+    const total = progress.exerciseDTO.videos.reduce(
       (sum, v) => sum + (v.durationSeconds ?? 0),
       0,
     );
-
-    const progressRatioAsDuration = (total * progressRatio) / 100;
-
-    let durationSum = 0;
-    for (let i = 0; i < exercise.videos.length; i++) {
-      durationSum += exercise.videos[i].durationSeconds;
-      if (durationSum <= progressRatioAsDuration) doneVideos.push(i);
-      else break;
-    }
-
-    setDoneVideos(doneVideos);
+    return total === 0
+      ? 0
+      : Math.round((progress.totalProgressDuration / total) * 100);
   };
 
+  const getColor = () =>
+    progress.totalProgressDuration === totalDurationSec
+      ? '#3BC476'
+      : progress.totalProgressDuration === 0
+      ? colors.primary[200]
+      : '#FFAA33';
+  const [color, setColor] = useState(getColor());
+
+  const isDone = progress.totalProgressDuration === totalDurationSec;
+
   useEffect(() => {
-    findDoneVideos();
-  }, [, exercise]);
+    calculateNavPayloads();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        navigation.navigate('ExercisesUser');
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+
+      return () => backHandler.remove();
+    }, []),
+  );
 
   const isValidUrl = (url?: string): boolean => {
     if (!url) return false;
 
-    // ✅ http veya https ile başlamalı
     const pattern = /^(https?:\/\/)[\w\-]+(\.[\w\-]+)+[/#?]?.*$/;
     if (!pattern.test(url)) return false;
 
-    // ✅ videoya uygun uzantı kontrolü (mp4, mov vs.)
     const validExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm'];
     const lower = url.toLowerCase();
     return validExtensions.some(ext => lower.includes(ext));
@@ -87,17 +107,16 @@ const ExerciseDetail = () => {
     let isActive = true;
 
     const loadSequentialExerciseVideosThumbs = async () => {
-      if (!exercise?.videos?.length) return;
+      if (!progress.exerciseDTO.videos.length) return;
 
       await new Promise<void>(res =>
         InteractionManager.runAfterInteractions(() => res()),
       );
 
-      for (const v of exercise.videos) {
+      for (const v of progress.exerciseDTO.videos) {
         if (!isActive) break;
         if (thumbs[v.videoUrl]) continue;
 
-        // ✅ URL geçerli mi kontrol et
         console.log(v.videoUrl, isValidUrl(v.videoUrl));
         if (!v.videoUrl || !isValidUrl(v.videoUrl)) {
           console.warn(`[thumb] Geçersiz URL atlandı: ${v.videoUrl}`);
@@ -124,7 +143,6 @@ const ExerciseDetail = () => {
             `[thumb] Thumbnail oluşturulamadı: ${v.videoUrl}`,
             (err as Error).message,
           );
-          // ✅ hata olsa bile fallback ata, crash olmaz
           setThumbs(prev => ({
             ...prev,
             [v.videoUrl]: 'fallback_thumbnail_path',
@@ -138,13 +156,17 @@ const ExerciseDetail = () => {
     return () => {
       isActive = false;
     };
-  }, [exercise, exercise!.videos]);
+  }, [progress.exerciseDTO, progress.exerciseDTO.videos]);
 
-  // egzersizin toplam video uzunluğuna göre oranla bir progress ratio oluşturulup kaydedilsin
+  useEffect(() => {
+    setColor(getColor());
+  }, [progress.totalProgressDuration]);
 
-  // progressExercise isteği useEffect falan filan ile, kaç saniyede bir olmalı?
-
-  // egzersize devam etme ve başlama mantığı
+  const ToMinuteSeconds = (duration: number) => {
+    const seconds = duration % 60;
+    const minutes = Math.floor(duration / 60);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
 
   return (
     <>
@@ -165,20 +187,6 @@ const ExerciseDetail = () => {
         </Text>
       </View>
 
-      {exerciseFinished && (
-        <>
-          <TouchableOpacity
-            className="bg-blue-600 rounded-2xl px-10 py-3 mt-6 shadow-lg self-center w-1/2"
-            // onPress={() => navigation.navigate('NextExercise')}
-          >
-            <Text className="text-white text-base">Sonraki Egzersiz</Text>
-          </TouchableOpacity>
-          <Text className="text-green-600 font-bold">
-            Tebrikler, bu egzersizi tamamladın! 🎉
-          </Text>
-        </>
-      )}
-
       <View
         className="mt-3 mx-3 px-5 pt-3 pb-5 rounded-2xl flex flex-col items-center justify-center"
         style={{backgroundColor: colors.background.primary}}>
@@ -188,13 +196,13 @@ const ExerciseDetail = () => {
           Mevcut İlerleme
         </Text>
         <Text className="text-xl font-rubik-medium mt-1" style={{color: color}}>
-          {/* %{progressRatio} */}
-          {`%${progressRatio}`}
+          {/* %{progress.totalProgressDuration} */}
+          {`%${calcPercent()}`}
         </Text>
-        {progressRatio === 100 && (
+        {progress.totalProgressDuration === totalDurationSec && (
           <Text className="text-xl font-rubik-medium" style={{color: color}}>
-            {/* %{progressRatio} */}
-            Egzersiz Tamamlandı!
+            {/* %{progress.totalProgressDuration} */}
+            Egzersiz Tamamlandı
           </Text>
         )}
         <View
@@ -203,7 +211,7 @@ const ExerciseDetail = () => {
           <View
             className="h-1 rounded-full"
             style={{
-              width: `${progressRatio}%`,
+              width: `${calcPercent()}%`,
               backgroundColor: color,
             }}
           />
@@ -219,9 +227,9 @@ const ExerciseDetail = () => {
         <View
           className="px-5 pt-3 rounded-2xl mb-3"
           style={{backgroundColor: colors.background.primary}}>
-          {exercise?.videos &&
-            exercise.videos.length > 0 &&
-            exercise.videos.map((video, index) => (
+          {progress.exerciseDTO?.videos &&
+            progress.exerciseDTO.videos.length > 0 &&
+            progress.exerciseDTO.videos.map((video, index) => (
               <View
                 key={index}
                 className="w-full rounded-xl p-3 mb-3"
@@ -289,14 +297,19 @@ const ExerciseDetail = () => {
                   />
                 )}
 
-                <View className="flex flex-row justify-between items-center px-5 mt-3">
+                <View className="flex flex-col justify-between items-center px-5 mt-3">
                   <Text
                     className="font-rubik text-center text-lg"
                     style={{color: colors.text.primary}}>
-                    {video.name}
+                    {'Video ismi: ' +
+                      video.name.trim() +
+                      '\nSüre: ' +
+                      ToMinuteSeconds(video.durationSeconds)}
                   </Text>
-                  {doneVideos.includes(index) && (
-                    <View className="flex flex-row items-center justify-center">
+                  {progress.videoProgress.some(
+                    item => video.id === item.videoId && item.isCompeleted,
+                  ) && (
+                    <View className="flex flex-row items-center justify-center mt-1">
                       <Text
                         className="font-rubik text-sm mr-2"
                         style={{color: '#3BC476'}}>
@@ -324,8 +337,10 @@ const ExerciseDetail = () => {
             className="flex flex-row justify-center items-center mt-3"
             onPress={() =>
               navigation.navigate('Exercise', {
-                exercise: exercise,
-                progressRatio: progressRatio,
+                exercise: progress.exerciseDTO,
+                progress: progress,
+                videoIdx: videoIdxToShow,
+                startSec: startAt,
               })
             }>
             <Text
@@ -334,7 +349,11 @@ const ExerciseDetail = () => {
                 backgroundColor: color,
                 color: colors.background.primary,
               }}>
-              {progressRatio < 100 && progressRatio > 0 ? 'Devam et' : 'Başla'}
+              {progress.totalProgressDuration &&
+              progress.totalProgressDuration < totalDurationSec &&
+              progress.totalProgressDuration > 0
+                ? 'Devam et'
+                : 'Başla'}
             </Text>
           </TouchableOpacity>
         </View>

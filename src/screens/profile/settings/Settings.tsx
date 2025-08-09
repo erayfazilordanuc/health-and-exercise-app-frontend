@@ -101,88 +101,90 @@ const Settings = () => {
   };
 
   return (
-    <View
-      className="h-full pb-32 pt-3"
-      style={{
-        backgroundColor: colors.background.secondary,
-      }}>
-      <View className="flex flex-col px-3">
-        <View
-          className="py-1"
-          style={{
-            borderRadius: 17,
-            backgroundColor: colors.background.primary,
-          }}>
-          <SettingsItem
-            icon={icons.preferences}
-            title={'Tercihler'}
-            onPress={() => {
-              navigation.navigate('Preferences');
-            }}
-          />
-          {/* <SettingsItem
+    <>
+      <View
+        className="h-full pb-32 pt-3"
+        style={{
+          backgroundColor: colors.background.secondary,
+        }}>
+        <View className="flex flex-col px-3">
+          <View
+            className="py-1"
+            style={{
+              borderRadius: 17,
+              backgroundColor: colors.background.primary,
+            }}>
+            <SettingsItem
+              icon={icons.preferences}
+              title={'Tercihler'}
+              onPress={() => {
+                navigation.navigate('Preferences');
+              }}
+            />
+            {/* <SettingsItem
             icon={icons.bell}
             title={'Bildirimler'}
             onPress={() => {
               navigation.navigate('Notifications');
             }}
           /> */}
-          <SettingsItem
-            icon={icons.permission}
-            title={'İzinler'}
-            onPress={() => {
-              NotificationSetting.open();
-              // if (Platform.OS === 'ios') {
-              //   Linking.openURL('app-settings:');
-              // } else {
-              //   Linking.openSettings();
-              // }
-              // navigation.navigate('Permissions');
-            }}
-          />
-          {/* <SettingsItem
+            <SettingsItem
+              icon={icons.permission}
+              title={'İzinler'}
+              onPress={() => {
+                NotificationSetting.open();
+                // if (Platform.OS === 'ios') {
+                //   Linking.openURL('app-settings:');
+                // } else {
+                //   Linking.openSettings();
+                // }
+                // navigation.navigate('Permissions');
+              }}
+            />
+            {/* <SettingsItem
             icon={icons.shield}
             title={'Güvenlik'}
             onPress={() => {
               navigation.navigate('Security');
             }}
           /> */}
-          <SettingsItem
-            icon={icons.development}
-            title={'Geliştirme'}
-            onPress={() => {
-              navigation.navigate('Development');
-            }}
-          />
-          {/* <SettingsItem
+            <SettingsItem
+              icon={icons.development}
+              title={'Geliştirme'}
+              onPress={() => {
+                navigation.navigate('Development');
+              }}
+            />
+            {/* <SettingsItem
             icon={icons.language}
             title={'Dil'}
             onPress={() => {
               navigation.navigate('Language');
             }}
           /> */}
+          </View>
+        </View>
+        <View className="mt-3 px-3" style={{borderRadius: 17}}>
+          <SettingsItem
+            icon={icons.logout}
+            title="Çıkış Yap"
+            textColor="#fd5353"
+            showArrow={false}
+            onPress={async () => {
+              setIsAlertVisible(true);
+            }}
+          />
         </View>
       </View>
-      <View className="mt-3 px-3" style={{borderRadius: 17}}>
-        <CustomAlert
-          message={'Çıkmak istediğinize emin misiniz?'}
-          visible={isAlertVisible}
-          onYes={handleLogout}
-          onCancel={() => {
-            setIsAlertVisible(false);
-          }}
-        />
-        <SettingsItem
-          icon={icons.logout}
-          title="Çıkış Yap"
-          textColor="#fd5353"
-          showArrow={false}
-          onPress={async () => {
-            setIsAlertVisible(true);
-          }}
-        />
-      </View>
-    </View>
+      <CustomAlert
+        message={'Çıkmak istediğinize emin misiniz?'}
+        visible={isAlertVisible}
+        onYes={handleLogout}
+        onCancel={() => {
+          setIsAlertVisible(false);
+        }}
+      />
+    </>
   );
 };
 

@@ -114,7 +114,7 @@ type FCMToken = {
 
 type ExerciseVideoDTO = {
   id?: number;
-  name?: string;
+  name: string;
   videoUrl: string;
   durationSeconds: number;
   exerciseId: number;
@@ -168,13 +168,42 @@ type UpdateExerciseDTO = {
   point: number;
 };
 
-type ExerciseProgressDTO = {
+type LocalExerciseProgressDTO = {
   id: number;
   userId: number;
   exerciseDTO: ExerciseDTO;
-  progressRatio: number;
+  progressDuration: number;
   createdAt: Date;
   updatedA?: Date | null;
+};
+
+type ExerciseProgressDTO = {
+  userId: number;
+  exerciseDTO: ExerciseDTO;
+  videoProgress: ExerciseVideoProgressDTO[];
+  totalProgressDuration: number;
+};
+
+type ExerciseProgressNavPayload = {
+  userId: number;
+  exerciseDTO: ExerciseDTO;
+  videoProgress: ExerciseVideoProgressDTO[];
+  totalProgressDuration: number;
+};
+
+type ExerciseVideoProgressDTO = {
+  id?: number;
+  progressDuration: number;
+  isCompeleted: boolean;
+  videoId: number;
+  exerciseId: number;
+  userId: number;
+  createdAt: Date;
+  updatedA?: Date | null;
+};
+
+type ExerciseVideoProgressRequestDTO = {
+  seconds: number;
 };
 
 type AchievementDTO = {

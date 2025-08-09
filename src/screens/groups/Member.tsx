@@ -40,6 +40,12 @@ import {
   isRoomExistBySenderAndReceiver,
 } from '../../api/message/messageService';
 import {useUser} from '../../contexts/UserContext';
+import CustomWeeklyProgressCalendar from '../../components/CustomWeeklyProgressCalendar';
+import {
+  getTodaysProgressByUserId,
+  getWeeklyActiveDaysProgressByUserId,
+} from '../../api/exercise/progressService';
+import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -48,12 +54,37 @@ const Member = () => {
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const {colors} = useTheme();
   const insets = useSafeAreaInsets();
+  const [loading, setLoading] = useState(true);
   const {user: admin} = useUser();
   const [member, setMember] = useState<User | null>();
   const [symptoms, setSymptoms] = useState<Symptoms | null>();
   const [refreshing, setRefreshing] = useState(false);
   const [lastMessage, setLastMessage] = useState<Message | null>();
   const [isExerciseModalVisible, setIsExerciseModalVisible] = useState(false);
+  const [todayExerciseProgress, setTodaysExerciseProgress] =
+    useState<ExerciseProgressDTO | null>();
+  const [weeklyExerciseProgress, setWeeklyEersiseProgress] = useState<
+    ExerciseProgressDTO[]
+  >([]);
+
+  const fetchProgress = async () => {
+    setLoading(true);
+    try {
+      if (!member) return;
+      const todayExerciseProgress: ExerciseProgressDTO =
+        await getTodaysProgressByUserId(member.id!);
+      console.log('today', todayExerciseProgress);
+      if (todayExerciseProgress)
+        setTodaysExerciseProgress(todayExerciseProgress);
+      const weeklyExerciseProgress: ExerciseProgressDTO[] =
+        await getWeeklyActiveDaysProgressByUserId(member.id!);
+      console.log('weekly', weeklyExerciseProgress);
+      setWeeklyEersiseProgress(weeklyExerciseProgress);
+    } catch (error) {
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const calculateAge = () => {
     if (member && member.birthDate) {
@@ -156,8 +187,9 @@ const Member = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchSymptoms();
       fetchLastMessage(member!);
+      fetchProgress();
+      fetchSymptoms();
     }, [member]),
   );
 
@@ -184,7 +216,7 @@ const Member = () => {
   }, [memberId]);
 
   return (
-    <View style={{paddingTop: insets.top * 1.3}}className="flex-1 px-3">
+    <View style={{paddingTop: insets.top * 1.3}} className="flex-1 px-3">
       <View
         className="pb-3"
         style={{
@@ -204,6 +236,7 @@ const Member = () => {
           </Text>
         </Text>
       </View>
+
       <ScrollView
         contentContainerClassName="pb-20"
         refreshControl={
@@ -211,6 +244,8 @@ const Member = () => {
             refreshing={refreshing}
             onRefresh={() => {
               setRefreshing(true);
+              fetchLastMessage(member!);
+              fetchProgress();
               fetchSymptoms();
               setRefreshing(false);
             }}
@@ -220,8 +255,9 @@ const Member = () => {
           />
         }>
         <View
-          className="flex flex-column justify-start rounded-2xl pl-5 p-3 mb-3" // border
+          className="flex flex-column justify-start pl-5 p-3 mb-3" // border
           style={{
+            borderRadius: 17,
             backgroundColor: colors.background.primary,
             borderColor: colors.primary[300],
           }}>
@@ -295,16 +331,18 @@ const Member = () => {
             </Text>
           </View>
         </View>
+
         <View
-          className="flex flex-column justify-start rounded-2xl pl-5 p-3 mb-3"
+          className="flex flex-column justify-start pl-5 p-3 mb-3"
           style={{
+            borderRadius: 17,
             backgroundColor: colors.background.primary,
           }}>
           <View className="flex flex-row justify-between">
             {lastMessage && !lastMessage.message.startsWith('dailyStatus') && (
               <Text
-                className="font-rubik text-2xl mt-1"
-                style={{color: colors.primary[200]}}>
+                className="font-rubik mt-1"
+                style={{fontSize: 20, color: colors.primary[200]}}>
                 En Son Mesaj
               </Text>
             )}
@@ -357,46 +395,48 @@ const Member = () => {
             </Text>
           )}
         </View>
+
         <View
-          className="flex flex-column justify-center rounded-2xl pl-5 p-3 mb-3"
+          className="flex flex-col px-3 py-3 mb-3"
           style={{
+            borderRadius: 17,
             backgroundColor: colors.background.primary,
           }}>
           <View className="flex flex-row items-center justify-between">
             <Text
-              className="font-rubik text-2xl"
-              style={{color: colors.text.primary}}>
-              Başarımlar ve İlerleme
+              className="font-rubik mb-2 ml-2"
+              style={{fontSize: 19, color: colors.text.primary}}>
+              Egzersiz Takvimi
             </Text>
-            <TouchableOpacity
-              className="py-2 px-10 bg-blue-500 rounded-2xl flex items-center justify-center"
-              onPress={() => {
-                navigation.navigate('Progress', {member: member});
+            <Text
+              className="font-rubik mb-3 rounded-2xl py-2 px-3"
+              style={{
+                fontSize: 17,
+                color: colors.text.primary,
+                backgroundColor: colors.background.secondary,
               }}>
-              {/* <Text
-              className="font-rubik text-lg"
-              style={{color: colors.background.secondary}}>
-              Detay
-            </Text> */}
-              <Image
-                source={icons.arrow}
-                className="size-4"
-                tintColor={colors.background.secondary}
-              />
-            </TouchableOpacity>
+              {new Date().toLocaleDateString('tr-TR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+            </Text>
           </View>
-          {/* <Text
-          className="font-rubik text-lg mt-3"
-          style={{color: colors.text.primary}}>
-          Hastanın tamamladığı ve devam eden egzersizlerini inceleyin.
-        </Text> */}
+          <CustomWeeklyProgressCalendar
+            todayProgress={todayExerciseProgress}
+            weeklyProgress={weeklyExerciseProgress}
+          />
         </View>
+
         <View
-          className="flex flex-col pb-2 pt-1 px-5 rounded-2xl"
-          style={{backgroundColor: colors.background.primary}}>
+          className="flex flex-col pb-2 pt-1 px-5"
+          style={{
+            borderRadius: 17,
+            backgroundColor: colors.background.primary,
+          }}>
           <Text
-            className="font-rubik text-2xl pt-2 pb-3"
-            style={{color: colors.text.primary}}>
+            className="font-rubik pt-2"
+            style={{fontSize: 20, color: colors.text.primary}}>
             Bulgular
           </Text>
           <ProgressBar

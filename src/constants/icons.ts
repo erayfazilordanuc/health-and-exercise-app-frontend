@@ -104,6 +104,10 @@ import exercise_screen from '../assets/icons/exercise_screen.png';
 import patient from '../assets/icons/patient.png';
 import system_default_theme from '../assets/icons/system_default_theme.png';
 import check from '../assets/icons/check.png';
+import play from '../assets/icons/play.png';
+import pause from '../assets/icons/pause.png';
+import rewind_5 from '../assets/icons/rewind_5.png';
+import forward_5 from '../assets/icons/forward_5.png';
 
 export default {
   google,
@@ -212,4 +216,8 @@ export default {
   patient,
   system_default_theme,
   check,
+  play,
+  pause,
+  rewind_5,
+  forward_5,
 };

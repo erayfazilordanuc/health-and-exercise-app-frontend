@@ -2,11 +2,14 @@ import apiClient from '../axios/axios';
 
 export const progressExercise = async (
   exerciseId: number,
-  progressRatio: number,
+  videoId: number,
+  progressDuration: number,
 ) => {
   try {
+    const body: ExerciseVideoProgressRequestDTO = {seconds: progressDuration};
     const response = await apiClient.put(
-      `/exercises/${exerciseId}/progress/${progressRatio}`,
+      `/exercises/${exerciseId}/video/${videoId}/progress`,
+      body,
     );
     console.log('progress exercise', response);
 
