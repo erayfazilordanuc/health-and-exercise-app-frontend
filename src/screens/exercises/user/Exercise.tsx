@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
-import {View, BackHandler, StatusBar} from 'react-native';
+import {View, BackHandler, StatusBar, Dimensions} from 'react-native';
 import {
   RouteProp,
   useFocusEffect,
@@ -20,13 +20,14 @@ import CustomVideoPlayer from '../../../components/CustomVideoPlayer';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../../../themes/ThemeProvider';
 import {useUser} from '../../../contexts/UserContext';
-import {progressExercise} from '../../../api/exercise/progressService';
+import {progressExerciseVideo} from '../../../api/exercise/progressService';
 
 type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'Exercise'>;
 
 const Exercise = () => {
   const insets = useSafeAreaInsets();
-  const {colors} = useTheme();
+  const {colors, theme} = useTheme();
+  const {width} = Dimensions.get('screen');
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const {params} = useRoute<ExerciseRouteProp>();
   const {user} = useUser();
@@ -47,16 +48,29 @@ const Exercise = () => {
   const lastSyncRef = useRef(0);
   const [paused, setPaused] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const onBufferChange = (b: boolean) => setIsBuffering(b);
 
   const [isBackActionAlertVisible, setIsBackActionAlertVisible] =
     useState(false);
 
+  const [isFinishModalVisbible, setIsFinishModalVisbible] = useState(false);
+
   const defaultTabBarStyle = {
-    backgroundColor: colors.background.primary,
-    borderColor: colors.background.primary,
+    marginHorizontal: width / 24,
     position: 'absolute',
-    minHeight: 60,
-    borderTopWidth: 0,
+    bottom: 15,
+    left: 15,
+    right: 15,
+    height: 56,
+    borderRadius: 40,
+    borderWidth: 1,
+    borderTopWidth: 0.9,
+    borderColor:
+      theme.name === 'Light' ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
+    backgroundColor:
+      theme.name === 'Light' ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
+    elevation: 0,
   };
 
   useLayoutEffect(() => {
@@ -86,26 +100,33 @@ const Exercise = () => {
     }, []),
   );
 
-  useEffect(() => {
-    Orientation.unlockAllOrientations();
-    StatusBar.setHidden(true, 'fade');
-    return () => {
-      Orientation.lockToPortrait();
-      StatusBar.setHidden(false, 'fade');
-    };
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      // ekrana girince
+      Orientation.unlockAllOrientations();
+      StatusBar.setHidden(true, 'fade');
+
+      return () => {
+        // ekrandan çıkarken (blur) her zaman geri aç
+        Orientation.lockToPortrait();
+        StatusBar.setHidden(false, 'fade');
+      };
+    }, []),
+  );
 
   const syncExerciseProgress = useCallback(
-    async (time: number, doneDuration?: number) => {
+    async (time: number, videoIdx?: number) => {
       if (
         paused ||
         (progress.videoProgress[videoIdxToShow] &&
           time < progress.videoProgress[videoIdxToShow].progressDuration)
       )
         return;
-      const done = doneDuration ?? doneVideosDuration;
 
-      if (doneDuration) setDoneVideosDuration(done);
+      const done = videoIdx
+        ? exercise.videos[videoIdxToShow].durationSeconds + doneVideosDuration
+        : doneVideosDuration;
+      if (videoIdx) setDoneVideosDuration(done);
 
       const newTotalProgressDuration = done + time;
       console.log('newTotal', newTotalProgressDuration);
@@ -115,56 +136,43 @@ const Exercise = () => {
         const netInfo = await NetInfo.fetch();
         console.log('time', time);
         if (netInfo.isConnected) {
-          const response = await progressExercise(
+          const response = await progressExerciseVideo(
             exercise.id!,
-            exercise.videos[videoIdx].id!,
+            exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id!,
             time,
           );
 
           setUpdatedProgress(prev => {
-            // Eğer dizi boş veya undefined/null ise:
-            if (!prev.videoProgress || prev.videoProgress.length === 0) {
-              console.log('1', {
-                ...prev,
-                totalProgressDuration: newTotalProgressDuration,
-                videoProgress: [
-                  {
-                    ...response, // burada gerekli alanları doldur
-                    durationSeconds: time,
-                  },
-                ],
-              });
+            const existingIndex = prev.videoProgress?.findIndex(
+              vp =>
+                vp.videoId ===
+                exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id,
+            );
+
+            const newVideoProgressItem: ExerciseVideoProgressDTO = {
+              ...response,
+            };
+
+            if (existingIndex === -1 || existingIndex === undefined) {
+              // İlgili videoId yoksa → ekle
               return {
                 ...prev,
                 totalProgressDuration: newTotalProgressDuration,
                 videoProgress: [
-                  {
-                    ...response, // burada gerekli alanları doldur
-                    durationSeconds: time,
-                  },
+                  ...(prev.videoProgress || []),
+                  newVideoProgressItem,
                 ],
               };
+            } else {
+              // Varsa → güncelle
+              return {
+                ...prev,
+                totalProgressDuration: newTotalProgressDuration,
+                videoProgress: prev.videoProgress.map((item, idx) =>
+                  idx === existingIndex ? newVideoProgressItem : item,
+                ),
+              };
             }
-
-            // Doluysa map ile ilgili index'i güncelle
-            console.log('2', {
-              ...prev,
-              totalProgressDuration: newTotalProgressDuration,
-              videoProgress: prev.videoProgress.map((item, idx) =>
-                idx === videoIdxToShow
-                  ? {...item, durationSeconds: time}
-                  : item,
-              ),
-            });
-            return {
-              ...prev,
-              totalProgressDuration: newTotalProgressDuration,
-              videoProgress: prev.videoProgress.map((item, idx) =>
-                idx === videoIdxToShow
-                  ? {...item, durationSeconds: time}
-                  : item,
-              ),
-            };
           });
         }
 
@@ -181,15 +189,16 @@ const Exercise = () => {
   const handleDurationProgress = (time: number) => {
     if (time > 0.5) {
       setCurrentTime(time);
-
       const now = Date.now();
-      if (now - lastSyncRef.current >= 3000) {
-        // 3 saniye geçtiyse
+      if (!isBuffering && now - lastSyncRef.current >= 3000) {
+        // 🤚 buffering iken sync yapma
         lastSyncRef.current = now;
         syncExerciseProgress(time);
       }
     }
   };
+
+  console.log('updated', updatedProgress);
 
   // useEffect(() => {
   //   const interval = setInterval(syncExerciseProgress, 5000);
@@ -205,26 +214,53 @@ const Exercise = () => {
         startAt={startSecSync}
         isLast={videoIdxToShow === exercise.videos.length - 1}
         pausedParent={paused}
+        onBufferChange={setIsBuffering}
         onDurationProgress={handleDurationProgress}
         onVideoEnd={() => {
+          console.log('eeeeend');
+          syncExerciseProgress(exercise.videos[videoIdxToShow].durationSeconds);
           if (videoIdxToShow + 1 < exercise.videos.length) {
-            console.log(videoIdxToShow);
+            syncExerciseProgress(1, videoIdxToShow + 1);
+            setStartSecSync(0);
             setDoneVideosDuration(
               prev => prev + exercise.videos[videoIdxToShow].durationSeconds,
             );
             setVideoIdxToShow(prev => prev + 1);
-            setStartSecSync(0);
-            syncExerciseProgress(
-              1,
-              doneVideosDuration +
-                exercise.videos[videoIdxToShow].durationSeconds,
-            );
           } else {
+            const parentNav = navigation.getParent();
+            parentNav?.setOptions({
+              tabBarStyle: defaultTabBarStyle,
+            });
             navigation.navigate('ExercisesUser');
           }
         }}
         onExit={() => setIsBackActionAlertVisible(true)}
       />
+
+      {/* <CustomAlert
+        message="Tebrikler! Egzersizi Tamamladınız"
+        // message="Egzersizi sonlandırmak istediğinizden emin misiniz?"
+        // secondMessage="Merak etmeyin, şu ana kadarki ilerlemeniz otomatik olarak kaydedilecek."
+        visible={isFinishModalVisbible}
+        onYes={() => {
+          const parentNav = navigation.getParent();
+          parentNav?.setOptions({
+            tabBarStyle: defaultTabBarStyle,
+          });
+
+          setPaused(true);
+
+          navigation.navigate('ExerciseDetail', {
+            progress: updatedProgress,
+            totalDurationSec: exercise.videos.reduce(
+              (sum, v) => sum + (v.durationSeconds ?? 0),
+              0,
+            ),
+          });
+          setIsBackActionAlertVisible(false);
+        }}
+        onCancel={() => setIsBackActionAlertVisible(false)}
+      /> */}
 
       <CustomAlert
         message="Egzersizi terk etmek istediğinize emin misiniz?"

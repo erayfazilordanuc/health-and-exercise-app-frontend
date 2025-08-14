@@ -48,11 +48,12 @@ import RNFS from 'react-native-fs';
 import RNBlob from 'react-native-blob-util';
 import {activate, deactivate} from '@thehale/react-native-keep-awake';
 import {getVideoDuration} from 'react-native-video-duration';
+import LinearGradient from 'react-native-linear-gradient';
 
 type EditExerciseRouteProp = RouteProp<ExercisesStackParamList, 'EditExercise'>;
 const EditExercise = () => {
   const insets = useSafeAreaInsets();
-  const {colors} = useTheme();
+  const {colors, theme} = useTheme();
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
 
@@ -511,10 +512,16 @@ const EditExercise = () => {
 
   return (
     <>
+      <LinearGradient
+        colors={colors.gradient}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute inset-0"
+      />
       <View
         className="flex flex-row"
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary,
           justifyContent: 'space-between',
           alignItems: 'flex-start',
           paddingTop: insets.top * 1.3,
@@ -522,7 +529,10 @@ const EditExercise = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color: colors.text.primary,
+            color:
+              theme.name === 'Light'
+                ? colors.text.primary
+                : colors.background.secondary,
             fontSize: 24,
           }}>
           Egzersiz Düzenle
@@ -553,7 +563,7 @@ const EditExercise = () => {
 
       <ScrollView
         className="px-3 mt-3"
-        style={{backgroundColor: colors.background.secondary}}
+        style={{backgroundColor: 'transparent' /*colors.background.secondary*/}}
         contentContainerStyle={{
           paddingBottom: keyboardHeight ? 120 : 60,
           flexGrow: 1,

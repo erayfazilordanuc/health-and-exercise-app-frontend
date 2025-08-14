@@ -13,9 +13,10 @@ import {useTheme} from '../../../themes/ThemeProvider';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {getAllExercises} from '../../../api/exercise/exerciseService';
+import LinearGradient from 'react-native-linear-gradient';
 
 const ExercisesAdmin = () => {
-  const {colors} = useTheme();
+  const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const [exercises, setExercises] = useState<ExerciseDTO[]>([]);
@@ -41,9 +42,15 @@ const ExercisesAdmin = () => {
 
   return (
     <>
+      <LinearGradient
+        colors={colors.gradient}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute inset-0"
+      />
       <View
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary,
           justifyContent: 'center',
           alignItems: 'flex-start',
           paddingTop: insets.top * 1.3,
@@ -51,7 +58,10 @@ const ExercisesAdmin = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color: colors.text.primary,
+            color:
+              theme.name === 'Light'
+                ? colors.text.primary
+                : colors.background.secondary,
             fontSize: 24,
           }}>
           Egzersizler
@@ -61,7 +71,7 @@ const ExercisesAdmin = () => {
         <ScrollView
           className="h-full mb-16 px-3 mt-3"
           style={{
-            backgroundColor: colors.background.secondary,
+            backgroundColor: 'transparent', // colors.background.secondary,
           }}>
           {exercises && exercises.length > 0 ? (
             exercises.map(exercise => (
@@ -125,14 +135,14 @@ const ExercisesAdmin = () => {
             flex: 1,
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: colors.background.secondary,
+            backgroundColor: 'transparent',
             paddingTop: insets.top,
           }}
           className="mb-24">
           <ActivityIndicator size="large" color={colors.primary[200]} />
         </View>
       )}
-      <View className="absolute bottom-20 right-3 items-center">
+      <View className="absolute bottom-24 right-3 items-center">
         <TouchableOpacity
           className="w-36 h-16 bg-blue-500 rounded-3xl flex items-center justify-center"
           onPress={() => {

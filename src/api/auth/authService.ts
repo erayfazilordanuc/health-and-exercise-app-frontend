@@ -17,6 +17,14 @@ export const login = async (credentials: LoginRequestPayload) => {
   await AsyncStorage.setItem('user', JSON.stringify(user));
   await AsyncStorage.setItem('accessToken', accessToken);
   await AsyncStorage.setItem('refreshToken', refreshToken);
+  const newUserTheme: UserTheme = {
+    theme: themes.primary.light,
+    isDefault: true,
+  };
+  await AsyncStorage.setItem(
+    `${user.username}-main-theme`,
+    JSON.stringify(newUserTheme),
+  );
   return response;
 };
 
@@ -34,7 +42,7 @@ export const register = async (credentials: RegisterRequestPayload) => {
     isDefault: true,
   };
   await AsyncStorage.setItem(
-    `${user!.username}-main-theme`,
+    `${user.username}-main-theme`,
     JSON.stringify(newUserTheme),
   );
   return response;
@@ -50,6 +58,14 @@ export const loginAdmin = async (credentials: AdminLoginRequestPayload) => {
     await AsyncStorage.setItem('user', JSON.stringify(user));
     await AsyncStorage.setItem('accessToken', accessToken);
     await AsyncStorage.setItem('refreshToken', refreshToken);
+    const newUserTheme: UserTheme = {
+      theme: themes.primary.light,
+      isDefault: true,
+    };
+    await AsyncStorage.setItem(
+      `${user.username}-main-theme`,
+      JSON.stringify(newUserTheme),
+    );
   }
   return response;
 };
@@ -71,7 +87,7 @@ export const registerAdmin = async (
       isDefault: true,
     };
     await AsyncStorage.setItem(
-      `${user!.username}-main-theme`,
+      `${user.username}-main-theme`,
       JSON.stringify(newUserTheme),
     );
   }
@@ -103,7 +119,7 @@ export const logout = async () => {
   const userData = await AsyncStorage.getItem('user');
   if (userData) {
     const user: User = JSON.parse(userData);
-    await AsyncStorage.removeItem(`${user!.username}-main-theme`);
+    await AsyncStorage.removeItem(`${user.username}-main-theme`);
 
     const deleteFcmTokenPayload = {userId: user.id, platform: Platform.OS};
     try {

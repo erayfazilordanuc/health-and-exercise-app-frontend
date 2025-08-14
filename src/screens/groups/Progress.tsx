@@ -36,7 +36,7 @@ const Progress = () => {
   const insets = useSafeAreaInsets();
   const {params} = useRoute<ProgressRouteProp>();
   const {member} = params;
-  const {colors} = useTheme();
+  const {colors, theme} = useTheme();
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation<GroupsScreenNavigationProp>();
 
@@ -79,7 +79,10 @@ const Progress = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color: colors.text.primary,
+            color:
+              theme.name === 'Light'
+                ? colors.text.primary
+                : colors.background.secondary,
             fontSize: 24,
           }}>
           Egzersiz İlerlemesi
@@ -110,7 +113,7 @@ const Progress = () => {
 
                 {!loading && (
                   <View className="flex flex-row justify-between items-center mt-3 mb-2">
-                    {!todaysExerciseProgress?.progressRatio ? (
+                    {!todaysExerciseProgress?.totalProgressDuration ? (
                       <TouchableOpacity
                         className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
                         style={{
@@ -122,7 +125,8 @@ const Progress = () => {
                         </Text>
                         <Image source={icons.gymnastic_1} className="size-16" />
                       </TouchableOpacity>
-                    ) : todaysExerciseProgress?.progressRatio === 100 ? (
+                    ) : todaysExerciseProgress?.totalProgressDuration ===
+                      100 ? (
                       <TouchableOpacity
                         className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
                         style={{
@@ -147,16 +151,16 @@ const Progress = () => {
                         <Image source={icons.gymnastic_1} className="size-16" />
                       </TouchableOpacity>
                     )}
-                    {todaysExerciseProgress?.progressRatio &&
-                      todaysExerciseProgress.progressRatio > 0 && (
+                    {todaysExerciseProgress?.totalProgressDuration &&
+                      todaysExerciseProgress.totalProgressDuration > 0 && (
                         <View className="flex justify-center items-center mr-5">
                           <AnimatedCircularProgress
                             size={100}
                             width={8}
                             rotation={0}
                             fill={
-                              todaysExerciseProgress?.progressRatio &&
-                              todaysExerciseProgress.progressRatio
+                              todaysExerciseProgress?.totalProgressDuration &&
+                              todaysExerciseProgress.totalProgressDuration
                             }
                             tintColor={colors.primary[300]}
                             onAnimationComplete={() =>
@@ -169,7 +173,9 @@ const Progress = () => {
                                 style={{
                                   color: colors.text.primary,
                                 }}>
-                                %{todaysExerciseProgress?.progressRatio ?? 0}
+                                %
+                                {todaysExerciseProgress?.totalProgressDuration ??
+                                  0}
                               </Text>
                             )}
                           </AnimatedCircularProgress>
@@ -221,9 +227,9 @@ const Progress = () => {
               })}
             </Text>
           </View>
-          <CustomWeeklyProgressCalendar
+          {/* <CustomWeeklyProgressCalendar
             weeklyProgress={weeklyExerciseProgress}
-          />
+          /> */}
         </View>
       </View>
     </>

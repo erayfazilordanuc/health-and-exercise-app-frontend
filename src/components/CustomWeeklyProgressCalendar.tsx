@@ -63,7 +63,7 @@ const CustomWeeklyProgressCalendar = ({
           <View className="flex flex-row items-center space-x-2 mb-1 mr-1">
             <View
               className="p-2 rounded-full mr-1"
-              style={{backgroundColor: '#16d750'}}
+              style={{backgroundColor: '#14E077'}}
             />
             <Text
               className="text-xs font-rubik"
@@ -124,8 +124,8 @@ const CustomWeeklyProgressCalendar = ({
           let bgColor = colors.background.secondary;
 
           if (isActive) {
-            if (todayProgressPercent === 100) {
-              bgColor = '#16d750';
+            if (weeklyProgressPercents[index] === 100) {
+              bgColor = '#14E077';
             } else if (isToday) {
               bgColor = '#4f9cff';
             } else if (!isFuture) {

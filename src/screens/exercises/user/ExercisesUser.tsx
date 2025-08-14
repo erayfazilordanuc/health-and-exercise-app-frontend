@@ -10,8 +10,9 @@ import {
   Modal,
   ToastAndroid,
   ActivityIndicator,
+  ImageBackground,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../../../themes/ThemeProvider';
 import icons from '../../../constants/icons';
@@ -22,16 +23,20 @@ import dayjs from 'dayjs';
 import {
   getTodaysProgress,
   getWeeklyActiveDaysProgress,
-  progressExercise,
+  progressExerciseVideo,
 } from '../../../api/exercise/progressService';
 import CustomWeeklyProgressCalendar from '../../../components/CustomWeeklyProgressCalendar';
 import {
+  calcPercent,
   getExerciseById,
   getTodayExerciseByPosition,
 } from '../../../api/exercise/exerciseService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../../../contexts/UserContext';
 import {jsonGetAll} from '@react-native-firebase/app';
+import {BlurView} from '@react-native-community/blur';
+import LinearGradient from 'react-native-linear-gradient';
+import NetInfo from '@react-native-community/netinfo';
 
 const {height, width} = Dimensions.get('window');
 
@@ -73,50 +78,130 @@ const ExercisesUser = () => {
     }, []),
   );
 
+  // const fetchProgress = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const todayExerciseProgress: ExerciseProgressDTO =
+  //       await getTodaysProgress();
+
+  //     const localTodayExerciseProgressJson = await AsyncStorage.getItem(
+  //       `exerciseProgress_${new Date().toISOString().slice(0, 10)}`,
+  //     );
+
+  //     console.log('today', todayExerciseProgress);
+  //     console.log('local', localTodayExerciseProgressJson);
+
+  //     let localTodayExerciseProgress: ExerciseProgressDTO | null = null;
+  //     if (localTodayExerciseProgressJson)
+  //       localTodayExerciseProgress = JSON.parse(localTodayExerciseProgressJson);
+
+  //     if (
+  //       (!todayExerciseProgress && localTodayExerciseProgress) ||
+  //       (localTodayExerciseProgress &&
+  //         localTodayExerciseProgress.totalProgressDuration >
+  //           todayExerciseProgress.totalProgressDuration)
+  //     ) {
+  //       setTodayExerciseProgress(localTodayExerciseProgress);
+
+  //       for (const videoProgress of localTodayExerciseProgress.videoProgress) {
+  //         await progressExerciseVideo(
+  //           localTodayExerciseProgress.exerciseDTO.id!,
+  //           videoProgress.videoId,
+  //           videoProgress.progressDuration,
+  //         );
+  //       }
+  //     } else if (todayExerciseProgress) {
+  //       await AsyncStorage.setItem(
+  //         `exerciseProgress_${new Date().toISOString().slice(0, 10)}`,
+  //         JSON.stringify(todayExerciseProgress),
+  //       );
+
+  //       setTodayExerciseProgress(todayExerciseProgress);
+  //     }
+
+  //     const weeklyExerciseProgress: ExerciseProgressDTO[] =
+  //       await getWeeklyActiveDaysProgress();
+  //     setWeeklyExersiseProgress(weeklyExerciseProgress);
+  //   } catch (error) {
+  //     console.log(error);
+  //     ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
+  //   } finally {
+  //     setLoading(false);
+  //     if (!initialized) setInitialized(true);
+  //   }
+  // };
+
   const fetchProgress = async () => {
     setLoading(true);
     try {
-      const todayExerciseProgress: ExerciseProgressDTO =
-        await getTodaysProgress();
+      const net = await NetInfo.fetch();
+      const isOnline = !!net.isConnected;
 
-      const localTodayExerciseProgressJson = await AsyncStorage.getItem(
-        `exerciseProgress_${new Date().toISOString().slice(0, 10)}`,
-      );
-
-      console.log('today', todayExerciseProgress);
-      console.log('local', localTodayExerciseProgressJson);
-
-      let localTodayExerciseProgress: ExerciseProgressDTO | null = null;
-      if (localTodayExerciseProgressJson)
-        localTodayExerciseProgress = JSON.parse(localTodayExerciseProgressJson);
-
-      if (
-        (!todayExerciseProgress && localTodayExerciseProgress) ||
-        (localTodayExerciseProgress &&
-          localTodayExerciseProgress.totalProgressDuration >
-            todayExerciseProgress.totalProgressDuration)
-      ) {
-        setTodayExerciseProgress(localTodayExerciseProgress);
-
-        for (const videoProgress of localTodayExerciseProgress.videoProgress) {
-          await progressExercise(
-            localTodayExerciseProgress.exerciseDTO.id!,
-            videoProgress.videoId,
-            videoProgress.progressDuration,
-          );
-        }
-      } else if (todayExerciseProgress) {
-        await AsyncStorage.setItem(
-          `exerciseProgress_${new Date().toISOString().slice(0, 10)}`,
-          JSON.stringify(todayExerciseProgress),
-        );
-
-        setTodayExerciseProgress(todayExerciseProgress);
+      // 1) Local’i güvenli oku
+      const key = `exerciseProgress_${new Date().toISOString().slice(0, 10)}`;
+      let localToday: ExerciseProgressDTO | null = null;
+      try {
+        const json = await AsyncStorage.getItem(key);
+        if (json) localToday = JSON.parse(json);
+      } catch (_) {
+        // bozuk kayıt varsa temizle
+        await AsyncStorage.removeItem(key);
+        localToday = null;
       }
 
-      const weeklyExerciseProgress: ExerciseProgressDTO[] =
-        await getWeeklyActiveDaysProgress();
-      setWeeklyExersiseProgress(weeklyExerciseProgress);
+      // 2) Online ise server’dan çek; offline ise sadece local’i kullan
+      let serverToday: ExerciseProgressDTO | null = null;
+      let weekly: ExerciseProgressDTO[] = [];
+
+      if (isOnline) {
+        try {
+          serverToday = await getTodaysProgress();
+          console.log('serverToday', serverToday);
+        } catch (_) {
+          /* yut, aşağıda kıyas var */
+        }
+
+        try {
+          weekly = await getWeeklyActiveDaysProgress();
+          console.log('weekly', weekly);
+        } catch (_) {
+          weekly = [];
+        }
+      }
+
+      // 3) Bugün için local-server kıyası (defansif)
+      const pickSafe = (p?: ExerciseProgressDTO | null) =>
+        p && p.exerciseDTO && Array.isArray(p.exerciseDTO.videos) ? p : null;
+
+      const safeLocal = pickSafe(localToday);
+      const safeServer = pickSafe(serverToday);
+
+      let chosen: ExerciseProgressDTO | null = null;
+      if (!safeServer && safeLocal) {
+        chosen = safeLocal;
+      } else if (safeServer && !safeLocal) {
+        chosen = safeServer;
+      } else if (safeServer && safeLocal) {
+        chosen =
+          (safeLocal.totalProgressDuration ?? 0) >
+          (safeServer.totalProgressDuration ?? 0)
+            ? safeLocal
+            : safeServer;
+      } else {
+        chosen = null;
+      }
+
+      if (chosen) {
+        setTodayExerciseProgress(chosen);
+        // server’dan geldiyse local’e yaz
+        if (isOnline && chosen === safeServer) {
+          await AsyncStorage.setItem(key, JSON.stringify(chosen));
+        }
+      } else {
+        setTodayExerciseProgress(null);
+      }
+
+      setWeeklyExersiseProgress(weekly);
     } catch (error) {
       console.log(error);
       ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
@@ -172,22 +257,42 @@ const ExercisesUser = () => {
     }
   };
 
-  const calcPercent = (p?: ExerciseProgressDTO | null): number => {
-    if (!p) return 0;
-    const total = p.exerciseDTO.videos.reduce(
-      (sum, v) => sum + (v.durationSeconds ?? 0),
-      0,
-    );
-    return total === 0
-      ? 0
-      : Math.round((p.totalProgressDuration / total) * 100);
+  const defaultTabBarStyle = {
+    marginHorizontal: width / 24,
+    position: 'absolute',
+    bottom: 15,
+    left: 15,
+    right: 15,
+    height: 56,
+    borderRadius: 40,
+    borderWidth: 1,
+    borderTopWidth: 0.9,
+    borderColor:
+      theme.name === 'Light' ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
+    backgroundColor:
+      theme.name === 'Light' ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
+    elevation: 0,
   };
 
+  useLayoutEffect(() => {
+    const parentNav = navigation.getParent();
+    return () =>
+      parentNav?.setOptions({
+        tabBarStyle: defaultTabBarStyle,
+      });
+  }, [navigation]);
+
   return (
-    <>
+    <View className="flex-1">
+      <LinearGradient
+        colors={colors.gradient} // istediğin renkler
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute inset-0"
+      />
       <View
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary,
           justifyContent: 'center',
           alignItems: 'flex-start',
           paddingTop: insets.top * 1.3,
@@ -195,7 +300,8 @@ const ExercisesUser = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color: colors.text.primary,
+            color:
+              theme.name === 'Light' ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Egzersizler
@@ -204,7 +310,7 @@ const ExercisesUser = () => {
       <View
         className="h-full pb-32 px-3 mt-3"
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary,
         }}>
         <View
           className="px-5 pt-3 pb-2 mb-3"
@@ -302,7 +408,9 @@ const ExercisesUser = () => {
                       )}
                   </View>
                 ) : (
-                  <View className="flex flex-row justify-center items-center pt-10 pb-12">
+                  <View
+                    className="flex flex-row justify-center items-center pt-10 pb-12"
+                    style={{backgroundColor: 'transparent'}}>
                     <ActivityIndicator
                       size="small"
                       color={colors.primary[300]}
@@ -442,7 +550,7 @@ const ExercisesUser = () => {
           </View>
         </View>
       )}
-    </>
+    </View>
   );
 };
 

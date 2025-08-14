@@ -3,8 +3,9 @@ import {View, Text, TouchableOpacity, Dimensions} from 'react-native';
 import {useTheme} from '../themes/ThemeProvider';
 
 interface CustomAlertProps {
-  message: string;
+  message?: string;
   secondMessage?: string;
+  children?: React.ReactNode;
   visible: boolean;
   onYes: () => void;
   onCancel: () => void;
@@ -16,6 +17,7 @@ interface CustomAlertProps {
 const CustomAlert = ({
   message,
   secondMessage,
+  children,
   visible,
   onYes,
   onCancel,
@@ -58,15 +60,17 @@ const CustomAlert = ({
           elevation: 5,
           alignItems: 'center',
         }}>
-        <Text
-          style={{
-            color: colors.text.primary,
-            fontSize: 18,
-            textAlign: 'center',
-            fontWeight: '600',
-          }}>
-          {message || 'Emin misiniz?'}
-        </Text>
+        {children || (
+          <Text
+            style={{
+              color: colors.text.primary,
+              fontSize: 18,
+              textAlign: 'center',
+              fontWeight: '600',
+            }}>
+            {message || 'Emin misiniz?'}
+          </Text>
+        )}
 
         {secondMessage && (
           <Text

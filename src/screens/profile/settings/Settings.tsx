@@ -90,7 +90,6 @@ const Settings = () => {
   }, []);
 
   const handleLogout = async () => {
-    await logout();
     appNavigation.navigate('Launch');
     appNavigation.dispatch(
       CommonActions.reset({
@@ -98,6 +97,7 @@ const Settings = () => {
         routes: [{name: 'Launch'}],
       }),
     );
+    await logout();
   };
 
   return (

@@ -1,6 +1,6 @@
 import apiClient from '../axios/axios';
 
-export const progressExercise = async (
+export const progressExerciseVideo = async (
   exerciseId: number,
   videoId: number,
   progressDuration: number,

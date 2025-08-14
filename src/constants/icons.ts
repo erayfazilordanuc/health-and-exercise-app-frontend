@@ -108,6 +108,9 @@ import play from '../assets/icons/play.png';
 import pause from '../assets/icons/pause.png';
 import rewind_5 from '../assets/icons/rewind_5.png';
 import forward_5 from '../assets/icons/forward_5.png';
+import health_sync from '../assets/icons/health_sync.png';
+import next from '../assets/icons/next.png';
+import check_1 from '../assets/icons/check_1.png';
 
 export default {
   google,
@@ -220,4 +223,7 @@ export default {
   pause,
   rewind_5,
   forward_5,
+  health_sync,
+  next,
+  check_1,
 };

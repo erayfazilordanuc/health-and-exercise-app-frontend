@@ -30,9 +30,10 @@ import {useUser} from '../../contexts/UserContext';
 import CustomAlertSingleton, {
   CustomAlertSingletonHandle,
 } from '../../components/CustomAlertSingleton';
+import LinearGradient from 'react-native-linear-gradient';
 
 const Groups = () => {
-  const {colors} = useTheme();
+  const {colors,theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const [loading, setLoading] = useState(false);
@@ -202,9 +203,15 @@ const Groups = () => {
 
   return (
     <>
+      <LinearGradient
+        colors={colors.gradient} // istediğin renkler
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute inset-0"
+      />
       <View
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary,
           justifyContent: 'center',
           alignItems: 'flex-start',
           paddingTop: insets.top * 1.3,
@@ -212,7 +219,7 @@ const Groups = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color: colors.text.primary,
+            color: theme.name === "Light" ? "#333333" : colors.background.primary,
             fontSize: 24,
           }}>
           Gruplar
@@ -221,7 +228,7 @@ const Groups = () => {
       <View
         className="h-full pb-32 px-5 pt-3"
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary,
           // paddingTop: insets.top / 2,
         }}>
         {groupJoinRequest && (

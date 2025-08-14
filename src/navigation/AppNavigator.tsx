@@ -76,7 +76,7 @@ export default function AppNavigator() {
     ...DefaultTheme,
     colors: {
       ...DefaultTheme.colors,
-      background: colors.background.secondary, // flick yok!
+      background: colors.background.secondary,
       card: colors.background.primary,
       text: colors.text.primary,
       border: colors.background.primary,

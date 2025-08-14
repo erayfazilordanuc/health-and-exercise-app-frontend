@@ -52,7 +52,7 @@ const Member = () => {
   const {params} = useRoute<MemberRouteProp>();
   const {memberId, fromNotification} = params;
   const navigation = useNavigation<GroupsScreenNavigationProp>();
-  const {colors} = useTheme();
+  const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const {user: admin} = useUser();
@@ -76,6 +76,7 @@ const Member = () => {
       console.log('today', todayExerciseProgress);
       if (todayExerciseProgress)
         setTodaysExerciseProgress(todayExerciseProgress);
+
       const weeklyExerciseProgress: ExerciseProgressDTO[] =
         await getWeeklyActiveDaysProgressByUserId(member.id!);
       console.log('weekly', weeklyExerciseProgress);
@@ -121,8 +122,8 @@ const Member = () => {
         isUpdated = true;
       }
       if (
-        newSymptoms.sleepHours &&
-        symptoms.sleepHours !== newSymptoms.sleepHours
+        newSymptoms.sleepMinutes &&
+        symptoms.sleepMinutes !== newSymptoms.sleepMinutes
       ) {
         isUpdated = true;
       }
@@ -215,30 +216,52 @@ const Member = () => {
     };
   }, [memberId]);
 
+  const calcPercent = (p?: ExerciseProgressDTO | null): number => {
+    if (!p) return 0;
+    const total = p.exerciseDTO.videos.reduce(
+      (sum, v) => sum + (v.durationSeconds ?? 0),
+      0,
+    );
+    return total === 0
+      ? 0
+      : Math.round((p.totalProgressDuration / total) * 100);
+  };
+
   return (
     <View style={{paddingTop: insets.top * 1.3}} className="flex-1 px-3">
+      <LinearGradient
+        colors={colors.gradient}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute inset-0"
+      />
+
       <View
         className="pb-3"
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary,
           justifyContent: 'center',
           alignItems: 'flex-start',
         }}>
         <Text
           className="pl-4 font-rubik-semibold pr-7"
           style={{
-            color: colors.text.primary,
+            color:
+              theme.name === 'Light' ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Hasta:{'  '}
-          <Text style={{color: colors.primary[200]}}>
+          <Text
+            style={{
+              color: theme.name === 'Light' ? colors.primary[200] : '#0077FF',
+            }}>
             {member && member.fullName ? member.fullName : ''}
           </Text>
         </Text>
       </View>
 
       <ScrollView
-        contentContainerClassName="pb-20"
+        contentContainerClassName="pb-24"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -333,7 +356,7 @@ const Member = () => {
         </View>
 
         <View
-          className="flex flex-column justify-start pl-5 p-3 mb-3"
+          className="flex flex-column justify-start pl-5 p-3 pb-4 mb-3"
           style={{
             borderRadius: 17,
             backgroundColor: colors.background.primary,
@@ -397,7 +420,7 @@ const Member = () => {
         </View>
 
         <View
-          className="flex flex-col px-3 py-3 mb-3"
+          className="flex flex-col px-3 py-3 mb-3 pb-4"
           style={{
             borderRadius: 17,
             backgroundColor: colors.background.primary,
@@ -423,8 +446,8 @@ const Member = () => {
             </Text>
           </View>
           <CustomWeeklyProgressCalendar
-            todayProgress={todayExerciseProgress}
-            weeklyProgress={weeklyExerciseProgress}
+            todayProgressPercent={calcPercent(todayExerciseProgress)}
+            weeklyProgressPercents={weeklyExerciseProgress.map(calcPercent)}
           />
         </View>
 
@@ -443,23 +466,26 @@ const Member = () => {
             value={93}
             label="Genel sağlık"
             iconSource={icons.better_health}
-            color="#41D16F"></ProgressBar>
+            color="#41D16F"
+          />
           {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
           <ProgressBar
             value={symptoms?.pulse}
             label="Nabız"
             iconSource={icons.pulse}
-            color="#FF3F3F"></ProgressBar>
+            color="#FF3F3F"
+          />
           <ProgressBar
             value={96}
             label="O2 Seviyesi"
             iconSource={icons.o2sat}
-            color="#2CA4FF"></ProgressBar>
+            color="#2CA4FF"
+          />
           {/* <ProgressBar
             value={83}
             label="Tansiyon"
             iconSource={icons.blood_pressure}
-            color="#FF9900"></ProgressBar> FDEF22*/}
+            color="#FF9900"/> FDEF22*/}
           <ProgressBar
             value={
               symptoms?.activeCaloriesBurned
@@ -468,17 +494,20 @@ const Member = () => {
             }
             label="Yakılan Kalori"
             iconSource={icons.kcal}
-            color="#FF9900"></ProgressBar>
+            color="#FF9900"
+          />
           <ProgressBar
             value={symptoms?.steps}
             label="Adım"
             iconSource={icons.man_walking}
-            color="#FDEF22"></ProgressBar>
+            color="#FDEF22"
+          />
           <ProgressBar
-            value={symptoms?.sleepHours ? symptoms?.sleepHours : undefined}
+            value={symptoms?.sleepMinutes ? symptoms?.sleepMinutes : undefined}
             label="Uyku"
             iconSource={icons.sleep}
-            color="#FDEF22"></ProgressBar>
+            color="#FDEF22"
+          />
           {symptoms &&
             symptoms.sleepSessions &&
             symptoms.sleepSessions.length > 0 &&

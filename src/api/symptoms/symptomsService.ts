@@ -39,7 +39,7 @@ export const upsertSymptomsByDate = async (date: Date, symptoms: Symptoms) => {
     pulse: symptoms.pulse,
     steps: symptoms.steps,
     activeCaloriesBurned: symptoms.activeCaloriesBurned!,
-    sleepHours: symptoms.sleepHours!,
+    sleepMinutes: symptoms.sleepMinutes!,
     sleepSessions: symptoms.sleepSessions,
   };
   console.log('upsertDTO', upsertDTO);

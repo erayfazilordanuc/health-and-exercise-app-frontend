@@ -545,7 +545,7 @@ const WordGame = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color: colors.text.primary,
+            color: theme.name === "Light" ? colors.text.primary : colors.background.secondary,
             fontSize: 24,
           }}>
           Kelime Egzersizi

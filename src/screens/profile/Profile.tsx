@@ -26,6 +26,9 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
 import LanPortScanner, {LSScanConfig} from 'react-native-lan-port-scanner';
 import {
+  checkGoogleFitInstalled,
+  checkHealthConnectInstalled,
+  computeHealthScore,
   getAggregatedActiveCaloriesBurned,
   getAggregatedSteps,
   getAllSleepSessions,
@@ -34,13 +37,11 @@ import {
   getTotalCaloriesBurned,
   getTotalSleepMinutes,
   initializeHealthConnect,
-  isHealthConnectInstalled,
   saveSymptoms,
 } from '../../api/health/healthConnectService';
 import {RecordType} from 'react-native-health-connect';
 import {Picker} from '@react-native-picker/picker';
 import ProgressBar from '../../components/ProgressBar';
-import HeartRateSimpleChart from './chart';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
 import {getUser} from '../../api/user/userService';
@@ -67,7 +68,7 @@ const Profile = () => {
   const insets = useSafeAreaInsets();
   // const [user, setUser] = useState<User | null>(null);
   const {user} = useUser();
-  const {colors} = useTheme();
+  const {colors, theme} = useTheme();
 
   const [networkInfo, setNetworkInfo] = useState();
 
@@ -75,14 +76,15 @@ const Profile = () => {
 
   const [logs, setLogs] = useState('');
 
+  const [healthScore, setHealthScore] = useState(0);
   const [heartRate, setHeartRate] = useState(0);
   const [steps, setSteps] = useState(0);
   const [totalCaloriesBurned, setTotalCaloriesBurned] = useState(0);
   const [activeCaloriesBurned, setActiveCaloriesBurned] = useState(0);
   const [totalSleepMinutes, setTotalSleepMinutes] = useState(0);
-  const [sleepSessions, setSleepSessions] = useState<String[]>([]);
   const alertRef = useRef<CustomAlertSingletonHandle>(null);
-  const [isHealthConnectInsatlled, setIsHealthConnectInsatlled] =
+  const [isGoogleFitInstalled, setIsGoogleFitInstalled] = useState(false);
+  const [isHealthConnectInstalled, setIsHealthConnectInstalled] =
     useState(false);
   const [isHealthConnectReady, setIsHealthConnectReady] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
@@ -109,17 +111,6 @@ const Profile = () => {
     return initial;
   });
   const [showTimePicker, setShowTimePicker] = useState(false);
-
-  const today = new Date();
-
-  const onTimeChange = (event: any, selectedTime?: Date) => {
-    setShowTimePicker(false);
-    if (selectedTime) {
-      setTime(selectedTime);
-    }
-  };
-
-  // TO DO There should be a favorite color pair to use it on username
 
   const calculateAge = () => {
     if (user && user.birthDate) {
@@ -169,6 +160,14 @@ const Profile = () => {
         merged.steps = syncedSymptoms.steps;
       }
 
+      if (merged.totalCaloriesBurned) {
+        if (totalCaloriesBurned !== merged.totalCaloriesBurned)
+          setTotalCaloriesBurned(merged.totalCaloriesBurned);
+      } else if (syncedSymptoms && syncedSymptoms.totalCaloriesBurned) {
+        setTotalCaloriesBurned(syncedSymptoms.totalCaloriesBurned);
+        merged.totalCaloriesBurned = syncedSymptoms.totalCaloriesBurned;
+      }
+
       if (merged.activeCaloriesBurned) {
         if (activeCaloriesBurned !== merged.activeCaloriesBurned)
           setActiveCaloriesBurned(merged.activeCaloriesBurned);
@@ -177,23 +176,12 @@ const Profile = () => {
         merged.activeCaloriesBurned = syncedSymptoms.activeCaloriesBurned;
       }
 
-      if (merged.sleepHours) {
-        if (totalSleepMinutes !== merged.sleepHours)
-          setTotalSleepMinutes(merged.sleepHours);
-      } else if (syncedSymptoms && syncedSymptoms.sleepHours) {
-        setTotalSleepMinutes(syncedSymptoms.sleepHours);
-        merged.sleepHours = syncedSymptoms.sleepHours;
-      }
-
-      if (merged.sleepSessions)
-        setSleepSessions(merged.sleepSessions.reverse());
-      else if (
-        syncedSymptoms &&
-        syncedSymptoms.sleepSessions &&
-        syncedSymptoms.sleepSessions.length > 0
-      ) {
-        setSleepSessions(syncedSymptoms.sleepSessions);
-        merged.sleepSessions = syncedSymptoms.sleepSessions;
+      if (merged.sleepMinutes) {
+        if (totalSleepMinutes !== merged.sleepMinutes)
+          setTotalSleepMinutes(merged.sleepMinutes);
+      } else if (syncedSymptoms && syncedSymptoms.sleepMinutes) {
+        setTotalSleepMinutes(syncedSymptoms.sleepMinutes);
+        merged.sleepMinutes = syncedSymptoms.sleepMinutes;
       }
 
       setSymptoms(merged);
@@ -215,27 +203,41 @@ const Profile = () => {
           setSymptoms(localSymptoms);
         }
 
-        const healthConnectInstalled = await isHealthConnectInstalled();
-        if (!healthConnectInstalled) return;
+        const syncedSymptoms: Symptoms = await getSymptomsByDate(new Date());
+        console.log('synced', syncedSymptoms);
+        if (syncedSymptoms) {
+          setHeartRate(syncedSymptoms.pulse ?? 0);
+          setSteps(syncedSymptoms.steps ?? 0);
+          setTotalCaloriesBurned(syncedSymptoms.totalCaloriesBurned ?? 0);
+          setActiveCaloriesBurned(syncedSymptoms.activeCaloriesBurned ?? 0);
+          setTotalSleepMinutes(syncedSymptoms.sleepMinutes ?? 0);
+          saveSymptoms(syncedSymptoms);
+        }
 
-        setIsHealthConnectInsatlled(true);
+        // const healthConnectInstalled = await checkHealthConnectInstalled();
+        // if (!healthConnectInstalled) return;
+        // setIsHealthConnectInstalled(healthConnectInstalled);
 
-        const isHealthConnectReady = await initializeHealthConnect();
-        if (!isHealthConnectReady) return;
+        // // Bu gerekmeyebilir de
+        // const googleFitInstalled = await checkGoogleFitInstalled();
+        // if (!googleFitInstalled) return;
+        // setIsGoogleFitInstalled(googleFitInstalled);
 
-        setIsHealthConnectReady(true);
+        // const isHealthConnectReady = await initializeHealthConnect();
+        // if (!isHealthConnectReady) return;
+        // setIsHealthConnectReady(isHealthConnectReady);
 
-        const healthConnectSymptoms = await getSymptoms();
-        setHealthConnectSymptoms(healthConnectSymptoms);
-
-        console.log(healthConnectSymptoms);
-
-        const syncedSymptoms = await getSymptomsByDate(new Date());
-        const combinedSymptoms = await combineAndSetSymptoms(
-          healthConnectSymptoms!,
-          syncedSymptoms,
-        );
-        if (combinedSymptoms) saveSymptoms(combinedSymptoms);
+        // console.log('nası');
+        // const healthConnectSymptoms = await getSymptoms();
+        // setHealthConnectSymptoms(healthConnectSymptoms);
+        // console.log(healthConnectSymptoms);
+        // console.log('synced', syncedSymptoms);
+        // const combinedSymptoms = await combineAndSetSymptoms(
+        //   healthConnectSymptoms!,
+        //   syncedSymptoms,
+        // );
+        // console.log('combined', combinedSymptoms);
+        // if (combinedSymptoms) saveSymptoms(combinedSymptoms);
       }
     } finally {
       setLoading(false); // ✅ her durumda çalışır
@@ -294,19 +296,54 @@ const Profile = () => {
     return bulgu ? `${bulgu.label} (${bulgu.unit})` : 'Bulgu';
   };
 
+  useEffect(() => {
+    const s = computeHealthScore({
+      heartRate: heartRate || undefined,
+      steps: steps || undefined,
+      activeCalories: activeCaloriesBurned || undefined,
+      sleepMinutes: totalSleepMinutes || undefined,
+    });
+    setHealthScore(s);
+  }, [heartRate, steps, activeCaloriesBurned, totalSleepMinutes]);
+
+  const checkEssentialAppsStatus = async () => {
+    const healthConnectInstalled = await checkHealthConnectInstalled();
+    if (!healthConnectInstalled) return;
+
+    setIsHealthConnectInstalled(true);
+
+    const googleFitInstalled = await checkGoogleFitInstalled();
+    if (!googleFitInstalled) return;
+
+    setIsGoogleFitInstalled(true);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      checkEssentialAppsStatus();
+    }, [isHealthConnectInstalled, isGoogleFitInstalled]),
+  );
+
   return (
     <>
+      <LinearGradient
+        colors={colors.gradient}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute inset-0"
+      />
       <View
         className="flex flex-row pt-14 pr-5"
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', //colors.background.secondary,
           justifyContent: 'space-between',
           paddingTop: insets.top * 1.3,
         }}>
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color: colors.text.primary,
+            color:
+              theme.name === 'Light' ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Profil {user?.role === 'ROLE_ADMIN' ? ' (Hemşire)' : ''}
@@ -319,20 +356,22 @@ const Profile = () => {
           <Image
             source={icons.settings}
             className="size-9"
-            tintColor={colors.text.primary}
+            tintColor={
+              theme.name === 'Light' ? '#333333' : colors.background.primary
+            }
           />
         </TouchableOpacity>
       </View>
       <View
         className="h-full px-3 pt-3"
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary,
         }}>
         {/* TO DO Eğer admin ise bulgu kısmı olmasın */}
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
-            paddingBottom: 175,
+            paddingBottom: 170,
             // paddingTop: insets.top / 2,
           }}
           showsVerticalScrollIndicator={false}
@@ -488,7 +527,9 @@ const Profile = () => {
                     style={{fontSize: 20, color: colors.text.primary}}>
                     Bulgular
                   </Text>
-                  {isHealthConnectReady ? (
+                  {/* {isHealthConnectInstalled &&
+                  isGoogleFitInstalled &&
+                  isHealthConnectReady ? (
                     <View
                       className="flex flex-row items-center"
                       style={{
@@ -497,8 +538,8 @@ const Profile = () => {
                       }}>
                       <Text style={{color: '#16d750'}}>Bağlı</Text>
                       <Image
-                        source={icons.wearable}
-                        className="ml-2 size-7"
+                        source={icons.health_sync}
+                        className="ml-2 size-6"
                         tintColor={'#16d750'}
                       />
                     </View>
@@ -522,7 +563,7 @@ const Profile = () => {
                         backgroundColor: colors.background.secondary,
                       }}
                       onPress={() => {
-                        if (!isHealthConnectInsatlled) {
+                        if (!isHealthConnectInstalled) {
                           setShowHCAlert(true);
                         } else if (!isHealthConnectReady) {
                           alertRef.current?.show({
@@ -548,15 +589,15 @@ const Profile = () => {
                         }
                       }}>
                       <Text style={{color: colors.text.primary}}>
-                        Saat ile bağla
+                        Senkronize et
                       </Text>
                       <Image
-                        source={icons.wearable}
-                        className="ml-2 size-7"
+                        source={icons.health_sync}
+                        className="ml-2 size-6"
                         tintColor={colors.text.primary}
                       />
                     </TouchableOpacity>
-                  )}
+                  )} */}
                 </View>
                 {loading ? (
                   <View className="flex flex-row justify-center items-center my-48">
@@ -567,13 +608,15 @@ const Profile = () => {
                   </View>
                 ) : (
                   <>
-                    <ProgressBar
-                      value={93}
-                      label="Genel Sağlık"
-                      iconSource={icons.better_health}
-                      color="#41D16F"
-                      updateDisabled={true}
-                    />
+                    {healthScore && (
+                      <ProgressBar
+                        value={healthScore}
+                        label="Genel Sağlık"
+                        iconSource={icons.better_health}
+                        color="#41D16F"
+                        updateDisabled={true}
+                      />
+                    )}
                     {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
                     <ProgressBar
                       value={heartRate}
@@ -590,14 +633,23 @@ const Profile = () => {
                           : false
                       }
                     />
-                    <ProgressBar
+                    {/* <ProgressBar
                       // Düzenlenecek
                       value={96}
                       label="O2 Seviyesi"
                       iconSource={icons.o2sat}
                       color="#2CA4FF"
+                      setAddModalFunction={setAddModalFunction}
+                      setSymptom={setHeartRate}
+                      onAdd={setIsAddModalVisible}
+                      updateDisabled={
+                        healthConnectSymptoms?.pulse &&
+                        healthConnectSymptoms?.pulse > 0
+                          ? true
+                          : false
+                      }
                       // updateDisabled={symptoms?.o2Level && healthConnectSymptoms?.o2Level > 0 ? true : false}
-                    />
+                    /> */}
                     {/* <ProgressBar
                   value={83}
                   label="Tansiyon"
@@ -605,21 +657,41 @@ const Profile = () => {
                   color="#FF9900"
                 /> */}
                     {/* FDEF22 */}
-                    <ProgressBar
-                      value={activeCaloriesBurned}
-                      label="Yakılan Kalori"
-                      iconSource={icons.kcal}
-                      color="#FF9900"
-                      setAddModalFunction={setAddModalFunction}
-                      setSymptom={setActiveCaloriesBurned}
-                      onAdd={setIsAddModalVisible}
-                      updateDisabled={
-                        healthConnectSymptoms?.activeCaloriesBurned &&
-                        healthConnectSymptoms?.activeCaloriesBurned > 0
-                          ? true
-                          : false
-                      }
-                    />
+                    {totalCaloriesBurned > 0 ? (
+                      <ProgressBar
+                        value={totalCaloriesBurned}
+                        label="Yakılan Kalori"
+                        iconSource={icons.kcal}
+                        color="#FF9900"
+                        setAddModalFunction={setAddModalFunction}
+                        setSymptom={setTotalCaloriesBurned}
+                        onAdd={setIsAddModalVisible}
+                        updateDisabled={
+                          healthConnectSymptoms?.totalCaloriesBurned &&
+                          healthConnectSymptoms?.totalCaloriesBurned > 0
+                            ? true
+                            : false
+                        }
+                      />
+                    ) : (
+                      activeCaloriesBurned > 0 && (
+                        <ProgressBar
+                          value={activeCaloriesBurned}
+                          label="Yakılan Kalori"
+                          iconSource={icons.kcal}
+                          color="#FF9900"
+                          setAddModalFunction={setAddModalFunction}
+                          setSymptom={setActiveCaloriesBurned}
+                          onAdd={setIsAddModalVisible}
+                          updateDisabled={
+                            healthConnectSymptoms?.activeCaloriesBurned &&
+                            healthConnectSymptoms?.activeCaloriesBurned > 0
+                              ? true
+                              : false
+                          }
+                        />
+                      )
+                    )}
                     <ProgressBar
                       value={steps}
                       label="Adım"
@@ -644,31 +716,12 @@ const Profile = () => {
                       setSymptom={setTotalSleepMinutes}
                       onAdd={setShowTimePicker}
                       updateDisabled={
-                        healthConnectSymptoms?.sleepHours &&
-                        healthConnectSymptoms?.sleepHours > 0
+                        healthConnectSymptoms?.sleepMinutes &&
+                        healthConnectSymptoms?.sleepMinutes > 0
                           ? true
                           : false
                       }
                     />
-                    {sleepSessions.length > 0 && sleepSessions[0] !== '' && (
-                      <>
-                        <Text
-                          className="font-rubik text-xl pt-4"
-                          style={{color: colors.text.primary}}>
-                          Uyku Devreleri
-                        </Text>
-
-                        {sleepSessions.map((session, index) => (
-                          <View key={index} className="mt-3">
-                            <Text
-                              className="font-rubik text-lg"
-                              style={{color: colors.text.primary}}>
-                              💤 Başlangıç: {session}
-                            </Text>
-                          </View>
-                        ))}
-                      </>
-                    )}
                   </>
                 )}
                 {/* Uyku da minimalist bir grafik ile gösterilsin */}
@@ -685,36 +738,12 @@ const Profile = () => {
             </>
           )}
 
-          <CustomAlertSingleton ref={alertRef} />
-
-          <CustomAlert
-            message={
-              'Devam etmek için Health Connect uygulamasını indirmeniz gerekiyor.\nŞimdi Play Store’a gitmek istiyor musunuz?'
-            }
-            secondMessage="İndirme işlemi tamamlandıktan sonra bu uygulamaya yeniden giriş yapmanız gerekecek."
-            isPositive={true}
-            visible={showHCAlert}
-            onYes={() => {
-              Linking.openURL(
-                'https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata',
-              ).catch(err =>
-                console.warn('Failed to open Health Connect page:', err),
-              );
-              setShowHCAlert(false);
-            }}
-            onYesText={`Play Store'a Git`}
-            onCancel={() => {
-              setShowHCAlert(false);
-            }}
-            onCancelText="Vazgeç"
-          />
-
           <Modal
             transparent={true}
             visible={isAddModalVisible}
             animationType="fade"
             onRequestClose={() => setIsAddModalVisible(false)}>
-            <View className="flex-1 justify-center items-center bg-black/50">
+            <View className="flex-1 justify-center items-center bg-black/25">
               <View
                 className="w-4/5 rounded-3xl p-5 py-6 items-center"
                 style={{backgroundColor: colors.background.primary}}>
@@ -807,7 +836,7 @@ const Profile = () => {
                               addModalFunction?.setSymptom ===
                               setTotalSleepMinutes
                             ) {
-                              updatedSymptoms.sleepHours = addModalValue;
+                              updatedSymptoms.sleepMinutes = addModalValue;
                             }
 
                             // Güncellenmiş veriyi kaydet
@@ -884,7 +913,7 @@ const Profile = () => {
               const updatedSymptoms: Symptoms = {
                 ...symptoms,
               };
-              updatedSymptoms.sleepHours = totalMinutes;
+              updatedSymptoms.sleepMinutes = totalMinutes;
               setTotalSleepMinutes(totalMinutes);
               setTime(selectedTime);
 
@@ -899,6 +928,87 @@ const Profile = () => {
           />
         </ScrollView>
       </View>
+
+      <CustomAlertSingleton ref={alertRef} />
+
+      <Modal
+        transparent={true}
+        visible={showHCAlert}
+        animationType="fade"
+        onRequestClose={() => setIsAddModalVisible(false)}>
+        <View className="flex-1 justify-center items-center bg-black/40">
+          <View
+            className="w-11/12 rounded-3xl p-5 py-5 items-center"
+            style={{backgroundColor: colors.background.primary}}>
+            <Text
+              style={{marginTop: -5, fontSize: 18, lineHeight: 26}}
+              className="text-center font-rubik">
+              Telefonunuzdaki sağlık verilerini HopeMove uygulamasından takip
+              etmek için{' '}
+              <Text className="font-rubik-medium">Health Connect</Text> ve
+              <Text className="font-rubik-medium"> Google Fit</Text>{' '}
+              uygulamalarını indirmeniz gerekiyor.{'\n'}Şimdi Play Store’a
+              gitmek istiyor musunuz?
+            </Text>
+            <View className="flex flex-col justify-between w-4/5 mt-3">
+              <TouchableOpacity
+                onPress={() => {
+                  setShowHCAlert(false);
+                }}
+                className="py-3 px-3 rounded-2xl items-center mx-1"
+                style={{backgroundColor: colors.background.secondary}}>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  Vazgeç
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="py-3 px-3 rounded-2xl items-center mx-1 my-2"
+                style={{
+                  backgroundColor: isHealthConnectInstalled
+                    ? '#16d750'
+                    : colors.primary[200],
+                }}
+                onPress={() => {
+                  Linking.openURL(
+                    'https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata',
+                  ).catch(err =>
+                    console.warn('Failed to open Health Connect page:', err),
+                  );
+                  // setShowHCAlert(false);
+                }}>
+                <Text className="font-rubik text-lg text-white">
+                  {isHealthConnectInstalled
+                    ? 'Health Connect indirildi'
+                    : `Health Connect'i indir`}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="py-3 px-3 rounded-2xl items-center mx-1"
+                style={{
+                  backgroundColor: isGoogleFitInstalled
+                    ? '#16d750'
+                    : colors.primary[200],
+                }}
+                onPress={() => {
+                  Linking.openURL(
+                    'https://play.google.com/store/apps/details?id=com.google.android.apps.fitness',
+                  ).catch(err =>
+                    console.warn('Failed to open Health Connect page:', err),
+                  );
+                  // setShowHCAlert(false);
+                }}>
+                <Text className="font-rubik text-lg text-white">
+                  {isGoogleFitInstalled
+                    ? 'Google Fit indirildi'
+                    : `Google Fit'i indir`}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };

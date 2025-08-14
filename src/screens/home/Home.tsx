@@ -51,6 +51,13 @@ import CustomAlertSingleton, {
   CustomAlertSingletonHandle,
 } from '../../components/CustomAlertSingleton';
 import NotificationSetting from 'react-native-open-notification';
+import {
+  checkHealthConnectInstalled,
+  computeHealthScore,
+  getSymptoms,
+  initializeHealthConnect,
+} from '../../api/health/healthConnectService';
+import {getSymptomsByDate} from '../../api/symptoms/symptomsService';
 // import {
 //   isExerciseReminderScheduled,
 //   registerExerciseReminder,
@@ -76,7 +83,7 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
-  const healthProgressPercent = 93;
+  const [healthScore, setHealthScore] = useState(0);
 
   const [todayExerciseProgress, setTodayExerciseProgress] =
     useState<ExerciseProgressDTO | null>();
@@ -135,6 +142,8 @@ const Home = () => {
     } else {
       setIsAdmin(true);
     }
+
+    await fetchAndCalculateHealthScore();
 
     if (!notificationPermissionsGranted) return;
 
@@ -303,7 +312,10 @@ const Home = () => {
         user.username,
       );
 
-      if (lastMessage.message.startsWith('dailyStatus')) {
+      if (
+        lastMessage.message &&
+        lastMessage.message.startsWith('dailyStatus')
+      ) {
         const match = lastMessage.message.match(/dailyStatus(\d+)/);
         const score = parseInt(match![1], 10);
 
@@ -326,11 +338,78 @@ const Home = () => {
     }, [admin]),
   );
 
+  const combineAndSetSymptoms = async (
+    symptoms: Symptoms,
+    syncedSymptoms?: Symptoms,
+  ) => {
+    if (symptoms) {
+      const merged: Symptoms = {...symptoms};
+      if (!merged.pulse && syncedSymptoms && syncedSymptoms.pulse) {
+        merged.pulse = syncedSymptoms.pulse;
+      }
+
+      if (!merged.steps && syncedSymptoms && syncedSymptoms.steps) {
+        merged.steps = syncedSymptoms.steps;
+      }
+
+      if (
+        !merged.activeCaloriesBurned &&
+        syncedSymptoms &&
+        syncedSymptoms.activeCaloriesBurned
+      ) {
+        merged.activeCaloriesBurned = syncedSymptoms.activeCaloriesBurned;
+      }
+
+      if (!merged.sleepMinutes && syncedSymptoms && syncedSymptoms.sleepMinutes) {
+        merged.sleepMinutes = syncedSymptoms.sleepMinutes;
+      }
+
+      return merged;
+    }
+  };
+
+  const fetchAndCalculateHealthScore = async () => {
+    setLoading(true);
+    try {
+      if (user && user.role === 'ROLE_USER') {
+        const healthConnectInstalled = await checkHealthConnectInstalled();
+        if (!healthConnectInstalled) return;
+
+        const isHealthConnectReady = await initializeHealthConnect();
+        if (!isHealthConnectReady) return;
+
+        const healthConnectSymptoms = await getSymptoms();
+        const syncedSymptoms = await getSymptomsByDate(new Date());
+        const combinedSymptoms = await combineAndSetSymptoms(
+          healthConnectSymptoms!,
+          syncedSymptoms,
+        );
+        if (combinedSymptoms) {
+          const s = computeHealthScore({
+            heartRate: combinedSymptoms.pulse || undefined,
+            steps: combinedSymptoms.steps || undefined,
+            activeCalories: combinedSymptoms.activeCaloriesBurned || undefined,
+            sleepMinutes: combinedSymptoms.sleepMinutes || undefined,
+          });
+          setHealthScore(s);
+        }
+      }
+    } finally {
+      setLoading(false); // ✅ her durumda çalışır
+    }
+  };
+
   return (
     <>
+      <LinearGradient
+        colors={colors.gradient} // istediğin renkler
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute inset-0"
+      />
       <View
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', //colors.background.secondary,
           justifyContent: 'center',
           alignItems: 'flex-start',
           paddingTop: insets.top * 1.3,
@@ -338,7 +417,8 @@ const Home = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color: colors.text.primary,
+            color:
+              theme.name === 'Light' ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Ana Ekran
@@ -348,7 +428,7 @@ const Home = () => {
         className="px-3 pt-3"
         style={{
           flex: 1,
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', //colors.background.secondary,
         }}>
         <ScrollView
           style={
@@ -484,7 +564,7 @@ const Home = () => {
                       size={80}
                       width={5}
                       rotation={0}
-                      fill={healthProgressPercent}
+                      fill={healthScore}
                       tintColor={'#3EDA87'}
                       onAnimationComplete={() =>
                         console.log('onAnimationComplete')
@@ -496,7 +576,7 @@ const Home = () => {
                           style={{
                             color: colors.text.primary,
                           }}>
-                          %{healthProgressPercent}
+                          %{healthScore}
                         </Text>
                       )}
                     </AnimatedCircularProgress>
@@ -532,8 +612,7 @@ const Home = () => {
                               style={{
                                 backgroundColor:
                                   todayExerciseProgress?.totalProgressDuration &&
-                                  todayExerciseProgress.totalProgressDuration ===
-                                    calcPercent(todayExerciseProgress)
+                                  calcPercent(todayExerciseProgress) === 100
                                     ? '#55CC88'
                                     : todayExerciseProgress?.totalProgressDuration &&
                                       todayExerciseProgress.totalProgressDuration >
@@ -548,8 +627,7 @@ const Home = () => {
                               }>
                               <Text className="text-xl font-rubik ml-1">
                                 {todayExerciseProgress?.totalProgressDuration &&
-                                todayExerciseProgress.totalProgressDuration ===
-                                  calcPercent(todayExerciseProgress)
+                                calcPercent(todayExerciseProgress) === 100
                                   ? 'Tamamlandı'
                                   : todayExerciseProgress?.totalProgressDuration &&
                                     todayExerciseProgress.totalProgressDuration >

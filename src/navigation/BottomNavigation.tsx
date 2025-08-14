@@ -1,8 +1,12 @@
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {
+  BottomTabBarButtonProps,
+  createBottomTabNavigator,
+} from '@react-navigation/bottom-tabs';
 import React, {useEffect, useRef} from 'react';
 import {
   ActivityIndicator,
   Animated,
+  Dimensions,
   Image,
   ImageSourcePropType,
   Pressable,
@@ -278,7 +282,7 @@ function GroupsStack() {
           flex: 1,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent',
         }}>
         <ActivityIndicator size="large" color={colors.primary[300]} />
       </View>
@@ -584,19 +588,25 @@ const TabIcon = ({
   focused,
   icon,
   title,
-  size,
 }: {
   focused: boolean;
   icon: ImageSourcePropType;
   title: string;
-  size?: string;
 }) => {
   const {theme, colors, setTheme} = useTheme();
 
   return (
     <View
       className="flex-1 flex flex-col items-center"
-      style={{marginTop: size ? (focused ? 2 : 4) : focused ? 2 : 4}}>
+      style={{
+        marginTop: focused
+          ? title === 'Ana Ekran'
+            ? -6
+            : -5
+          : title === 'Ana Ekran'
+          ? -5.5
+          : -4,
+      }}>
       <Image
         source={icon}
         tintColor={focused ? colors.primary[200] : colors.text.secondary}
@@ -604,18 +614,19 @@ const TabIcon = ({
         className={`${
           focused
             ? title == 'Ana Ekran'
-              ? 'size-9'
-              : 'size-8'
+              ? 'size-7'
+              : 'size-6'
             : title == 'Ana Ekran'
-            ? 'size-8'
-            : 'size-7'
+            ? 'size-7'
+            : 'size-6'
         }`}
       />
       <Text
         className={`${
-          focused ? 'font-rubik-medium' : 'font-rubik'
+          focused ? 'font-rubik' : 'font-rubik'
         } text-xs w-full text-center mt-1`}
         style={{
+          fontSize: 11,
           color: focused
             ? colors.primary[200] // 250
             : colors.text.secondary,
@@ -627,8 +638,74 @@ const TabIcon = ({
   );
 };
 
+export default function CustomTabButton({
+  accessibilityState,
+  onPress,
+  onLongPress,
+  style,
+  children,
+}: BottomTabBarButtonProps) {
+  const selected = !!accessibilityState?.selected;
+
+  // focusScale: seçiliyken 1.08, değilken 1.0
+  const focusScale = useRef(new Animated.Value(selected ? 1.08 : 1)).current;
+  useEffect(() => {
+    Animated.spring(focusScale, {
+      toValue: selected ? 1.08 : 1,
+      useNativeDriver: true,
+      friction: 8,
+      tension: 140,
+    }).start();
+  }, [selected]);
+
+  // pressScale: basılıyken 0.96, değilken 1.0
+  const pressScale = useRef(new Animated.Value(1)).current;
+
+  return (
+    <Animated.View
+      style={[
+        {flex: 1, alignItems: 'center', justifyContent: 'center'},
+        {
+          transform: [{scale: Animated.multiply(focusScale, pressScale)}],
+        },
+        style as any,
+      ]}>
+      <Pressable
+        // RIPPLE YOK: android_ripple vermiyoruz
+        onPress={onPress}
+        onLongPress={onLongPress}
+        onPressIn={() =>
+          Animated.spring(pressScale, {
+            toValue: 0.96,
+            useNativeDriver: true,
+            speed: 15,
+            bounciness: 0,
+          }).start()
+        }
+        onPressOut={() =>
+          Animated.spring(pressScale, {
+            toValue: 1,
+            useNativeDriver: true,
+            speed: 15,
+            bounciness: 0,
+          }).start()
+        }
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 28,
+        }}>
+        {children}
+      </Pressable>
+    </Animated.View>
+  );
+}
+
 export function BottomNavigator() {
   const {theme, colors, setTheme} = useTheme();
+  const {width} = Dimensions.get('screen');
+
   // const [user, setUser] = React.useState<User | null>(null);
   // const [loading, setLoading] = React.useState(true);
 
@@ -662,16 +739,38 @@ export function BottomNavigator() {
 
   return (
     <Tab.Navigator
+      key={theme.name}
       screenOptions={{
         tabBarShowLabel: false,
+        // tabBarStyle: {
+        //   backgroundColor: colors.background.primary,
+        //   borderColor: colors.background.primary,
+        //   position: 'absolute',
+        //   minHeight: 60,
+        //   borderTopWidth: 0,
+        // },
         tabBarStyle: {
-          backgroundColor: colors.background.primary,
-          borderColor: colors.background.primary,
+          marginHorizontal: width / 24,
           position: 'absolute',
-          minHeight: 60,
-          borderTopWidth: 0,
+          bottom: 15,
+          left: 15,
+          right: 15,
+          height: 56,
+          borderRadius: 40,
+          borderWidth: 1,
+          borderTopWidth: 0.9,
+          borderColor:
+            theme.name === 'Light'
+              ? 'rgba(0,0,0,0.09)'
+              : 'rgba(150,150,150,0.09)',
+          backgroundColor:
+            theme.name === 'Light'
+              ? 'rgba(255,255,255,0.95)'
+              : 'rgba(25,25,25,0.95)',
+          elevation: 0,
         },
         tabBarHideOnKeyboard: true,
+        tabBarButton: props => <CustomTabButton {...props} />,
         // animation: 'shift', // (ISSUE) TO DO Shift animation causes freezing when switching to profile tab.
       }}
       initialRouteName="Home">
@@ -688,55 +787,6 @@ export function BottomNavigator() {
           tabBarIcon: ({focused}) => (
             <TabIcon focused={focused} icon={icons.peopleV3} title="Grup" />
           ),
-          tabBarButton: props => {
-            const scale = useRef(new Animated.Value(1)).current;
-
-            const handlePressIn = () => {
-              Animated.spring(scale, {
-                toValue: 0.95,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
-
-            const handlePressOut = () => {
-              Animated.spring(scale, {
-                toValue: 1,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
-
-            return (
-              <Animated.View
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: [{scale}],
-                }}>
-                <Pressable
-                  onPressIn={handlePressIn}
-                  onPressOut={handlePressOut}
-                  android_ripple={{
-                    color: 'transparent', // Açık mavi ve yumuşak ripple
-                    borderless: true,
-                    radius: 35, // Ripple boyutunu sınırla
-                  }}
-                  style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 35,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  {...props}
-                />
-              </Animated.View>
-            );
-          },
         }}
       />
       {/* {user && user?.role === 'ROLE_USER' && ( */}
@@ -761,55 +811,6 @@ export function BottomNavigator() {
           tabBarIcon: ({focused}) => (
             <TabIcon focused={focused} icon={icons.gym} title="Egzersizler" />
           ),
-          tabBarButton: props => {
-            const scale = useRef(new Animated.Value(1)).current;
-
-            const handlePressIn = () => {
-              Animated.spring(scale, {
-                toValue: 0.95,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
-
-            const handlePressOut = () => {
-              Animated.spring(scale, {
-                toValue: 1,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
-
-            return (
-              <Animated.View
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: [{scale}],
-                }}>
-                <Pressable
-                  onPressIn={handlePressIn}
-                  onPressOut={handlePressOut}
-                  android_ripple={{
-                    color: 'transparent', // Açık mavi ve yumuşak ripple için -> 'rgba(255, 255, 255, 0.12)'
-                    borderless: true,
-                    radius: 35, // Ripple boyutunu sınırla
-                  }}
-                  style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 35,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  {...props}
-                />
-              </Animated.View>
-            );
-          },
         }}
       />
       {/* )} */}
@@ -826,121 +827,8 @@ export function BottomNavigator() {
           tabBarIcon: ({focused}) => (
             <TabIcon focused={focused} icon={icons.home} title="Ana Ekran" />
           ),
-          tabBarButton: props => {
-            const scale = useRef(new Animated.Value(1)).current;
-
-            const handlePressIn = () => {
-              Animated.spring(scale, {
-                toValue: 0.95,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
-
-            const handlePressOut = () => {
-              Animated.spring(scale, {
-                toValue: 1,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
-
-            return (
-              <Animated.View
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: [{scale}],
-                }}>
-                <Pressable
-                  onPressIn={handlePressIn}
-                  onPressOut={handlePressOut}
-                  android_ripple={{
-                    color: 'transparent', // Açık mavi ve yumuşak ripple
-                    borderless: true,
-                    radius: 35, // Ripple boyutunu sınırla
-                  }}
-                  style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 35,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  {...props}
-                />
-              </Animated.View>
-            );
-          },
         }}
       />
-      {/* <Tab.Screen
-        name="Notifications"
-        component={Notifications}
-        options={{
-          headerShown: false,
-          headerTitle: 'Bildirimler',
-          headerTitleStyle: {
-            fontFamily: 'Rubik-SemiBold',
-            fontSize: 24,
-          },
-          tabBarIcon: ({focused}) => (
-            <TabIcon focused={focused} icon={icons.bell} title="Bildirimler" />
-          ),
-          tabBarButton: props => {
-            const scale = useRef(new Animated.Value(1)).current;
-
-            const handlePressIn = () => {
-              Animated.spring(scale, {
-                toValue: 0.95,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
-
-            const handlePressOut = () => {
-              Animated.spring(scale, {
-                toValue: 1,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
-
-            return (
-              <Animated.View
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: [{scale}],
-                }}>
-                <Pressable
-                  onPressIn={handlePressIn}
-                  onPressOut={handlePressOut}
-                  android_ripple={{
-                    color: 'transparent', // Açık mavi ve yumuşak ripple
-                    borderless: true,
-                    radius: 35, // Ripple boyutunu sınırla
-                  }}
-                  style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 35,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  {...props}
-                />
-              </Animated.View>
-            );
-          },
-        }}
-      /> */}
       <Tab.Screen
         name="Profile"
         component={ProfileStack}
@@ -958,136 +846,8 @@ export function BottomNavigator() {
           tabBarIcon: ({focused}) => (
             <TabIcon focused={focused} icon={icons.person} title="Profil" />
           ),
-          tabBarButton: props => {
-            const scale = useRef(new Animated.Value(1)).current;
-
-            const handlePressIn = () => {
-              Animated.spring(scale, {
-                toValue: 0.95,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
-
-            const handlePressOut = () => {
-              Animated.spring(scale, {
-                toValue: 1,
-                useNativeDriver: true,
-                speed: 20,
-                bounciness: 10,
-              }).start();
-            };
-
-            return (
-              <Animated.View
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: [{scale}],
-                }}>
-                <Pressable
-                  onPressIn={handlePressIn}
-                  onPressOut={handlePressOut}
-                  android_ripple={{
-                    color: 'transparent', // Açık mavi ve yumuşak ripple
-                    borderless: true,
-                    radius: 100, // Ripple boyutunu sınırla
-                  }}
-                  style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 100,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  {...props}
-                />
-              </Animated.View>
-            );
-          },
         }}
       />
     </Tab.Navigator>
   );
 }
-
-// export function BottomNavigator() {
-//   const {theme, colors, setTheme} = useTheme();
-
-//   return (
-//     <Tab.Navigator
-//       screenOptions={{
-//         tabBarShowLabel: false,
-//         tabBarStyle: {
-//           backgroundColor: colors.background.primary,
-//           borderColor: colors.background.primary,
-//           position: 'absolute',
-//           minHeight: 60,
-//           borderTopWidth: 0,
-//         },
-//         animation: 'shift',
-//       }}
-//       initialRouteName="Home">
-//       <Tab.Screen
-//         name="Groups"
-//         component={GroupsStack}
-//         options={{
-//           headerShown: false,
-//           tabBarIcon: ({focused}) => (
-//             <TabIcon focused={focused} icon={icons.peopleV3} title="Grup" />
-//           ),
-//         }}
-//       />
-//       <Tab.Screen
-//         name="Exercises"
-//         component={ExercisesStack}
-//         options={{
-//           headerShown: false,
-//           header: () => (
-//             <CustomHeader
-//               title={'Egzersizler'}
-//               icon={icons.todo}
-//               className="border-emerald-500"
-//             />
-//           ),
-//           title: 'Exercises',
-//           tabBarIcon: ({focused}) => (
-//             <TabIcon focused={focused} icon={icons.gym} title="Egzersiz" />
-//           ),
-//         }}
-//       />
-//       <Tab.Screen
-//         name="Home"
-//         component={Home}
-//         options={{
-//           headerShown: false,
-//           tabBarIcon: ({focused}) => (
-//             <TabIcon focused={focused} icon={icons.home} title="Home" />
-//           ),
-//         }}
-//       />
-//       <Tab.Screen
-//         name="Notifications"
-//         component={Notifications}
-//         options={{
-//           headerShown: false,
-//           tabBarIcon: ({focused}) => (
-//             <TabIcon focused={focused} icon={icons.bell} title="Bildirimler" />
-//           ),
-//         }}
-//       />
-//       <Tab.Screen
-//         name="Profile"
-//         component={ProfileStack}
-//         options={{
-//           headerShown: false,
-//           tabBarIcon: ({focused}) => (
-//             <TabIcon focused={focused} icon={icons.person} title="Profil" />
-//           ),
-//         }}
-//       />
-//     </Tab.Navigator>
-//   );
-// }

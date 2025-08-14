@@ -52,9 +52,9 @@ type Symptoms = {
   id?: number;
   pulse?: number;
   steps?: number;
+  totalCaloriesBurned?: number | null;
   activeCaloriesBurned?: number | null;
-  sleepHours?: number | null;
-  sleepSessions?: string[];
+  sleepMinutes?: number | null;
   createdAt?: Date | null;
   updatedAt?: Date | null;
 };
@@ -63,7 +63,7 @@ type UpdateSymptomsDTO = {
   pulse?: number;
   steps?: number;
   activeCaloriesBurned?: number;
-  sleepHours?: number;
+  sleepMinutes?: number;
   sleepSessions?: string[];
 };
 

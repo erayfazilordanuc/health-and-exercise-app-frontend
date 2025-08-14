@@ -28,7 +28,23 @@ import {getInstalledApps} from 'react-native-get-app-list';
 //   }
 // };
 
-export const isHealthConnectInstalled = async (): Promise<boolean> => {
+export const checkGoogleFitInstalled = async (): Promise<boolean> => {
+  if (Platform.OS !== 'android') return false;
+  try {
+    const apps = await getInstalledApps();
+    console.log(apps);
+    const isInstalled = apps.some(
+      app => app.packageName === 'com.google.android.apps.fitness',
+    );
+    console.log(isInstalled);
+    return isInstalled;
+  } catch (err) {
+    console.log('[GF] check failed', err);
+    return false;
+  }
+};
+
+export const checkHealthConnectInstalled = async (): Promise<boolean> => {
   if (Platform.OS !== 'android') return false;
   try {
     const apps = await getInstalledApps();
@@ -378,21 +394,6 @@ export const saveSymptoms = async (symptoms: Symptoms) => {
     isSynced: false,
   };
 
-  // if (!(await initializeService())) {
-  //   if (symptoms) {
-  //     await AsyncStorage.setItem(key, JSON.stringify(symptomsObjectToSave));
-  //     try {
-  //       const response = await upsertSymptomsByDate(new Date(), symptoms);
-  //       if (response.status === 200) {
-  //         symptomsObjectToSave.isSynced = true;
-  //       }
-  //       await AsyncStorage.setItem(key, JSON.stringify(symptomsObjectToSave));
-  //     } catch (error) {
-  //       return;
-  //     }
-  //   }
-  // }
-
   try {
     const response = await upsertSymptomsByDate(new Date(), symptoms);
     if (response.status === 200) {
@@ -406,118 +407,6 @@ export const saveSymptoms = async (symptoms: Symptoms) => {
     return;
   }
 };
-
-// export const getSymptoms = async () => {
-//   const key = todayKey();
-
-//   if (!(await initializeService())) {
-//     if (symptoms) {
-//       const localSymptomsObjectToSave: LocalSymptoms = {
-//         symptoms: symptoms,
-//         isSynced: false,
-//       };
-//       await AsyncStorage.setItem(
-//         key,
-//         JSON.stringify(localSymptomsObjectToSave),
-//       );
-//       try {
-//         const response = await upsertSymptomsByDate(new Date(), symptoms);
-//         if (response.status === 200) {
-//           localSymptomsObjectToSave.isSynced = true;
-//         }
-//         await AsyncStorage.setItem(
-//           key,
-//           JSON.stringify(localSymptomsObjectToSave),
-//         );
-//       } catch (error) {
-//         return;
-//       }
-//     }
-//   }
-
-//   const heartRate = await withTimeout(getHeartRate(), 5000, -1);
-//   let aggregatedSteps = await withTimeout(getAggregatedSteps(), 5000, -1);
-//   if (aggregatedSteps === -1) {
-//     aggregatedSteps = await withTimeout(getSteps(), 5000, -1);
-//   }
-//   const activeCaloriesBurned = await withTimeout(
-//     getActiveCaloriesBurned(),
-//     5000,
-//     -1,
-//   );
-//   const totalSleepMinutes = await withTimeout(getTotalSleepMinutes(), 5000, -1);
-//   const sleepSessions = await withTimeout(getAllSleepSessions(), 5000, ['']);
-
-//   const allKeys = await AsyncStorage.getAllKeys();
-//   if (allKeys) {
-//     const outdated = allKeys.filter(k => k.startsWith(keyPrefix) && k !== key);
-//     if (outdated.length) await AsyncStorage.multiRemove(outdated);
-//   }
-
-//   const localData = await AsyncStorage.getItem(key);
-//   let localSymptoms: Symptoms = {};
-//   if (localData) {
-//     const localSymptomsObject: LocalSymptoms = JSON.parse(localData);
-//     localSymptoms = localSymptomsObject.symptoms;
-//   }
-//   localSymptoms.pulse =
-//     heartRate === -1
-//       ? symptoms?.pulse
-//         ? symptoms.pulse
-//         : localSymptoms.pulse
-//       : heartRate;
-
-//   localSymptoms.steps =
-//     aggregatedSteps === -1
-//       ? symptoms?.steps
-//         ? symptoms.steps
-//         : localSymptoms.steps
-//       : aggregatedSteps;
-
-//   localSymptoms.activeCaloriesBurned =
-//     activeCaloriesBurned === -1
-//       ? symptoms?.activeCaloriesBurned
-//         ? symptoms.activeCaloriesBurned
-//         : localSymptoms.activeCaloriesBurned
-//       : activeCaloriesBurned;
-
-//   localSymptoms.sleepHours =
-//     totalSleepMinutes === -1
-//       ? symptoms?.sleepHours
-//         ? symptoms.sleepHours
-//         : localSymptoms.sleepHours
-//       : totalSleepMinutes;
-
-//   localSymptoms.sleepSessions =
-//     sleepSessions.length === 0
-//       ? symptoms?.sleepSessions
-//         ? symptoms.sleepSessions
-//         : localSymptoms.sleepSessions
-//       : sleepSessions;
-
-//   const localSymptomsObjectToSave: LocalSymptoms = {
-//     symptoms: localSymptoms,
-//     isSynced: false,
-//   };
-//   await AsyncStorage.setItem(key, JSON.stringify(localSymptomsObjectToSave));
-
-//   const state = await NetInfo.fetch();
-//   const isConnected = state.isConnected;
-//   if (!isConnected) {
-//     Toast.show({
-//       type: 'error',
-//       text1: 'İnternet bağlantısı yok',
-//       text2: 'Verileriniz senkronize edilemiyor', //'\nVerilerinizi senkronize etmek için lütfen internete bağlanın.'
-//       position: 'top',
-//       visibilityTime: 5500,
-//       text1Style: {fontSize: 18},
-//       text2Style: {fontSize: 16},
-//     });
-//     return;
-//   }
-
-//   return localSymptoms;
-// };
 
 export const getSymptoms = async () => {
   if (await initializeService()) {
@@ -534,6 +423,14 @@ export const getSymptoms = async () => {
       aggregatedSteps = await withTimeout(getSteps(), 5000, -1);
       console.log('getSteps done', aggregatedSteps);
     }
+
+    console.log('getTotalCaloriesBurned start');
+    const totalCaloriesBurned = await withTimeout(
+      getTotalCaloriesBurned(),
+      5000,
+      -1,
+    );
+    console.log('getTotalCaloriesBurned done', totalCaloriesBurned);
 
     console.log('getActiveCaloriesBurned start');
     const activeCaloriesBurned = await withTimeout(
@@ -558,12 +455,72 @@ export const getSymptoms = async () => {
     const healthConnectSymptoms: Symptoms = {
       pulse: heartRate === -1 ? null : heartRate,
       steps: aggregatedSteps === -1 ? null : aggregatedSteps,
+      totalCaloriesBurned:
+        totalCaloriesBurned === -1 ? null : Math.round(totalCaloriesBurned),
       activeCaloriesBurned:
         activeCaloriesBurned === -1 ? null : activeCaloriesBurned,
-      sleepHours: totalSleepMinutes === -1 ? null : totalSleepMinutes,
-      sleepSessions: sleepSessions.length > 0 ? sleepSessions : [],
+      sleepMinutes: totalSleepMinutes === -1 ? null : totalSleepMinutes,
     };
 
     return healthConnectSymptoms;
   }
+};
+
+const clampPct = (n: number) => Math.max(0, Math.min(100, n));
+
+const linearScore = (v?: number, min = 0, max = 1) => {
+  if (v == null || !Number.isFinite(v) || max === min) return NaN;
+  return clampPct(((v - min) / (max - min)) * 100);
+};
+
+const triangularScore = (
+  hardMin: number,
+  idealMin: number,
+  idealMax: number,
+  hardMax: number,
+  v?: number,
+) => {
+  if (v == null || !Number.isFinite(v)) return NaN; // veri yoksa NaN -> hesaba katılmaz
+  if (v <= hardMin || v >= hardMax) return 0;
+  if (v >= idealMin && v <= idealMax) return 100;
+  if (v < idealMin) {
+    return clampPct(((v - hardMin) / (idealMin - hardMin)) * 100);
+  }
+  return clampPct(((hardMax - v) / (hardMax - idealMax)) * 100);
+};
+
+export const computeHealthScore = (p: {
+  heartRate?: number; // bpm
+  steps?: number; // adım
+  totalCalories?: number;
+  activeCalories?: number; // kcal (aktif)
+  sleepMinutes?: number; // dakika
+}) => {
+  const {heartRate, steps, totalCalories, activeCalories, sleepMinutes} = p;
+
+  const hrScore = triangularScore(40, 55, 75, 110, heartRate);
+  const stepScore = linearScore(steps, 0, 7500);
+  const clScore = totalCalories
+    ? linearScore(totalCalories, 0, 2750)
+    : linearScore(activeCalories, 0, 2750);
+  const slpScore = triangularScore(240, 420, 540, 720, sleepMinutes);
+
+  const weights = {
+    hr: 0.25,
+    steps: 0.3,
+    cl: 0.15,
+    slp: 0.3,
+  } as const;
+
+  const parts: Array<[number, number]> = [];
+  if (!Number.isNaN(hrScore)) parts.push([hrScore, weights.hr]);
+  if (!Number.isNaN(stepScore)) parts.push([stepScore, weights.steps]);
+  if (!Number.isNaN(clScore)) parts.push([clScore, weights.cl]);
+  if (!Number.isNaN(slpScore)) parts.push([slpScore, weights.slp]);
+
+  if (parts.length === 0) return 0;
+
+  const totalW = parts.reduce((s, [, w]) => s + w, 0);
+  const sum = parts.reduce((s, [sc, w]) => s + sc * w, 0);
+  return Math.round(sum / totalW);
 };

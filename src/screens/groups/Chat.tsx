@@ -30,6 +30,7 @@ import {useTheme} from '../../themes/ThemeProvider';
 import icons from '../../constants/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../../contexts/UserContext';
+import LinearGradient from 'react-native-linear-gradient';
 
 const {width, height} = Dimensions.get('window');
 
@@ -39,7 +40,7 @@ const Chat = () => {
   const {params} = useRoute<ChatRouteProp>();
   const {roomId, sender, receiver, fromNotification, navigatedInApp} = params;
   const {user} = useUser();
-  const {colors} = useTheme();
+  const {colors, theme} = useTheme();
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation<GroupsScreenNavigationProp>();
 
@@ -50,7 +51,7 @@ const Chat = () => {
   const [accessToken, setAccessToken] = useState('');
 
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(60);
+  const [keyboardHeight, setKeyboardHeight] = useState(75);
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -256,7 +257,7 @@ const Chat = () => {
       'keyboardDidHide',
       () => {
         setIsKeyboardVisible(false);
-        setKeyboardHeight(60);
+        setKeyboardHeight(75);
         console.log('Klavye kapandı 😴');
       },
     );
@@ -275,27 +276,37 @@ const Chat = () => {
     //     Platform.OS === 'ios' ? 0 : isKeyboardVisible ? -5 : -32
     //   }>
     <View className="flex-1">
+      <LinearGradient
+        colors={colors.gradient}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute inset-0"
+      />
       <View
         className="flex-1 px-5 pb-2"
         style={{
           paddingTop: insets.top * 1.3,
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary,
         }}>
         {/* Header */}
         <View
           className="flex flex-row pr-5"
           style={{
-            backgroundColor: colors.background.secondary,
+            backgroundColor: 'transparent', // colors.background.secondary,
             justifyContent: 'space-between',
           }}>
           <Text
             className="font-rubik-semibold"
             style={{
-              color: colors.text.primary,
+              color:
+                theme.name === 'Light' ? '#2F2F30' : colors.background.primary,
               fontSize: 24,
             }}>
             Sohbet:{' '}
-            <Text style={{color: colors.primary[300]}}>
+            <Text
+              style={{
+                color: theme.name === 'Light' ? colors.primary[200] : '#0077FF',
+              }}>
               {' ' + receiver.fullName}
             </Text>
           </Text>
@@ -387,6 +398,11 @@ const Chat = () => {
           className="flex-row items-center rounded-3xl px-3 py-2 mt-2"
           style={{
             backgroundColor: colors.background.primary,
+            borderWidth: 1,
+            borderColor:
+              theme.name === 'Light'
+                ? 'rgba(150,150,150,0.09)'
+                : 'rgba(150,150,150,0.09)',
             marginBottom: keyboardHeight,
           }}>
           <TextInput

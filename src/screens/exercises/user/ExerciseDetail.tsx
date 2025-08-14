@@ -1,4 +1,10 @@
-import React, {useState, useRef, useCallback, useEffect} from 'react';
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+} from 'react';
 import {
   View,
   Text,
@@ -8,6 +14,8 @@ import {
   InteractionManager,
   ToastAndroid,
   Image,
+  StatusBar,
+  Dimensions,
 } from 'react-native';
 import {
   RouteProp,
@@ -24,11 +32,14 @@ import {createThumbnail} from 'react-native-create-thumbnail';
 import CustomAlert from '../../../components/CustomAlert';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../../../contexts/UserContext';
+import Orientation from 'react-native-orientation-locker';
+import {calcPercent} from '../../../api/exercise/exerciseService';
 
 type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'ExerciseDetail'>;
 const ExerciseDetail = () => {
   const insets = useSafeAreaInsets();
-  const {colors} = useTheme();
+  const {colors, theme} = useTheme();
+  const {height, width} = Dimensions.get('window');
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const {params} = useRoute<ExerciseRouteProp>();
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
@@ -41,25 +52,16 @@ const ExerciseDetail = () => {
 
   const calculateNavPayloads = () => {
     setLoading(true);
-    for (const [i, vp] of progress.videoProgress.entries()) {
-      if (!vp.isCompeleted && vp.id) {
+    console.log('progress', progress);
+    for (let i = 0; i < progress.exerciseDTO.videos.length; i++) {
+      const vp = progress.videoProgress[i];
+      if (!vp || (!vp.isCompeleted && vp.id)) {
         setVideoIdxToShow(i);
-        console.log('duraation', vp.progressDuration);
-        setStartAt(vp.progressDuration);
+        setStartAt(vp && vp.progressDuration ? vp.progressDuration : 0);
         break;
       }
     }
     setLoading(false);
-  };
-
-  const calcPercent = (): number => {
-    const total = progress.exerciseDTO.videos.reduce(
-      (sum, v) => sum + (v.durationSeconds ?? 0),
-      0,
-    );
-    return total === 0
-      ? 0
-      : Math.round((progress.totalProgressDuration / total) * 100);
   };
 
   const getColor = () =>
@@ -168,6 +170,38 @@ const ExerciseDetail = () => {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
+  useEffect(() => {
+    return () => {
+      Orientation.lockToPortrait();
+      StatusBar.setHidden(false, 'fade');
+    };
+  }, []);
+
+  const defaultTabBarStyle = {
+    marginHorizontal: width / 24,
+    position: 'absolute',
+    bottom: 15,
+    left: 15,
+    right: 15,
+    height: 56,
+    borderRadius: 40,
+    borderWidth: 1,
+    borderTopWidth: 0.9,
+    borderColor:
+      theme.name === 'Light' ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
+    backgroundColor:
+      theme.name === 'Light' ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
+    elevation: 0,
+  };
+
+  useLayoutEffect(() => {
+    const parentNav = navigation.getParent();
+    return () =>
+      parentNav?.setOptions({
+        tabBarStyle: defaultTabBarStyle,
+      });
+  }, [navigation]);
+
   return (
     <>
       <View
@@ -187,52 +221,54 @@ const ExerciseDetail = () => {
         </Text>
       </View>
 
-      <View
-        className="mt-3 mx-3 px-5 pt-3 pb-5 rounded-2xl flex flex-col items-center justify-center"
-        style={{backgroundColor: colors.background.primary}}>
-        <Text
-          className="text-xl font-rubik-medium mb-2"
-          style={{color: colors.text.primary}}>
-          Mevcut İlerleme
-        </Text>
-        <Text className="text-xl font-rubik-medium mt-1" style={{color: color}}>
-          {/* %{progress.totalProgressDuration} */}
-          {`%${calcPercent()}`}
-        </Text>
-        {progress.totalProgressDuration === totalDurationSec && (
-          <Text className="text-xl font-rubik-medium" style={{color: color}}>
-            {/* %{progress.totalProgressDuration} */}
-            Egzersiz Tamamlandı
-          </Text>
-        )}
-        <View
-          className="w-full h-1 rounded-full overflow-hidden mt-3"
-          style={{backgroundColor: colors.background.secondary}}>
-          <View
-            className="h-1 rounded-full"
-            style={{
-              width: `${calcPercent()}%`,
-              backgroundColor: color,
-            }}
-          />
-        </View>
-      </View>
-
       <ScrollView
         className="h-full px-3 mt-3"
         style={{
           backgroundColor: colors.background.secondary,
-          marginBottom: 60,
         }}>
         <View
-          className="px-5 pt-3 rounded-2xl mb-3"
+          className="mb-3 px-5 pt-3 pb-5 rounded-2xl flex flex-col items-center justify-center"
           style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="text-xl font-rubik-medium mb-2"
+            style={{color: colors.text.primary}}>
+            Toplam İlerleme
+          </Text>
+          <Text className="text-xl font-rubik-medium" style={{color: color}}>
+            {`%${calcPercent(progress)}`}
+          </Text>
+          {progress.totalProgressDuration === totalDurationSec && (
+            <Text className="text-xl font-rubik-medium" style={{color: color}}>
+              Egzersiz Tamamlandı
+            </Text>
+          )}
+          <View
+            className="w-full h-1 rounded-full overflow-hidden mt-3"
+            style={{backgroundColor: colors.background.secondary}}>
+            <View
+              className="h-1 rounded-full"
+              style={{
+                width: `${calcPercent(progress)}%`,
+                backgroundColor: color,
+              }}
+            />
+          </View>
+        </View>
+
+        <View
+          className="px-5 pt-3 rounded-2xl mb-24"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="text-center text-2xl font-rubik mb-2"
+            style={{color: colors.text.primary}}>
+            Videolar
+          </Text>
           {progress.exerciseDTO?.videos &&
             progress.exerciseDTO.videos.length > 0 &&
             progress.exerciseDTO.videos.map((video, index) => (
               <View
                 key={index}
-                className="w-full rounded-xl p-3 mb-3"
+                className="w-full rounded-2xl p-3 mb-3"
                 style={{backgroundColor: colors.background.secondary}}>
                 {!isDone ? (
                   <View className="pt-1 flex flex-row items-center justify-center">
@@ -306,21 +342,83 @@ const ExerciseDetail = () => {
                       '\nSüre: ' +
                       ToMinuteSeconds(video.durationSeconds)}
                   </Text>
-                  {progress.videoProgress.some(
-                    item => video.id === item.videoId && item.isCompeleted,
-                  ) && (
-                    <View className="flex flex-row items-center justify-center mt-1">
-                      <Text
-                        className="font-rubik text-sm mr-2"
-                        style={{color: '#3BC476'}}>
-                        Tamamlandı
-                      </Text>
-                      <Image
-                        source={icons.check}
-                        className="size-5 mb-1"
-                        tintColor={'#3BC476'}
-                      />
-                    </View>
+                  {progress.videoProgress.length > 0 ? (
+                    progress.videoProgress.some(
+                      item => video.id === item.videoId && item.isCompeleted,
+                    ) ? (
+                      <View className="flex flex-row items-center justify-center">
+                        <Text
+                          className="font-rubik text-lg mr-2"
+                          style={{color: '#3BC476'}}>
+                          Tamamlandı
+                        </Text>
+                        <Image
+                          source={icons.check}
+                          className="size-5 mb-1"
+                          tintColor={'#3BC476'}
+                        />
+                      </View>
+                    ) : (
+                      progress.videoProgress[index] && (
+                        <View className="flex flex-coljustify-between items-center">
+                          <Text
+                            className="font-rubik text-center text-lg"
+                            style={{color: getColor()}}>
+                            İlerleme %
+                            {Math.round(
+                              (progress.videoProgress[index].progressDuration /
+                                video.durationSeconds) *
+                                100,
+                            )}
+                          </Text>
+                          <TouchableOpacity
+                            className="mt-3 mb-1"
+                            onPress={() =>
+                              navigation.navigate('Exercise', {
+                                exercise: progress.exerciseDTO,
+                                progress: progress,
+                                videoIdx: videoIdxToShow,
+                                startSec: startAt,
+                              })
+                            }>
+                            <Text
+                              className=" font-rubik text-xl px-3" // bg-blue-500 '#55CC88' '#FFAA33'
+                              style={{
+                                borderRadius: 19,
+                                paddingVertical: 10,
+                                backgroundColor: color,
+                                color: colors.background.primary,
+                              }}>
+                              Devam et
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      )
+                    )
+                  ) : (
+                    index === 0 && (
+                      <TouchableOpacity
+                        className="mt-3 mb-1"
+                        onPress={() =>
+                          navigation.navigate('Exercise', {
+                            exercise: progress.exerciseDTO,
+                            progress: progress,
+                            videoIdx: videoIdxToShow,
+                            startSec: startAt,
+                          })
+                        }>
+                        <Text
+                          className=" font-rubik text-xl px-3" // bg-blue-500 '#55CC88' '#FFAA33'
+                          style={{
+                            borderRadius: 15,
+                            paddingVertical: 10,
+                            backgroundColor: color,
+                            color: colors.background.primary,
+                          }}>
+                          Başla
+                        </Text>
+                      </TouchableOpacity>
+                    )
                   )}
                   {/*Tamamlandı yazabilir */}
                   {/* Eğer progress ratio şuana kadar olan video indexlerindeki videoların uzunluğunun toplamı 
@@ -331,7 +429,7 @@ const ExerciseDetail = () => {
         </View>
       </ScrollView>
 
-      {!isDone && (
+      {/* {!isDone && (
         <View className="absolute bottom-20 right-3 items-center">
           <TouchableOpacity
             className="flex flex-row justify-center items-center mt-3"
@@ -357,7 +455,7 @@ const ExerciseDetail = () => {
             </Text>
           </TouchableOpacity>
         </View>
-      )}
+      )} */}
     </>
   );
 };

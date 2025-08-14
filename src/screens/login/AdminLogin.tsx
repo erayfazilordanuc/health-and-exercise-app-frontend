@@ -9,9 +9,15 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  ImageBackground,
+  BackHandler,
 } from 'react-native';
-import {CommonActions, useNavigation} from '@react-navigation/native';
-import {useEffect, useMemo, useState} from 'react';
+import {
+  CommonActions,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import icons from '../../constants/icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import axios from 'axios';
@@ -27,6 +33,8 @@ import {
 import {useUser} from '../../contexts/UserContext';
 import DatePicker from 'react-native-date-picker';
 import {Dropdown} from 'react-native-element-dropdown';
+import {BlurView} from '@react-native-community/blur';
+import LinearGradient from 'react-native-linear-gradient';
 
 function AdminLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
@@ -258,19 +266,16 @@ function AdminLogin() {
     }
   };
 
-  // className={`px-10 pt-${
-  //         isCodeStep
-  //           ? ''
-  //           : loginMethod === LoginMethod.registration
-  //           ? '16'
-  //           : '24'
-  //       }`}
-
-  // Padding ve marginleri dimensionsa göre yap
   return (
     <SafeAreaView
       className="h-full"
       style={{backgroundColor: colors.background.secondary}}>
+      <LinearGradient
+        colors={['#D7F4F7', '#EBEDFC', '#80CCFF', '#C4FFF4']}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute inset-0"
+      />
       <ScrollView
         className={`px-10`}
         style={{
@@ -292,12 +297,15 @@ function AdminLogin() {
         </Text> */}
         <Text
           className="text-center font-rubik-bold mt-8 mb-8"
-          style={{color: '#0091ff', fontSize: 40}}>
+          style={{
+            color: '#404040' /*color: '#0091ff',*/,
+            fontSize: 40,
+          }}>
           HopeMove
         </Text>
         <Text
           className="text-3xl font-rubik-semibold text-center mt-6 mb-4"
-          style={{color: colors.text.primary}}>
+          style={{color: '#404040'}}>
           Hemşire Girişi
         </Text>
         {/* <Text
@@ -311,7 +319,8 @@ function AdminLogin() {
           <View
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
-              backgroundColor: colors.background.primary,
+              backgroundColor:
+                theme.name === 'Light' ? colors.background.primary : '#333333',
             }}>
             <TextInput
               placeholderTextColor={'gray'}
@@ -329,7 +338,8 @@ function AdminLogin() {
         <View
           className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
           style={{
-            backgroundColor: colors.background.primary,
+            backgroundColor:
+              theme.name === 'Light' ? colors.background.primary : '#333333',
           }}>
           <TextInput
             placeholderTextColor={'gray'}
@@ -349,7 +359,10 @@ function AdminLogin() {
             <View
               className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
               style={{
-                backgroundColor: colors.background.primary,
+                backgroundColor:
+                  theme.name === 'Light'
+                    ? colors.background.primary
+                    : '#333333',
               }}>
               <TextInput
                 placeholderTextColor={'gray'}
@@ -368,7 +381,10 @@ function AdminLogin() {
               className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
               style={{
                 borderColor: '#7AADFF',
-                backgroundColor: colors.background.primary,
+                backgroundColor:
+                  theme.name === 'Light'
+                    ? colors.background.primary
+                    : '#333333',
               }}>
               <Text
                 className="text-lg font-rubik ml-6 py-3 flex-1"
@@ -417,7 +433,10 @@ function AdminLogin() {
             <View
               className="z-50 mt-2"
               style={{
-                backgroundColor: colors.background.primary,
+                backgroundColor:
+                  theme.name === 'Light'
+                    ? colors.background.primary
+                    : '#333333',
                 borderRadius: 25,
                 paddingHorizontal: 22,
                 zIndex: 3000,
@@ -451,7 +470,10 @@ function AdminLogin() {
                 containerStyle={{
                   borderRadius: 20,
                   borderColor: 'gray',
-                  backgroundColor: colors.background.primary,
+                  backgroundColor:
+                    theme.name === 'Light'
+                      ? colors.background.primary
+                      : '#333333',
                 }}
                 activeColor={colors.primary?.[100] ?? '#D6EFFF'}
               />
@@ -461,7 +483,8 @@ function AdminLogin() {
         <View
           className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
           style={{
-            backgroundColor: colors.background.primary,
+            backgroundColor:
+              theme.name === 'Light' ? colors.background.primary : '#333333',
           }}>
           <TextInput
             placeholderTextColor={'gray'}
@@ -491,7 +514,8 @@ function AdminLogin() {
           <View
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
-              backgroundColor: colors.background.primary,
+              backgroundColor:
+                theme.name === 'Light' ? colors.background.primary : '#333333',
             }}>
             <TextInput
               placeholderTextColor={'gray'}
@@ -513,8 +537,13 @@ function AdminLogin() {
             {loginMethod === LoginMethod.default && (
               <TouchableOpacity
                 onPress={handleLogin}
-                className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
-                style={{backgroundColor: colors.background.primary}}>
+                className="shadow-md shadow-zinc-350 rounded-3xl w-1/2 py-2 mt-3"
+                style={{
+                  backgroundColor:
+                    theme.name === 'Light'
+                      ? colors.background.primary
+                      : '#333333',
+                }}>
                 <Text
                   className="text-xl font-rubik text-center py-1"
                   style={{color: colors.text.primary}}>
@@ -528,7 +557,12 @@ function AdminLogin() {
                   handleCreateAccount();
                 }}
                 className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
-                style={{backgroundColor: colors.background.primary}}>
+                style={{
+                  backgroundColor:
+                    theme.name === 'Light'
+                      ? colors.background.primary
+                      : '#333333',
+                }}>
                 <Text
                   className="text-xl font-rubik text-center py-1"
                   style={{color: colors.text.primary}}>
@@ -585,7 +619,7 @@ function AdminLogin() {
             <TouchableOpacity
               onPress={handleGoogleLogin}
               className="shadow-md shadow-zinc-350 rounded-full w-5/6 py-4 mt-2"
-              style={{backgroundColor: colors.background.primary}}>
+              style={{backgroundColor: theme.name === "Light" ? colors.background.primary:"#333333"}}>
               <View className="flex flex-row items-center justify-center">
                 <Image
                   source={icons.google}

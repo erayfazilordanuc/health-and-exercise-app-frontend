@@ -118,7 +118,7 @@ export class HealthConnectService extends HealthService {
   }
 
   /* ─────────────────────────── Sleep ─────────────────────────── */
-  async getTotalSleepHours(): Promise<number> {
+  async getTotalsleepMinutes(): Promise<number> {
     const res: any = await this.readSampleData('SleepSession');
     if (!res?.records?.length) return 0;
 

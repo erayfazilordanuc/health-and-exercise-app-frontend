@@ -3,7 +3,7 @@
 //   pulse?: number;
 //   steps?: number;
 //   activeCaloriesBurned?: number | null;
-//   sleepHours?: number | null;
+//   sleepMinutes?: number | null;
 //   sleepSessions?: string[];
 //   createdAt?: Date | null;
 //   updatedAt?: Date | null;
@@ -13,7 +13,7 @@
 //   pulse?: number;
 //   steps?: number;
 //   activeCaloriesBurned?: number;
-//   sleepHours?: number;
+//   sleepMinutes?: number;
 //   sleepSessions?: string[];
 // };
 

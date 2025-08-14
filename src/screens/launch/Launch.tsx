@@ -9,6 +9,7 @@ import {
   Dimensions,
   ActivityIndicator,
   useColorScheme,
+  ImageBackground,
 } from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,6 +18,7 @@ import {Theme, themes} from '../../themes/themes';
 import {checkHealthConnectAvailable} from '../../api/health/healthConnectService';
 import {useNotificationNavigation} from '../../hooks/useNotificationNavigation';
 import {useUser} from '../../contexts/UserContext';
+import {BlurView} from '@react-native-community/blur';
 
 const {width, height} = Dimensions.get('window');
 
@@ -104,25 +106,44 @@ const Launch = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ImageBackground
+        source={require('../../assets/images/bubbles_blue_low_launch.png')}
+        resizeMode="cover"
+        className="absolute inset-0"
+      />
+      <BlurView
+        blurType="light"
+        blurAmount={30}
+        reducedTransparencyFallbackColor="white"
+        pointerEvents="none"
+        style={{position: 'absolute', top: 0, right: 0, bottom: 0, left: 0}}
+      />
       {/* Üst sağ mavi dekor */}
       <View style={styles.topRightShape} />
       <Text
         className="font-rubik-bold text-center"
         style={[
-          styles.titleBlue,
-          {paddingTop: windowHeight / 4, fontSize: 40},
+          // styles.titleBlue,
+          {
+            color: '#404040',
+            paddingTop: windowHeight / 4,
+            fontSize: 40,
+          },
         ]}>
         HopeMove
       </Text>
       <Text
         className="font-rubik-semibold text-xl text-center mt-4"
-        style={[styles.titleBlack, {color: colors.text.primary}]}>
+        style={[styles.titleBlack, {color: '#404040'}]}>
         HopeMove ile hemşire rehberliğinde aktivitenizi izler, iyileşme
         sürecinizi umutla destekleriz.
       </Text>
       <TouchableOpacity
         className="px-6 py-3 rounded-2xl mb-2"
-        style={{backgroundColor: colors.background.primary}}
+        style={{
+          backgroundColor:
+            theme.name === 'Light' ? colors.background.primary : '#333333',
+        }}
         onPress={() => {
           navigation.navigate('UserLogin');
         }}>
@@ -136,7 +157,10 @@ const Launch = () => {
       </TouchableOpacity>
       <TouchableOpacity
         className="px-6 py-3 rounded-2xl"
-        style={{backgroundColor: colors.background.primary}}
+        style={{
+          backgroundColor:
+            theme.name === 'Light' ? colors.background.primary : '#333333',
+        }}
         onPress={() => {
           navigation.navigate('AdminLogin');
         }}>

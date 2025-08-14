@@ -9,9 +9,15 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  BackHandler,
+  ImageBackground,
 } from 'react-native';
-import {CommonActions, useNavigation} from '@react-navigation/native';
-import {useEffect, useMemo, useState} from 'react';
+import {
+  CommonActions,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import icons from '../../constants/icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import axios from 'axios';
@@ -26,6 +32,8 @@ import DateTimePicker, {
 } from '@react-native-community/datetimepicker';
 import {Dropdown} from 'react-native-element-dropdown';
 import DatePicker from 'react-native-date-picker';
+import {BlurView} from '@react-native-community/blur';
+import LinearGradient from 'react-native-linear-gradient';
 
 function UserLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
@@ -236,10 +244,36 @@ function UserLogin() {
     }
   };
 
+  const base = ['#D7F4F7', '#2AA5F7', '#A6AAF7'];
+  const withAlpha = (hex: string, a: number) =>
+    hex +
+    Math.round(a * 255)
+      .toString(16)
+      .padStart(2, '0'); // #RRGGBBAA
+
+  // Her render’da çok oynamasın diye 1 kere “random” üretelim
+  const {g1, g2, loc1, loc2, a1, a2} = useMemo(() => {
+    const shuffle = <T,>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
+    return {
+      g1: shuffle(base).map(c => withAlpha(c, 0.35)),
+      g2: shuffle(base).map(c => withAlpha(c, 0.28)),
+      loc1: [0, Math.random() * 0.6 + 0.2, 1], // 0.2–0.8 arası kırılma
+      loc2: [0, Math.random() * 0.6 + 0.2, 1],
+      a1: 45 + Math.random() * 20, // 45–65°
+      a2: 120 + Math.random() * 20, // 120–140°
+    };
+  }, []);
+
   return (
     <SafeAreaView
       className="h-full"
       style={{backgroundColor: colors.background.secondary}}>
+      <LinearGradient
+        colors={['#D7F4F7', '#EBEDFC', '#80CCFF', '#C4FFF4']}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute inset-0"
+      />
       <ScrollView
         contentContainerClassName={`pb-12 ${
           loginMethod === LoginMethod.registration ? 'pt-4' : 'pt-32'
@@ -256,12 +290,12 @@ function UserLogin() {
           </Text> */}
           <Text
             className="text-center font-rubik-bold mt-8 mb-8"
-            style={{color: '#0091ff', fontSize: 40}}>
+            style={{color: '#404040', fontSize: 40}}>
             HopeMove
           </Text>
           <Text
             className="text-3xl font-rubik-semibold text-center mt-6 mb-4"
-            style={{color: colors.text.primary}}>
+            style={{color: '#404040'}}>
             Kullanıcı Girişi
           </Text>
           {/* <Text
@@ -274,7 +308,10 @@ function UserLogin() {
             <View
               className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
               style={{
-                backgroundColor: colors.background.primary,
+                backgroundColor:
+                  theme.name === 'Light'
+                    ? colors.background.primary
+                    : '#333333',
               }}>
               <TextInput
                 placeholderTextColor={'gray'}
@@ -292,7 +329,8 @@ function UserLogin() {
           <View
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
-              backgroundColor: colors.background.primary,
+              backgroundColor:
+                theme.name === 'Light' ? colors.background.primary : '#333333',
             }}>
             <TextInput
               placeholderTextColor={'gray'}
@@ -313,7 +351,10 @@ function UserLogin() {
                 className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
                 style={{
                   borderColor: '#7AADFF',
-                  backgroundColor: colors.background.primary,
+                  backgroundColor:
+                    theme.name === 'Light'
+                      ? colors.background.primary
+                      : '#333333',
                 }}>
                 <Text
                   className="text-lg font-rubik ml-6 py-3 flex-1"
@@ -362,7 +403,10 @@ function UserLogin() {
               <View
                 className="z-50 mt-2"
                 style={{
-                  backgroundColor: colors.background.primary,
+                  backgroundColor:
+                    theme.name === 'Light'
+                      ? colors.background.primary
+                      : '#333333',
                   borderRadius: 25,
                   paddingHorizontal: 22,
                   zIndex: 3000,
@@ -396,7 +440,10 @@ function UserLogin() {
                   containerStyle={{
                     borderRadius: 20,
                     borderColor: 'gray',
-                    backgroundColor: colors.background.primary,
+                    backgroundColor:
+                      theme.name === 'Light'
+                        ? colors.background.primary
+                        : '#333333',
                   }}
                   activeColor={colors.primary?.[100] ?? '#D6EFFF'}
                 />
@@ -406,7 +453,8 @@ function UserLogin() {
           <View
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
-              backgroundColor: colors.background.primary,
+              backgroundColor:
+                theme.name === 'Light' ? colors.background.primary : '#333333',
             }}>
             <TextInput
               placeholderTextColor={'gray'}
@@ -438,7 +486,12 @@ function UserLogin() {
                 <TouchableOpacity
                   onPress={handleLogin}
                   className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
-                  style={{backgroundColor: colors.background.primary}}>
+                  style={{
+                    backgroundColor:
+                      theme.name === 'Light'
+                        ? colors.background.primary
+                        : '#333333',
+                  }}>
                   <Text
                     className="text-xl font-rubik text-center py-1"
                     style={{color: colors.text.primary}}>
@@ -452,7 +505,12 @@ function UserLogin() {
                     handleCreateAccount();
                   }}
                   className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
-                  style={{backgroundColor: colors.background.primary}}>
+                  style={{
+                    backgroundColor:
+                      theme.name === 'Light'
+                        ? colors.background.primary
+                        : '#333333',
+                  }}>
                   <Text
                     className="text-xl font-rubik text-center py-1"
                     style={{color: colors.text.primary}}>
@@ -508,7 +566,7 @@ function UserLogin() {
             <TouchableOpacity
               onPress={handleGoogleLogin}
               className="shadow-md shadow-zinc-350 rounded-full w-5/6 py-4 mt-2"
-              style={{backgroundColor: colors.background.primary}}>
+              style={{backgroundColor: theme.name === "Light" ? colors.background.primary:"#333333"}}>
               <View className="flex flex-row items-center justify-center">
                 <Image
                   source={icons.google}

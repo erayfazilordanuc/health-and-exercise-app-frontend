@@ -15,7 +15,7 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {getAllExercises} from '../../../api/exercise/exerciseService';
 
 const AllExercises = () => {
-  const {colors} = useTheme();
+  const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const [exercises, setExercises] = useState<ExerciseDTO[]>([]);
@@ -51,7 +51,10 @@ const AllExercises = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color: colors.text.primary,
+            color:
+              theme.name === 'Light'
+                ? colors.text.primary
+                : colors.background.secondary,
             fontSize: 24,
           }}>
           Tüm Egzersizler
@@ -125,7 +128,7 @@ const AllExercises = () => {
             flex: 1,
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: colors.background.secondary,
+            backgroundColor: 'transparent',
             paddingTop: insets.top,
           }}
           className="mb-24">

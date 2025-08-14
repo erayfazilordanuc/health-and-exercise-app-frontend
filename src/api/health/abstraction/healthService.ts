@@ -59,7 +59,7 @@ export abstract class HealthService {
   abstract getTotalCaloriesBurned(): Promise<number>; // BMR + active kcal
 
   /* ─────────────────────────── Sleep ─────────────────────────── */
-  abstract getTotalSleepHours(): Promise<number>; // hours slept in range (default: today)
+  abstract getTotalsleepMinutes(): Promise<number>; // hours slept in range (default: today)
   abstract getLastSleepSession(): Promise<SleepSession | null>;
   abstract getAllSleepSessions(): Promise<SleepSession[]>;
 }

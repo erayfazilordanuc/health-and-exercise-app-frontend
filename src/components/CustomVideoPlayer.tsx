@@ -13,12 +13,15 @@ import icons from '../constants/icons';
 import {useTheme} from '../themes/ThemeProvider';
 import {ScreenWidth} from 'react-native-elements/dist/helpers';
 import {clamp} from 'lodash';
+import GradientText from './GradientText';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface CustomVideoPlayerProps {
   videoDTO: ExerciseVideoDTO;
   startAt?: number;
   isLast: boolean;
   pausedParent: boolean;
+  onBufferChange: (b: boolean) => void;
   onDurationProgress: (duration: number) => void;
   onVideoEnd: () => void;
   onExit?: () => void;
@@ -29,6 +32,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
   startAt = 0,
   isLast,
   pausedParent,
+  onBufferChange,
   onDurationProgress,
   onVideoEnd,
   onExit,
@@ -40,6 +44,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
   const [buffering, setBuffering] = useState(false);
   const [paused, setPaused] = useState(pausedParent);
   const [hasSeeked, setHasSeeked] = useState(false);
+  const [ended, setEnded] = useState(false);
 
   const [videoTotalDuration, setVideoTotalDuration] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -77,19 +82,44 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
     setPaused(pausedParent);
   }, [pausedParent]);
 
+  useEffect(() => {
+    setShowNextButton(false);
+    setEnded(false);
+    setHasSeeked(false);
+    setProgress(0);
+    setCurrentTime(0);
+  }, [videoDTO.id]);
+
   return (
     <TouchableWithoutFeedback onPress={handleToggleControls}>
       <View style={{flex: 1, backgroundColor: '#171717'}}>
         <Video
+          key={`${videoDTO.id}-${videoDTO.videoUrl}`}
           ref={playerRef}
-          source={{uri: videoDTO.videoUrl}}
+          source={{
+            uri: videoDTO.videoUrl, // mp4 / m3u8 / mpd
+            type: videoDTO.videoUrl.endsWith('.m3u8') ? 'm3u8' : undefined, // HLS ise belirt
+            headers: undefined, // gerekiyorsa
+            minLoadRetryCount: 3, // ✅ yeni yer
+            bufferConfig: {
+              // ✅ yeni yer (Android/ExoPlayer)
+              minBufferMs: 24000, // ~24 sn altına düşmesin
+              maxBufferMs: 90000, // tavan ~90 sn (dalgalı mobilde rahat)
+              bufferForPlaybackMs: 1500, // başlatmak için ~1.5 sn
+              bufferForPlaybackAfterRebufferMs: 3000,
+            },
+          }}
           style={{width: '100%', height: '100%'}}
           resizeMode="contain"
           paused={paused}
           onLoadStart={() => {
             setLoading(true);
           }}
-          onBuffer={({isBuffering}) => setBuffering(isBuffering)}
+          progressUpdateInterval={700}
+          onBuffer={({isBuffering}) => {
+            setBuffering(isBuffering);
+            onBufferChange(isBuffering);
+          }}
           onLoad={({duration}) => {
             setVideoTotalDuration(duration);
             if (!hasSeeked && startAt > 0) {
@@ -105,6 +135,9 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
             if (loading) setLoading(false);
           }}
           onEnd={() => {
+            if (ended) return;
+            setEnded(true);
+            setPaused(true);
             setShowNextButton(true);
           }}
         />
@@ -212,22 +245,35 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
           </View>
         )}
 
-        <Text
-          className="font-rubik-medium text-3xl"
+        <View
           style={{
             position: 'absolute',
-            top:
-              Dimensions.get('window').height >= Dimensions.get('window').width
-                ? '30%'
-                : '2%',
-            left:
-              Dimensions.get('window').height >= Dimensions.get('window').width
-                ? '39%'
-                : '78%',
-            color: 'white',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: 'center',
+            alignItems: 'center',
           }}>
-          {videoDTO.name}
-        </Text>
+          <Text
+            className="font-rubik-medium text-3xl"
+            style={{
+              position: 'absolute',
+              top:
+                Dimensions.get('window').height >=
+                Dimensions.get('window').width
+                  ? '30%'
+                  : '2%',
+              right:
+                Dimensions.get('window').height >=
+                Dimensions.get('window').width
+                  ? undefined
+                  : '12%',
+              color: 'white',
+            }}>
+            {videoDTO.name}
+          </Text>
+        </View>
 
         {showControls && !buffering && (
           <View
@@ -301,34 +347,57 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
               alignItems: 'center', // yatay ortala
             }}>
             {/* Bilgilendirme metni */}
-            <Text
-              className="text-2xl"
-              style={{
-                color: 'white',
-                textAlign: 'center',
-                marginBottom: 12,
-              }}>
-              {isLast
-                ? 'Tebrikler! Egzersizi tamamladınız!'
-                : 'Tebrikler videoyu bitirdiniz!'}
-            </Text>
+            <GradientText className="mb-4">
+              <Text
+                className="text-2xl font-rubik-semibold"
+                style={{
+                  color: 'white',
+                  textAlign: 'center',
+                }}>
+                {isLast
+                  ? 'Tebrikler!\nTüm videoları bitirerek egzersizi başarıyla tamamladınız'
+                  : 'Videoyu bitirdiniz!'}
+              </Text>
+            </GradientText>
 
             {/* Buton */}
             <TouchableOpacity
-              style={{
-                backgroundColor: colors.primary[200],
-                marginTop: 5,
-                paddingHorizontal: 20,
-                paddingVertical: 12,
-                borderRadius: 25,
-              }}
+              activeOpacity={0.85}
               onPress={() => {
-                onVideoEnd();
                 setShowNextButton(false);
-              }}>
-              <Text style={{color: 'white', fontSize: 17, textAlign: 'center'}}>
-                {isLast ? 'Bitir' : 'Sonraki videoya geç ->'}
-              </Text>
+                onVideoEnd();
+                setPaused(false);
+              }}
+              style={{marginTop: 5}} // sadece dış boşluklar burada kalsın
+            >
+              <LinearGradient
+                colors={[colors.primary[300], '#40E0D0']} // ister temaya göre değiştir
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 1}}
+                className="flex flex-row"
+                style={{
+                  paddingHorizontal: 15,
+                  paddingVertical: 12,
+                  borderRadius: 25,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  // opsiyonel: gölge
+                  shadowColor: '#000',
+                  shadowOpacity: 0.15,
+                  shadowRadius: 8,
+                  shadowOffset: {width: 0, height: 4},
+                  elevation: 3,
+                }}>
+                <Text
+                  style={{color: 'white', fontSize: 17, textAlign: 'center'}}>
+                  {isLast ? 'Bitir  ' : 'Sonraki videoya geç  '}
+                </Text>
+                <Image
+                  source={isLast ? icons.check_1 : icons.next}
+                  tintColor={'white'}
+                  className="size-7"
+                />
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         )}

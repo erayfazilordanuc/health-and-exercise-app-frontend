@@ -37,10 +37,11 @@ import {
   getNextRoomId,
   isRoomExistBySenderAndReceiver,
 } from '../../api/message/messageService';
+import LinearGradient from 'react-native-linear-gradient';
 
 const Group = () => {
   const insets = useSafeAreaInsets();
-  const {colors} = useTheme();
+  const {colors, theme} = useTheme();
   type GroupRouteProp = RouteProp<GroupsStackParamList, 'Group'>;
   const {params} = useRoute<GroupRouteProp>();
   const {groupId} = params;
@@ -252,9 +253,15 @@ const Group = () => {
 
   return (
     <View className="flex-1">
+      <LinearGradient
+        colors={colors.gradient}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute inset-0"
+      />
       <View
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary,
           justifyContent: 'center',
           alignItems: 'flex-start',
           paddingTop: insets.top * 1.3,
@@ -262,11 +269,15 @@ const Group = () => {
         <Text
           className="pl-7 font-rubik-semibold pr-7"
           style={{
-            color: colors.text.primary,
+            color:
+              theme.name === 'Light' ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Grup:{'  '}
-          <Text style={{color: colors.primary[200]}}>
+          <Text
+            style={{
+              color: theme.name === 'Light' ? colors.primary[200] : '#2F2F30',
+            }}>
             {group && group.name ? group.name : ''}
           </Text>
         </Text>
@@ -274,10 +285,10 @@ const Group = () => {
       <ScrollView
         className="flex-1 px-3"
         style={{
-          backgroundColor: colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary,
           // paddingTop: insets.top / 2,
         }}
-        contentContainerClassName="pb-16"
+        contentContainerClassName="pb-20"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
