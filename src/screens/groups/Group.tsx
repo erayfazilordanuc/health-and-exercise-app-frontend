@@ -43,6 +43,7 @@ import {useGroupUsers} from '../../hooks/groupQueries';
 import {useQueryClient} from '@tanstack/react-query';
 import {useUser} from '../../contexts/UserContext';
 import {join} from 'lodash';
+import {getRoomIdByUsers, MSG_KEYS} from '../../hooks/messageQueries';
 
 const Group = () => {
   const insets = useSafeAreaInsets();
@@ -55,7 +56,7 @@ const Group = () => {
   const [refreshing, setRefreshing] = useState(false);
   const {user} = useUser();
   const [group, setGroup] = useState<Group | null>();
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
   const {data: members, isLoading: isUsersLoading} = useGroupUsers(
     groupId ?? undefined,
   );
@@ -252,7 +253,7 @@ const Group = () => {
     setJoinRequests(prev => prev.filter(req => req.id !== joinRequestId));
 
     if (groupId) {
-      await queryClient.invalidateQueries({queryKey: ['groupUsers', groupId]});
+      await qc.invalidateQueries({queryKey: ['groupUsers', groupId]});
     }
   };
 
@@ -353,7 +354,7 @@ const Group = () => {
               setRefreshing(true);
               try {
                 if (groupId) {
-                  await queryClient.invalidateQueries({
+                  await qc.invalidateQueries({
                     queryKey: ['groupUsers', groupId],
                   });
                 }
@@ -432,38 +433,37 @@ const Group = () => {
                 className="py-2 px-3 mb-1 bg-blue-500 flex items-center justify-center"
                 style={{borderRadius: 17}}
                 onPress={async () => {
-                  if (admin && user) {
-                    const response = await isRoomExistBySenderAndReceiver(
-                      admin.username,
-                      user.username,
-                    );
-                    if (response && response.status === 200) {
-                      const roomId = response.data;
-                      if (roomId !== 0) {
-                        navigation.navigate('Chat', {
-                          roomId: roomId,
-                          sender: user.username,
-                          receiver: admin,
-                          fromNotification: false,
-                        });
-                      } else {
-                        const nextRoomResponse = await getNextRoomId();
-                        if (nextRoomResponse.status === 200) {
-                          const nextRoomId = nextRoomResponse.data;
-                          navigation.navigate('Chat', {
-                            roomId: nextRoomId,
-                            sender: user.username,
-                            receiver: admin,
-                            fromNotification: false,
-                          });
-                        }
-                      }
-                    }
+                  if (!(admin && user)) return;
+
+                  try {
+                    // 1) cache → yoksa fetch
+                    const roomId = await qc.ensureQueryData({
+                      queryKey: MSG_KEYS.roomIdByUsers(
+                        user.username,
+                        admin.username,
+                      ),
+                      queryFn: () =>
+                        getRoomIdByUsers(user.username, admin.username),
+                    });
+
+                    // 2) oda yoksa yeni id al
+                    const finalRoomId =
+                      roomId !== 0 ? roomId : (await getNextRoomId()).data;
+
+                    navigation.navigate('Chat', {
+                      roomId: finalRoomId,
+                      sender: user.username,
+                      receiver: admin, // senin mevcut tipin neyse aynı kalsın
+                      fromNotification: false,
+                    });
+                  } catch (e) {
+                    // isteğe bağlı: toast vb.
+                    console.log(e);
                   }
                 }}>
                 <Text
                   className="font-rubik text-md"
-                  style={{color: colors.background.secondary}}>
+                  style={{color: colors.background.secondary, marginTop: 1}}>
                   Sohbete Git
                 </Text>
               </TouchableOpacity>

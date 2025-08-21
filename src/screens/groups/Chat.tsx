@@ -31,6 +31,8 @@ import icons from '../../constants/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../../contexts/UserContext';
 import LinearGradient from 'react-native-linear-gradient';
+import {useRoomMessages, useSendMessage} from '../../hooks/messageQueries';
+import {useAnimatedGestureHandler} from 'react-native-reanimated';
 
 const {width, height} = Dimensions.get('window');
 
@@ -41,11 +43,23 @@ const Chat = () => {
   const {roomId, sender, receiver, fromNotification, navigatedInApp} = params;
   const {user} = useUser();
   const {colors, theme} = useTheme();
-  const [loading, setLoading] = useState(true);
+
   const navigation = useNavigation<GroupsScreenNavigationProp>();
 
   const [message, setMessage] = useState<string>('');
-  const [messages, setMessages] = useState<Message[]>([]);
+  const {data: messagesData, isLoading} = useRoomMessages(roomId);
+  const [loading, setLoading] = useState(isLoading);
+  const [messages, setMessages] = useState<Message[]>(messagesData ?? []);
+  const {mutate: send, isPending} = useSendMessage({
+    roomId,
+    sender,
+    receiver: receiver.username,
+  });
+
+  useEffect(() => {
+    if (messagesData) setMessages(messagesData);
+  }, [messagesData]);
+
   const [userAmount, setUserAmount] = useState<number>(0);
 
   const [accessToken, setAccessToken] = useState('');
@@ -101,58 +115,6 @@ const Chat = () => {
     }, []),
   );
 
-  //  useFocusEffect(
-  //   useCallback(() => {
-  //     const backAction = () => {
-  //
-  //       if (!user) return;
-  //
-
-  //       if (fromNotification) {
-  //
-  //         if (user.role === 'ROLE_USER') {
-  //           navigation.replace('Group');
-  //
-  //         } else {
-  //
-  //           navigation.replace('Member', {
-  //             memberId: receiver.id,
-  //             fromNotification,
-  //           });
-  //         }
-  //       }
-  //
-  //       if (navigatedInApp) {
-  //         if (user.role === 'ROLE_USER') {
-  //
-  //           navigation.replace('Group');
-  //         } else {
-  //           navigation.replace('Member', {memberId: receiver.id});
-  //
-  //         }
-  //       }
-  //
-  //       if (navigation.canGoBack()) {
-  //         return false;
-  //       }
-  //
-
-  //       socketService.emit('leave_room', {room: roomId, username: sender});
-  //       socketService.disconnect();
-  //
-
-  //       return true;
-  //     };
-
-  //     const backHandler = BackHandler.addEventListener(
-  //       'hardwareBackPress',
-  //       backAction,
-  //     );
-
-  //     return () => backHandler.remove();
-  //   }, []),
-  // );
-
   const sendMessage = async () => {
     const newMessage: Message = {
       message,
@@ -171,15 +133,14 @@ const Chat = () => {
     );
     console.log(accessToken);
 
-    // emit socket
     socketService.emit('send_message', {
       messageWithSender: newMessage,
       room: roomId,
       accessToken: accessToken,
     });
 
-    // save db
-    await saveMessage(newMessage);
+    // await saveMessage(newMessage);
+    await send(newMessage);
 
     setMessages(prev => [...prev, {...newMessage, sender: sender}]);
     setMessage('');
@@ -196,19 +157,7 @@ const Chat = () => {
       getAccessToken();
     }
 
-    // join room
     socketService.emit('chat_init', {room: roomId, sender});
-
-    // get existing messages from DB
-    const loadMessages = async () => {
-      setLoading(true);
-      const res = await getMessagesByRoomId(roomId);
-      if (res.status >= 200 && res.status <= 300 && res?.data) {
-        setMessages(res.data);
-      }
-      setLoading(false);
-    };
-    loadMessages();
 
     return () => {
       socketService.emit('leave_room', {room: roomId, username: sender});
@@ -320,7 +269,7 @@ const Chat = () => {
         </View>
 
         {/* Messages */}
-        {loading ? (
+        {isLoading ? (
           <View className="flex-1 items-center justify-center w-full">
             <ActivityIndicator
               className="mt-2 self-center"
@@ -328,7 +277,7 @@ const Chat = () => {
               color={colors.primary[300] ?? colors.primary}
             />
           </View>
-        ) : messages.length === 0 ? (
+        ) : messagesData && messagesData.length === 0 ? (
           <View className="flex-1 items-center justify-center px-4 pt-1">
             <Text
               className="text-center text-lg font-rubik"

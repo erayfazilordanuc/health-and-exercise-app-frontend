@@ -121,14 +121,6 @@ const CustomWeeklyProgressCalendar = ({
 
           let bgColor = colors.background.secondary;
 
-          console.log(
-            'şıkıdım şıkıdım',
-            isActive,
-            progressIndex,
-            weeklyProgressPercents[progressIndex!],
-            weeklyProgressPercents,
-            isToday,
-          );
           if (isActive) {
             if (
               progressIndex &&

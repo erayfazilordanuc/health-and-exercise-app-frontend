@@ -143,9 +143,11 @@ export const logout = async () => {
   await AsyncStorage.multiRemove(
     (
       await AsyncStorage.getAllKeys()
-    ).filter(key => key.startsWith('exerciseProgress_')),
+    ).filter(
+      key =>
+        key.startsWith('exerciseProgress_') || key.startsWith('lastMessage_'),
+    ),
   );
-  await AsyncStorage.removeItem('lastMessage');
   await AsyncStorage.removeItem('session_state');
   await AsyncStorage.removeItem('session_queue');
 };

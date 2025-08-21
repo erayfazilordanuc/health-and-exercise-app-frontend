@@ -60,7 +60,7 @@ export const getWeeklyActiveDaysProgressByUserId = async (userId: number) => {
     }
   } catch (error) {
     console.error('Error fetching exercises:', error);
-    throw error;
+    return [];
   }
 };
 

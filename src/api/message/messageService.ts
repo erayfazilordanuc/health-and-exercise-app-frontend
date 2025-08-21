@@ -27,10 +27,14 @@ export const isRoomExistBySenderAndReceiver = async (
     const response = await apiClient.get(
       `/messages/room/sender/${sender}/receiver/${receiver}`,
     );
-    console.log('Is room exist by sender and receiver', response);
-    return response;
+
+    if (response.status >= 200 && response.status < 300) {
+      console.log('Is room exist by sender and receiver', response);
+      return response.data;
+    } else return 0;
   } catch (error) {
     console.log(error);
+    return 0;
   }
 };
 
@@ -88,7 +92,9 @@ export const getLastMessageBySenderAndReceiver = async (
 ) => {
   const s = encodeURIComponent(sender);
   const r = encodeURIComponent(receiver);
-  const localJson = await AsyncStorage.getItem('lastMessage');
+  const localJson = await AsyncStorage.getItem(
+    `lastMessage_${sender}_${receiver}`,
+  );
   if (localJson) {
     const local: LocalMessage = JSON.parse(localJson);
 
@@ -105,7 +111,7 @@ export const getLastMessageBySenderAndReceiver = async (
     throw new Error(`Unexpected status: ${res.status}`);
   }
   AsyncStorage.setItem(
-    'lastMessage',
+    `lastMessage_${sender}_${receiver}`,
     JSON.stringify({
       message: res.data as Message,
       savedAt: new Date(),

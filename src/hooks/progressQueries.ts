@@ -181,12 +181,6 @@ export function useWeeklyActiveDaysProgressOfflineAware(options?: {
   });
 }
 
-export type WeeklyActiveDay = {
-  date: string;
-  isActive: boolean;
-};
-export type WeeklyActiveDaysProgress = WeeklyActiveDay[];
-
 export const EXERCISE_KEYS = {
   root: ['exercises'] as const,
   weeklyActiveDaysProgress: (userId: number) =>
@@ -197,18 +191,18 @@ export function useWeeklyActiveDaysProgressByUserId(
   userId?: number,
   options?: Omit<
     UseQueryOptions<
-      WeeklyActiveDaysProgress,
-      AxiosError,
-      WeeklyActiveDaysProgress,
-      ReturnType<typeof EXERCISE_KEYS.weeklyActiveDaysProgress>
+      ExerciseProgressDTO[], // ✅ TQueryFnData
+      AxiosError, // ✅ TError
+      ExerciseProgressDTO[], // ✅ TData
+      ReturnType<typeof EXERCISE_KEYS.weeklyActiveDaysProgress> // ✅ TQueryKey
     >,
     'queryKey' | 'queryFn' | 'enabled'
   >,
 ) {
   return useQuery<
-    WeeklyActiveDaysProgress,
+    ExerciseProgressDTO[],
     AxiosError,
-    WeeklyActiveDaysProgress,
+    ExerciseProgressDTO[],
     ReturnType<typeof EXERCISE_KEYS.weeklyActiveDaysProgress>
   >({
     queryKey: EXERCISE_KEYS.weeklyActiveDaysProgress(userId ?? -1),
@@ -222,9 +216,6 @@ export function useWeeklyActiveDaysProgressByUserId(
   });
 }
 
-/** -----------------------------------------------------------
- * Yardımcılar (opsiyonel)
- * ----------------------------------------------------------*/
 export const invalidateWeeklyActiveDaysProgress = (
   qc: QueryClient,
   userId: number,

@@ -263,6 +263,10 @@ type ExerciseVideoProgressDTO = {
   updatedA?: Date | null;
 };
 
+type ExerciseVideoProgressRequestDTO = {
+  seconds: number;
+};
+
 type AchievementDTO = {
   id: number;
   userId: number;

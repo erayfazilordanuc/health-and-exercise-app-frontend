@@ -36,6 +36,8 @@ import {
   useAdminSymptomsByUserIdAndDate,
   useSymptomsByDate,
 } from '../../../hooks/symptomsQueries';
+import {getLatestConsent} from '../../../api/consent/consentService';
+import {ConsentPurpose} from '../../../types/enums';
 
 const Development = () => {
   const insets = useSafeAreaInsets();
@@ -72,6 +74,24 @@ const Development = () => {
   const [log5, setLog5] = useState('');
   const [log6, setLog6] = useState('');
   const [log7, setLog7] = useState('');
+
+  const [kvkkConsent, setKvkkConsent] = useState<ConsentDTO | null>(null);
+  const [healthConsent, setHealthConsent] = useState<ConsentDTO | null>(null);
+
+  const fetchConsents = async () => {
+    const kvkkConsent = await getLatestConsent(
+      ConsentPurpose['KVKK_NOTICE_ACK'],
+    );
+    setKvkkConsent(kvkkConsent);
+    const healthConsent = await getLatestConsent(
+      ConsentPurpose['HEALTH_DATA_PROCESSING'],
+    );
+    setHealthConsent(healthConsent);
+  };
+
+  useEffect(() => {
+    fetchConsents();
+  }, []);
 
   const [sessionStatus, setSessionStatus] = useState<SessionState>();
   const [sessionQueue, setSessionQueue] = useState();
@@ -414,7 +434,7 @@ const Development = () => {
           </Text>
         </View>
         <View
-          className="pb-3 mb-2 p-4 rounded-2xl"
+          className="pb-3 mb-2 px-4 pt-3 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
           <View className="flex flex-row justify-between">
             <Text
@@ -451,7 +471,7 @@ const Development = () => {
           </Text>
         </View>
         <View
-          className="pb-3 mb-2 p-4 rounded-2xl"
+          className="pb-3 mb-2 px-4 pt-3 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
           <View className="flex flex-row justify-between">
             <Text
@@ -493,7 +513,7 @@ const Development = () => {
           </Text>
         </View>
         <View
-          className="pb-4 mb-2 p-4 rounded-2xl"
+          className="mb-2 py-3 px-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
           <Text
             className="text-lg font-rubik-medium"
@@ -508,7 +528,7 @@ const Development = () => {
           </Text>
         </View>
         <View
-          className="pb-4 mb-2 p-4 rounded-2xl"
+          className="mb-2 py-3 px-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
           <Text
             className="text-lg font-rubik-medium"
@@ -520,7 +540,7 @@ const Development = () => {
           </Text>
         </View>
         <View
-          className="pb-4 mb-2 p-4 rounded-2xl"
+          className="pb-4 mb-2 pt-3 px-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
           <Text
             className="text-lg font-rubik-medium"
@@ -532,7 +552,7 @@ const Development = () => {
           </Text>
         </View>
         <View
-          className="pb-4 mb-2 p-4 rounded-2xl"
+          className="pb-4 mb-2 pt-3 px-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
           <Text
             className="text-lg font-rubik-medium"
@@ -544,7 +564,7 @@ const Development = () => {
           </Text>
         </View>
         <View
-          className="pb-4 mb-2 p-4 rounded-2xl"
+          className="pb-4 mb-2 pt-3 px-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
           <Text
             className="text-lg font-rubik-medium"
@@ -552,6 +572,30 @@ const Development = () => {
             Session Queue:{'\n'}
             <Text selectable className="text-md font-rubik">
               {JSON.stringify(sessionQueue, null, 2)}
+            </Text>
+          </Text>
+        </View>
+        <View
+          className="pb-4 mb-2 pt-3 px-4 rounded-2xl"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="text-lg font-rubik-medium"
+            style={{color: colors.text.primary}}>
+            KVKK Consent:{'\n'}
+            <Text selectable className="text-md font-rubik">
+              {JSON.stringify(kvkkConsent, null, 2)}
+            </Text>
+          </Text>
+        </View>
+        <View
+          className="pb-4 mb-2 pt-3 px-4 rounded-2xl"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="text-lg font-rubik-medium"
+            style={{color: colors.text.primary}}>
+            Health Consent:{'\n'}
+            <Text selectable className="text-md font-rubik">
+              {JSON.stringify(healthConsent, null, 2)}
             </Text>
           </Text>
         </View>

@@ -66,6 +66,8 @@ import {
   useWeeklyActiveDaysProgressOfflineAware,
 } from '../../hooks/progressQueries';
 import {useIsFocused} from '@react-navigation/native';
+import {getRoomIdByUsers, MSG_KEYS} from '../../hooks/messageQueries';
+import {useQueryClient} from '@tanstack/react-query';
 // import {
 //   isExerciseReminderScheduled,
 //   registerExerciseReminder,
@@ -80,6 +82,7 @@ const Home = () => {
   const {theme, colors} = useTheme();
   const insets = useSafeAreaInsets();
   // const [user, setUser] = useState<User | null>(null);
+  const qc = useQueryClient();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
@@ -268,42 +271,65 @@ const Home = () => {
       if (user && user.groupId) {
         const admin: User = await getGroupAdmin(user.groupId);
 
-        const roomResponse = await isRoomExistBySenderAndReceiver(
-          user.username,
-          admin.username,
+        const roomId = await qc.ensureQueryData({
+          queryKey: MSG_KEYS.roomIdByUsers(user.username, admin.username),
+          queryFn: async () => {
+            const resp = await isRoomExistBySenderAndReceiver(
+              user.username,
+              admin.username,
+            );
+            const data = resp?.data ?? resp;
+            const id =
+              typeof data === 'number'
+                ? data
+                : typeof data?.roomId === 'number'
+                ? data.roomId
+                : undefined;
+
+            if (typeof id !== 'number') {
+              throw new Error('Geçersiz roomId cevabı');
+              return 0;
+            }
+            return id;
+          },
+        });
+
+        const finalRoomId =
+          roomId !== 0 ? roomId : (await getNextRoomId()).data;
+
+        const message = 'dailyStatus' + sliderValue;
+        const newMessage: Message = {
+          message,
+          sender: user.username,
+          receiver: admin.username,
+          roomId: finalRoomId,
+          createdAt: new Date(),
+        };
+
+        const saveResponse = await saveMessage(newMessage);
+
+        const newLastMessage: LocalMessage = {
+          message: newMessage as Message,
+          savedAt: new Date(),
+        };
+        AsyncStorage.setItem(
+          `lastMessage_${user.username}_${admin.username}`,
+          JSON.stringify(newLastMessage),
         );
 
-        if (roomResponse && roomResponse.status === 200) {
-          let roomId = roomResponse.data;
-          if (roomId === 0) {
-            const nextRoomResponse = await getNextRoomId();
-            if (nextRoomResponse.status === 200) {
-              roomId = nextRoomResponse.data;
-            }
-          }
-          const message = 'dailyStatus' + sliderValue;
-          const newMessage: Message = {
-            message,
-            sender: user.username,
-            receiver: admin.username,
-            roomId: roomId,
-            createdAt: new Date(),
-          };
+        const match = message.match(/dailyStatus(\d+)/);
+        const score = parseInt(match![1], 10);
 
-          const saveResponse = await saveMessage(newMessage);
+        const notiResponse = await sendNotification(
+          admin.username,
+          `${
+            message ? new Date().toLocaleDateString() + '\n' : ''
+          }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`,
+        );
 
-          const match = message.match(/dailyStatus(\d+)/);
-          const score = parseInt(match![1], 10);
-
-          const notiResponse = await sendNotification(
-            admin.username,
-            `${
-              message ? new Date().toLocaleDateString() + '\n' : ''
-            }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`,
-          );
-
-          if (saveResponse.status === 200)
-            AsyncStorage.setItem('dailyStatus', JSON.stringify(newMessage));
+        if (saveResponse.status === 200) {
+          AsyncStorage.setItem('dailyStatus', JSON.stringify(newMessage));
+          setLastMessage(newLastMessage.message);
         }
       }
     } catch (error) {
@@ -714,45 +740,50 @@ const Home = () => {
                       style={{borderRadius: 17}}
                       onPress={async () => {
                         if (admin && user) {
-                          const response = await isRoomExistBySenderAndReceiver(
-                            admin.username,
-                            user.username,
-                          );
-                          if (response && response.status === 200) {
-                            const roomId = response.data;
-                            if (roomId !== 0) {
-                              navigation.navigate('Groups', {
-                                screen: 'Chat',
-                                params: {
-                                  roomId,
-                                  sender: user?.username,
-                                  receiver: admin,
-                                  fromNotification: true,
-                                  navigatedInApp: true,
-                                },
-                              });
-                            } else {
-                              const nextRoomResponse = await getNextRoomId();
-                              if (nextRoomResponse.status === 200) {
-                                const nextRoomId = nextRoomResponse.data;
-                                navigation.navigate('Groups', {
-                                  screen: 'Chat',
-                                  params: {
-                                    roomId: nextRoomId,
-                                    sender: user?.username,
-                                    receiver: admin,
-                                    fromNotification: true,
-                                    navigatedInApp: true,
-                                  },
-                                });
-                              }
-                            }
+                          const roomId = await qc.ensureQueryData({
+                            queryKey: MSG_KEYS.roomIdByUsers(
+                              user.username,
+                              admin.username,
+                            ),
+                            queryFn: () =>
+                              getRoomIdByUsers(user.username, admin.username),
+                          });
+
+                          if (roomId !== 0) {
+                            navigation.navigate('Groups', {
+                              screen: 'Chat',
+                              params: {
+                                roomId,
+                                sender: user?.username,
+                                receiver: admin,
+                                fromNotification: true,
+                                navigatedInApp: true,
+                              },
+                            });
+                          } else {
+                            const nextRoomId =
+                              roomId !== 0
+                                ? roomId
+                                : (await getNextRoomId()).data;
+                            navigation.navigate('Groups', {
+                              screen: 'Chat',
+                              params: {
+                                roomId: nextRoomId,
+                                sender: user?.username,
+                                receiver: admin,
+                                fromNotification: true,
+                                navigatedInApp: true,
+                              },
+                            });
                           }
                         }
                       }}>
                       <Text
                         className="font-rubik text-md text-center"
-                        style={{color: colors.background.secondary}}>
+                        style={{
+                          color: colors.background.secondary,
+                          marginTop: 1,
+                        }}>
                         Sohbete Git
                       </Text>
                     </TouchableOpacity>

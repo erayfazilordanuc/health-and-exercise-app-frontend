@@ -120,6 +120,7 @@ const Profile = () => {
   };
 
   const [loading, setLoading] = useState(true);
+  const [hcStateLoading, setHcStateLoading] = useState(true);
   const [updateLoading, setUpdateLoading] = useState(false);
 
   const [time, setTime] = useState(() => {
@@ -297,6 +298,7 @@ const Profile = () => {
   // ]);
 
   const checkEssentialAppsStatus = async () => {
+    setHcStateLoading(true);
     const healthConnectInstalled = await checkHealthConnectInstalled();
     if (!healthConnectInstalled) return;
     setIsHealthConnectInstalled(true);
@@ -308,6 +310,7 @@ const Profile = () => {
     const isHealthConnectReady = await initializeHealthConnect();
     if (!isHealthConnectReady) return;
     setIsHealthConnectReady(isHealthConnectReady);
+    setHcStateLoading(false);
   };
 
   useFocusEffect(
@@ -553,9 +556,9 @@ const Profile = () => {
                         tintColor={'#16d750'}
                       />
                     </View>
-                  ) : loading ? (
+                  ) : hcStateLoading ? (
                     <View
-                      className="flex flex-row py-2 px-10 items-center"
+                      className="flex flex-row py-1 px-6 items-center"
                       style={{
                         borderRadius: 17,
                       }}>
@@ -571,7 +574,7 @@ const Profile = () => {
                         borderRadius: 17,
                         backgroundColor: colors.background.secondary,
                       }}
-                      disabled={loading}
+                      disabled={hcStateLoading}
                       onPress={() => {
                         if (!isHealthConnectInstalled) {
                           setShowHCAlert(true);
@@ -612,7 +615,7 @@ const Profile = () => {
                 {loading ? (
                   <View
                     className="flex flex-row justify-center items-center"
-                    style={{marginVertical: 150}}>
+                    style={{marginVertical: 75}}>
                     <ActivityIndicator
                       size="large"
                       color={colors.primary[300]}

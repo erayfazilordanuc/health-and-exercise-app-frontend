@@ -5,7 +5,7 @@ import {useTheme} from '../../../themes/ThemeProvider';
 import NotificationSetting from 'react-native-open-notification';
 import icons from '../../../constants/icons';
 import {getLatestConsent} from '../../../api/consent/consentService';
-import {ConsentPurpose} from '../../../types/enums';
+import {ConsentPurpose, ConsentStatus} from '../../../types/enums';
 
 const Permissions = () => {
   const insets = useSafeAreaInsets();
@@ -27,7 +27,7 @@ const Permissions = () => {
   useEffect(() => {
     fetchConsents();
   }, []);
-
+  console.log('weeeeeeeeee', ConsentStatus[kvkkConsent?.status]);
   return (
     <View
       className={`flex-1 pb-32 px-3 pt-3`}
@@ -53,7 +53,88 @@ const Permissions = () => {
             tintColor={colors.text.primary}
           />
         </TouchableOpacity>
+
         <View
+          className="mb-2"
+          style={{
+            borderRadius: 17,
+            backgroundColor: colors.background.primary,
+          }}>
+          <View className="flex flex-row items-center justify-between px-3 pt-3 pb-3">
+            <View className="flex flex-row items-center justify-end">
+              <Text
+                className="font-rubik ml-2 text-center mr-5"
+                style={{
+                  fontSize: 18,
+                  color: colors.text.primary,
+                }}>
+                KVKK Metni
+              </Text>
+              {kvkkConsent && kvkkConsent.status === 'ACKNOWLEDGED' ? (
+                <Text className="text-green-500 font-rubik text-lg">
+                  Okundu
+                </Text>
+              ) : (
+                <Text className="text-danger font-rubik text-lg">Okunmadı</Text>
+              )}
+            </View>
+            <TouchableOpacity
+              className="p-3 rounded-2xl mr-1"
+              style={{backgroundColor: colors.background.secondary}}>
+              <Text
+                className="font-rubik text-center px-1"
+                style={{
+                  fontSize: 14,
+                  color: colors.text.primary,
+                }}>
+                Değiştir
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View
+          className="mb-2"
+          style={{
+            borderRadius: 17,
+            backgroundColor: colors.background.primary,
+          }}>
+          <View className="flex flex-row items-center justify-between px-3 pt-3 pb-3">
+            <View className="flex flex-row items-center justify-end">
+              <Text
+                className="font-rubik ml-2 text-center mr-5"
+                style={{
+                  fontSize: 18,
+                  color: colors.text.primary,
+                }}>
+                Sağlık{'\n'}Sözleşmesi
+              </Text>
+              {kvkkConsent && kvkkConsent.status === 'ACKNOWLEDGED' ? (
+                <Text className="text-green-500 font-rubik text-lg">
+                  Onaylandı
+                </Text>
+              ) : (
+                <Text className="text-danger font-rubik text-lg">
+                  Onaylanmadı
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity
+              className="p-3 rounded-2xl mr-1"
+              style={{backgroundColor: colors.background.secondary}}>
+              <Text
+                className="font-rubik text-center px-1"
+                style={{
+                  fontSize: 14,
+                  color: colors.text.primary,
+                }}>
+                Değiştir
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* <View
           style={{
             borderRadius: 17,
             backgroundColor: colors.background.primary,
@@ -82,7 +163,7 @@ const Permissions = () => {
               </Text>
             </View>
           </View>
-        </View>
+        </View> */}
       </ScrollView>
     </View>
   );
