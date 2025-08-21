@@ -2,7 +2,7 @@ import {Asset} from 'react-native-image-picker';
 import apiClient from '../axios/axios';
 import RNBlob from 'react-native-blob-util';
 import {AxiosError} from 'axios';
-import {ExercisePosition} from '../../screens/exercises/user/ExercisesUser';
+import {ExercisePosition} from '../../types/enums';
 
 export const getAllExercises = async () => {
   try {
@@ -233,7 +233,7 @@ export const deleteVideoFromExercise = async (
 };
 
 export const calcPercent = (p?: ExerciseProgressDTO | null): number => {
-  if (!p) return 0;
+  if (!p || !p.exerciseDTO || !p.exerciseDTO.videos) return 0;
   const total = p.exerciseDTO.videos.reduce(
     (sum, v) => sum + (v.durationSeconds ?? 0),
     0,

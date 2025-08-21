@@ -4,12 +4,10 @@ import {useTheme} from '../themes/ThemeProvider';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 
 interface CustomWeeklyProgressCalendarProps {
-  todayProgressPercent?: number;
   weeklyProgressPercents: number[]; // 0: Pazartesi, 1: Çarşamba, 2: Cuma
 }
 
 const CustomWeeklyProgressCalendar = ({
-  todayProgressPercent,
   weeklyProgressPercents,
 }: CustomWeeklyProgressCalendarProps) => {
   const {colors, theme} = useTheme();
@@ -123,8 +121,19 @@ const CustomWeeklyProgressCalendar = ({
 
           let bgColor = colors.background.secondary;
 
+          console.log(
+            'şıkıdım şıkıdım',
+            isActive,
+            progressIndex,
+            weeklyProgressPercents[progressIndex!],
+            weeklyProgressPercents,
+            isToday,
+          );
           if (isActive) {
-            if (weeklyProgressPercents[index] === 100) {
+            if (
+              progressIndex &&
+              weeklyProgressPercents[progressIndex] === 100
+            ) {
               bgColor = '#14E077';
             } else if (isToday) {
               bgColor = '#4f9cff';
@@ -173,21 +182,22 @@ const CustomWeeklyProgressCalendar = ({
                     alignSelf: 'center',
                     width: 35,
                     height: 35,
-                    backgroundColor: colors.primary[300],
+                    backgroundColor: bgColor,
                   }}>
                   <AnimatedCircularProgress
                     size={37} // kutu kadar
                     width={2}
-                    fill={todayProgressPercent ?? 0}
-                    tintColor={colors.primary[300]}
-                    backgroundColor={colors.background.secondary}
+                    fill={weeklyProgressPercents[todayIndex] ?? 0}
+                    tintColor={bgColor}
+                    backgroundColor={bgColor}
                     rotation={0} // tepe noktasından başlasın
+                    lineCap="round"
                     style={{alignSelf: 'center'}}>
                     {() => (
                       <Text
                         className="text-xs font-rubik"
                         style={{color: colors.text.primary}}>
-                        %{todayProgressPercent ?? 0}
+                        %{weeklyProgressPercents[todayIndex] ?? 0}
                       </Text>
                     )}
                   </AnimatedCircularProgress>
@@ -212,6 +222,7 @@ const CustomWeeklyProgressCalendar = ({
                     tintColor="#fd5353" /* kırmızı halkalı */
                     backgroundColor={colors.background.secondary}
                     rotation={0}
+                    lineCap="round"
                     style={{
                       alignSelf: 'center',
                     }}>

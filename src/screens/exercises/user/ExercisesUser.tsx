@@ -16,7 +16,11 @@ import React, {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../../../themes/ThemeProvider';
 import icons from '../../../constants/icons';
-import {useNavigation, useFocusEffect} from '@react-navigation/native';
+import {
+  useNavigation,
+  useFocusEffect,
+  useIsFocused,
+} from '@react-navigation/native';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {Calendar, WeekCalendar} from 'react-native-calendars';
 import dayjs from 'dayjs';
@@ -37,13 +41,14 @@ import {jsonGetAll} from '@react-native-firebase/app';
 import {BlurView} from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
 import NetInfo from '@react-native-community/netinfo';
+import {ExercisePosition} from '../../../types/enums';
+import {
+  useTodaysProgressOfflineFirst,
+  useWeeklyActiveDaysProgressOfflineAware,
+} from '../../../hooks/progressQueries';
+import {isEqual} from 'lodash';
 
 const {height, width} = Dimensions.get('window');
-
-export enum ExercisePosition {
-  STANDING,
-  SEATED,
-}
 
 const ExercisesUser = () => {
   const {colors, theme} = useTheme();
@@ -53,155 +58,34 @@ const ExercisesUser = () => {
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const {user} = useUser();
-
+  const [showModal, setShowModal] = useState(false);
   const [todayExerciseProgress, setTodayExerciseProgress] =
     useState<ExerciseProgressDTO | null>(null);
   const [weeklyExerciseProgress, setWeeklyExersiseProgress] = useState<
     ExerciseProgressDTO[]
   >([]);
-
-  const [showModal, setShowModal] = useState(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      const backAction = () => {
-        navigation.navigate('Home');
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        backAction,
-      );
-
-      return () => backHandler.remove(); // Ekrandan çıkınca event listener'ı kaldır
-    }, []),
+  const [todayPercent, setTodayPercent] = useState(
+    calcPercent(todayExerciseProgress) ?? 0,
   );
 
-  // const fetchProgress = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const todayExerciseProgress: ExerciseProgressDTO =
-  //       await getTodaysProgress();
-
-  //     const localTodayExerciseProgressJson = await AsyncStorage.getItem(
-  //       `exerciseProgress_${new Date().toISOString().slice(0, 10)}`,
-  //     );
-
-  //     console.log('today', todayExerciseProgress);
-  //     console.log('local', localTodayExerciseProgressJson);
-
-  //     let localTodayExerciseProgress: ExerciseProgressDTO | null = null;
-  //     if (localTodayExerciseProgressJson)
-  //       localTodayExerciseProgress = JSON.parse(localTodayExerciseProgressJson);
-
-  //     if (
-  //       (!todayExerciseProgress && localTodayExerciseProgress) ||
-  //       (localTodayExerciseProgress &&
-  //         localTodayExerciseProgress.totalProgressDuration >
-  //           todayExerciseProgress.totalProgressDuration)
-  //     ) {
-  //       setTodayExerciseProgress(localTodayExerciseProgress);
-
-  //       for (const videoProgress of localTodayExerciseProgress.videoProgress) {
-  //         await progressExerciseVideo(
-  //           localTodayExerciseProgress.exerciseDTO.id!,
-  //           videoProgress.videoId,
-  //           videoProgress.progressDuration,
-  //         );
-  //       }
-  //     } else if (todayExerciseProgress) {
-  //       await AsyncStorage.setItem(
-  //         `exerciseProgress_${new Date().toISOString().slice(0, 10)}`,
-  //         JSON.stringify(todayExerciseProgress),
-  //       );
-
-  //       setTodayExerciseProgress(todayExerciseProgress);
-  //     }
-
-  //     const weeklyExerciseProgress: ExerciseProgressDTO[] =
-  //       await getWeeklyActiveDaysProgress();
-  //     setWeeklyExersiseProgress(weeklyExerciseProgress);
-  //   } catch (error) {
-  //     console.log(error);
-  //     ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
-  //   } finally {
-  //     setLoading(false);
-  //     if (!initialized) setInitialized(true);
-  //   }
-  // };
+  useEffect(() => {
+    if (todayExerciseProgress)
+      setTodayPercent(calcPercent(todayExerciseProgress));
+  }, [todayExerciseProgress]);
 
   const fetchProgress = async () => {
     setLoading(true);
     try {
-      const net = await NetInfo.fetch();
-      const isOnline = !!net.isConnected;
+      const todayExerciseProgressRes: ExerciseProgressDTO =
+        await getTodaysProgress();
+      // if (!isEqual(todayExerciseProgressRes, todayExerciseProgress))
+      setTodayExerciseProgress(todayExerciseProgressRes);
 
-      // 1) Local’i güvenli oku
-      const key = `exerciseProgress_${new Date().toISOString().slice(0, 10)}`;
-      let localToday: ExerciseProgressDTO | null = null;
-      try {
-        const json = await AsyncStorage.getItem(key);
-        if (json) localToday = JSON.parse(json);
-      } catch (_) {
-        // bozuk kayıt varsa temizle
-        await AsyncStorage.removeItem(key);
-        localToday = null;
-      }
+      const weeklyExerciseProgressRes: ExerciseProgressDTO[] =
+        await getWeeklyActiveDaysProgress();
 
-      // 2) Online ise server’dan çek; offline ise sadece local’i kullan
-      let serverToday: ExerciseProgressDTO | null = null;
-      let weekly: ExerciseProgressDTO[] = [];
-
-      if (isOnline) {
-        try {
-          serverToday = await getTodaysProgress();
-          console.log('serverToday', serverToday);
-        } catch (_) {
-          /* yut, aşağıda kıyas var */
-        }
-
-        try {
-          weekly = await getWeeklyActiveDaysProgress();
-          console.log('weekly', weekly);
-        } catch (_) {
-          weekly = [];
-        }
-      }
-
-      // 3) Bugün için local-server kıyası (defansif)
-      const pickSafe = (p?: ExerciseProgressDTO | null) =>
-        p && p.exerciseDTO && Array.isArray(p.exerciseDTO.videos) ? p : null;
-
-      const safeLocal = pickSafe(localToday);
-      const safeServer = pickSafe(serverToday);
-
-      let chosen: ExerciseProgressDTO | null = null;
-      if (!safeServer && safeLocal) {
-        chosen = safeLocal;
-      } else if (safeServer && !safeLocal) {
-        chosen = safeServer;
-      } else if (safeServer && safeLocal) {
-        chosen =
-          (safeLocal.totalProgressDuration ?? 0) >
-          (safeServer.totalProgressDuration ?? 0)
-            ? safeLocal
-            : safeServer;
-      } else {
-        chosen = null;
-      }
-
-      if (chosen) {
-        setTodayExerciseProgress(chosen);
-        // server’dan geldiyse local’e yaz
-        if (isOnline && chosen === safeServer) {
-          await AsyncStorage.setItem(key, JSON.stringify(chosen));
-        }
-      } else {
-        setTodayExerciseProgress(null);
-      }
-
-      setWeeklyExersiseProgress(weekly);
+      // if (!isEqual(weeklyExerciseProgressRes, weeklyExerciseProgress))
+      setWeeklyExersiseProgress(weeklyExerciseProgressRes);
     } catch (error) {
       console.log(error);
       ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
@@ -235,6 +119,7 @@ const ExercisesUser = () => {
           (sum, v) => sum + (v.durationSeconds ?? 0),
           0,
         ),
+        fromMain: true,
       });
       setShowModal(false);
     }
@@ -248,10 +133,14 @@ const ExercisesUser = () => {
     ) {
       navigation.navigate('ExerciseDetail', {
         progress: todayExerciseProgress,
-        totalDurationSec: todayExerciseProgress.exerciseDTO.videos.reduce(
-          (sum, v) => sum + (v.durationSeconds ?? 0),
-          0,
-        ),
+        totalDurationSec:
+          todayExerciseProgress.exerciseDTO &&
+          todayExerciseProgress.exerciseDTO.videos &&
+          todayExerciseProgress.exerciseDTO.videos.reduce(
+            (sum, v) => sum + (v.durationSeconds ?? 0),
+            0,
+          ),
+        fromMain: true,
       });
       setShowModal(false);
     }
@@ -281,6 +170,20 @@ const ExercisesUser = () => {
         tabBarStyle: defaultTabBarStyle,
       });
   }, [navigation]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        navigation.navigate('Home');
+        return true;
+      };
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+      return () => backHandler.remove();
+    }, []),
+  );
 
   return (
     <View className="flex-1">
@@ -324,19 +227,19 @@ const ExercisesUser = () => {
             <>
               <>
                 <Text
-                  className="font-rubik"
+                  className="font-rubik text-center"
                   style={{fontSize: 17, color: colors.text.primary}}>
                   Bugünün Egzersizi
                 </Text>
 
                 {initialized ? (
-                  <View className="flex flex-row justify-between items-center mt-3 mb-2">
+                  <View className="flex flex-row justify-center items-center mt-3 mb-3">
                     {!(
                       todayExerciseProgress &&
                       todayExerciseProgress.totalProgressDuration
                     ) ? (
                       <TouchableOpacity
-                        className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
+                        className="flex flex-row justify-center items-center py-3 pl-3"
                         style={{
                           borderRadius: 17,
                           backgroundColor: colors.primary[175],
@@ -349,11 +252,13 @@ const ExercisesUser = () => {
                         </Text>
                         <Image source={icons.gymnastic_1} className="size-16" />
                       </TouchableOpacity>
-                    ) : todayExerciseProgress.totalProgressDuration ===
-                      todayExerciseProgress.exerciseDTO.videos.reduce(
-                        (sum, v) => sum + (v.durationSeconds ?? 0),
-                        0,
-                      ) ? (
+                    ) : todayExerciseProgress.exerciseDTO &&
+                      todayExerciseProgress.exerciseDTO.videos &&
+                      todayExerciseProgress.totalProgressDuration ===
+                        todayExerciseProgress.exerciseDTO.videos.reduce(
+                          (sum, v) => sum + (v.durationSeconds ?? 0),
+                          0,
+                        ) ? (
                       <TouchableOpacity
                         className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
                         style={{
@@ -383,12 +288,13 @@ const ExercisesUser = () => {
                     {todayExerciseProgress &&
                       todayExerciseProgress.totalProgressDuration &&
                       todayExerciseProgress.totalProgressDuration > 0 && (
-                        <View className="flex justify-center items-center mr-5">
+                        <View className="flex justify-center items-center ml-10">
                           <AnimatedCircularProgress
                             size={100}
-                            width={8}
+                            width={6}
                             rotation={0}
-                            fill={calcPercent(todayExerciseProgress) ?? 0}
+                            lineCap="round"
+                            fill={todayPercent}
                             tintColor={colors.primary[300]}
                             onAnimationComplete={() =>
                               console.log('onAnimationComplete')
@@ -396,11 +302,12 @@ const ExercisesUser = () => {
                             backgroundColor={colors.background.secondary}>
                             {() => (
                               <Text
-                                className="text-2xl font-rubik"
+                                className="font-rubik"
                                 style={{
+                                  fontSize: 22,
                                   color: colors.text.primary,
                                 }}>
-                                %{calcPercent(todayExerciseProgress) ?? 0}
+                                %{todayPercent}
                               </Text>
                             )}
                           </AnimatedCircularProgress>
@@ -463,13 +370,11 @@ const ExercisesUser = () => {
           </View>
           {weeklyExerciseProgress && (
             <CustomWeeklyProgressCalendar
-              todayProgressPercent={calcPercent(todayExerciseProgress)}
               weeklyProgressPercents={weeklyExerciseProgress.map(calcPercent)}
             />
           )}
         </View>
       </View>
-
       {showModal && (
         <View
           style={{

@@ -158,6 +158,7 @@ const Progress = () => {
                             size={100}
                             width={8}
                             rotation={0}
+                            lineCap="round"
                             fill={
                               todaysExerciseProgress?.totalProgressDuration &&
                               todaysExerciseProgress.totalProgressDuration

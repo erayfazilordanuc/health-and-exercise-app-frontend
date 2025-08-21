@@ -12,6 +12,7 @@ import {
   Linking,
   NativeModules,
   Platform,
+  ImageBackground,
 } from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -52,12 +53,19 @@ import CustomAlertSingleton, {
 } from '../../components/CustomAlertSingleton';
 import NotificationSetting from 'react-native-open-notification';
 import {
+  checkGoogleFitInstalled,
   checkHealthConnectInstalled,
   computeHealthScore,
   getSymptoms,
   initializeHealthConnect,
-} from '../../api/health/healthConnectService';
+} from '../../lib/health/healthConnectService';
 import {getSymptomsByDate} from '../../api/symptoms/symptomsService';
+import {BlurView} from '@react-native-community/blur';
+import {
+  useTodaysProgressOfflineFirst,
+  useWeeklyActiveDaysProgressOfflineAware,
+} from '../../hooks/progressQueries';
+import {useIsFocused} from '@react-navigation/native';
 // import {
 //   isExerciseReminderScheduled,
 //   registerExerciseReminder,
@@ -77,25 +85,68 @@ const Home = () => {
   const [sliderValue, setSliderValue] = useState(0);
   const {user} = useUser();
   const [admin, setAdmin] = useState<User>();
-  const [lastMessage, setLastMessage] = useState<Message | null>();
   const alertRef = useRef<CustomAlertSingletonHandle>(null);
+  const [lastMessage, setLastMessage] = useState<Message | null>();
 
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
-  const [healthScore, setHealthScore] = useState(0);
+  // const todayExerciseProgressQ = useTodaysProgressOfflineFirst({
+  //   enabled: !isAdmin,
+  // });
+  // const todayExerciseProgress = todayExerciseProgressQ.data?.today;
 
   const [todayExerciseProgress, setTodayExerciseProgress] =
     useState<ExerciseProgressDTO | null>();
-  const [weeklyExerciseProgress, setWeeklyEersiseProgress] = useState<
-    ExerciseProgressDTO[]
-  >([]);
 
-  const scrollViewHeight = SCREEN_HEIGHT / 8;
+  const fetchProgress = async () => {
+    if (!user?.groupId) return;
+
+    try {
+      if (!admin) {
+        const groupAdmin: User = await getGroupAdmin(user.groupId);
+        setAdmin(groupAdmin);
+      }
+    } catch (error) {
+      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
+      console.log(error);
+    }
+    try {
+      const todayExerciseProgress: ExerciseProgressDTO =
+        await getTodaysProgress();
+      setTodayExerciseProgress(todayExerciseProgress);
+    } catch (error) {
+      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
+      console.log(error);
+    }
+    if (!initialized) setInitialized(true);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProgress();
+    }, []),
+  );
+
+  const fetchLastMessage = async () => {
+    if (!user || !admin) return;
+    const lastMessageResponse = await getLastMessageBySenderAndReceiver(
+      admin.username,
+      user.username,
+    );
+    if (lastMessageResponse && lastMessageResponse.message) {
+      setLastMessage(lastMessageResponse);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user && user.role === 'ROLE_USER') fetchLastMessage();
+    }, [user, admin]),
+  );
 
   const initializeAppContents = async () => {
     if (!user) return;
-    // For notifications
     const notificationPermissionsGranted = await requestPermission();
     if (!notificationPermissionsGranted) {
       alertRef.current?.show({
@@ -143,8 +194,6 @@ const Home = () => {
       setIsAdmin(true);
     }
 
-    await fetchAndCalculateHealthScore();
-
     if (!notificationPermissionsGranted) return;
 
     const localFcmTokenString = await AsyncStorage.getItem('fcmToken');
@@ -172,17 +221,10 @@ const Home = () => {
         }
       }
     }
-
-    // if (user && user.role === 'ROLE_USER') {
-    //   const scheduled = await isExerciseReminderScheduled();
-    //   if (scheduled) return;
-
-    //   await registerExerciseReminder();
-    // }
   };
 
   const calcPercent = (p?: ExerciseProgressDTO | null): number => {
-    if (!p) return 0;
+    if (!p || !p.exerciseDTO || !p.exerciseDTO.videos) return 0;
     const total = p.exerciseDTO.videos.reduce(
       (sum, v) => sum + (v.durationSeconds ?? 0),
       0,
@@ -191,36 +233,6 @@ const Home = () => {
       ? 0
       : Math.round((p.totalProgressDuration / total) * 100);
   };
-
-  const fetchProgress = async () => {
-    if (!user?.groupId) return;
-
-    try {
-      if (!admin) {
-        const groupAdmin: User = await getGroupAdmin(user.groupId);
-        setAdmin(groupAdmin);
-      }
-
-      const todayExerciseProgress: ExerciseProgressDTO =
-        await getTodaysProgress();
-      setTodayExerciseProgress(todayExerciseProgress);
-
-      const weeklyExerciseProgress: ExerciseProgressDTO[] =
-        await getWeeklyActiveDaysProgress();
-      setWeeklyEersiseProgress(weeklyExerciseProgress);
-    } catch (error) {
-      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
-      console.log(error);
-    } finally {
-      if (!initialized) setInitialized(true);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchProgress();
-    }, []),
-  );
 
   useEffect(() => {
     initializeAppContents();
@@ -303,41 +315,6 @@ const Home = () => {
     }
   };
 
-  const fetchLastMessage = async (user: User) => {
-    if (!admin) return;
-
-    try {
-      const lastMessage: Message = await getLastMessageBySenderAndReceiver(
-        admin.username,
-        user.username,
-      );
-
-      if (
-        lastMessage.message &&
-        lastMessage.message.startsWith('dailyStatus')
-      ) {
-        const match = lastMessage.message.match(/dailyStatus(\d+)/);
-        const score = parseInt(match![1], 10);
-
-        lastMessage.message =
-          '\n' +
-          new Date().toLocaleDateString() +
-          `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
-      }
-      setLastMessage(lastMessage);
-    } catch (error) {
-      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
-      console.log(error);
-    } finally {
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      if (user) fetchLastMessage(user);
-    }, [admin]),
-  );
-
   const combineAndSetSymptoms = async (
     symptoms: Symptoms,
     syncedSymptoms?: Symptoms,
@@ -360,7 +337,11 @@ const Home = () => {
         merged.activeCaloriesBurned = syncedSymptoms.activeCaloriesBurned;
       }
 
-      if (!merged.sleepMinutes && syncedSymptoms && syncedSymptoms.sleepMinutes) {
+      if (
+        !merged.sleepMinutes &&
+        syncedSymptoms &&
+        syncedSymptoms.sleepMinutes
+      ) {
         merged.sleepMinutes = syncedSymptoms.sleepMinutes;
       }
 
@@ -368,45 +349,92 @@ const Home = () => {
     }
   };
 
-  const fetchAndCalculateHealthScore = async () => {
-    setLoading(true);
-    try {
-      if (user && user.role === 'ROLE_USER') {
-        const healthConnectInstalled = await checkHealthConnectInstalled();
-        if (!healthConnectInstalled) return;
+  const healthConnectReady = async () => {
+    const healthConnectInstalled = await checkHealthConnectInstalled();
+    if (!healthConnectInstalled) return false;
 
-        const isHealthConnectReady = await initializeHealthConnect();
-        if (!isHealthConnectReady) return;
+    const googleFitInstalled = await checkGoogleFitInstalled();
+    if (!googleFitInstalled) return false;
 
-        const healthConnectSymptoms = await getSymptoms();
-        const syncedSymptoms = await getSymptomsByDate(new Date());
-        const combinedSymptoms = await combineAndSetSymptoms(
-          healthConnectSymptoms!,
-          syncedSymptoms,
-        );
-        if (combinedSymptoms) {
-          const s = computeHealthScore({
-            heartRate: combinedSymptoms.pulse || undefined,
-            steps: combinedSymptoms.steps || undefined,
-            activeCalories: combinedSymptoms.activeCaloriesBurned || undefined,
-            sleepMinutes: combinedSymptoms.sleepMinutes || undefined,
-          });
-          setHealthScore(s);
-        }
-      }
-    } finally {
-      setLoading(false); // ✅ her durumda çalışır
-    }
+    const isHealthConnectReady = await initializeHealthConnect();
+    if (!isHealthConnectReady) return false;
+
+    return true;
   };
+
+  // const fetchAndCalculateHealthScore = async () => {
+  //   const syncedSymptoms = await getSymptomsByDate(new Date());
+
+  //   const isHCReady = await healthConnectReady();
+  //   if (isHCReady) {
+  //     const healthConnectSymptoms = await getSymptoms();
+  //     const combinedSymptoms = await combineAndSetSymptoms(
+  //       healthConnectSymptoms!,
+  //       syncedSymptoms,
+  //     );
+  //     if (combinedSymptoms) {
+  //       setHealthScore(prev =>
+  //         computeHealthScore({
+  //           heartRate: combinedSymptoms.pulse,
+  //           steps: combinedSymptoms.steps,
+  //           totalCalories: combinedSymptoms.totalCaloriesBurned ?? undefined,
+  //           activeCalories: combinedSymptoms.activeCaloriesBurned ?? undefined,
+  //           sleepMinutes: combinedSymptoms.sleepMinutes ?? undefined,
+  //         }),
+  //       );
+  //       console.log('combineeeeeeeeeed score', combinedSymptoms);
+  //     }
+  //   } else {
+  //     if (syncedSymptoms) {
+  //       setHealthScore(prev =>
+  //         computeHealthScore({
+  //           heartRate: syncedSymptoms.pulse,
+  //           steps: syncedSymptoms.steps,
+  //           totalCalories: syncedSymptoms.totalCaloriesBurned ?? undefined,
+  //           activeCalories: syncedSymptoms.activeCaloriesBurned ?? undefined,
+  //           sleepMinutes: syncedSymptoms.sleepMinutes ?? undefined,
+  //         }),
+  //       );
+  //     }
+  //   }
+  // };
 
   return (
     <>
       <LinearGradient
-        colors={colors.gradient} // istediğin renkler
+        colors={colors.gradient}
+        locations={[0.15, 0.25, 0.7, 1]}
         start={{x: 0.1, y: 0}}
+        end={{x: 0.8, y: 1}}
+        className="absolute top-0 left-0 right-0 bottom-0"
+      />
+      {/* <LinearGradient
+        colors={[
+          '#CC5A27', // sıcak başlangıçFF4E00
+          '#D44C32', // ara turuncu-kırmızı
+          '#D72638', // kırmızı vurgu
+          '#7A2626', // koyu bordo
+          '#2A2424', // koyu gri-kahve
+          '#141414', // siyaha yaklaşım
+          '#000000',
+        ]}
+        locations={[0, 0.12, 0.25, 0.5, 0.72, 0.9, 1]}
+        start={{x: 0.05, y: 0}}
         end={{x: 0.9, y: 1}}
         className="absolute inset-0"
+      /> */}
+      {/* <ImageBackground
+        source={require('../../assets/images/blur_view_2.png')}
+        resizeMode="cover"
+        className="absolute inset-0"
       />
+      <BlurView
+        blurType="dark"
+        blurAmount={50}
+        reducedTransparencyFallbackColor="black"
+        pointerEvents="none"
+        style={{position: 'absolute', top: 0, right: 0, bottom: 0, left: 0}}
+      /> */}
       <View
         style={{
           backgroundColor: 'transparent', //colors.background.secondary,
@@ -541,7 +569,7 @@ const Home = () => {
 
           <CustomAlertSingleton ref={alertRef} />
 
-          {user && user.role === 'ROLE_USER' && (
+          {user && user.role === 'ROLE_USER' && user.groupId && (
             <>
               {/* <ScrollView
                 horizontal
@@ -549,41 +577,7 @@ const Home = () => {
                 className="flex-1 mt-1 mb-1 pb-2 rounded-2xl"> */}
               <View className="flex-1 flex flex-row items-stretch justify-between mt-1">
                 <View
-                  className="flex flex-col px-3 pr-4 py-3 " // mr-1
-                  style={{
-                    borderRadius: 20,
-                    backgroundColor: colors.background.primary,
-                  }}>
-                  <Text
-                    className="pl-2 font-rubik"
-                    style={{fontSize: 18, color: colors.text.primary}}>
-                    Sağlık Durumu
-                  </Text>
-                  <View className="mt-4 mb-2 flex justify-center items-center">
-                    <AnimatedCircularProgress
-                      size={80}
-                      width={5}
-                      rotation={0}
-                      fill={healthScore}
-                      tintColor={'#3EDA87'}
-                      onAnimationComplete={() =>
-                        console.log('onAnimationComplete')
-                      }
-                      backgroundColor={colors.background.secondary}>
-                      {() => (
-                        <Text
-                          className="text-xl font-rubik"
-                          style={{
-                            color: colors.text.primary,
-                          }}>
-                          %{healthScore}
-                        </Text>
-                      )}
-                    </AnimatedCircularProgress>
-                  </View>
-                </View>
-                <View
-                  className="flex-1 flex flex-col px-5 py-3 ml-3 "
+                  className="flex-1 flex flex-col px-5 py-3"
                   style={{
                     borderRadius: 20,
                     backgroundColor: colors.background.primary,
@@ -594,13 +588,13 @@ const Home = () => {
                     <>
                       <>
                         <Text
-                          className="font-rubik text-xl mb-1"
-                          style={{color: colors.text.primary, marginTop: 2}}>
+                          className="text-center font-rubik text-xl"
+                          style={{color: colors.text.primary}}>
                           Bugünün Egzersizi
                         </Text>
 
                         {initialized ? (
-                          <View className="flex flex-row justify-between items-center mt-5 mb-2">
+                          <View className="flex flex-row justify-center items-center mt-4 mb-1">
                             <TouchableOpacity
                               disabled={
                                 todayExerciseProgress?.totalProgressDuration !==
@@ -640,11 +634,45 @@ const Home = () => {
                                 className="size-12"
                               />
                             </TouchableOpacity>
+                            {todayExerciseProgress &&
+                              todayExerciseProgress.totalProgressDuration &&
+                              todayExerciseProgress.totalProgressDuration >
+                                0 && (
+                                <View className="flex justify-center items-center ml-8">
+                                  <AnimatedCircularProgress
+                                    size={80}
+                                    width={5}
+                                    rotation={0}
+                                    lineCap="round"
+                                    fill={
+                                      calcPercent(todayExerciseProgress) ?? 0
+                                    }
+                                    tintColor={colors.primary[300]}
+                                    onAnimationComplete={() =>
+                                      console.log('onAnimationComplete')
+                                    }
+                                    backgroundColor={
+                                      colors.background.secondary
+                                    }>
+                                    {() => (
+                                      <Text
+                                        className="text-xl font-rubik"
+                                        style={{
+                                          color: colors.text.primary,
+                                        }}>
+                                        %
+                                        {calcPercent(todayExerciseProgress) ??
+                                          0}
+                                      </Text>
+                                    )}
+                                  </AnimatedCircularProgress>
+                                </View>
+                              )}
                           </View>
                         ) : (
                           <ActivityIndicator
-                            className="self-center mt-10"
-                            size="small"
+                            className="self-center my-9"
+                            size="large"
                             color={colors.primary[300]}
                           />
                         )}
@@ -674,14 +702,13 @@ const Home = () => {
                     backgroundColor: colors.background.primary,
                   }}>
                   <View className="flex flex-row justify-between">
-                    {lastMessage &&
-                      !lastMessage.message.startsWith('dailyStatus') && (
-                        <Text
-                          className="font-rubik mt-1"
-                          style={{fontSize: 18, color: colors.primary[200]}}>
-                          En Son Mesaj
-                        </Text>
-                      )}
+                    {lastMessage && (
+                      <Text
+                        className="font-rubik mt-1"
+                        style={{fontSize: 18, color: colors.primary[200]}}>
+                        En Son Mesaj
+                      </Text>
+                    )}
                     <TouchableOpacity
                       className="py-2 px-3 bg-blue-500 flex items-center justify-center"
                       style={{borderRadius: 17}}
@@ -730,16 +757,15 @@ const Home = () => {
                       </Text>
                     </TouchableOpacity>
                   </View>
-                  {lastMessage &&
-                    !lastMessage.message.startsWith('dailyStatus') && (
-                      <Text
-                        className="font-rubik text-md mt-1"
-                        style={{color: colors.text.primary}}>
-                        {lastMessage.receiver === user?.username
-                          ? user?.fullName + ' : ' + lastMessage.message
-                          : 'Siz : ' + lastMessage.message}
-                      </Text>
-                    )}
+                  {lastMessage && (
+                    <Text
+                      className="font-rubik text-md mt-1"
+                      style={{color: colors.text.primary}}>
+                      {lastMessage.receiver === user?.username
+                        ? user?.fullName + ' : ' + lastMessage.message
+                        : 'Siz : ' + lastMessage.message}
+                    </Text>
+                  )}
                 </View>
               )}
               {/* </ScrollView> */}

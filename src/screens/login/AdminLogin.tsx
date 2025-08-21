@@ -11,6 +11,8 @@ import {
   ActivityIndicator,
   ImageBackground,
   BackHandler,
+  Modal,
+  Dimensions,
 } from 'react-native';
 import {
   CommonActions,
@@ -35,18 +37,15 @@ import DatePicker from 'react-native-date-picker';
 import {Dropdown} from 'react-native-element-dropdown';
 import {BlurView} from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
+import {LoginMethod} from '../../types/enums';
 
 function AdminLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
   const {theme, colors, setTheme} = useTheme();
+  const {height} = Dimensions.get('screen');
   const netInfo = useNetInfo();
   const [loading, setLoading] = useState(false);
 
-  enum LoginMethod {
-    'default',
-    'registration',
-    'guest',
-  }
   const [loginMethod, setLoginMethod] = useState<LoginMethod>(
     LoginMethod.default,
   );
@@ -65,6 +64,9 @@ function AdminLogin() {
   const [code, setCode] = useState<string | null>(null);
 
   const [isCodeStep, setIsCodeStep] = useState(false);
+
+  const [kvkkApproved, setKvkkApproved] = useState(false);
+  const [kvkkModalVisible, setKvkkModalVisible] = useState(false);
 
   const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -635,6 +637,139 @@ function AdminLogin() {
             </TouchableOpacity>
           </View> */}
       </ScrollView>
+
+      <Modal
+        transparent
+        visible={kvkkModalVisible}
+        animationType="fade"
+        onRequestClose={() => setKvkkModalVisible(false)}>
+        <View className="flex-1 justify-center items-center bg-black/40">
+          <View
+            // Kart: ekranın ~%70 yüksekliğini aşmasın
+            style={{
+              width: '91%',
+              maxHeight: height * 0.7,
+              borderRadius: 24,
+              padding: 20,
+              backgroundColor: colors.background.primary,
+            }}>
+            {/* Scroll alanı: kalan yüksekliği kullansın */}
+            <ScrollView
+              style={{flexGrow: 1}} // mevcut alanı doldur
+              contentContainerStyle={{paddingBottom: 8}}
+              showsVerticalScrollIndicator={true}
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled // Android için iyi olur
+            >
+              <Text
+                style={{
+                  marginTop: 15,
+                  fontSize: 13,
+                  lineHeight: 20,
+                  textAlign: 'center',
+                }}
+                className="font-rubik">
+                Telefonunuzdaki sağlık verilerini HopeMove uygulamasından takip
+                etmek için{' '}
+                <Text className="font-rubik-medium">Health Connect</Text> ve
+                <Text className="font-rubik-medium"> Google Fit</Text>{' '}
+                uygulamalarını indirmeniz gerekiyor.{'\n'}Şimdi Play Store’a
+                gitmek istiyor musunuz?ÖRNEK: 6698 sayılı Kanunun 16. maddesinde
+                düzenlenen Veri Sorumluları Siciline kayıt yükümlülüğü
+                kapsamında veri sorumlularının VERBİS’e bilgi girişi yapması.
+                ÖRNEK: Gelir Vergisi Kanununun 70. maddesi gereği,
+                gayrimenkulünü kiraya verenlerin, vermek zorunda olduğu yıllık
+                beyanname kapsamında kendisine ait kişisel verilerin Maliye
+                Bakanlığının ilgili birimlerince işlenmesi. C- Fiili İmkânsızlık
+                Nedeniyle Rızasını Açıklayamayacak Durumda Bulunan Veya Rızasına
+                Hukuki Geçerlilik Tanınmayan Kişinin Kendisinin ya da Bir
+                Başkasının Hayatı Veya Beden Bütünlüğünün Korunması İçin Zorunlu
+                Olması Kişisel verisi işlenecek kişinin herhangi bir fiili
+                imkânsızlık nedeniyle rızasını açıklayamayacak durumda olması
+                veya rızasına hukuki geçerlilik tanınmayan kişinin kendisi veya
+                başkasının hayatı ve beden bütünlüğünün korunması için zorunlu
+                olması halinde kişisel verilerin işlenmesi mümkündür. ÖRNEK:
+                Bilinci yerinde olmayan bir kişinin beden bütünlüğünün korunması
+                amacıyla tıbbi müdahale yapılması gereken durumlarda;
+                yakınlarına haber vermek, yetkili sağlık kurumları tarafından
+                tutulan kayıtlar üzerinden hasta geçmişini öğrenerek gerekli
+                müdahaleyi yapmak gibi amaçlarla kişinin adı, soyadı, kimlik
+                numarası, telefon numarası vb. kişisel verilerinin işlenmesi bu
+                kapsamdadır. 16 16 | ÖRNEKLERLE KİŞİSEL VERİLERİN KORUNMASINA
+                İLİŞKİN REHBER ÖRNEK: Hürriyeti kısıtlanan bir kişinin
+                kurtarılması amacıyla, kendisinin ya da şüphelinin cep telefonu
+                sinyali, kredi kartı kullanım ve işlem hareketleri, araç takip
+                sistemi bilgileri, MOBESE kayıtları vb. kişisel verilerinin
+                ilgili birimlerce işlenerek yer tespitini yapılması. ÖRNEK:
+                Dağda mahsur kalan bir kişinin kurtarılması amacıyla, cep
+                telefonu sinyali, GPS ve mobil trafik verisinin işlenerek
+                yerinin belirlenmesi. D- Bir Sözleşmenin Kurulması Veya İfasıyla
+                Doğrudan Doğruya İlgili Olması Kaydıyla, Sözleşmenin Taraflarına
+                Ait Kişisel Verilerin İşlenmesinin Gerekli Olması Bu veri işleme
+                şartına dayanarak kişisel veri işlenebilmesi için işlemenin
+                gerçekten bu amaca hizmet ediyor olması ve bu amaçla sınırlı
+                olarak gerçekleştiriliyor olması gereklidir. Ayrıca, işlenen
+                kişisel verilerin sadece sözleşmenin taraflarına ait olması ve
+                sözleşme çerçevesiyle sınırlı olmak kaydıyla kişisel veri
+                işlenmesinin gerektiği de unutulmamalıdır. ÖRNEK: Bir
+                emlakçının, kira sözleşmesi ile ilgili olarak ev sahibi ve
+                kiracı arasında imzalanan sözleşme kapsamında tarafların kimlik
+                numarası, banka hesap numarası, adres, imza ve telefon gibi
+                kişisel verilerini işlemesi, dosyasında muhafaza etmesi. ÖRNEK:
+                Bir satıcının müşterisine sattığı bir malı teslim etmek amacıyla
+                müşterisinin adresini taşıma şirketine vermesi. 17 ÖRNEKLERLE
+                KİŞİSEL VERİLERİN KORUNMASINA İLİŞKİN REHBER | 17 ÖRNEK: Bir
+                bankanın, maaş müşterisi ile imzaladığı sözleşme kapsamında
+                müşterinin kimlik numarası, elektronik posta, adres, imza, cep
+                telefon numarası gibi kişisel verilerini işlemesi ve dosyasında
+                muhafaza etmesi. E- Veri Sorumlusunun Hukuki Yükümlülüğünü
+                Yerine Getirebilmesi İçin Zorunlu Olması Bu veri işleme şartının
+                uygulanabilmesi için kişisel veri işleme, veri sorumlusunun
+                hukuki yükümlülüğünü yerine getirebilmesi için gerekli ve bu
+                amaçla sınırlı olarak gerçekleştiriliyor olmalıdır. ÖRNEK:
+                Taşıma işiyle yükümlü bulunan bir kargo firması tarafından,
+                kişiye teslimat yapılabilmesi için, alıcının adres ve iletişim
+                bilgilerinin kaydedilmesi. ÖRNEK: Bir şirketin çalışanına maaş
+                ödeyebilmesi için banka hesap bilgilerini işlemesi. ÖRNEK:
+                Seminer organizasyonu yapılan bir
+              </Text>
+            </ScrollView>
+
+            {/* Butonlar: Scroll alanının altında, sabit kalsın */}
+            <View
+              className="flex flex-row justify-between mt-5"
+              // flexShrink ile butonların görünür kalmasını garanti altına al
+              style={{flexShrink: 0}}>
+              <TouchableOpacity
+                onPress={() => {
+                  setKvkkApproved(false);
+                  setKvkkModalVisible(false);
+                }}
+                className="py-3 px-5 rounded-2xl items-center mx-2"
+                style={{backgroundColor: colors.background.secondary}}>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  Onaylamıyorum
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="py-3 px-5 rounded-2xl items-center mx-2"
+                style={{backgroundColor: colors.primary[200]}}
+                onPress={() => {
+                  setKvkkApproved(true);
+                  setKvkkModalVisible(false);
+                }}>
+                <Text className="font-rubik text-lg text-white">
+                  Onaylıyorum
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <View className="flex-1 ">
         <Text className="text-center absolute bottom-6 self-center text-sm text-gray-400">
           Hemşire hesabı başvurusu için iletişime geçebilirsiniz{'\n'}

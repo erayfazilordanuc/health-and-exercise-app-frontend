@@ -45,10 +45,13 @@ const ExerciseDetail = () => {
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const {user} = useUser();
-  const {progress, totalDurationSec} = params;
+  const {progress, totalDurationSec, fromMain} = params;
+  const todayPercent = calcPercent(progress);
 
   const [startAt, setStartAt] = useState(0);
   const [videoIdxToShow, setVideoIdxToShow] = useState(0);
+
+  useEffect(() => {}, []);
 
   const calculateNavPayloads = () => {
     setLoading(true);
@@ -81,7 +84,8 @@ const ExerciseDetail = () => {
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
-        navigation.navigate('ExercisesUser');
+        if (fromMain) navigation.goBack();
+        else navigation.navigate('ExercisesUser');
         return true;
       };
 
@@ -235,7 +239,7 @@ const ExerciseDetail = () => {
             Toplam İlerleme
           </Text>
           <Text className="text-xl font-rubik-medium" style={{color: color}}>
-            {`%${calcPercent(progress)}`}
+            {`%${todayPercent}`}
           </Text>
           {progress.totalProgressDuration === totalDurationSec && (
             <Text className="text-xl font-rubik-medium" style={{color: color}}>
@@ -248,7 +252,7 @@ const ExerciseDetail = () => {
             <View
               className="h-1 rounded-full"
               style={{
-                width: `${calcPercent(progress)}%`,
+                width: `${todayPercent}%`,
                 backgroundColor: color,
               }}
             />

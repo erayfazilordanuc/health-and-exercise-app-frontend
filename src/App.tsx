@@ -8,13 +8,25 @@ import AppNavigator from './navigation/AppNavigator';
 import {ThemeProvider, useTheme} from './themes/ThemeProvider';
 import Toast, {BaseToastProps, ErrorToast} from 'react-native-toast-message';
 import {UserProvider} from './contexts/UserContext';
+import {ReactQueryProvider} from './lib/react-query/provider';
+import {focusManager} from '@tanstack/react-query';
+import {AppState} from 'react-native';
 
 export default function App() {
+  focusManager.setEventListener(handleFocus => {
+    const sub = AppState.addEventListener('change', state => {
+      handleFocus(state === 'active');
+    });
+    return () => sub.remove();
+  });
+
   return (
     <ThemeProvider>
       <UserProvider>
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-          <AppNavigator />
+          <ReactQueryProvider>
+            <AppNavigator />
+          </ReactQueryProvider>
         </SafeAreaProvider>
         <Toast />
       </UserProvider>

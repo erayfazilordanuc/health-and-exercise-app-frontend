@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 
 export const progressExerciseVideo = async (
@@ -59,20 +60,28 @@ export const getWeeklyActiveDaysProgressByUserId = async (userId: number) => {
     }
   } catch (error) {
     console.error('Error fetching exercises:', error);
-    return [];
+    throw error;
   }
 };
 
-export const getTodaysProgress = async () => {
+export const getTodaysProgress = async (force?: boolean) => {
   try {
-    const response = await apiClient.get(`/exercises/daily/progress`);
-    console.log('daily progress', response);
-
-    if (response.status >= 200 && response.status < 300) {
-      return response.data;
+    const key = `exerciseProgress_${new Date().toISOString().slice(0, 10)}`;
+    const localJson = await AsyncStorage.getItem(key);
+    if (localJson && !force) {
+      const local: ExerciseProgressDTO = JSON.parse(localJson);
+      console.log('local daily progress', local);
+      return local;
     } else {
-      console.error('Unexpected status code:', response.status);
-      return [];
+      const response = await apiClient.get(`/exercises/daily/progress`);
+      console.log('daily progress', response);
+
+      if (response.status >= 200 && response.status < 300) {
+        return response.data;
+      } else {
+        console.error('Unexpected status code:', response.status);
+        return [];
+      }
     }
   } catch (error) {
     console.error('Error fetching exercises:', error);

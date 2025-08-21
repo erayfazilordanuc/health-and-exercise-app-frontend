@@ -54,7 +54,7 @@ const CustomHeader = ({
           </View>
         )}
         <Text
-          className="text-2xl font-rubik mr-2 ml-5"
+          className="text-2xl font-rubik-medium mr-2 ml-5"
           style={{color: colors.text.primary}}>
           {title}
         </Text>

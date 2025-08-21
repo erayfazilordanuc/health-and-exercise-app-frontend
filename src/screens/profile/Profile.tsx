@@ -15,7 +15,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {act, useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import icons from '../../constants/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -38,7 +38,7 @@ import {
   getTotalSleepMinutes,
   initializeHealthConnect,
   saveSymptoms,
-} from '../../api/health/healthConnectService';
+} from '../../lib/health/healthConnectService';
 import {RecordType} from 'react-native-health-connect';
 import {Picker} from '@react-native-picker/picker';
 import ProgressBar from '../../components/ProgressBar';
@@ -46,7 +46,6 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
 import {getUser} from '../../api/user/userService';
 import GradientText from '../../components/GradientText';
-import {HealthService} from '../../api/health/abstraction/healthService';
 import {
   getSymptomsByDate,
   upsertSymptomsByDate,
@@ -61,6 +60,7 @@ import Toast from 'react-native-toast-message';
 import CustomAlertSingleton, {
   CustomAlertSingletonHandle,
 } from '../../components/CustomAlertSingleton';
+import {useSymptomsByDate} from '../../hooks/symptomsQueries';
 // import DateTimePicker from '@react-native-community/datetimepicker';
 
 const Profile = () => {
@@ -100,7 +100,26 @@ const Profile = () => {
   const [healthConnectSymptoms, setHealthConnectSymptoms] =
     useState<Symptoms>();
 
-  const [loading, setLoading] = useState(false);
+  const today = new Date();
+
+  const symptomsQ = useSymptomsByDate(today, {
+    enabled: !!user && user.role === 'ROLE_USER',
+  });
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await symptomsQ.refetch();
+      await checkEssentialAppsStatus();
+      await syncSymptoms();
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const [loading, setLoading] = useState(true);
   const [updateLoading, setUpdateLoading] = useState(false);
 
   const [time, setTime] = useState(() => {
@@ -130,15 +149,6 @@ const Profile = () => {
     }
     return null;
   };
-
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     const user: User = await getUser();
-  //     if (user) setUser(user);
-  //   };
-
-  //   fetchUser();
-  // }, []);
 
   const combineAndSetSymptoms = async (
     symptoms: Symptoms,
@@ -191,84 +201,48 @@ const Profile = () => {
     }
   };
 
-  const fetchAndUpsertAll = async () => {
+  const syncSymptoms = async () => {
     setLoading(true);
     try {
-      if (user && user.role === 'ROLE_USER') {
-        const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
-        const localData = await AsyncStorage.getItem(key);
-        if (localData) {
-          const localSymptoms: Symptoms = JSON.parse(localData);
-          console.log(localSymptoms);
-          setSymptoms(localSymptoms);
-        }
+      const synced = symptomsQ.data; // Symptoms | null
+      if (!synced) return;
 
-        const syncedSymptoms: Symptoms = await getSymptomsByDate(new Date());
-        console.log('synced', syncedSymptoms);
-        if (syncedSymptoms) {
-          setHeartRate(syncedSymptoms.pulse ?? 0);
-          setSteps(syncedSymptoms.steps ?? 0);
-          setTotalCaloriesBurned(syncedSymptoms.totalCaloriesBurned ?? 0);
-          setActiveCaloriesBurned(syncedSymptoms.activeCaloriesBurned ?? 0);
-          setTotalSleepMinutes(syncedSymptoms.sleepMinutes ?? 0);
-          saveSymptoms(syncedSymptoms);
-        }
-
-        // const healthConnectInstalled = await checkHealthConnectInstalled();
-        // if (!healthConnectInstalled) return;
-        // setIsHealthConnectInstalled(healthConnectInstalled);
-
-        // // Bu gerekmeyebilir de
-        // const googleFitInstalled = await checkGoogleFitInstalled();
-        // if (!googleFitInstalled) return;
-        // setIsGoogleFitInstalled(googleFitInstalled);
-
-        // const isHealthConnectReady = await initializeHealthConnect();
-        // if (!isHealthConnectReady) return;
-        // setIsHealthConnectReady(isHealthConnectReady);
-
-        // console.log('nası');
-        // const healthConnectSymptoms = await getSymptoms();
-        // setHealthConnectSymptoms(healthConnectSymptoms);
-        // console.log(healthConnectSymptoms);
-        // console.log('synced', syncedSymptoms);
-        // const combinedSymptoms = await combineAndSetSymptoms(
-        //   healthConnectSymptoms!,
-        //   syncedSymptoms,
-        // );
-        // console.log('combined', combinedSymptoms);
-        // if (combinedSymptoms) saveSymptoms(combinedSymptoms);
+      // HC hazırsa birleştir, değilse direkt set et
+      if (
+        isHealthConnectInstalled &&
+        isGoogleFitInstalled &&
+        isHealthConnectReady
+      ) {
+        const hc = await getSymptoms();
+        setHealthConnectSymptoms(hc);
+        const combined = await combineAndSetSymptoms(hc!, synced);
+        if (combined) await saveSymptoms(combined);
+      } else {
+        setHeartRate(synced.pulse ?? 0);
+        setSteps(synced.steps ?? 0);
+        setTotalCaloriesBurned(synced.totalCaloriesBurned ?? 0);
+        setActiveCaloriesBurned(synced.activeCaloriesBurned ?? 0);
+        setTotalSleepMinutes(synced.sleepMinutes ?? 0);
+        setSymptoms(synced);
+        await saveSymptoms(synced);
       }
+    } catch (error) {
+      console.log(error);
     } finally {
-      setLoading(false); // ✅ her durumda çalışır
+      setLoading(false);
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      const backAction = () => {
-        navigation.navigate('Home');
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        backAction,
-      );
-
-      return () => backHandler.remove();
-    }, []),
-  );
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     fetchAndUpsertAll();
-  //   }, [user]),
-  // );
-
   useEffect(() => {
-    fetchAndUpsertAll();
-  }, [, user]);
+    if (!user || user.role !== 'ROLE_USER') return;
+    syncSymptoms();
+  }, [
+    user,
+    symptomsQ.data,
+    isHealthConnectInstalled,
+    isGoogleFitInstalled,
+    isHealthConnectReady,
+  ]);
 
   const bulguLimits = new Map<
     React.Dispatch<React.SetStateAction<number>> | undefined,
@@ -296,32 +270,66 @@ const Profile = () => {
     return bulgu ? `${bulgu.label} (${bulgu.unit})` : 'Bulgu';
   };
 
-  useEffect(() => {
-    const s = computeHealthScore({
-      heartRate: heartRate || undefined,
-      steps: steps || undefined,
-      activeCalories: activeCaloriesBurned || undefined,
-      sleepMinutes: totalSleepMinutes || undefined,
-    });
-    setHealthScore(s);
-  }, [heartRate, steps, activeCaloriesBurned, totalSleepMinutes]);
+  // useEffect(() => {
+  //   setHealthScore(prev =>
+  //     computeHealthScore({
+  //       heartRate,
+  //       steps,
+  //       totalCalories: totalCaloriesBurned,
+  //       activeCalories: activeCaloriesBurned,
+  //       sleepMinutes: totalSleepMinutes,
+  //     }),
+  //   );
+  //   console.log(
+  //     'heaaaaaaaaaaaaalth scoreee',
+  //     heartRate,
+  //     steps,
+  //     totalCaloriesBurned,
+  //     activeCaloriesBurned,
+  //     totalSleepMinutes,
+  //   );
+  // }, [
+  //   heartRate,
+  //   steps,
+  //   totalCaloriesBurned,
+  //   activeCaloriesBurned,
+  //   totalSleepMinutes,
+  // ]);
 
   const checkEssentialAppsStatus = async () => {
     const healthConnectInstalled = await checkHealthConnectInstalled();
     if (!healthConnectInstalled) return;
-
     setIsHealthConnectInstalled(true);
 
     const googleFitInstalled = await checkGoogleFitInstalled();
     if (!googleFitInstalled) return;
-
     setIsGoogleFitInstalled(true);
+
+    const isHealthConnectReady = await initializeHealthConnect();
+    if (!isHealthConnectReady) return;
+    setIsHealthConnectReady(isHealthConnectReady);
   };
 
   useFocusEffect(
     useCallback(() => {
       checkEssentialAppsStatus();
     }, [isHealthConnectInstalled, isGoogleFitInstalled]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        navigation.navigate('Home');
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+
+      return () => backHandler.remove();
+    }, []),
   );
 
   return (
@@ -381,7 +389,8 @@ const Profile = () => {
               refreshing={refreshing}
               onRefresh={() => {
                 setRefreshing(true);
-                fetchAndUpsertAll();
+                // fetchAndUpsertAll();
+                onRefresh();
                 setRefreshing(false);
               }}
               progressBackgroundColor={colors.background.secondary}
@@ -527,7 +536,8 @@ const Profile = () => {
                     style={{fontSize: 20, color: colors.text.primary}}>
                     Bulgular
                   </Text>
-                  {/* {isHealthConnectInstalled &&
+
+                  {isHealthConnectInstalled &&
                   isGoogleFitInstalled &&
                   isHealthConnectReady ? (
                     <View
@@ -545,14 +555,13 @@ const Profile = () => {
                     </View>
                   ) : loading ? (
                     <View
-                      className="flex flex-row py-3 px-10 items-center"
+                      className="flex flex-row py-2 px-10 items-center"
                       style={{
                         borderRadius: 17,
-                        backgroundColor: colors.background.secondary,
                       }}>
                       <ActivityIndicator
                         size="small"
-                        color={colors.text.primary}
+                        color={colors.text.secondary}
                       />
                     </View>
                   ) : (
@@ -562,6 +571,7 @@ const Profile = () => {
                         borderRadius: 17,
                         backgroundColor: colors.background.secondary,
                       }}
+                      disabled={loading}
                       onPress={() => {
                         if (!isHealthConnectInstalled) {
                           setShowHCAlert(true);
@@ -597,10 +607,12 @@ const Profile = () => {
                         tintColor={colors.text.primary}
                       />
                     </TouchableOpacity>
-                  )} */}
+                  )}
                 </View>
                 {loading ? (
-                  <View className="flex flex-row justify-center items-center my-48">
+                  <View
+                    className="flex flex-row justify-center items-center"
+                    style={{marginVertical: 150}}>
                     <ActivityIndicator
                       size="large"
                       color={colors.primary[300]}
@@ -608,7 +620,7 @@ const Profile = () => {
                   </View>
                 ) : (
                   <>
-                    {healthScore && (
+                    {/* {healthScore && (
                       <ProgressBar
                         value={healthScore}
                         label="Genel Sağlık"
@@ -616,7 +628,7 @@ const Profile = () => {
                         color="#41D16F"
                         updateDisabled={true}
                       />
-                    )}
+                    )} */}
                     {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
                     <ProgressBar
                       value={heartRate}
@@ -696,7 +708,7 @@ const Profile = () => {
                       value={steps}
                       label="Adım"
                       iconSource={icons.man_walking}
-                      color="#FDEF22"
+                      color="#2CA4FF"
                       setAddModalFunction={setAddModalFunction}
                       setSymptom={setSteps}
                       onAdd={setIsAddModalVisible}
@@ -834,6 +846,12 @@ const Profile = () => {
                                 addModalValue;
                             } else if (
                               addModalFunction?.setSymptom ===
+                              setTotalCaloriesBurned
+                            ) {
+                              updatedSymptoms.totalCaloriesBurned =
+                                addModalValue;
+                            } else if (
+                              addModalFunction?.setSymptom ===
                               setTotalSleepMinutes
                             ) {
                               updatedSymptoms.sleepMinutes = addModalValue;
@@ -952,19 +970,8 @@ const Profile = () => {
             </Text>
             <View className="flex flex-col justify-between w-4/5 mt-3">
               <TouchableOpacity
-                onPress={() => {
-                  setShowHCAlert(false);
-                }}
                 className="py-3 px-3 rounded-2xl items-center mx-1"
-                style={{backgroundColor: colors.background.secondary}}>
-                <Text
-                  className="font-rubik text-lg"
-                  style={{color: colors.text.primary}}>
-                  Vazgeç
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="py-3 px-3 rounded-2xl items-center mx-1 my-2"
+                disabled={isHealthConnectInstalled}
                 style={{
                   backgroundColor: isHealthConnectInstalled
                     ? '#16d750'
@@ -985,7 +992,8 @@ const Profile = () => {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="py-3 px-3 rounded-2xl items-center mx-1"
+                className="py-3 px-3 rounded-2xl items-center mx-1 my-2"
+                disabled={isGoogleFitInstalled}
                 style={{
                   backgroundColor: isGoogleFitInstalled
                     ? '#16d750'
@@ -1003,6 +1011,18 @@ const Profile = () => {
                   {isGoogleFitInstalled
                     ? 'Google Fit indirildi'
                     : `Google Fit'i indir`}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowHCAlert(false);
+                }}
+                className="py-3 px-3 rounded-2xl items-center mx-1"
+                style={{backgroundColor: colors.background.secondary}}>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  Vazgeç
                 </Text>
               </TouchableOpacity>
             </View>

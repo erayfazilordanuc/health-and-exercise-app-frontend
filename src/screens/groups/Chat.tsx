@@ -162,6 +162,13 @@ const Chat = () => {
       createdAt: new Date(),
     };
 
+    await AsyncStorage.setItem(
+      'lastMessage',
+      JSON.stringify({
+        message: newMessage,
+        savedAt: new Date(),
+      } as LocalMessage),
+    );
     console.log(accessToken);
 
     // emit socket

@@ -11,6 +11,8 @@ import {
   ActivityIndicator,
   BackHandler,
   ImageBackground,
+  Modal,
+  Dimensions,
 } from 'react-native';
 import {
   CommonActions,
@@ -34,17 +36,21 @@ import {Dropdown} from 'react-native-element-dropdown';
 import DatePicker from 'react-native-date-picker';
 import {BlurView} from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
+import {CustomModal} from '../../components/CustomModal';
+import {getLatestPolicy, giveConsent} from '../../api/consent/consentService';
+import {
+  ConsentPolicyPurpose,
+  ConsentPurpose,
+  ConsentStatus,
+  LoginMethod,
+} from '../../types/enums';
 
 function UserLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
   const {theme, colors, setTheme} = useTheme();
+  const {height} = Dimensions.get('screen');
   const netInfo = useNetInfo();
   const [loading, setLoading] = useState(false);
-  enum LoginMethod {
-    'default',
-    'registration',
-    'guest',
-  }
   const [loginMethod, setLoginMethod] = useState<LoginMethod>(
     LoginMethod.default,
   );
@@ -60,6 +66,17 @@ function UserLogin() {
   const [gender, setGender] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const [kvkkPolicy, setKvkkPolicy] = useState<ConsentPolicyDTO | null>(null);
+  const [healthPolicy, setHealthPolicy] = useState<ConsentPolicyDTO | null>(
+    null,
+  );
+
+  const [kvkkApproved, setKvkkApproved] = useState(false);
+  const [kvkkModalVisible, setKvkkModalVisible] = useState(false);
+
+  const [healthDataApproved, setHealthDataApproved] = useState(false);
+  const [healthDataModalVisible, setHealthDataModalVisible] = useState(false);
 
   const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -188,6 +205,14 @@ function UserLogin() {
         return;
       }
 
+      if (!kvkkApproved || !healthDataApproved) {
+        ToastAndroid.show(
+          'KVKK ve sağlık verilerinin paylaşılması hakkındaki sözleşmeleri kabul etmezseniz hemşireler sizin sağlık verilerinizi görüntüleyemeyeck ve bu uygulamanın asıl amacı olan sağlık sürecini daha iyi takip etme olanağını kullanamayacaksınız. Onay durumunuzu ayarlar kısmından istediğiniz zaman değiştirebilirsiniz.',
+          ToastAndroid.SHORT,
+        );
+        return;
+      }
+
       const registerPayload: RegisterRequestPayload = {
         username: username.trim(),
         // email: 'ostensible@gmail.com',
@@ -196,8 +221,8 @@ function UserLogin() {
         password: password.trim(),
         gender: gender,
       };
-
       const registerResponse = await register(registerPayload);
+
       // TO DO burada hata kodlarına göre hata mesajları eklenbilir
       setLoading(false);
 
@@ -207,7 +232,39 @@ function UserLogin() {
         registerResponse.data
       ) {
         const user = registerResponse.data.userDTO as User;
+        const kvkkConsent: UpsertConsentDTO = {
+          purpose: ConsentPurpose['KVKK_NOTICE_ACK'],
+          status: kvkkApproved
+            ? ConsentStatus['ACKNOWLEDGED']
+            : ConsentStatus['REJECTED'],
+          policyId: kvkkPolicy?.id!,
+          locale: 'tr-TR',
+          source: 'MOBILE',
+        };
+        const kvkkResponse = await giveConsent(kvkkConsent);
+
+        const healthDataConsent: UpsertConsentDTO = {
+          purpose: ConsentPurpose['HEALTH_DATA_PROCESSING'],
+          status: healthDataApproved
+            ? ConsentStatus['ACCEPTED']
+            : ConsentStatus['REJECTED'],
+          policyId: healthPolicy?.id!,
+          locale: 'tr-TR',
+          source: 'MOBILE',
+        };
+        const healthDataResponse = await giveConsent(healthDataConsent);
+
         setUser(user);
+
+        // if (
+        //   kvkkResponse &&
+        //   kvkkResponse.status === 200 &&
+        //   kvkkResponse.data &&
+        //   healthDataResponse &&
+        //   healthDataResponse.status === 200 &&
+        //   healthDataResponse.data
+        // ) {}
+
         navigation.navigate('App');
         navigation.dispatch(
           CommonActions.reset({
@@ -244,24 +301,18 @@ function UserLogin() {
     }
   };
 
-  const base = ['#D7F4F7', '#2AA5F7', '#A6AAF7'];
-  const withAlpha = (hex: string, a: number) =>
-    hex +
-    Math.round(a * 255)
-      .toString(16)
-      .padStart(2, '0'); // #RRGGBBAA
+  const fetchConsentPolicies = async () => {
+    const kvkk = await getLatestPolicy(ConsentPolicyPurpose['KVKK_NOTICE']);
+    setKvkkPolicy(kvkk);
+    const health = await getLatestPolicy(
+      ConsentPolicyPurpose['HEALTH_DATA_PROCESSING'],
+    );
+    setHealthPolicy(health);
+  };
 
-  // Her render’da çok oynamasın diye 1 kere “random” üretelim
-  const {g1, g2, loc1, loc2, a1, a2} = useMemo(() => {
-    const shuffle = <T,>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
-    return {
-      g1: shuffle(base).map(c => withAlpha(c, 0.35)),
-      g2: shuffle(base).map(c => withAlpha(c, 0.28)),
-      loc1: [0, Math.random() * 0.6 + 0.2, 1], // 0.2–0.8 arası kırılma
-      loc2: [0, Math.random() * 0.6 + 0.2, 1],
-      a1: 45 + Math.random() * 20, // 45–65°
-      a2: 120 + Math.random() * 20, // 120–140°
-    };
+  useEffect(() => {
+    console.log('eeee');
+    fetchConsentPolicies();
   }, []);
 
   return (
@@ -480,6 +531,46 @@ function UserLogin() {
               />
             </TouchableOpacity>
           </View>
+          {loginMethod === LoginMethod.registration && (
+            <View className="flex flex-col">
+              <TouchableOpacity
+                className="mt-2 flex flex-row self-center items-center justify-between p-3 rounded-3xl"
+                style={{backgroundColor: colors.background.primary}}
+                onPress={() => setKvkkModalVisible(true)}>
+                <Text
+                  className="ml-2 font-rubik text-md mr-3"
+                  style={{color: colors.text.primary}}>
+                  KVKK Metni
+                </Text>
+                <Image
+                  source={
+                    kvkkApproved ? icons.checkbox_checked : icons.checkbox_empty
+                  }
+                  className="size-6 mr-2"
+                  tintColor={colors.text.primary}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="mt-2 flex flex-row self-center items-center justify-between p-3 rounded-3xl"
+                style={{backgroundColor: colors.background.primary}}
+                onPress={() => setHealthDataModalVisible(true)}>
+                <Text
+                  className="ml-2 font-rubik text-md mr-3"
+                  style={{color: colors.text.primary}}>
+                  Sağlık Verileri Sözleşmesi
+                </Text>
+                <Image
+                  source={
+                    healthDataApproved
+                      ? icons.checkbox_checked
+                      : icons.checkbox_empty
+                  }
+                  className="size-6 mr-2"
+                  tintColor={colors.text.primary}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
           {!loading ? (
             <View className="flex flex-row justify-center">
               {loginMethod === LoginMethod.default && (
@@ -583,6 +674,77 @@ function UserLogin() {
           </View> */}
         </View>
       </ScrollView>
+
+      <CustomModal
+        visible={kvkkModalVisible}
+        onApprove={() => {
+          setKvkkApproved(true);
+          setKvkkModalVisible(false);
+        }}
+        onReject={() => {
+          setKvkkApproved(false);
+          setKvkkModalVisible(false);
+        }}
+        onApproveText="Metni Okudum"
+        onRejectText="Kapat"
+        body={
+          <>
+            <Text
+              className="font-rubik text-md"
+              style={{color: colors.text.primary}}>
+              {kvkkPolicy?.content}
+            </Text>
+            {/* ...uzun KVKK metnini buraya koy */}
+          </>
+        }
+      />
+      <CustomModal
+        visible={healthDataModalVisible}
+        onApprove={() => {
+          setHealthDataApproved(true);
+          setHealthDataModalVisible(false);
+        }}
+        onReject={() => {
+          setHealthDataApproved(false);
+          setHealthDataModalVisible(false);
+        }}
+        onApproveText="Onaylıyorum"
+        onRejectText="Onaylamıyorum"
+        body={
+          <>
+            <Text
+              className="font-rubik text-md"
+              style={{color: colors.text.primary}}>
+              {healthPolicy?.content}
+            </Text>
+            {/* ...uzun KVKK metnini buraya koy */}
+          </>
+        }
+      />
+      {/* Last Caution Modal */}
+      <CustomModal
+        visible={healthDataModalVisible}
+        onApprove={() => {
+          setHealthDataApproved(true);
+          setHealthDataModalVisible(false);
+        }}
+        onReject={() => {
+          setHealthDataApproved(false);
+          setHealthDataModalVisible(false);
+        }}
+        onApproveText="Onaylıyorum"
+        onRejectText="Onaylamıyorum"
+        body={
+          <>
+            <Text
+              className="font-rubik text-md"
+              style={{color: colors.text.primary}}>
+              {healthPolicy?.content}
+            </Text>
+            {/* ...uzun KVKK metnini buraya koy */}
+          </>
+        }
+      />
     </SafeAreaView>
   );
 }

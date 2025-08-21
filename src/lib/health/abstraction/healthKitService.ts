@@ -130,7 +130,7 @@
 //   }
 
 //   /* ──────────────── Sleep ─────────────── */
-//   async getTotalsleepMinutes(): Promise<number> {
+//   async getTotalSleepMinutes(): Promise<number> {
 //     const samples = await this.readSampleData(HKCategoryType.SleepAnalysis);
 //     if (!samples?.length) return 0;
 

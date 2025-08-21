@@ -51,6 +51,8 @@ import Achievements from '../screens/groups/Progress';
 import Workout from '../screens/exercises/user/Exercise';
 import ExerciseDetail from '../screens/exercises/user/ExerciseDetail';
 import Exercise from '../screens/exercises/user/Exercise';
+import DeviceInfo from 'react-native-device-info';
+import sessionManager from '../session/sessionManager';
 
 const Tab = createBottomTabNavigator();
 
@@ -153,7 +155,7 @@ function SettingsStack() {
         options={{
           header: () => (
             <CustomHeader
-              title={'İzinler'}
+              title={'İzinler ve Onaylar'}
               icon={icons.shield}
               className="border-primary-300"
               backArrowEnable={true}
@@ -705,6 +707,22 @@ export default function CustomTabButton({
 export function BottomNavigator() {
   const {theme, colors, setTheme} = useTheme();
   const {width} = Dimensions.get('screen');
+  const {user} = useUser();
+
+  useEffect(() => {
+    if (user?.id) {
+      console.log('initledi');
+      sessionManager.init(
+        user.id,
+        DeviceInfo.getVersion(),
+        DeviceInfo.getModel(),
+      );
+    }
+    return () => {
+      console.log('returnledi');
+      if (user?.id) sessionManager.stopSession('close').catch(() => {});
+    };
+  }, [user?.id]);
 
   // const [user, setUser] = React.useState<User | null>(null);
   // const [loading, setLoading] = React.useState(true);

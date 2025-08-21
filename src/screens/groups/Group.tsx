@@ -16,6 +16,7 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   RouteProp,
   useFocusEffect,
+  useIsFocused,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
@@ -38,6 +39,10 @@ import {
   isRoomExistBySenderAndReceiver,
 } from '../../api/message/messageService';
 import LinearGradient from 'react-native-linear-gradient';
+import {useGroupUsers} from '../../hooks/groupQueries';
+import {useQueryClient} from '@tanstack/react-query';
+import {useUser} from '../../contexts/UserContext';
+import {join} from 'lodash';
 
 const Group = () => {
   const insets = useSafeAreaInsets();
@@ -48,14 +53,35 @@ const Group = () => {
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [user, setUser] = useState<User | null>();
+  const {user} = useUser();
   const [group, setGroup] = useState<Group | null>();
-  const [users, setUsers] = useState<User[]>([]);
+  const queryClient = useQueryClient();
+  const {data: members, isLoading: isUsersLoading} = useGroupUsers(
+    groupId ?? undefined,
+  );
+  const [users, setUsers] = useState(members?.data);
   const [admin, setAdmin] = useState<User | null>();
   const [groupSize, setGroupSize] = useState(0);
   const [isLeaveAlertVisible, setIsLeaveAlertVisible] = useState(false);
   const [lastMessage, setLastMessage] = useState<Message | null>();
   const [joinRequests, setJoinRequests] = useState<GroupRequestDTO[]>([]);
+
+  const fetchLastMessage = async () => {
+    if (!user || !admin) return;
+    const lastMessageResponse = await getLastMessageBySenderAndReceiver(
+      admin.username,
+      user.username,
+    );
+    if (lastMessageResponse && lastMessageResponse.message) {
+      setLastMessage(lastMessageResponse);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user && user.role === 'ROLE_USER') fetchLastMessage();
+    }, [user, admin]),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -73,77 +99,44 @@ const Group = () => {
     }, []),
   );
 
-  const fetchLastMessage = async (user: User, admin: User) => {
-    const lastMessage: Message = await getLastMessageBySenderAndReceiver(
-      admin.username,
-      user.username,
-    );
-    if (lastMessage && lastMessage.message) {
-      if (lastMessage.message.startsWith('dailyStatus')) {
-        const match = lastMessage.message.match(/dailyStatus(\d+)/);
-        const score = parseInt(match![1], 10);
-
-        lastMessage.message =
-          '\n' +
-          new Date().toLocaleDateString() +
-          `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
-      }
-      setLastMessage(lastMessage);
-    }
-  };
-
-  const fetchMembersAndSetAdmin = async (
-    groupId: number,
-    isActive: boolean,
-  ) => {
-    const membersRes = await getUsersByGroupId(groupId);
-    if (!isActive || membersRes.status !== 200) return;
-    const list: User[] = Array.isArray(membersRes.data)
-      ? membersRes.data
-      : [membersRes.data];
-    setGroupSize(list.length);
-    const sorted = [
-      ...list.filter(u => u.role === 'ROLE_ADMIN'),
-      ...list.filter(u => u.role !== 'ROLE_ADMIN'),
-    ];
-    setUsers(sorted);
-
-    if (!admin) {
-      const adminUser: User = sorted[0];
-      setAdmin(adminUser);
-      return adminUser;
-    }
-
-    return admin;
-  };
-
   useEffect(() => {
     let isActive = true;
 
     const loadAll = async () => {
       setLoading(true);
       try {
-        // 1. user’ı çek
-        const u = await getUser();
-        if (!isActive) return;
-        setUser(u);
+        if (!isActive || !user) return;
 
         if (!groupId) return;
         console.log('param', groupId);
 
-        // 2. grup bilgisini çek
-        const grpRes = await getGroupById(groupId);
-        if (!isActive || grpRes.status !== 200) return;
-        setGroup(grpRes.data);
+        if (members) {
+          const list: User[] = members.data;
+          setGroupSize(list.length);
 
-        // 3. üye listesini çek
-        const adminUser = await fetchMembersAndSetAdmin(groupId, isActive);
+          const sorted = [
+            ...list.filter(u => u.role === 'ROLE_ADMIN'),
+            ...list.filter(u => u.role !== 'ROLE_ADMIN'),
+          ];
+          setUsers(sorted);
 
-        // 4. admin’i ayıkla
+          if (!admin && sorted.length > 0) {
+            const adminUser = sorted[0];
+            setAdmin(adminUser);
 
-        if (adminUser) fetchLastMessage(u, adminUser);
+            await fetchLastMessage();
+          }
+        }
 
-        if (u.role === 'ROLE_ADMIN') {
+        // admin seç
+
+        if (!group) {
+          const grpRes = await getGroupById(groupId);
+          if (!isActive || grpRes.status !== 200) return;
+          setGroup(grpRes.data);
+        }
+
+        if (user.role === 'ROLE_ADMIN' && !joinRequests) {
           const groupRequests = await getGroupRequestsByGroupId(groupId);
           if (groupRequests) {
             setJoinRequests(groupRequests);
@@ -156,17 +149,80 @@ const Group = () => {
     };
 
     loadAll();
-
     return () => {
       isActive = false;
     };
-  }, [groupId]);
+  }, [user, members, groupId]);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (user && user.role === 'ROLE_USER') fetchLastMessage(user, admin!);
-    }, [user, admin]),
-  );
+  // const fetchMembersAndSetAdmin = async (
+  //   groupId: number,
+  //   isActive: boolean,
+  // ) => {
+  //   const membersRes = await getUsersByGroupId(groupId);
+  //   if (!isActive || membersRes.status !== 200) return;
+  //   const list: User[] = Array.isArray(membersRes.data)
+  //     ? membersRes.data
+  //     : [membersRes.data];
+  //   setGroupSize(list.length);
+  //   const sorted = [
+  //     ...list.filter(u => u.role === 'ROLE_ADMIN'),
+  //     ...list.filter(u => u.role !== 'ROLE_ADMIN'),
+  //   ];
+  //   setUsers(sorted);
+
+  //   if (!admin) {
+  //     const adminUser: User = sorted[0];
+  //     setAdmin(adminUser);
+  //     return adminUser;
+  //   }
+
+  //   return admin;
+  // };
+
+  // useEffect(() => {
+  //   let isActive = true;
+
+  //   const loadAll = async () => {
+  //     setLoading(true);
+  //     try {
+  //       // 1. user’ı çek
+  //       const u = await getUser();
+  //       if (!isActive) return;
+  //       setUser(u);
+
+  //       if (!groupId) return;
+  //       console.log('param', groupId);
+
+  //       // 2. grup bilgisini çek
+  //       const grpRes = await getGroupById(groupId);
+  //       if (!isActive || grpRes.status !== 200) return;
+  //       setGroup(grpRes.data);
+
+  //       // 3. üye listesini çek
+  //       const adminUser = await fetchMembersAndSetAdmin(groupId, isActive);
+
+  //       // 4. admin’i ayıkla
+
+  //       if (adminUser) fetchLastMessage(u, adminUser);
+
+  //       if (u.role === 'ROLE_ADMIN') {
+  //         const groupRequests = await getGroupRequestsByGroupId(groupId);
+  //         if (groupRequests) {
+  //           setJoinRequests(groupRequests);
+  //         }
+  //       }
+  //     } catch (e) {
+  //       console.error('Group screen load error', e);
+  //     }
+  //     setLoading(false);
+  //   };
+
+  //   loadAll();
+
+  //   return () => {
+  //     isActive = false;
+  //   };
+  // }, [groupId]);
 
   const onLeaveGroup = async () => {
     ToastAndroid.show(
@@ -193,10 +249,11 @@ const Group = () => {
 
   const respondToRequest = async (joinRequestId: number, approved: boolean) => {
     await respondToJoinRequest(joinRequestId, approved);
-    setJoinRequests(prevRequests =>
-      prevRequests.filter(req => req.id !== joinRequestId),
-    );
-    if (groupId) fetchMembersAndSetAdmin(groupId, true);
+    setJoinRequests(prev => prev.filter(req => req.id !== joinRequestId));
+
+    if (groupId) {
+      await queryClient.invalidateQueries({queryKey: ['groupUsers', groupId]});
+    }
   };
 
   const renderItem = ({item}: {item: User}) => (
@@ -295,7 +352,11 @@ const Group = () => {
             onRefresh={async () => {
               setRefreshing(true);
               try {
-                if (groupId) await fetchMembersAndSetAdmin(groupId, true);
+                if (groupId) {
+                  await queryClient.invalidateQueries({
+                    queryKey: ['groupUsers', groupId],
+                  });
+                }
               } catch (error) {
                 console.log(error);
               } finally {
@@ -360,14 +421,13 @@ const Group = () => {
               backgroundColor: colors.background.primary,
             }}>
             <View className="flex flex-row justify-between">
-              {lastMessage &&
-                !lastMessage.message.startsWith('dailyStatus') && (
-                  <Text
-                    className="font-rubik mt-1"
-                    style={{fontSize: 20, color: colors.primary[200]}}>
-                    En Son Mesaj
-                  </Text>
-                )}
+              {lastMessage && (
+                <Text
+                  className="font-rubik mt-1"
+                  style={{fontSize: 20, color: colors.primary[200]}}>
+                  En Son Mesaj
+                </Text>
+              )}
               <TouchableOpacity
                 className="py-2 px-3 mb-1 bg-blue-500 flex items-center justify-center"
                 style={{borderRadius: 17}}
@@ -402,13 +462,13 @@ const Group = () => {
                   }
                 }}>
                 <Text
-                  className="font-rubik text-lg"
+                  className="font-rubik text-md"
                   style={{color: colors.background.secondary}}>
                   Sohbete Git
                 </Text>
               </TouchableOpacity>
             </View>
-            {lastMessage && !lastMessage.message.startsWith('dailyStatus') && (
+            {lastMessage && (
               <Text
                 className="font-rubik text-md"
                 style={{color: colors.text.primary}}>
@@ -435,6 +495,7 @@ const Group = () => {
             </Text>
             {joinRequests.map(jr => (
               <View
+                key={jr.id}
                 className="flex flex-col items-stretch justify-center pl-4 p-2 mt-3"
                 style={{
                   borderRadius: 15,
@@ -517,13 +578,14 @@ const Group = () => {
           </View>
 
           <View className="mt-4">
-            {users.map(user => (
-              <View key={user.id?.toString() ?? user.username}>
-                {renderItem({item: user})}
-              </View>
-            ))}
+            {users &&
+              users.map((user: User) => (
+                <View key={user.id?.toString() ?? user.username}>
+                  {renderItem({item: user})}
+                </View>
+              ))}
             {/* <FlatList
-              data={users}
+              data={members}
               keyExtractor={item => (item.id ? item.id.toString() : '')}
               renderItem={renderItem}
               // ListEmptyComponent={

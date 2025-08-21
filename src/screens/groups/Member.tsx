@@ -9,8 +9,9 @@ import {
   ScrollView,
   Image,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   RouteProp,
@@ -46,6 +47,8 @@ import {
   getWeeklyActiveDaysProgressByUserId,
 } from '../../api/exercise/progressService';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
+import {isKvkkRequiredError} from '../../api/errors/errors';
+import {useAdminSymptomsByUserIdAndDate} from '../../hooks/symptomsQueries';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -57,97 +60,23 @@ const Member = () => {
   const [loading, setLoading] = useState(true);
   const {user: admin} = useUser();
   const [member, setMember] = useState<User | null>();
-  const [symptoms, setSymptoms] = useState<Symptoms | null>();
+  // const [symptoms, setSymptoms] = useState<Symptoms | null>();
+  const {
+    data: symptoms,
+    isLoading,
+    isError,
+    refetch,
+    isFetching,
+  } = useAdminSymptomsByUserIdAndDate(memberId, new Date());
   const [refreshing, setRefreshing] = useState(false);
   const [lastMessage, setLastMessage] = useState<Message | null>();
-  const [isExerciseModalVisible, setIsExerciseModalVisible] = useState(false);
-  const [todayExerciseProgress, setTodaysExerciseProgress] =
-    useState<ExerciseProgressDTO | null>();
-  const [weeklyExerciseProgress, setWeeklyEersiseProgress] = useState<
+  const [kvkkApproved, setKvkkApproved] = useState(true);
+  const [weeklyExerciseProgress, setWeeklyExersiseProgress] = useState<
     ExerciseProgressDTO[]
   >([]);
 
-  const fetchProgress = async () => {
-    setLoading(true);
-    try {
-      if (!member) return;
-      const todayExerciseProgress: ExerciseProgressDTO =
-        await getTodaysProgressByUserId(member.id!);
-      console.log('today', todayExerciseProgress);
-      if (todayExerciseProgress)
-        setTodaysExerciseProgress(todayExerciseProgress);
-
-      const weeklyExerciseProgress: ExerciseProgressDTO[] =
-        await getWeeklyActiveDaysProgressByUserId(member.id!);
-      console.log('weekly', weeklyExerciseProgress);
-      setWeeklyEersiseProgress(weeklyExerciseProgress);
-    } catch (error) {
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateAge = () => {
-    if (member && member.birthDate) {
-      const birthDate = new Date(member.birthDate);
-      const today = new Date();
-
-      let age = today.getFullYear() - birthDate.getFullYear();
-
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      const dayDiff = today.getDate() - birthDate.getDate();
-
-      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-        age--;
-      }
-
-      return age;
-    }
-    return null;
-  };
-
-  const checkAndSetSymptoms = (newSymptoms: Symptoms) => {
-    let isUpdated = false;
-    if (symptoms) {
-      if (newSymptoms.pulse && symptoms.pulse! !== newSymptoms.pulse) {
-        isUpdated = true;
-      }
-      if (newSymptoms.steps && symptoms.steps !== newSymptoms.steps) {
-        isUpdated = true;
-      }
-      if (
-        newSymptoms.activeCaloriesBurned &&
-        symptoms.activeCaloriesBurned !== newSymptoms.activeCaloriesBurned
-      ) {
-        isUpdated = true;
-      }
-      if (
-        newSymptoms.sleepMinutes &&
-        symptoms.sleepMinutes !== newSymptoms.sleepMinutes
-      ) {
-        isUpdated = true;
-      }
-      if (newSymptoms.sleepSessions) isUpdated = true;
-    } else {
-      isUpdated = true;
-    }
-
-    if (isUpdated) setSymptoms(newSymptoms);
-  };
-
-  const fetchSymptoms = async () => {
-    const response = await adminGetSymptomsByUserIdAndDate(
-      memberId,
-      new Date(),
-    );
-    if (response.status === 200) {
-      const symptoms: Symptoms = response.data;
-      checkAndSetSymptoms(symptoms);
-    }
-  };
-
   const fetchLastMessage = async (member: User) => {
-    const lastMessage: Message = await getLastMessageBySenderAndReceiver(
+    const lastMessage = await getLastMessageBySenderAndReceiver(
       admin!.username,
       member.username,
     );
@@ -165,6 +94,89 @@ const Member = () => {
       setLastMessage(lastMessage);
     }
   };
+
+  // const fetchSymptoms = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await adminGetSymptomsByUserIdAndDate(
+  //       memberId,
+  //       new Date(),
+  //     );
+  //     if (response.status === 200) {
+  //       const symptoms: Symptoms = response.data;
+  //       checkAndSetSymptoms(symptoms);
+  //     }
+  //   } catch (error) {
+  //     if (isKvkkRequiredError(error)) setKvkkApproved(false);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const fetchProgress = async () => {
+    setLoading(true);
+    try {
+      const weeklyExerciseProgress: ExerciseProgressDTO[] =
+        await getWeeklyActiveDaysProgressByUserId(memberId);
+      setWeeklyExersiseProgress(weeklyExerciseProgress);
+    } catch (error) {
+      if (isKvkkRequiredError(error)) setKvkkApproved(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMemberAndSet = async () => {
+    try {
+      const member = await getUserById(memberId);
+      if (member) {
+        setMember(member);
+        fetchLastMessage(member as User);
+      }
+    } catch (e) {
+      console.error('Group screen load error', e);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (member) fetchLastMessage(member);
+    }, [member]),
+  );
+
+  useEffect(() => {
+    fetchProgress();
+    // fetchSymptoms();
+    fetchMemberAndSet();
+  }, [memberId]);
+
+  // const checkAndSetSymptoms = (newSymptoms: Symptoms) => {
+  //   let isUpdated = false;
+  //   if (symptoms) {
+  //     if (newSymptoms.pulse && symptoms.pulse! !== newSymptoms.pulse) {
+  //       isUpdated = true;
+  //     }
+  //     if (newSymptoms.steps && symptoms.steps !== newSymptoms.steps) {
+  //       isUpdated = true;
+  //     }
+  //     if (
+  //       newSymptoms.activeCaloriesBurned &&
+  //       symptoms.activeCaloriesBurned !== newSymptoms.activeCaloriesBurned
+  //     ) {
+  //       isUpdated = true;
+  //     }
+  //     if (
+  //       newSymptoms.sleepMinutes &&
+  //       symptoms.sleepMinutes !== newSymptoms.sleepMinutes
+  //     ) {
+  //       isUpdated = true;
+  //     }
+  //   } else {
+  //     isUpdated = true;
+  //   }
+
+  //   if (isUpdated) setSymptoms(newSymptoms);
+  // };
 
   useFocusEffect(
     useCallback(() => {
@@ -186,38 +198,8 @@ const Member = () => {
     }, []),
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchLastMessage(member!);
-      fetchProgress();
-      fetchSymptoms();
-    }, [member]),
-  );
-
-  useEffect(() => {
-    let isActive = true;
-
-    const loadAll = async () => {
-      try {
-        const member = await getUserById(memberId);
-        if (!isActive) return;
-        setMember(member);
-
-        await fetchLastMessage(member as User);
-      } catch (e) {
-        console.error('Group screen load error', e);
-      }
-    };
-
-    loadAll();
-
-    return () => {
-      isActive = false;
-    };
-  }, [memberId]);
-
   const calcPercent = (p?: ExerciseProgressDTO | null): number => {
-    if (!p) return 0;
+    if (!p || !p.exerciseDTO || !p.exerciseDTO.videos) return 0;
     const total = p.exerciseDTO.videos.reduce(
       (sum, v) => sum + (v.durationSeconds ?? 0),
       0,
@@ -225,6 +207,25 @@ const Member = () => {
     return total === 0
       ? 0
       : Math.round((p.totalProgressDuration / total) * 100);
+  };
+
+  const calculateAge = () => {
+    if (member && member.birthDate) {
+      const birthDate = new Date(member.birthDate);
+      const today = new Date();
+
+      let age = today.getFullYear() - birthDate.getFullYear();
+
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const dayDiff = today.getDate() - birthDate.getDate();
+
+      if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+      }
+
+      return age;
+    }
+    return null;
   };
 
   return (
@@ -265,11 +266,12 @@ const Member = () => {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => {
+            onRefresh={async () => {
               setRefreshing(true);
-              fetchLastMessage(member!);
-              fetchProgress();
-              fetchSymptoms();
+              await fetchLastMessage(member!);
+              refetch();
+              // await fetchSymptoms();
+              await fetchProgress();
               setRefreshing(false);
             }}
             progressBackgroundColor={colors.background.secondary}
@@ -286,7 +288,7 @@ const Member = () => {
           }}>
           <Text
             className="font-rubik-medium"
-            style={{fontSize: 20, color: colors.text.primary}}>
+            style={{fontSize: 18, color: colors.text.primary}}>
             Hasta Bilgileri
           </Text>
           <View className="flex flex-row items-center mt-1 mb-1">
@@ -365,7 +367,7 @@ const Member = () => {
             {lastMessage && !lastMessage.message.startsWith('dailyStatus') && (
               <Text
                 className="font-rubik mt-1"
-                style={{fontSize: 20, color: colors.primary[200]}}>
+                style={{fontSize: 18, color: colors.primary[200]}}>
                 En Son Mesaj
               </Text>
             )}
@@ -402,7 +404,7 @@ const Member = () => {
                 }
               }}>
               <Text
-                className="font-rubik text-lg"
+                className="font-rubik text-md"
                 style={{color: colors.background.secondary}}>
                 Sohbet
               </Text>
@@ -410,7 +412,7 @@ const Member = () => {
           </View>
           {lastMessage && !lastMessage.message.startsWith('dailyStatus') && (
             <Text
-              className="font-rubik text-lg"
+              className="font-rubik text-md"
               style={{color: colors.text.primary}}>
               {lastMessage.receiver === admin?.username
                 ? member?.fullName + ' : ' + lastMessage.message
@@ -419,118 +421,133 @@ const Member = () => {
           )}
         </View>
 
-        <View
-          className="flex flex-col px-3 py-3 mb-3 pb-4"
-          style={{
-            borderRadius: 17,
-            backgroundColor: colors.background.primary,
-          }}>
-          <View className="flex flex-row items-center justify-between">
-            <Text
-              className="font-rubik mb-2 ml-2"
-              style={{fontSize: 19, color: colors.text.primary}}>
-              Egzersiz Takvimi
+        {loading ? (
+          <View className="flex flex-row items-center justify-center w-full">
+            <ActivityIndicator
+              className="mt-7 self-center"
+              size="large"
+              color={colors.text.secondary} // {colors.primary[300] ?? colors.primary}
+            />
+          </View>
+        ) : !kvkkApproved ? (
+          <View
+            className="p-3 rounded-2xl"
+            style={{backgroundColor: colors.background.primary}}>
+            <Text className="ml-2 text-lg font-rubik">
+              Hastanın sağlık verileri görüntülenemiyor.
             </Text>
-            <Text
-              className="font-rubik mb-3 rounded-2xl py-2 px-3"
-              style={{
-                fontSize: 17,
-                color: colors.text.primary,
-                backgroundColor: colors.background.secondary,
-              }}>
-              {new Date().toLocaleDateString('tr-TR', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
+            <Text className="ml-2 text-md font-rubik mt-1">
+              Sağlık verileri paylaşımı için gerekli onaylar verilmemiş.
             </Text>
           </View>
-          <CustomWeeklyProgressCalendar
-            todayProgressPercent={calcPercent(todayExerciseProgress)}
-            weeklyProgressPercents={weeklyExerciseProgress.map(calcPercent)}
-          />
-        </View>
+        ) : (
+          <>
+            <View
+              className="flex flex-col px-3 py-3 mb-3 pb-4"
+              style={{
+                borderRadius: 17,
+                backgroundColor: colors.background.primary,
+              }}>
+              <View className="flex flex-row items-center justify-between">
+                <Text
+                  className="font-rubik mb-2 ml-2"
+                  style={{fontSize: 18, color: colors.text.primary}}>
+                  Egzersiz Takvimi
+                </Text>
+                <Text
+                  className="font-rubik mb-3 rounded-2xl py-2 px-3"
+                  style={{
+                    fontSize: 16,
+                    color: colors.text.primary,
+                    backgroundColor: colors.background.secondary,
+                  }}>
+                  {new Date().toLocaleDateString('tr-TR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </Text>
+              </View>
+              {weeklyExerciseProgress && (
+                <CustomWeeklyProgressCalendar
+                  weeklyProgressPercents={weeklyExerciseProgress.map(
+                    calcPercent,
+                  )}
+                />
+              )}
+            </View>
 
-        <View
-          className="flex flex-col pb-2 pt-1 px-5"
-          style={{
-            borderRadius: 17,
-            backgroundColor: colors.background.primary,
-          }}>
-          <Text
-            className="font-rubik pt-2"
-            style={{fontSize: 20, color: colors.text.primary}}>
-            Bulgular
-          </Text>
-          <ProgressBar
+            <View
+              className="flex flex-col pb-2 pt-1 px-5"
+              style={{
+                borderRadius: 17,
+                backgroundColor: colors.background.primary,
+              }}>
+              <Text
+                className="font-rubik pt-2"
+                style={{fontSize: 18, color: colors.text.primary}}>
+                Bulgular
+              </Text>
+              {/* <ProgressBar
             value={93}
             label="Genel sağlık"
             iconSource={icons.better_health}
             color="#41D16F"
-          />
-          {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
-          <ProgressBar
-            value={symptoms?.pulse}
-            label="Nabız"
-            iconSource={icons.pulse}
-            color="#FF3F3F"
-          />
-          <ProgressBar
+          /> */}
+              {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
+              <ProgressBar
+                value={symptoms?.pulse}
+                label="Nabız"
+                iconSource={icons.pulse}
+                color="#FF3F3F"
+              />
+              {/* <ProgressBar
             value={96}
             label="O2 Seviyesi"
             iconSource={icons.o2sat}
             color="#2CA4FF"
-          />
-          {/* <ProgressBar
+          /> */}
+              {/* <ProgressBar
             value={83}
             label="Tansiyon"
             iconSource={icons.blood_pressure}
             color="#FF9900"/> FDEF22*/}
-          <ProgressBar
-            value={
-              symptoms?.activeCaloriesBurned
-                ? symptoms?.activeCaloriesBurned
-                : undefined
-            }
-            label="Yakılan Kalori"
-            iconSource={icons.kcal}
-            color="#FF9900"
-          />
-          <ProgressBar
-            value={symptoms?.steps}
-            label="Adım"
-            iconSource={icons.man_walking}
-            color="#FDEF22"
-          />
-          <ProgressBar
-            value={symptoms?.sleepMinutes ? symptoms?.sleepMinutes : undefined}
-            label="Uyku"
-            iconSource={icons.sleep}
-            color="#FDEF22"
-          />
-          {symptoms &&
-            symptoms.sleepSessions &&
-            symptoms.sleepSessions.length > 0 &&
-            symptoms.sleepSessions[0] !== '' && (
-              <>
-                <Text
-                  className="font-rubik text-xl pt-4"
-                  style={{color: colors.text.primary}}>
-                  Uyku Devreleri
-                </Text>
-                {symptoms.sleepSessions.map((session, index) => (
-                  <View key={index} className="mt-3">
-                    <Text
-                      className="font-rubik text-lg"
-                      style={{color: colors.text.primary}}>
-                      💤 Başlangıç: {session}
-                    </Text>
-                  </View>
-                ))}
-              </>
-            )}
-          {/* Uyku da minimalist bir grafik ile gösterilsin */}
-        </View>
+              {symptoms?.totalCaloriesBurned &&
+              symptoms?.totalCaloriesBurned > 0 ? (
+                <ProgressBar
+                  value={symptoms?.totalCaloriesBurned}
+                  label="Yakılan Kalori"
+                  iconSource={icons.kcal}
+                  color="#FF9900"
+                />
+              ) : (
+                symptoms?.activeCaloriesBurned &&
+                symptoms?.activeCaloriesBurned > 0 && (
+                  <ProgressBar
+                    value={symptoms?.activeCaloriesBurned}
+                    label="Yakılan Kalori"
+                    iconSource={icons.kcal}
+                    color="#FF9900"
+                  />
+                )
+              )}
+              <ProgressBar
+                value={symptoms?.steps}
+                label="Adım"
+                iconSource={icons.man_walking}
+                color="#2CA4FF" //FDEF22
+              />
+              <ProgressBar
+                value={
+                  symptoms?.sleepMinutes ? symptoms?.sleepMinutes : undefined
+                }
+                label="Uyku"
+                iconSource={icons.sleep}
+                color="#FDEF22"
+              />
+            </View>
+          </>
+        )}
       </ScrollView>
     </View>
   );

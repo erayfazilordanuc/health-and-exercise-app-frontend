@@ -90,6 +90,7 @@ const Settings = () => {
   }, []);
 
   const handleLogout = async () => {
+    await logout();
     appNavigation.navigate('Launch');
     appNavigation.dispatch(
       CommonActions.reset({
@@ -97,7 +98,6 @@ const Settings = () => {
         routes: [{name: 'Launch'}],
       }),
     );
-    await logout();
   };
 
   return (
@@ -130,9 +130,9 @@ const Settings = () => {
           /> */}
             <SettingsItem
               icon={icons.permission}
-              title={'İzinler'}
+              title={'İzinler ve Onaylar'}
               onPress={() => {
-                NotificationSetting.open();
+                navigation.navigate('Permissions');
                 // if (Platform.OS === 'ios') {
                 //   Linking.openURL('app-settings:');
                 // } else {

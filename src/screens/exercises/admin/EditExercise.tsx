@@ -31,7 +31,7 @@ import Video from 'react-native-video';
 import VideoPlayer from 'react-native-video-player';
 import {
   addVideoToExercise,
-  createExercise,
+  // createExercise,
   deleteExercise,
   deleteVideoFromExercise,
   getPresignedUrl,
@@ -49,6 +49,7 @@ import RNBlob from 'react-native-blob-util';
 import {activate, deactivate} from '@thehale/react-native-keep-awake';
 import {getVideoDuration} from 'react-native-video-duration';
 import LinearGradient from 'react-native-linear-gradient';
+import {useCreateExercise} from '../../../hooks/exerciseQueries';
 
 type EditExerciseRouteProp = RouteProp<ExercisesStackParamList, 'EditExercise'>;
 const EditExercise = () => {
@@ -72,6 +73,12 @@ const EditExercise = () => {
   const [editedExercise, setEditedExercise] = useState<ExerciseDTO>(
     exercise ?? makeEmptyExercise(),
   );
+  const {
+    mutateAsync: createExercise,
+    isPending,
+    isError,
+    error,
+  } = useCreateExercise();
 
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [pendingThumbs, setPendingThumbs] = useState<Record<string, string>>(

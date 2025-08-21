@@ -111,6 +111,8 @@ import forward_5 from '../assets/icons/forward_5.png';
 import health_sync from '../assets/icons/health_sync.png';
 import next from '../assets/icons/next.png';
 import check_1 from '../assets/icons/check_1.png';
+import checkbox_empty from '../assets/icons/checkbox_empty.png';
+import checkbox_checked from '../assets/icons/checkbox_checked.png';
 
 export default {
   google,
@@ -226,4 +228,6 @@ export default {
   health_sync,
   next,
   check_1,
+  checkbox_empty,
+  checkbox_checked,
 };

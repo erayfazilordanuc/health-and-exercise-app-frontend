@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 
 export const saveMessage = async (message: Message) => {
@@ -68,23 +69,49 @@ export const getMessagesBySenderAndReceiver = async (
   return response;
 };
 
+const normalize = (m: Message) => {
+  if (m.message && m.message.startsWith('dailyStatus')) {
+    const match = m.message.match(/dailyStatus(\d+)/);
+    const score = parseInt(match![1], 10);
+
+    m.message =
+      '\n' +
+      new Date().toLocaleDateString() +
+      `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+  }
+  return m;
+};
+
 export const getLastMessageBySenderAndReceiver = async (
   sender: string,
   receiver: string,
 ) => {
-  try {
-    const response = await apiClient.get(
-      `/messages/sender/${sender}/receiver/${receiver}/last`,
-    );
-    console.log('Get messages by sender and receiver', response);
+  const s = encodeURIComponent(sender);
+  const r = encodeURIComponent(receiver);
+  const localJson = await AsyncStorage.getItem('lastMessage');
+  if (localJson) {
+    const local: LocalMessage = JSON.parse(localJson);
 
-    if (response.status >= 200 && response.status <= 300 && response) {
-      return response.data;
+    if (local.savedAt) {
+      const savedAt = new Date(local.savedAt).getTime();
+      const now = Date.now();
+      const diffSec = (now - savedAt) / 1000;
+
+      if (diffSec <= 5) return normalize(local.message);
     }
-  } catch (error) {
-    console.error('Error fetching exercises:', error);
-    return null;
   }
+  const res = await apiClient.get(`/messages/sender/${s}/receiver/${r}/last`);
+  if (res.status < 200 || res.status >= 300) {
+    throw new Error(`Unexpected status: ${res.status}`);
+  }
+  AsyncStorage.setItem(
+    'lastMessage',
+    JSON.stringify({
+      message: res.data as Message,
+      savedAt: new Date(),
+    } as LocalMessage),
+  );
+  return normalize(res.data as Message);
 };
 
 export const isDailyStatusExistForToday = async (

@@ -115,7 +115,7 @@ const Exercise = () => {
   );
 
   const syncExerciseProgress = useCallback(
-    async (time: number, videoIdx?: number) => {
+    async (time: number, videoIdx?: number, isEnd?: boolean) => {
       if (
         paused ||
         (progress.videoProgress[videoIdxToShow] &&
@@ -178,7 +178,20 @@ const Exercise = () => {
 
         console.log('updatedProgress', updatedProgress);
         const key = `exerciseProgress_${new Date().toISOString().slice(0, 10)}`;
-        await AsyncStorage.setItem(key, JSON.stringify(updatedProgress));
+        await AsyncStorage.setItem(
+          key,
+          JSON.stringify({
+            ...updatedProgress,
+            totalProgressDuration: newTotalProgressDuration,
+            // local tarafta isEnd geldiyse force true yaz
+            videoProgress: updatedProgress.videoProgress.map(vp =>
+              vp.videoId ===
+              exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id
+                ? {...vp, isCompeleted: vp.isCompeleted || !!isEnd}
+                : vp,
+            ),
+          }),
+        );
       } catch (error) {
         console.error('❌ Sync error:', error);
       }
@@ -220,7 +233,7 @@ const Exercise = () => {
           console.log('eeeeend');
           syncExerciseProgress(exercise.videos[videoIdxToShow].durationSeconds);
           if (videoIdxToShow + 1 < exercise.videos.length) {
-            syncExerciseProgress(1, videoIdxToShow + 1);
+            syncExerciseProgress(1, videoIdxToShow + 1, true);
             setStartSecSync(0);
             setDoneVideosDuration(
               prev => prev + exercise.videos[videoIdxToShow].durationSeconds,

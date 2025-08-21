@@ -1,8 +1,9 @@
-import axios from 'axios';
+import axios, {AxiosError} from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {logout, refreshAccessToken} from '../auth/authService';
 import {CommonActions, useNavigation} from '@react-navigation/native';
 import {ToastAndroid} from 'react-native';
+import { isKvkkRequiredError, KvkkRequiredError } from '../errors/errors';
 
 const domain = 'eray.ordanuc.com';
 const API_BASE_URL = 'https://eray.ordanuc.com/api';
@@ -49,30 +50,42 @@ apiClient.interceptors.request.use(async config => {
   if (!noAuthRequired.some(url => config.url?.includes(url))) {
     const accessToken = await AsyncStorage.getItem('accessToken');
     if (accessToken) {
-      config.headers.Authorization = accessToken;
+      // --- SAFE BP: Bearer prefix yoksa ekle; varsa olduğu gibi bırak ---
+      config.headers.Authorization = accessToken.startsWith('Bearer ')
+        ? accessToken
+        : `Bearer ${accessToken}`;
     }
   }
-
   return config;
 });
+
+// (İstersen bunu bırakabilirsin; alttaki büyük interceptor zaten KVKK'yı erken kesiyor)
+// apiClient.interceptors.response.use(
+//   res => res,
+//
+//   // Bu küçük handler kalırsa da sorun yok; idempotent
+//   err => {
+//     if (isKvkkRequiredError(err)) {
+//       return Promise.reject(new KvkkRequiredError());
+//     }
+//     return Promise.reject(err);
+//   },
+// );
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
+    if (error) prom.reject(error);
+    else prom.resolve(token);
   });
-
   failedQueue = [];
 };
 
 apiClient.interceptors.response.use(
   response => response,
+
   async error => {
     console.log('❌ API ERROR:');
     console.log('Request URL:', error.config?.url);
@@ -89,10 +102,16 @@ apiClient.interceptors.response.use(
       );
     }
 
+    // --- ADD: KVKK'yi en başta yakala ve KISA DEVRE ET ---
+    if (isKvkkRequiredError(error)) {
+      return Promise.reject(new KvkkRequiredError());
+    }
+    // --- END ADD ---
+
     const originalRequest = error.config;
 
     if (
-      error.response?.status === 500 && //  || error.response?.status === 401 || error.response?.status === 403
+      error.response?.status === 500 && // (mevcut davranışı bozmadım)
       !originalRequest._retry &&
       !noAuthRequired.some(url => originalRequest.url?.includes(url))
     ) {
@@ -103,7 +122,11 @@ apiClient.interceptors.response.use(
           failedQueue.push({resolve, reject});
         })
           .then(token => {
-            originalRequest.headers.Authorization = token;
+            originalRequest.headers.Authorization = (
+              token as string
+            )?.startsWith('Bearer ')
+              ? token
+              : `Bearer ${token}`;
             return apiClient(originalRequest);
           })
           .catch(err => Promise.reject(err));
@@ -114,7 +137,11 @@ apiClient.interceptors.response.use(
       try {
         const newAccessToken = await refreshAccessToken();
         processQueue(null, newAccessToken);
-        originalRequest.headers.Authorization = newAccessToken;
+        originalRequest.headers.Authorization = newAccessToken?.startsWith(
+          'Bearer ',
+        )
+          ? newAccessToken
+          : `Bearer ${newAccessToken}`;
         return apiClient(originalRequest);
       } catch (err) {
         processQueue(err, null);
@@ -128,6 +155,10 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+export function isAxiosErr(e: unknown): e is AxiosError {
+  return !!(e as any)?.isAxiosError;
+}
 
 export default apiClient;
 export {getApiBaseUrl, getIPv4};

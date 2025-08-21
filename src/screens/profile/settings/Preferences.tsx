@@ -123,7 +123,7 @@ const Preferences = () => {
           )}
           <View className="flex flex-col items-between justify-center px-3 pt-3 pb-3">
             <Text
-              className="font-rubik-medium ml-2 mb-2"
+              className="font-rubik ml-2 mb-2"
               style={{
                 fontSize: 18,
                 color: colors.text.primary,

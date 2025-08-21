@@ -20,6 +20,7 @@ type ExercisesStackParamList = {
   ExerciseDetail: {
     progress: ExerciseProgressDTO;
     totalDurationSec: number;
+    fromMain: boolean;
   };
   Exercise: {
     exercise: ExerciseDTO;

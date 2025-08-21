@@ -7,6 +7,7 @@ import {
   TextInput,
   Image,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useTheme} from '../../../themes/ThemeProvider';
@@ -14,31 +15,39 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {getAllExercises} from '../../../api/exercise/exerciseService';
 import LinearGradient from 'react-native-linear-gradient';
+import {useAllExercises} from '../../../hooks/exerciseQueries';
 
 const ExercisesAdmin = () => {
   const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
-  const [exercises, setExercises] = useState<ExerciseDTO[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  // const [exercises, setExercises] = useState<ExerciseDTO[]>([]);
 
-  const fetchAllExercises = async () => {
-    setLoading(true);
-    const exercises: ExerciseDTO[] = await getAllExercises();
-    if (exercises.length > 0) setExercises(exercises);
-    setLoading(false);
-  };
+  // const fetchAllExercises = async () => {
+  //   setLoading(true);
+  //   const exercises: ExerciseDTO[] = await getAllExercises();
+  //   if (exercises.length > 0) setExercises(exercises);
+  //   setLoading(false);
+  // };
 
-  // useEffect(() => {
-  //   fetchAllExercises();
-  // }, []);
+  // // useEffect(() => {
+  // //   fetchAllExercises();
+  // // }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchAllExercises();
-    }, []),
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchAllExercises();
+  //   }, []),
+  // );
+
+  const {
+    data: exercises = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useAllExercises();
 
   return (
     <>
@@ -67,12 +76,25 @@ const ExercisesAdmin = () => {
           Egzersizler
         </Text>
       </View>
-      {!loading ? (
+      {!isLoading ? (
         <ScrollView
           className="h-full mb-16 px-3 mt-3"
           style={{
             backgroundColor: 'transparent', // colors.background.secondary,
-          }}>
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                refetch();
+                setRefreshing(false);
+              }}
+              progressBackgroundColor={colors.background.secondary}
+              colors={[colors.primary[300]]} // Android (array!)
+              tintColor={colors.primary[300]}
+            />
+          }>
           {exercises && exercises.length > 0 ? (
             exercises.map(exercise => (
               <TouchableOpacity
@@ -117,7 +139,7 @@ const ExercisesAdmin = () => {
             ))
           ) : (
             <View
-              className="flex-1 items-center justify-center rounded-2xl mb-36"
+              className="flex-1 items-center justify-center rounded-2xl mb-36 py-5"
               style={{
                 backgroundColor: colors.background.secondary,
               }}>

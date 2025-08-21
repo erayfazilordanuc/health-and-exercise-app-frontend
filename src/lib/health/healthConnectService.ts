@@ -7,7 +7,7 @@ import {
   RecordType,
   aggregateRecord,
 } from 'react-native-health-connect';
-import {upsertSymptomsByDate} from '../symptoms/symptomsService';
+import {upsertSymptomsByDate} from '../../api/symptoms/symptomsService';
 import NetInfo from '@react-native-community/netinfo';
 import {Alert, Linking, Platform, ToastAndroid} from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -465,11 +465,10 @@ export const getSymptoms = async () => {
     return healthConnectSymptoms;
   }
 };
-
 const clampPct = (n: number) => Math.max(0, Math.min(100, n));
 
 const linearScore = (v?: number, min = 0, max = 1) => {
-  if (v == null || !Number.isFinite(v) || max === min) return NaN;
+  if (v == null || !Number.isFinite(v) || max === min) return NaN; // yoksa: NaN -> hesaba dahil edilmez
   return clampPct(((v - min) / (max - min)) * 100);
 };
 
@@ -480,7 +479,7 @@ const triangularScore = (
   hardMax: number,
   v?: number,
 ) => {
-  if (v == null || !Number.isFinite(v)) return NaN; // veri yoksa NaN -> hesaba katılmaz
+  if (!v || !Number.isFinite(v)) return NaN; // yoksa: NaN -> hesaba dahil edilmez
   if (v <= hardMin || v >= hardMax) return 0;
   if (v >= idealMin && v <= idealMax) return 100;
   if (v < idealMin) {
@@ -489,38 +488,43 @@ const triangularScore = (
   return clampPct(((hardMax - v) / (hardMax - idealMax)) * 100);
 };
 
-export const computeHealthScore = (p: {
-  heartRate?: number; // bpm
-  steps?: number; // adım
-  totalCalories?: number;
-  activeCalories?: number; // kcal (aktif)
-  sleepMinutes?: number; // dakika
-}) => {
+export const computeHealthScore = (
+  p: {
+    heartRate?: number; // bpm
+    steps?: number; // adım
+    totalCalories?: number; // kcal (dinlenme+aktif)
+    activeCalories?: number; // kcal (aktif)
+    sleepMinutes?: number; // dakika
+  },
+  opts?: {fallback?: number}, // tüm metrikler yoksa önceki skoru korumak için
+) => {
   const {heartRate, steps, totalCalories, activeCalories, sleepMinutes} = p;
 
+  // total varsa onu kullan, yoksa active; ikisi de yoksa NaN döner (linearScore içinde)
+  const caloriesValue = totalCalories ?? activeCalories;
+
+  // Alt skorlar (0–100, yoksa NaN)
   const hrScore = triangularScore(40, 55, 75, 110, heartRate);
-  const stepScore = linearScore(steps, 0, 7500);
-  const clScore = totalCalories
-    ? linearScore(totalCalories, 0, 2750)
-    : linearScore(activeCalories, 0, 2750);
+  const stepScore = linearScore(steps, 0, 2500);
+  const clScore = linearScore(caloriesValue, 0, 2750);
   const slpScore = triangularScore(240, 420, 540, 720, sleepMinutes);
 
-  const weights = {
-    hr: 0.25,
-    steps: 0.3,
-    cl: 0.15,
-    slp: 0.3,
-  } as const;
+  // Ağırlıklar (toplam 1.0)
+  const weights = {hr: 0.25, steps: 0.3, cl: 0.15, slp: 0.3} as const;
 
+  // Yalnızca geçerli (NaN olmayan) skorları dahil et
   const parts: Array<[number, number]> = [];
   if (!Number.isNaN(hrScore)) parts.push([hrScore, weights.hr]);
   if (!Number.isNaN(stepScore)) parts.push([stepScore, weights.steps]);
   if (!Number.isNaN(clScore)) parts.push([clScore, weights.cl]);
   if (!Number.isNaN(slpScore)) parts.push([slpScore, weights.slp]);
 
-  if (parts.length === 0) return 0;
+  // Hepsi yoksa: düşürmesin → önceki skoru koru (opsiyon), yoksa 0 dön
+  if (parts.length === 0) return opts?.fallback ?? 0;
 
+  // Ağırlıkları mevcut metriklere göre normalize et
   const totalW = parts.reduce((s, [, w]) => s + w, 0);
   const sum = parts.reduce((s, [sc, w]) => s + sc * w, 0);
+
   return Math.round(sum / totalW);
 };

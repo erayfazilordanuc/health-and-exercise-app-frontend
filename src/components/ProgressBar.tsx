@@ -4,6 +4,7 @@ import {useTheme} from '../themes/ThemeProvider';
 import React from 'react';
 import {View, Text, Image, TouchableOpacity} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {fonts} from 'react-native-elements/dist/config';
 
 type ProgressBarProps = {
   value?: number; // artık optional
@@ -104,18 +105,18 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         <View className="flex-row items-center flex-1">
           <Image
             source={iconSource}
-            className="size-8"
+            className="size-7 ml-1"
             tintColor={colors.text.primary}
           />
           <Text
-            className="pl-2 text-lg font-rubik"
-            style={{color: colors.text.primary}}>
+            className="pl-2 font-rubik"
+            style={{fontSize: 15, color: colors.text.primary}}>
             {label}
           </Text>
         </View>
 
         <Text
-          className="text-md font-rubik mr-2"
+          className="text-sm font-rubik mr-2"
           style={{color: colors.text.primary}}>
           {getDisplayText()}
         </Text>

@@ -110,12 +110,12 @@ const AllExercises = () => {
             ))
           ) : (
             <View
-              className="flex-1 items-center justify-center rounded-2xl mb-36"
+              className="items-center justify-center rounded-2xl mb-36 py-5"
               style={{
                 backgroundColor: colors.background.secondary,
               }}>
               <Text
-                className="font-rubik text-lg text-center"
+                className="font-rubik text-lg text-center "
                 style={{color: colors.text.primary}}>
                 Henüz bir egzersiz mevcut değil
               </Text>

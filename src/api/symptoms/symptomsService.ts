@@ -1,6 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 import {getUser} from '../user/userService';
+import NetInfo from '@react-native-community/netinfo';
+
+const todayStart = () => new Date().setHours(0, 0, 0, 0);
+const todayEnd = () => new Date().setHours(23, 59, 59, 999);
+const keyPrefix = 'symptoms_';
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const todayKey = () => keyPrefix + todayStr();
 
 export const getSymptomsById = async (id: number) => {
   const response = await apiClient.get(`/symptoms/id/${id}`);
@@ -14,20 +21,32 @@ export const getAllSymptoms = async () => {
   return response;
 };
 
+const getLocal = async () => {
+  const localJson = await AsyncStorage.getItem(todayKey());
+  if (localJson)
+    return (JSON.parse(localJson) as LocalSymptoms).symptoms as Symptoms;
+};
+
 export const getSymptomsByDate = async (date: Date) => {
   try {
     const dateVariable = date.toISOString().slice(0, 10);
-    const response = await apiClient.get(`/symptoms/date/${dateVariable}`);
-    console.log('Get symptoms by date response', response);
-    if (response.status >= 200 && response.status < 300) {
-      return response.data;
+    const net = await NetInfo.fetch();
+    const isOnline = !!net.isConnected;
+    if (isOnline) {
+      const response = await apiClient.get(`/symptoms/date/${dateVariable}`);
+      console.log('Get symptoms by date response', response);
+      if (response.status >= 200 && response.status < 300) {
+        return response.data;
+      } else {
+        console.error('Unexpected status code:', response.status);
+        return null;
+      }
     } else {
-      console.error('Unexpected status code:', response.status);
-      return null;
+      return getLocal();
     }
   } catch (error) {
     console.error('Error fetching symptoms:', error);
-    return null;
+    return getLocal();
   }
 };
 
@@ -38,9 +57,9 @@ export const upsertSymptomsByDate = async (date: Date, symptoms: Symptoms) => {
   const upsertDTO: UpdateSymptomsDTO = {
     pulse: symptoms.pulse,
     steps: symptoms.steps,
+    totalCaloriesBurned: symptoms.totalCaloriesBurned!,
     activeCaloriesBurned: symptoms.activeCaloriesBurned!,
     sleepMinutes: symptoms.sleepMinutes!,
-    sleepSessions: symptoms.sleepSessions,
   };
   console.log('upsertDTO', upsertDTO);
 

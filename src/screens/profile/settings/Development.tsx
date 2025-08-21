@@ -32,6 +32,10 @@ import {
   getSymptomsById,
 } from '../../../api/symptoms/symptomsService';
 import {useFocusEffect} from '@react-navigation/native';
+import {
+  useAdminSymptomsByUserIdAndDate,
+  useSymptomsByDate,
+} from '../../../hooks/symptomsQueries';
 
 const Development = () => {
   const insets = useSafeAreaInsets();
@@ -69,7 +73,12 @@ const Development = () => {
   const [log6, setLog6] = useState('');
   const [log7, setLog7] = useState('');
 
+  const [sessionStatus, setSessionStatus] = useState<SessionState>();
+  const [sessionQueue, setSessionQueue] = useState();
+
   const today = new Date();
+
+  const {data, isLoading, error, refetch} = useSymptomsByDate(today);
 
   const fetchUser = async () => {
     const user: User = await getUser();
@@ -89,10 +98,17 @@ const Development = () => {
     }
   };
 
+  const fetchSessionInfo = async () => {
+    const status = await AsyncStorage.getItem('session_state');
+    const queue = await AsyncStorage.getItem('session_queue');
+    if (status) setSessionStatus(JSON.parse(status) as SessionState);
+    if (queue) setSessionQueue(JSON.parse(queue));
+  };
   useFocusEffect(
     useCallback(() => {
       fetchUser();
       fetchTokens();
+      fetchSessionInfo();
     }, []),
   );
 
@@ -352,7 +368,6 @@ const Development = () => {
             {user?.id || 'N/A'}
           </Text>
         </View>
-
         <View
           className="flex flex-row justify-start items-center pb-3 mb-2 p-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
@@ -368,7 +383,6 @@ const Development = () => {
             {user?.username || 'N/A'}
           </Text>
         </View>
-
         <View
           className="flex flex-row justify-start items-center pb-3 mb-2 p-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
@@ -384,7 +398,6 @@ const Development = () => {
             {user?.fullName || 'N/A'}
           </Text>
         </View>
-
         <View
           className="flex flex-row justify-start items-center pb-3 mb-2 p-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
@@ -400,7 +413,6 @@ const Development = () => {
             {user?.email || 'N/A'}
           </Text>
         </View>
-
         <View
           className="pb-3 mb-2 p-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
@@ -412,10 +424,11 @@ const Development = () => {
             </Text>
             <TouchableOpacity
               onPress={() => setShowAccessToken(!showAccessToken)}
-              className="mr-2">
+              style={{backgroundColor: colors.background.secondary}}
+              className="px-4 py-2 rounded-2xl mb-1 mr-1">
               <Image
                 source={showAccessToken ? icons.arrowDown : icons.arrow}
-                className="ml-12 mr-2 size-5"
+                className="size-5"
                 tintColor={colors.text.primary}
               />
             </TouchableOpacity>
@@ -437,7 +450,6 @@ const Development = () => {
             Time to expiration: {Math.floor(accessTokenTimeLeft! / 60)} dakika
           </Text>
         </View>
-
         <View
           className="pb-3 mb-2 p-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
@@ -449,10 +461,11 @@ const Development = () => {
             </Text>
             <TouchableOpacity
               onPress={() => setShowRefreshToken(!showRefreshToken)}
-              className="mr-2">
+              style={{backgroundColor: colors.background.secondary}}
+              className="px-4 py-2 rounded-2xl mb-1 mr-1">
               <Image
                 source={showRefreshToken ? icons.arrowDown : icons.arrow}
-                className="ml-12 mr-2 size-5"
+                className="size-5"
                 tintColor={colors.text.primary}
               />
             </TouchableOpacity>
@@ -479,7 +492,6 @@ const Development = () => {
               : `${Math.floor(refreshTokenTimeLeft! / 60)} dakika`}
           </Text>
         </View>
-
         <View
           className="pb-4 mb-2 p-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
@@ -495,7 +507,6 @@ const Development = () => {
             </Text>
           </Text>
         </View>
-
         <View
           className="pb-4 mb-2 p-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
@@ -508,7 +519,42 @@ const Development = () => {
             </Text>
           </Text>
         </View>
-
+        <View
+          className="pb-4 mb-2 p-4 rounded-2xl"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="text-lg font-rubik-medium"
+            style={{color: colors.text.primary}}>
+            Use Symptoms By Date React Query:{'\n'}
+            <Text selectable className="text-md font-rubik">
+              {JSON.stringify(data, null, 2)}
+            </Text>
+          </Text>
+        </View>
+        <View
+          className="pb-4 mb-2 p-4 rounded-2xl"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="text-lg font-rubik-medium"
+            style={{color: colors.text.primary}}>
+            Session Status:{'\n'}
+            <Text selectable className="text-md font-rubik">
+              {JSON.stringify(sessionStatus, null, 2)}
+            </Text>
+          </Text>
+        </View>
+        <View
+          className="pb-4 mb-2 p-4 rounded-2xl"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="text-lg font-rubik-medium"
+            style={{color: colors.text.primary}}>
+            Session Queue:{'\n'}
+            <Text selectable className="text-md font-rubik">
+              {JSON.stringify(sessionQueue, null, 2)}
+            </Text>
+          </Text>
+        </View>
         {/* <View
           className="mb-2 p-4 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
@@ -524,7 +570,6 @@ const Development = () => {
             {JSON.stringify(user, null, 2)}
           </Text>
         </View> */}
-
         <View
           className="p-3 mb-1 rounded-2xl"
           style={{
@@ -561,7 +606,6 @@ const Development = () => {
             )}
           </View>
         </View>
-
         <View
           className="p-3 my-1 rounded-2xl"
           style={{
@@ -598,7 +642,6 @@ const Development = () => {
             )}
           </View>
         </View>
-
         {user?.role === 'ROLE_ADMIN' && (
           <>
             <View
@@ -717,7 +760,6 @@ const Development = () => {
             </View>
           </>
         )}
-
         <View
           className="p-3 my-1 rounded-2xl"
           style={{
@@ -754,7 +796,6 @@ const Development = () => {
             )}
           </View>
         </View>
-
         <View
           className="p-3 my-1 rounded-2xl"
           style={{
@@ -791,7 +832,6 @@ const Development = () => {
             )}
           </View>
         </View>
-
         <View
           className="p-3 mt-1 mb-2 rounded-2xl"
           style={{
@@ -828,7 +868,6 @@ const Development = () => {
             )}
           </View>
         </View>
-
         {/* <View
           className="p-3 mt-1 mb-4 rounded-2xl"
           style={{

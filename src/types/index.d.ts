@@ -10,6 +10,61 @@ type User = {
   achievements: AchievementDTO[];
 };
 
+type SessionState = {
+  sessionId: string;
+  userId: number;
+  startedAt: string;
+  foregroundSince?: number;
+  activeMs: number;
+  lastHeartbeatAt?: string;
+  appVersion?: string;
+  deviceModel?: string;
+  pauseAt?: number;
+};
+
+type UpsertConsentDTO = {
+  purpose: ConsentPurpose;
+  status: ConsentStatus;
+  policyId: number;
+  locale?: string;
+  source?: string;
+};
+
+type ConsentDTO = {
+  id: number;
+  purpose: ConsentPurpose;
+  status: ConsentStatus;
+  policyDTO: ConsentPolicyDTO;
+  userId: number;
+  locale?: string;
+  source?: string;
+};
+
+type ConsentPolicy = {
+  id: number;
+  purpose: ConsentPolicyPurpose;
+  version: string;
+  locale?: string;
+  contentHash: string;
+  contentUrl?: string;
+  contentMd: string;
+  createdAt: string;
+  updatedAt: string;
+  effectiveAt?: string;
+};
+
+type ConsentPolicyDTO = {
+  id: number;
+  purpose: ConsentPolicyPurpose;
+  version: string;
+  locale?: string;
+  contentHash: string;
+  contentUrl?: string;
+  content: string;
+  createdAt: string;
+  effectiveAt?: string;
+};
+
 type UserTheme = {
   theme: Theme;
   isDefault: boolean;
@@ -62,6 +117,7 @@ type Symptoms = {
 type UpdateSymptomsDTO = {
   pulse?: number;
   steps?: number;
+  totalCaloriesBurned?: number | null;
   activeCaloriesBurned?: number;
   sleepMinutes?: number;
   sleepSessions?: string[];
@@ -93,6 +149,11 @@ type GroupRequestDTO = {
   id?: number;
   userDTO: UserDTO;
   groupDTO: GroupDTO;
+};
+
+type LocalMessage = {
+  message: Message;
+  savedAt: Date;
 };
 
 type Message = {
@@ -200,10 +261,6 @@ type ExerciseVideoProgressDTO = {
   userId: number;
   createdAt: Date;
   updatedA?: Date | null;
-};
-
-type ExerciseVideoProgressRequestDTO = {
-  seconds: number;
 };
 
 type AchievementDTO = {

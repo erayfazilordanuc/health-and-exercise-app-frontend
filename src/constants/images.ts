@@ -11,6 +11,7 @@ import bubbles_blue from '../assets/images/bubbles_blue.png';
 import particles_blue from '../assets/images/particles_blue.png';
 import bubbles_blue_low from '../assets/images/bubbles_blue_low.png';
 import bubbles_blue_low_launch from '../assets/images/bubbles_blue_low_launch.png';
+import orange_pink_background from '../assets/images/orange_pink_background.png';
 
 export default {
   map,
@@ -26,4 +27,5 @@ export default {
   particles_blue,
   bubbles_blue_low,
   bubbles_blue_low_launch,
+  orange_pink_background,
 };

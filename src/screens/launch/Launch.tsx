@@ -15,7 +15,7 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTheme} from '../../themes/ThemeProvider';
 import {Theme, themes} from '../../themes/themes';
-import {checkHealthConnectAvailable} from '../../api/health/healthConnectService';
+import {checkHealthConnectAvailable} from '../../lib/health/healthConnectService';
 import {useNotificationNavigation} from '../../hooks/useNotificationNavigation';
 import {useUser} from '../../contexts/UserContext';
 import {BlurView} from '@react-native-community/blur';
@@ -78,6 +78,8 @@ const Launch = () => {
       //   // if (isHealthConnectInstalled) await saveSymptoms();
       //   console.log('bura62');
       // }
+      // await SessionManager.init(user.id, DeviceInfo.getVersion(), DeviceInfo.getModel());
+      // await SessionManager.stopSession('logout');
       navigation.navigate('App');
     } else {
       setLoading(false);

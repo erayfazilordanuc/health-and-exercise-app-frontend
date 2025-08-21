@@ -1,5 +1,5 @@
 // HeartRateSimpleChart.tsx
-// import {getMockSleepSessions} from '../../api/health/healthConnectService';
+// import {getMockSleepSessions} from '../../lib/health/healthConnectService';
 // import {useTheme} from '../../../src/themes/ThemeProvider';
 // import React, {useEffect, useState} from 'react';
 // import {View, Text, Dimensions, ScrollView} from 'react-native';
