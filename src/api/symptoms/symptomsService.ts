@@ -21,32 +21,71 @@ export const getAllSymptoms = async () => {
   return response;
 };
 
-const getLocal = async () => {
+// const combine = async (synced: Symptoms, local: Symptoms) => {
+//   if (!synced.pulse) {
+//     if (heartRate !== merged.pulse) setHeartRate(merged.pulse);
+//   } else if (syncedSymptoms && syncedSymptoms.pulse) {
+//     setHeartRate(syncedSymptoms.pulse);
+//     merged.pulse = syncedSymptoms.pulse;
+//   }
+
+//   if (merged.steps) {
+//     if (steps !== merged.steps) setSteps(merged.steps);
+//   } else if (syncedSymptoms && syncedSymptoms.steps) {
+//     setSteps(syncedSymptoms.steps);
+//     merged.steps = syncedSymptoms.steps;
+//   }
+
+//   if (merged.totalCaloriesBurned) {
+//     if (totalCaloriesBurned !== merged.totalCaloriesBurned)
+//       setTotalCaloriesBurned(merged.totalCaloriesBurned);
+//   } else if (syncedSymptoms && syncedSymptoms.totalCaloriesBurned) {
+//     setTotalCaloriesBurned(syncedSymptoms.totalCaloriesBurned);
+//     merged.totalCaloriesBurned = syncedSymptoms.totalCaloriesBurned;
+//   }
+
+//   if (merged.activeCaloriesBurned) {
+//     if (activeCaloriesBurned !== merged.activeCaloriesBurned)
+//       setActiveCaloriesBurned(merged.activeCaloriesBurned);
+//   } else if (syncedSymptoms && syncedSymptoms.activeCaloriesBurned) {
+//     setActiveCaloriesBurned(syncedSymptoms.activeCaloriesBurned);
+//     merged.activeCaloriesBurned = syncedSymptoms.activeCaloriesBurned;
+//   }
+
+//   if (merged.sleepMinutes) {
+//     if (totalSleepMinutes !== merged.sleepMinutes)
+//       setTotalSleepMinutes(merged.sleepMinutes);
+//   } else if (syncedSymptoms && syncedSymptoms.sleepMinutes) {
+//     setTotalSleepMinutes(syncedSymptoms.sleepMinutes);
+//     merged.sleepMinutes = syncedSymptoms.sleepMinutes;
+//   }
+// };
+
+// Localde haftalık saklanabilir
+export const getLocal = async () => {
   const localJson = await AsyncStorage.getItem(todayKey());
+  console.log('localJson', localJson);
   if (localJson)
     return (JSON.parse(localJson) as LocalSymptoms).symptoms as Symptoms;
 };
 
 export const getSymptomsByDate = async (date: Date) => {
+  const dateStr = date.toISOString().slice(0, 10);
   try {
-    const dateVariable = date.toISOString().slice(0, 10);
     const net = await NetInfo.fetch();
     const isOnline = !!net.isConnected;
+
     if (isOnline) {
-      const response = await apiClient.get(`/symptoms/date/${dateVariable}`);
+      const response = await apiClient.get(`/symptoms/date/${dateStr}`);
       console.log('Get symptoms by date response', response);
       if (response.status >= 200 && response.status < 300) {
-        return response.data;
+        return response.data as Symptoms;
       } else {
         console.error('Unexpected status code:', response.status);
-        return null;
       }
-    } else {
-      return getLocal();
     }
   } catch (error) {
     console.error('Error fetching symptoms:', error);
-    return getLocal();
   }
 };
 

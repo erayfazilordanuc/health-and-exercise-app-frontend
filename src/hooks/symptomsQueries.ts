@@ -1,7 +1,14 @@
-import {QueryKey, useQuery, type UseQueryOptions} from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  QueryKey,
+  useQuery,
+  useQueryClient,
+  type UseQueryOptions,
+} from '@tanstack/react-query';
 import type {AxiosError} from 'axios';
 import {
   adminGetSymptomsByUserIdAndDate,
+  getLocal,
   getSymptomsByDate,
 } from '../api/symptoms/symptomsService';
 
@@ -77,19 +84,36 @@ export function useSymptomsByDate(
     refetchInterval?: number | false;
   },
 ) {
-  const dateStr = date ? toISODate(date) : undefined;
+  const qc = useQueryClient();
+  const dateStr = date?.toISOString().slice(0, 10);
 
-  return useQuery({
+  return useQuery<Symptoms, Error>({
     queryKey: dateStr
-      ? SYMPTOM_KEYS.byDate(dateStr)
-      : (['__disabled__'] satisfies QueryKey),
+      ? ['symptoms', 'by-date', dateStr]
+      : (['__disabled__'] as const),
     enabled: !!date && (options?.enabled ?? true),
-    queryFn: async () => {
-      if (!dateStr) throw new Error('date required');
-      const data = await getSymptomsByDate(new Date());
-      return data;
+
+    // HER ZAMAN Symptoms döndür!
+    queryFn: async (): Promise<Symptoms> => {
+      const local = await getLocal();
+      if (local) return local; // hızlı dönüş
+      const synced = await getSymptomsByDate(date ?? new Date());
+      if (synced) return synced;
+      return {} as Symptoms;
     },
-    staleTime: options?.staleTime ?? 300_000,
+
+    // async initialData KULLANMA!
+    // initialData: () => getLocalSymptomsByDate(dateStr!) ❌
+
+    // İstersen önceki cache’i göster:
+    // placeholderData: () =>
+    //   (dateStr ? qc.getQueryData<Symptoms>(['symptoms', 'by-date', dateStr]) : undefined),
+
+    networkMode: 'always',
+    staleTime: options?.staleTime ?? 60_000,
     refetchInterval: options?.refetchInterval ?? false,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 }

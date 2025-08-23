@@ -22,6 +22,22 @@ type SessionState = {
   pauseAt?: number;
 };
 
+type DailySessionSummaryDTO = {
+  day: string; // örn: "2025-08-23" (ISO format)
+  sessionsCount: number; // o gün kaç oturum
+  totalActiveMs: number; // toplam aktif süre (ms)
+};
+
+type SessionDTO = {
+  id: number;
+  userId: number;
+  source: string;
+  startedAt: string; // ISO datetime
+  endedAt: string; // ISO datetime
+  activeMs: number;
+  heartbeatCount: number;
+};
+
 type UpsertConsentDTO = {
   purpose: ConsentPurpose;
   status: ConsentStatus;

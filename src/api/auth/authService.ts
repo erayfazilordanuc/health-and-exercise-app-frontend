@@ -4,6 +4,7 @@ import {jwtDecode} from 'jwt-decode';
 import {Platform} from 'react-native';
 import {useUser} from '../../contexts/UserContext';
 import {themes} from '../../themes/themes';
+import {queryClient} from '../../lib/react-query/client';
 
 const REMINDER_FLAG = 'EXERCISE_REMINDER_SCHEDULED';
 const TEST_REMINDER_FLAG = 'EXERCISE_REMINDER_TEST_SET';
@@ -116,11 +117,12 @@ export const refreshAccessToken = async () => {
 };
 
 export const logout = async () => {
+  await queryClient.cancelQueries();
+  queryClient.clear();
+  await AsyncStorage.clear();
   const userData = await AsyncStorage.getItem('user');
   if (userData) {
     const user: User = JSON.parse(userData);
-    await AsyncStorage.removeItem(`${user.username}-main-theme`);
-
     const deleteFcmTokenPayload = {userId: user.id, platform: Platform.OS};
     try {
       const response = await apiClient.delete('/notifications/user/fcm-token', {
@@ -131,25 +133,27 @@ export const logout = async () => {
     }
   }
 
-  const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
-  await AsyncStorage.removeItem(key);
-  await AsyncStorage.removeItem('user');
-  await AsyncStorage.removeItem('accessToken');
-  await AsyncStorage.removeItem('refreshToken');
-  await AsyncStorage.removeItem('fcmToken');
-  await AsyncStorage.removeItem('dailyStatus');
-  await AsyncStorage.removeItem(REMINDER_FLAG);
-  await AsyncStorage.removeItem(TEST_REMINDER_FLAG);
-  await AsyncStorage.multiRemove(
-    (
-      await AsyncStorage.getAllKeys()
-    ).filter(
-      key =>
-        key.startsWith('exerciseProgress_') || key.startsWith('lastMessage_'),
-    ),
-  );
-  await AsyncStorage.removeItem('session_state');
-  await AsyncStorage.removeItem('session_queue');
+  // const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
+  // await AsyncStorage.removeItem(key);
+  // await AsyncStorage.removeItem('user');
+  // await AsyncStorage.removeItem('accessToken');
+  // await AsyncStorage.removeItem('refreshToken');
+  // await AsyncStorage.removeItem('fcmToken');
+  // await AsyncStorage.removeItem('dailyStatus');
+  // await AsyncStorage.removeItem(REMINDER_FLAG);
+  // await AsyncStorage.removeItem(TEST_REMINDER_FLAG);
+  // await AsyncStorage.multiRemove(
+  //   (
+  //     await AsyncStorage.getAllKeys()
+  //   ).filter(
+  //     key =>
+  //       key.startsWith('exerciseProgress_') || key.startsWith('lastMessage_'),
+  //   ),
+  // );
+  // await AsyncStorage.removeItem('session_state');
+  // await AsyncStorage.removeItem('session_queue');
+  // await AsyncStorage.removeItem('session_history');
+  // await AsyncStorage.removeItem('RQ_CACHE_V1');
 };
 
 export const getTokenExpirationTime = (token: string): number | null => {

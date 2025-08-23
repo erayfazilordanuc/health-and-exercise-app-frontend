@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {logout, refreshAccessToken} from '../auth/authService';
 import {CommonActions, useNavigation} from '@react-navigation/native';
 import {ToastAndroid} from 'react-native';
-import { isKvkkRequiredError, KvkkRequiredError } from '../errors/errors';
+import {isKvkkRequiredError, KvkkRequiredError} from '../errors/errors';
 
 const domain = 'eray.ordanuc.com';
 const API_BASE_URL = 'https://eray.ordanuc.com/api';
@@ -96,10 +96,10 @@ apiClient.interceptors.response.use(
 
     if (error.message === 'Network Error') {
       console.log('🚨 İnternet bağlantınızı kontrol edin!');
-      ToastAndroid.show(
-        'İnternet bağlantınızı kontrol edin',
-        ToastAndroid.LONG,
-      );
+      // ToastAndroid.show(
+      //   'İnternet bağlantınızı kontrol edin',
+      //   ToastAndroid.LONG,
+      // );
     }
 
     // --- ADD: KVKK'yi en başta yakala ve KISA DEVRE ET ---

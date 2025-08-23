@@ -2,9 +2,10 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import icons from '../constants/icons';
 import {useTheme} from '../themes/ThemeProvider';
 import React from 'react';
-import {View, Text, Image, TouchableOpacity} from 'react-native';
+import {View, Text, Image, TouchableOpacity, ToastAndroid} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {fonts} from 'react-native-elements/dist/config';
+import NetInfo from '@react-native-community/netinfo';
 
 type ProgressBarProps = {
   value?: number; // artık optional
@@ -83,7 +84,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   };
 
   const getDisplayText = (): string => {
-    if (value == null || value == 0) return 'Veri yok';
+    if (value == null || value == 0) return ''; // 'Veri yok';
     if (iconSource === icons.man_walking) return `${value} adım`;
     if (iconSource === icons.sleep) {
       const hours = Math.floor(value / 60); // toplam dakikadan saat çıkar
@@ -125,7 +126,16 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           <TouchableOpacity
             className="ml-1 flex-row justify-center items-center px-3 py-1 rounded-2xl"
             style={{backgroundColor: colors.background.secondary}}
-            onPress={() => {
+            onPress={async () => {
+              // const net = await NetInfo.fetch();
+              // const isOnline = !!net.isConnected;
+              // if (!isOnline) {
+              //   ToastAndroid.show(
+              //     'İnternet bağlantınız olmadığı için şuanda güncelleme yapamazsınız',
+              //     ToastAndroid.LONG,
+              //   );
+              //   return;
+              // }
               setAddModalFunction({setSymptom});
               onAdd(true);
             }}>
@@ -134,7 +144,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         )}
       </View>
 
-      {value != null && value !== 0 && (
+      {value != null && (
         <View
           className="w-full h-1 rounded-full overflow-hidden"
           style={{backgroundColor: colors.background.secondary}}>

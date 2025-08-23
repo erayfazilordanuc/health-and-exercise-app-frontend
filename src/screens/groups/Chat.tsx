@@ -19,6 +19,7 @@ import {
   ActivityIndicator,
   BackHandler,
   Dimensions,
+  InteractionManager,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {socketService} from '../../api/socket/socketService';
@@ -32,7 +33,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../../contexts/UserContext';
 import LinearGradient from 'react-native-linear-gradient';
 import {useRoomMessages, useSendMessage} from '../../hooks/messageQueries';
-import {useAnimatedGestureHandler} from 'react-native-reanimated';
 
 const {width, height} = Dimensions.get('window');
 
@@ -70,8 +70,18 @@ const Chat = () => {
   const scrollViewRef = useRef<ScrollView>(null);
 
   const scrollToBottom = () => {
-    scrollViewRef.current?.scrollToEnd({animated: true});
+    requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollToEnd({animated: true});
+    });
   };
+
+  useEffect(() => {
+    if (messagesData && messagesData.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 0);
+    }
+  }, [messagesData, messages, isKeyboardVisible]);
 
   useFocusEffect(
     useCallback(() => {
@@ -172,6 +182,7 @@ const Chat = () => {
         ...data.messageWithSender,
       };
       setMessages(prev => [...prev, msg]);
+      setTimeout(scrollToBottom, 0);
       setUserAmount(data.userAmount);
     };
 
@@ -195,10 +206,6 @@ const Chat = () => {
       socketService.off('emit_user', handleUserLogin);
     };
   }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isKeyboardVisible]);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(

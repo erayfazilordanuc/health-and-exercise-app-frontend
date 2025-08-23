@@ -45,6 +45,7 @@ export const colorScheme = {
     third: 'white',
   },
   gradient: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
+  gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
 };
 
 export const gradientLightColors = ['#E8FEFF', '#A3DDFF', '#A2FCE8'];

@@ -373,28 +373,33 @@ function withTimeout<T>(
 export const saveSymptoms = async (symptoms: Symptoms) => {
   const key = todayKey();
 
-  console.log();
-  const state = await NetInfo.fetch();
-  const isConnected = state.isConnected;
-  if (!isConnected) {
-    Toast.show({
-      type: 'error',
-      text1: 'İnternet bağlantısı yok',
-      text2: 'Verileriniz senkronize edilemiyor', //'\nVerilerinizi senkronize etmek için lütfen internete bağlanın.'
-      position: 'top',
-      visibilityTime: 5500,
-      text1Style: {fontSize: 18},
-      text2Style: {fontSize: 16},
-    });
-    return;
-  }
-
   let symptomsObjectToSave: LocalSymptoms = {
     symptoms: symptoms,
     isSynced: false,
   };
 
+  console.log('saved local', symptomsObjectToSave);
+
+  const state = await NetInfo.fetch();
+  const isConnected = state.isConnected;
+  if (!isConnected) {
+    // Toast.show({
+    //   type: 'error',
+    //   text1: 'İnternet bağlantısı yok',
+    //   text2: 'Verileriniz senkronize edilemiyor', //'\nVerilerinizi senkronize etmek için lütfen internete bağlanın.'
+    //   position: 'top',
+    //   visibilityTime: 5500,
+    //   text1Style: {fontSize: 18},
+    //   text2Style: {fontSize: 16},
+    // });
+
+    await AsyncStorage.setItem(key, JSON.stringify(symptomsObjectToSave));
+    return;
+  }
+
   try {
+    if (!symptoms) return;
+
     const response = await upsertSymptomsByDate(new Date(), symptoms);
     if (response.status === 200) {
       symptomsObjectToSave.isSynced = true;
@@ -404,53 +409,40 @@ export const saveSymptoms = async (symptoms: Symptoms) => {
 
     return response.data as Symptoms;
   } catch (error) {
+    console.log('save symptoms error', error);
     return;
   }
 };
 
 export const getSymptoms = async () => {
   if (await initializeService()) {
-    console.log('getHeartRate start');
     const heartRate = await withTimeout(getHeartRate(), 5000, -1);
-    console.log('getHeartRate done', heartRate);
 
-    console.log('getAggregatedSteps start');
     let aggregatedSteps = await withTimeout(getAggregatedSteps(), 5000, -1);
-    console.log('getAggregatedSteps done', aggregatedSteps);
 
     if (aggregatedSteps === -1) {
-      console.log('getSteps start');
       aggregatedSteps = await withTimeout(getSteps(), 5000, -1);
-      console.log('getSteps done', aggregatedSteps);
     }
 
-    console.log('getTotalCaloriesBurned start');
     const totalCaloriesBurned = await withTimeout(
       getTotalCaloriesBurned(),
       5000,
       -1,
     );
-    console.log('getTotalCaloriesBurned done', totalCaloriesBurned);
 
-    console.log('getActiveCaloriesBurned start');
     const activeCaloriesBurned = await withTimeout(
       getActiveCaloriesBurned(),
       5000,
       -1,
     );
-    console.log('getActiveCaloriesBurned done', activeCaloriesBurned);
 
-    console.log('getTotalSleepMinutes start');
     const totalSleepMinutes = await withTimeout(
       getTotalSleepMinutes(),
       5000,
       -1,
     );
-    console.log('getTotalSleepMinutes done', totalSleepMinutes);
 
-    console.log('getAllSleepSessions start');
     const sleepSessions = await withTimeout(getAllSleepSessions(), 5000, ['']);
-    console.log('getAllSleepSessions done', sleepSessions);
 
     const healthConnectSymptoms: Symptoms = {
       pulse: heartRate === -1 ? null : heartRate,
@@ -461,6 +453,8 @@ export const getSymptoms = async () => {
         activeCaloriesBurned === -1 ? null : activeCaloriesBurned,
       sleepMinutes: totalSleepMinutes === -1 ? null : totalSleepMinutes,
     };
+
+    console.log('hc symptoms', healthConnectSymptoms);
 
     return healthConnectSymptoms;
   }

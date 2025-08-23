@@ -38,6 +38,7 @@ import {
 } from '../../../hooks/symptomsQueries';
 import {getLatestConsent} from '../../../api/consent/consentService';
 import {ConsentPurpose} from '../../../types/enums';
+import {getMySessions} from '../../../api/session/sessionService';
 
 const Development = () => {
   const insets = useSafeAreaInsets();
@@ -47,6 +48,7 @@ const Development = () => {
 
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [fcmToken, setFcmToken] = useState<FCMToken | null>(null);
   const [accessTokenTimeLeft, setAccessTokenTimeLeft] = useState<number | null>(
     null,
   );
@@ -95,6 +97,8 @@ const Development = () => {
 
   const [sessionStatus, setSessionStatus] = useState<SessionState>();
   const [sessionQueue, setSessionQueue] = useState();
+  const [sessionHistory, setSessionHistory] = useState();
+  const [dbSessions, setDbSessions] = useState<SessionDTO[]>([]);
 
   const today = new Date();
 
@@ -108,6 +112,7 @@ const Development = () => {
   const fetchTokens = async () => {
     const accessToken = await AsyncStorage.getItem('accessToken');
     const refreshToken = await AsyncStorage.getItem('refreshToken');
+    const fcmToken = await AsyncStorage.getItem('fcmToken');
     if (accessToken && refreshToken) {
       const accessTokenTimeLeft = getTokenTimeLeft(accessToken);
       const refreshTokenTimeLeft = getTokenTimeLeft(refreshToken);
@@ -116,19 +121,39 @@ const Development = () => {
       setAccessTokenTimeLeft(accessTokenTimeLeft);
       setRefreshTokenTimeLeft(refreshTokenTimeLeft);
     }
+
+    if (fcmToken) {
+      setFcmToken(JSON.parse(fcmToken) as FCMToken);
+    }
+  };
+
+  const fetchDbSessions = async () => {
+    const now = new Date();
+    const to = now.toISOString();
+    const fromDate = new Date();
+    fromDate.setDate(now.getDate() - 7);
+    const from = fromDate.toISOString();
+    const sessions = await getMySessions(from, to);
+    if (sessions) {
+      setDbSessions(sessions);
+    }
   };
 
   const fetchSessionInfo = async () => {
     const status = await AsyncStorage.getItem('session_state');
     const queue = await AsyncStorage.getItem('session_queue');
+    const history = await AsyncStorage.getItem('session_history');
     if (status) setSessionStatus(JSON.parse(status) as SessionState);
     if (queue) setSessionQueue(JSON.parse(queue));
+    if (history) setSessionHistory(JSON.parse(history));
   };
+
   useFocusEffect(
     useCallback(() => {
       fetchUser();
       fetchTokens();
       fetchSessionInfo();
+      fetchDbSessions();
     }, []),
   );
 
@@ -314,7 +339,7 @@ const Development = () => {
     try {
       const symptomsResponse = await getSymptomsByDate(today);
 
-      const symptomsData = JSON.stringify(symptomsResponse.data, null, 2);
+      const symptomsData = JSON.stringify(symptomsResponse, null, 2);
       console.log('symptomsData', symptomsData);
       setLog5(`Symptoms Response:\n${symptomsData}`);
       fetchTokens();
@@ -545,9 +570,9 @@ const Development = () => {
           <Text
             className="text-lg font-rubik-medium"
             style={{color: colors.text.primary}}>
-            Use Symptoms By Date React Query:{'\n'}
-            <Text selectable className="text-md font-rubik">
-              {JSON.stringify(data, null, 2)}
+            Fcm Token:{'\n'}
+            <Text selectable className="text-sm font-rubik">
+              {JSON.stringify(fcmToken, null, 2)}
             </Text>
           </Text>
         </View>
@@ -558,7 +583,7 @@ const Development = () => {
             className="text-lg font-rubik-medium"
             style={{color: colors.text.primary}}>
             Session Status:{'\n'}
-            <Text selectable className="text-md font-rubik">
+            <Text selectable className="text-sm font-rubik">
               {JSON.stringify(sessionStatus, null, 2)}
             </Text>
           </Text>
@@ -570,7 +595,7 @@ const Development = () => {
             className="text-lg font-rubik-medium"
             style={{color: colors.text.primary}}>
             Session Queue:{'\n'}
-            <Text selectable className="text-md font-rubik">
+            <Text selectable className="text-sm font-rubik">
               {JSON.stringify(sessionQueue, null, 2)}
             </Text>
           </Text>
@@ -581,8 +606,32 @@ const Development = () => {
           <Text
             className="text-lg font-rubik-medium"
             style={{color: colors.text.primary}}>
+            Session History:{'\n'}
+            <Text selectable className="text-sm font-rubik">
+              {JSON.stringify(sessionHistory, null, 2)}
+            </Text>
+          </Text>
+        </View>
+        <View
+          className="pb-4 mb-2 pt-3 px-4 rounded-2xl"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="text-lg font-rubik-medium"
+            style={{color: colors.text.primary}}>
+            DB Sessions:{'\n'}
+            <Text selectable className="text-sm font-rubik">
+              {JSON.stringify(dbSessions, null, 2)}
+            </Text>
+          </Text>
+        </View>
+        <View
+          className="pb-4 mb-2 pt-3 px-4 rounded-2xl"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="text-lg font-rubik-medium"
+            style={{color: colors.text.primary}}>
             KVKK Consent:{'\n'}
-            <Text selectable className="text-md font-rubik">
+            <Text selectable className="text-sm font-rubik">
               {JSON.stringify(kvkkConsent, null, 2)}
             </Text>
           </Text>
@@ -594,7 +643,7 @@ const Development = () => {
             className="text-lg font-rubik-medium"
             style={{color: colors.text.primary}}>
             Health Consent:{'\n'}
-            <Text selectable className="text-md font-rubik">
+            <Text selectable className="text-sm font-rubik">
               {JSON.stringify(healthConsent, null, 2)}
             </Text>
           </Text>

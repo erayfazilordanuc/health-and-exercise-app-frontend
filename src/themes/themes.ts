@@ -37,6 +37,7 @@ const lightColors = {
     third: '#666876',
   },
   gradient: ['#D3E8E8', '#C9E4F2', '#CCFCF4', '#CCE0E3'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
+  gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
 };
 
 const darkColors = {
@@ -61,6 +62,7 @@ const darkColors = {
     third: '#666876',
   }, // secondary: '#3a3a3a
   gradient: ['#9AAED6', '#C5D6D5', '#876073', '#A1815D'], // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
+  gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
 };
 
 // Tema nesnesi

@@ -68,6 +68,7 @@ import {
 import {useIsFocused} from '@react-navigation/native';
 import {getRoomIdByUsers, MSG_KEYS} from '../../hooks/messageQueries';
 import {useQueryClient} from '@tanstack/react-query';
+import {useGroupAdminByGroupId} from '../../hooks/groupQueries';
 // import {
 //   isExerciseReminderScheduled,
 //   registerExerciseReminder,
@@ -94,10 +95,15 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
-  // const todayExerciseProgressQ = useTodaysProgressOfflineFirst({
-  //   enabled: !isAdmin,
-  // });
-  // const todayExerciseProgress = todayExerciseProgressQ.data?.today;
+  const {
+    data: adminRQ,
+    isFetching: adminLoading,
+    refetch: refetchAdmin,
+  } = useGroupAdminByGroupId(user?.groupId);
+
+  useEffect(() => {
+    if (adminRQ) setAdmin(adminRQ as User);
+  }, [adminRQ]);
 
   const [todayExerciseProgress, setTodayExerciseProgress] =
     useState<ExerciseProgressDTO | null>();
@@ -106,20 +112,11 @@ const Home = () => {
     if (!user?.groupId) return;
 
     try {
-      if (!admin) {
-        const groupAdmin: User = await getGroupAdmin(user.groupId);
-        setAdmin(groupAdmin);
-      }
-    } catch (error) {
-      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
-      console.log(error);
-    }
-    try {
       const todayExerciseProgress: ExerciseProgressDTO =
         await getTodaysProgress();
       setTodayExerciseProgress(todayExerciseProgress);
     } catch (error) {
-      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
+      // ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
       console.log(error);
     }
     if (!initialized) setInitialized(true);
@@ -145,7 +142,7 @@ const Home = () => {
   useFocusEffect(
     useCallback(() => {
       if (user && user.role === 'ROLE_USER') fetchLastMessage();
-    }, [user, admin]),
+    }, [user, admin, adminRQ]),
   );
 
   const initializeAppContents = async () => {
@@ -308,17 +305,16 @@ const Home = () => {
 
         const saveResponse = await saveMessage(newMessage);
 
+        const match = message.match(/dailyStatus(\d+)/);
+        const score = parseInt(match![1], 10);
+
+        newMessage.message = `${
+          message ? new Date().toLocaleDateString() + '\n' : ''
+        }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
         const newLastMessage: LocalMessage = {
           message: newMessage as Message,
           savedAt: new Date(),
         };
-        AsyncStorage.setItem(
-          `lastMessage_${user.username}_${admin.username}`,
-          JSON.stringify(newLastMessage),
-        );
-
-        const match = message.match(/dailyStatus(\d+)/);
-        const score = parseInt(match![1], 10);
 
         const notiResponse = await sendNotification(
           admin.username,
@@ -603,7 +599,7 @@ const Home = () => {
                 className="flex-1 mt-1 mb-1 pb-2 rounded-2xl"> */}
               <View className="flex-1 flex flex-row items-stretch justify-between mt-1">
                 <View
-                  className="flex-1 flex flex-col px-5 py-3"
+                  className="flex-1 flex flex-col px-5 py-2"
                   style={{
                     borderRadius: 20,
                     backgroundColor: colors.background.primary,
@@ -736,8 +732,8 @@ const Home = () => {
                       </Text>
                     )}
                     <TouchableOpacity
-                      className="py-2 px-3 bg-blue-500 flex items-center justify-center"
-                      style={{borderRadius: 17}}
+                      className="py-2 px-3 flex items-center justify-center"
+                      style={{backgroundColor: '#3B93FF', borderRadius: 13}}
                       onPress={async () => {
                         if (admin && user) {
                           const roomId = await qc.ensureQueryData({

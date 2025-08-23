@@ -378,93 +378,6 @@ function GroupsStack() {
   );
 }
 
-function PhysicalExercisesStack() {
-  const {theme, colors, setTheme} = useTheme();
-
-  return (
-    <>
-      <PhysicalExercisesNativeStack.Navigator
-        initialRouteName="Exercise1"
-        screenOptions={{
-          animation: 'default',
-        }}>
-        <PhysicalExercisesNativeStack.Screen
-          name="Exercise1"
-          component={Exercise1}
-          options={{
-            headerShown: false,
-            header: () => (
-              <CustomHeader
-                title={'Egzersizler'}
-                icon={icons.todo}
-                className="border-primary-300"
-              />
-            ),
-          }}
-        />
-        <PhysicalExercisesNativeStack.Screen
-          name="Exercise2"
-          component={Exercise2}
-          options={{
-            headerShown: false,
-            header: () => (
-              <CustomHeader
-                title={'Egzersiz'}
-                icon={icons.todo}
-                className="border-primary-300"
-                backArrowEnable={true}
-              />
-            ),
-          }}
-        />
-      </PhysicalExercisesNativeStack.Navigator>
-    </>
-  );
-}
-
-function MindGamesStack() {
-  const {theme, colors, setTheme} = useTheme();
-
-  return (
-    <>
-      <MindGamesNativeStack.Navigator
-        initialRouteName="WordGame"
-        screenOptions={{
-          animation: 'default',
-        }}>
-        <MindGamesNativeStack.Screen
-          name="WordGame"
-          component={WordGame}
-          options={{
-            headerShown: false,
-            header: () => (
-              <CustomHeader
-                title={'Kelime Oyunu'}
-                icon={icons.todo}
-                className="border-primary-300"
-              />
-            ),
-          }}
-        />
-        <MindGamesNativeStack.Screen
-          name="MindGame2"
-          component={MindGame2}
-          options={{
-            headerShown: false,
-            header: () => (
-              <CustomHeader
-                title={'Akıl Oyunu 2'}
-                icon={icons.todo}
-                className="border-primary-300"
-              />
-            ),
-          }}
-        />
-      </MindGamesNativeStack.Navigator>
-    </>
-  );
-}
-
 function ExercisesStack() {
   const {theme, colors, setTheme} = useTheme();
   const {user} = useUser();
@@ -611,7 +524,7 @@ const TabIcon = ({
       }}>
       <Image
         source={icon}
-        tintColor={focused ? colors.primary[200] : colors.text.secondary}
+        tintColor={focused ? colors.primary[300] : colors.text.secondary}
         resizeMode="contain"
         className={`${
           focused
@@ -630,7 +543,7 @@ const TabIcon = ({
         style={{
           fontSize: 11,
           color: focused
-            ? colors.primary[200] // 250
+            ? colors.primary[300] // 250
             : colors.text.secondary,
         }}>
         {title}
@@ -724,37 +637,6 @@ export function BottomNavigator() {
     };
   }, [user?.id]);
 
-  // const [user, setUser] = React.useState<User | null>(null);
-  // const [loading, setLoading] = React.useState(true);
-
-  // const fetchUser = async () => {
-  //   try {
-  //     const user = await getUser();
-  //     setUser(user);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  //   setLoading(false);
-  // };
-
-  // useEffect(() => {
-  //   fetchUser();
-  // }, []);
-
-  // if (loading) {
-  //   return (
-  //     <View
-  //       style={{
-  //         flex: 1,
-  //         alignItems: 'center',
-  //         justifyContent: 'center',
-  //         backgroundColor: colors.background.secondary,
-  //       }}>
-  //       <ActivityIndicator size="large" color={colors.primary[300]} />
-  //     </View>
-  //   );
-  // }
-
   return (
     <Tab.Navigator
       key={theme.name}
@@ -813,7 +695,8 @@ export function BottomNavigator() {
         component={ExercisesStack}
         options={{
           headerShown: false,
-          headerTitle: 'Egzersizler',
+          headerTitle:
+            user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler',
           headerTitleStyle: {
             fontFamily: 'Rubik-SemiBold',
             fontSize: 24,
@@ -825,9 +708,15 @@ export function BottomNavigator() {
           //     className="border-emerald-500"
           //   />
           // ),
-          title: 'Exercises',
+          title: user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler',
           tabBarIcon: ({focused}) => (
-            <TabIcon focused={focused} icon={icons.gym} title="Egzersizler" />
+            <TabIcon
+              focused={focused}
+              icon={icons.gym}
+              title={
+                user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler'
+              }
+            />
           ),
         }}
       />

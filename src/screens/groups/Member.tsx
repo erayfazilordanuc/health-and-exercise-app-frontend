@@ -366,7 +366,7 @@ const Member = () => {
           )}
         </View>
 
-        {isProgressLoading || isSymptomsLoading ? (
+        {/* {isProgressLoading || isSymptomsLoading ? (
           <View className="flex flex-row items-center justify-center w-full">
             <ActivityIndicator
               className="mt-7 self-center"
@@ -374,7 +374,8 @@ const Member = () => {
               color={colors.text.secondary} // {colors.primary[300] ?? colors.primary}
             />
           </View>
-        ) : !kvkkApproved ? (
+        ) :  */}
+        {!kvkkApproved ? (
           <View
             className="p-3 rounded-2xl"
             style={{backgroundColor: colors.background.primary}}>
@@ -416,9 +417,7 @@ const Member = () => {
                 </View>
                 {weeklyExerciseProgress && (
                   <CustomWeeklyProgressCalendar
-                    weeklyProgressPercents={weeklyExerciseProgress.map(
-                      calcPercent,
-                    )}
+                    weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
                   />
                 )}
               </View>
@@ -496,6 +495,7 @@ const Member = () => {
             )}
           </>
         )}
+        <Text>Oturumlar</Text>
       </ScrollView>
     </View>
   );

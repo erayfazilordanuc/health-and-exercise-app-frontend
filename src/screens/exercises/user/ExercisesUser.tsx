@@ -207,7 +207,7 @@ const ExercisesUser = () => {
               theme.name === 'Light' ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
-          Egzersizler
+          {user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler'}
         </Text>
       </View>
       <View
@@ -216,7 +216,7 @@ const ExercisesUser = () => {
           backgroundColor: 'transparent', // colors.background.secondary,
         }}>
         <View
-          className="px-5 pt-3 pb-2 mb-3"
+          className="px-5 pt-2 mb-3"
           style={{
             borderRadius: 17,
             backgroundColor: colors.background.primary,
@@ -355,9 +355,11 @@ const ExercisesUser = () => {
               Egzersiz Takvimi
             </Text>
             <Text
-              className="font-rubik mb-3 mr-1 rounded-2xl py-2 px-3"
+              className="font-rubik mb-1 mr-1 rounded-xl"
               style={{
-                fontSize: 15,
+                paddingVertical: 5,
+                paddingHorizontal: 9,
+                fontSize: 14,
                 color: colors.text.primary,
                 backgroundColor: colors.background.secondary,
               }}>
@@ -370,7 +372,8 @@ const ExercisesUser = () => {
           </View>
           {weeklyExerciseProgress && (
             <CustomWeeklyProgressCalendar
-              weeklyProgressPercents={weeklyExerciseProgress.map(calcPercent)}
+              todayPercent={calcPercent(todayExerciseProgress)}
+              weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
             />
           )}
         </View>

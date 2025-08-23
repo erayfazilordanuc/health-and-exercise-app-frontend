@@ -23,11 +23,8 @@ import {
 import {useTheme} from '../../themes/ThemeProvider';
 import {getUser, updateUser} from '../../api/user/userService';
 import {
-  getGroupAdmin,
   getGroupById,
   getGroupRequestsByGroupId,
-  getGroupSize,
-  getUsersByGroupId,
   respondToJoinRequest,
 } from '../../api/group/groupService';
 import {setGestureState} from 'react-native-reanimated';
@@ -60,7 +57,7 @@ const Group = () => {
   const {data: members, isLoading: isUsersLoading} = useGroupUsers(
     groupId ?? undefined,
   );
-  const [users, setUsers] = useState(members?.data);
+  const [users, setUsers] = useState(members);
   const [admin, setAdmin] = useState<User | null>();
   const [groupSize, setGroupSize] = useState(0);
   const [isLeaveAlertVisible, setIsLeaveAlertVisible] = useState(false);
@@ -112,7 +109,7 @@ const Group = () => {
         console.log('param', groupId);
 
         if (members) {
-          const list: User[] = members.data;
+          const list: User[] = members;
           setGroupSize(list.length);
 
           const sorted = [
@@ -430,8 +427,8 @@ const Group = () => {
                 </Text>
               )}
               <TouchableOpacity
-                className="py-2 px-3 mb-1 bg-blue-500 flex items-center justify-center"
-                style={{borderRadius: 17}}
+                className="py-2 px-3 mb-1 flex items-center justify-center"
+                style={{backgroundColor: '#3B93FF', borderRadius: 13}}
                 onPress={async () => {
                   if (!(admin && user)) return;
 

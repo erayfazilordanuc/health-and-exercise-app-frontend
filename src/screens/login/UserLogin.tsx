@@ -205,12 +205,13 @@ function UserLogin() {
         return;
       }
 
-      if (!kvkkApproved || !healthDataApproved) {
+      if (!kvkkApproved) {
+        // if (!kvkkApproved || !healthDataApproved) {
         ToastAndroid.show(
           'KVKK ve sağlık verilerinin paylaşılması hakkındaki sözleşmeleri kabul etmezseniz hemşireler sizin sağlık verilerinizi görüntüleyemeyeck ve bu uygulamanın asıl amacı olan sağlık sürecini daha iyi takip etme olanağını kullanamayacaksınız. Onay durumunuzu ayarlar kısmından istediğiniz zaman değiştirebilirsiniz.',
           ToastAndroid.SHORT,
         );
-        return;
+        // return;
       }
 
       const registerPayload: RegisterRequestPayload = {
@@ -243,16 +244,16 @@ function UserLogin() {
         };
         const kvkkResponse = await giveConsent(kvkkConsent);
 
-        const healthDataConsent: UpsertConsentDTO = {
-          purpose: ConsentPurpose['HEALTH_DATA_PROCESSING'],
-          status: healthDataApproved
-            ? ConsentStatus['ACCEPTED']
-            : ConsentStatus['REJECTED'],
-          policyId: healthPolicy?.id!,
-          locale: 'tr-TR',
-          source: 'MOBILE',
-        };
-        const healthDataResponse = await giveConsent(healthDataConsent);
+        // const healthDataConsent: UpsertConsentDTO = {
+        //   purpose: ConsentPurpose['HEALTH_DATA_PROCESSING'],
+        //   status: healthDataApproved
+        //     ? ConsentStatus['ACCEPTED']
+        //     : ConsentStatus['REJECTED'],
+        //   policyId: healthPolicy?.id!,
+        //   locale: 'tr-TR',
+        //   source: 'MOBILE',
+        // };
+        // const healthDataResponse = await giveConsent(healthDataConsent);
 
         setUser(user);
 
@@ -550,7 +551,7 @@ function UserLogin() {
                   tintColor={colors.text.primary}
                 />
               </TouchableOpacity>
-              <TouchableOpacity
+              {/*<TouchableOpacity
                 className="mt-2 flex flex-row self-center items-center justify-between p-3 rounded-3xl"
                 style={{backgroundColor: colors.background.primary}}
                 onPress={() => setHealthDataModalVisible(true)}>
@@ -568,7 +569,7 @@ function UserLogin() {
                   className="size-6 mr-2"
                   tintColor={colors.text.primary}
                 />
-              </TouchableOpacity>
+              </TouchableOpacity>*/}
             </View>
           )}
           {!loading ? (
@@ -698,7 +699,7 @@ function UserLogin() {
           </>
         }
       />
-      <CustomModal
+      {/* <CustomModal
         visible={healthDataModalVisible}
         onApprove={() => {
           setHealthDataApproved(true);
@@ -717,12 +718,11 @@ function UserLogin() {
               style={{color: colors.text.primary}}>
               {healthPolicy?.content}
             </Text>
-            {/* ...uzun KVKK metnini buraya koy */}
           </>
         }
-      />
+      /> */}
       {/* Last Caution Modal */}
-      <CustomModal
+      {/* <CustomModal
         visible={healthDataModalVisible}
         onApprove={() => {
           setHealthDataApproved(true);
@@ -741,10 +741,9 @@ function UserLogin() {
               style={{color: colors.text.primary}}>
               {healthPolicy?.content}
             </Text>
-            {/* ...uzun KVKK metnini buraya koy */}
           </>
         }
-      />
+      /> */}
     </SafeAreaView>
   );
 }

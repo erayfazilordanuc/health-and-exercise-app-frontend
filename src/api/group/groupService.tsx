@@ -67,8 +67,12 @@ export const getGroupAdmin = async (id: number) => {
 
 export const getUsersByGroupId = async (groupId: number) => {
   const response = await apiClient.get(`/groups/id/${groupId}/users`);
-  console.log('Group users', response);
-  return response;
+  if (response.status >= 200 && response.status < 300) {
+    return response.data;
+  } else {
+    console.error('Unexpected status code:', response.status);
+    return [];
+  }
 };
 
 export const respondToJoinRequest = async (

@@ -15,7 +15,14 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import React, {act, useCallback, useEffect, useRef, useState} from 'react';
+import React, {
+  act,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import icons from '../../constants/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -61,7 +68,7 @@ import CustomAlertSingleton, {
   CustomAlertSingletonHandle,
 } from '../../components/CustomAlertSingleton';
 import {useSymptomsByDate} from '../../hooks/symptomsQueries';
-// import DateTimePicker from '@react-native-community/datetimepicker';
+import NetInfo from '@react-native-community/netinfo';
 
 const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -69,8 +76,6 @@ const Profile = () => {
   // const [user, setUser] = useState<User | null>(null);
   const {user} = useUser();
   const {colors, theme} = useTheme();
-
-  const [networkInfo, setNetworkInfo] = useState();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -94,30 +99,18 @@ const Profile = () => {
   const [addModalValue, setAddModalValue] = useState<Float>();
   const [showDetail, setShowDetail] = useState(false);
   const [showHCAlert, setShowHCAlert] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const today = new Date();
+  const [symptomsDate, setSymptomsDate] = useState(today);
+
+  const symptomsQ = useSymptomsByDate(symptomsDate, {
+    enabled: !!user && user.role === 'ROLE_USER',
+  });
 
   const [symptoms, setSymptoms] = useState<Symptoms>();
 
   const [healthConnectSymptoms, setHealthConnectSymptoms] =
     useState<Symptoms>();
-
-  const today = new Date();
-
-  const symptomsQ = useSymptomsByDate(today, {
-    enabled: !!user && user.role === 'ROLE_USER',
-  });
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await symptomsQ.refetch();
-      await checkEssentialAppsStatus();
-      await syncSymptoms();
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setRefreshing(false);
-    }
-  };
 
   const [loading, setLoading] = useState(true);
   const [hcStateLoading, setHcStateLoading] = useState(true);
@@ -151,7 +144,7 @@ const Profile = () => {
     return null;
   };
 
-  const combineAndSetSymptoms = async (
+  const combineSetSymptoms = async (
     symptoms: Symptoms,
     syncedSymptoms?: Symptoms,
   ) => {
@@ -160,6 +153,7 @@ const Profile = () => {
       if (merged.pulse) {
         if (heartRate !== merged.pulse) setHeartRate(merged.pulse);
       } else if (syncedSymptoms && syncedSymptoms.pulse) {
+        console.log('burada olmalı');
         setHeartRate(syncedSymptoms.pulse);
         merged.pulse = syncedSymptoms.pulse;
       }
@@ -196,37 +190,22 @@ const Profile = () => {
       }
 
       setSymptoms(merged);
-      await saveSymptoms(merged);
 
       return merged;
     }
   };
 
-  const syncSymptoms = async () => {
+  const syncSymptoms = async (synced: Symptoms) => {
     setLoading(true);
     try {
-      const synced = symptomsQ.data; // Symptoms | null
-      if (!synced) return;
+      const hc = await getSymptoms();
+      console.log('hc', hc);
+      setHealthConnectSymptoms(hc);
 
-      // HC hazırsa birleştir, değilse direkt set et
-      if (
-        isHealthConnectInstalled &&
-        isGoogleFitInstalled &&
-        isHealthConnectReady
-      ) {
-        const hc = await getSymptoms();
-        setHealthConnectSymptoms(hc);
-        const combined = await combineAndSetSymptoms(hc!, synced);
-        if (combined) await saveSymptoms(combined);
-      } else {
-        setHeartRate(synced.pulse ?? 0);
-        setSteps(synced.steps ?? 0);
-        setTotalCaloriesBurned(synced.totalCaloriesBurned ?? 0);
-        setActiveCaloriesBurned(synced.activeCaloriesBurned ?? 0);
-        setTotalSleepMinutes(synced.sleepMinutes ?? 0);
-        setSymptoms(synced);
-        await saveSymptoms(synced);
-      }
+      console.log('geldi be', synced);
+      const combined = await combineSetSymptoms(hc!, synced);
+      console.log('combined', combined);
+      if (combined && synced) await saveSymptoms(combined);
     } catch (error) {
       console.log(error);
     } finally {
@@ -236,14 +215,22 @@ const Profile = () => {
 
   useEffect(() => {
     if (!user || user.role !== 'ROLE_USER') return;
-    syncSymptoms();
-  }, [
-    user,
-    symptomsQ.data,
-    isHealthConnectInstalled,
-    isGoogleFitInstalled,
-    isHealthConnectReady,
-  ]);
+    if (!symptomsQ.isSuccess) return;
+    syncSymptoms(symptomsQ.data as Symptoms);
+  }, [user?.id, symptomsQ.dataUpdatedAt, symptomsDate]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await checkEssentialAppsStatus();
+      symptomsQ.refetch();
+      // await syncSymptoms();
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const bulguLimits = new Map<
     React.Dispatch<React.SetStateAction<number>> | undefined,
@@ -271,31 +258,11 @@ const Profile = () => {
     return bulgu ? `${bulgu.label} (${bulgu.unit})` : 'Bulgu';
   };
 
-  // useEffect(() => {
-  //   setHealthScore(prev =>
-  //     computeHealthScore({
-  //       heartRate,
-  //       steps,
-  //       totalCalories: totalCaloriesBurned,
-  //       activeCalories: activeCaloriesBurned,
-  //       sleepMinutes: totalSleepMinutes,
-  //     }),
-  //   );
-  //   console.log(
-  //     'heaaaaaaaaaaaaalth scoreee',
-  //     heartRate,
-  //     steps,
-  //     totalCaloriesBurned,
-  //     activeCaloriesBurned,
-  //     totalSleepMinutes,
-  //   );
-  // }, [
-  //   heartRate,
-  //   steps,
-  //   totalCaloriesBurned,
-  //   activeCaloriesBurned,
-  //   totalSleepMinutes,
-  // ]);
+  const monthAgo = useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1);
+    return d;
+  }, []);
 
   const checkEssentialAppsStatus = async () => {
     setHcStateLoading(true);
@@ -392,7 +359,6 @@ const Profile = () => {
               refreshing={refreshing}
               onRefresh={() => {
                 setRefreshing(true);
-                // fetchAndUpsertAll();
                 onRefresh();
                 setRefreshing(false);
               }}
@@ -507,15 +473,13 @@ const Profile = () => {
                 <TouchableOpacity
                   className="py-2 px-3"
                   style={{
-                    borderRadius: 17,
+                    borderRadius: 13,
                     backgroundColor: colors.primary[200],
                   }}
                   onPress={() => {
                     setShowDetail(!showDetail);
                   }}>
-                  <Text
-                    className="text-lg font-rubik"
-                    style={{color: colors.background.primary}}>
+                  <Text className="text-md font-rubik" style={{color: 'white'}}>
                     {showDetail ? 'Detayları Gizle' : 'Detay'}
                   </Text>
                 </TouchableOpacity>
@@ -612,7 +576,7 @@ const Profile = () => {
                     </TouchableOpacity>
                   )}
                 </View>
-                {loading ? (
+                {/* {loading ? (
                   <View
                     className="flex flex-row justify-center items-center"
                     style={{marginVertical: 75}}>
@@ -622,8 +586,8 @@ const Profile = () => {
                     />
                   </View>
                 ) : (
-                  <>
-                    {/* {healthScore && (
+                  <> */}
+                {/* {healthScore && (
                       <ProgressBar
                         value={healthScore}
                         label="Genel Sağlık"
@@ -632,23 +596,23 @@ const Profile = () => {
                         updateDisabled={true}
                       />
                     )} */}
-                    {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
-                    <ProgressBar
-                      value={heartRate}
-                      label="Nabız"
-                      iconSource={icons.pulse}
-                      color="#FF3F3F"
-                      setAddModalFunction={setAddModalFunction}
-                      setSymptom={setHeartRate}
-                      onAdd={setIsAddModalVisible}
-                      updateDisabled={
-                        healthConnectSymptoms?.pulse &&
-                        healthConnectSymptoms?.pulse > 0
-                          ? true
-                          : false
-                      }
-                    />
-                    {/* <ProgressBar
+                {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
+                <ProgressBar
+                  value={heartRate}
+                  label="Nabız"
+                  iconSource={icons.pulse}
+                  color="#FF3F3F"
+                  setAddModalFunction={setAddModalFunction}
+                  setSymptom={setHeartRate}
+                  onAdd={setIsAddModalVisible}
+                  updateDisabled={
+                    healthConnectSymptoms?.pulse &&
+                    healthConnectSymptoms?.pulse > 0
+                      ? true
+                      : false
+                  }
+                />
+                {/* <ProgressBar
                       // Düzenlenecek
                       value={96}
                       label="O2 Seviyesi"
@@ -665,80 +629,118 @@ const Profile = () => {
                       }
                       // updateDisabled={symptoms?.o2Level && healthConnectSymptoms?.o2Level > 0 ? true : false}
                     /> */}
-                    {/* <ProgressBar
+                {/* <ProgressBar
                   value={83}
                   label="Tansiyon"
                   iconSource={icons.blood_pressure}
                   color="#FF9900"
                 /> */}
-                    {/* FDEF22 */}
-                    {totalCaloriesBurned > 0 ? (
-                      <ProgressBar
-                        value={totalCaloriesBurned}
-                        label="Yakılan Kalori"
-                        iconSource={icons.kcal}
-                        color="#FF9900"
-                        setAddModalFunction={setAddModalFunction}
-                        setSymptom={setTotalCaloriesBurned}
-                        onAdd={setIsAddModalVisible}
-                        updateDisabled={
-                          healthConnectSymptoms?.totalCaloriesBurned &&
-                          healthConnectSymptoms?.totalCaloriesBurned > 0
-                            ? true
-                            : false
-                        }
-                      />
-                    ) : (
-                      activeCaloriesBurned > 0 && (
-                        <ProgressBar
-                          value={activeCaloriesBurned}
-                          label="Yakılan Kalori"
-                          iconSource={icons.kcal}
-                          color="#FF9900"
-                          setAddModalFunction={setAddModalFunction}
-                          setSymptom={setActiveCaloriesBurned}
-                          onAdd={setIsAddModalVisible}
-                          updateDisabled={
-                            healthConnectSymptoms?.activeCaloriesBurned &&
-                            healthConnectSymptoms?.activeCaloriesBurned > 0
-                              ? true
-                              : false
-                          }
-                        />
-                      )
-                    )}
+                {/* FDEF22 */}
+                {totalCaloriesBurned > 0 ? (
+                  <ProgressBar
+                    value={totalCaloriesBurned}
+                    label="Yakılan Kalori"
+                    iconSource={icons.kcal}
+                    color="#FF9900"
+                    setAddModalFunction={setAddModalFunction}
+                    setSymptom={setTotalCaloriesBurned}
+                    onAdd={setIsAddModalVisible}
+                    updateDisabled={
+                      healthConnectSymptoms?.totalCaloriesBurned &&
+                      healthConnectSymptoms?.totalCaloriesBurned > 0
+                        ? true
+                        : false
+                    }
+                  />
+                ) : (
+                  activeCaloriesBurned > 0 && (
                     <ProgressBar
-                      value={steps}
-                      label="Adım"
-                      iconSource={icons.man_walking}
-                      color="#2CA4FF"
+                      value={activeCaloriesBurned}
+                      label="Yakılan Kalori"
+                      iconSource={icons.kcal}
+                      color="#FF9900"
                       setAddModalFunction={setAddModalFunction}
-                      setSymptom={setSteps}
+                      setSymptom={setActiveCaloriesBurned}
                       onAdd={setIsAddModalVisible}
                       updateDisabled={
-                        healthConnectSymptoms?.steps &&
-                        healthConnectSymptoms?.steps > 0
+                        healthConnectSymptoms?.activeCaloriesBurned &&
+                        healthConnectSymptoms?.activeCaloriesBurned > 0
                           ? true
                           : false
                       }
                     />
-                    <ProgressBar
-                      value={totalSleepMinutes}
-                      label="Uyku"
-                      iconSource={icons.sleep}
-                      color="#FDEF22"
-                      setAddModalFunction={setAddModalFunction}
-                      setSymptom={setTotalSleepMinutes}
-                      onAdd={setShowTimePicker}
-                      updateDisabled={
-                        healthConnectSymptoms?.sleepMinutes &&
-                        healthConnectSymptoms?.sleepMinutes > 0
-                          ? true
-                          : false
-                      }
-                    />
-                  </>
+                  )
                 )}
+                <ProgressBar
+                  value={steps}
+                  label="Adım"
+                  iconSource={icons.man_walking}
+                  color="#2CA4FF"
+                  setAddModalFunction={setAddModalFunction}
+                  setSymptom={setSteps}
+                  onAdd={setIsAddModalVisible}
+                  updateDisabled={
+                    healthConnectSymptoms?.steps &&
+                    healthConnectSymptoms?.steps > 0
+                      ? true
+                      : false
+                  }
+                />
+                <ProgressBar
+                  value={totalSleepMinutes}
+                  label="Uyku"
+                  iconSource={icons.sleep}
+                  color="#FDEF22"
+                  setAddModalFunction={setAddModalFunction}
+                  setSymptom={setTotalSleepMinutes}
+                  onAdd={setShowTimePicker}
+                  updateDisabled={
+                    healthConnectSymptoms?.sleepMinutes &&
+                    healthConnectSymptoms?.sleepMinutes > 0
+                      ? true
+                      : false
+                  }
+                />
+                <TouchableOpacity
+                  onPress={async () => {
+                    const net = await NetInfo.fetch();
+                    const isOnline = !!net.isConnected;
+                    if (isOnline) setShowDatePicker(true);
+                    else
+                      ToastAndroid.show(
+                        'Bağlantı yok. İşlem gerçekleştirilemiyor.',
+                        ToastAndroid.SHORT,
+                      );
+                  }}
+                  className="px-3 py-2 rounded-xl self-end mt-1 mb-2"
+                  style={{backgroundColor: colors.primary[200]}}>
+                  <Text className="text-white font-rubik text-sm">
+                    {symptomsDate.toLocaleDateString('tr-TR')}{' '}
+                    {/* seçilen tarihi göster */}
+                  </Text>
+                </TouchableOpacity>
+
+                {showDatePicker && (
+                  <DatePicker
+                    modal
+                    locale="tr"
+                    mode="date"
+                    title="Tarih Seçin"
+                    confirmText="Tamam"
+                    cancelText="İptal"
+                    open={showDatePicker}
+                    date={symptoms?.createdAt ?? new Date()}
+                    maximumDate={monthAgo} // 5 yıldan küçük seçilemez
+                    minimumDate={new Date(1950, 0, 1)} // 1950 öncesi seçilemez
+                    onConfirm={d => {
+                      setSymptomsDate(d);
+                      setShowDatePicker(false);
+                    }}
+                    onCancel={() => setShowDatePicker(false)}
+                  />
+                )}
+                {/* </>
+                )} */}
                 {/* Uyku da minimalist bir grafik ile gösterilsin */}
                 {/* <TouchableOpacity
                   className="p-3 self-end"
@@ -800,8 +802,8 @@ const Profile = () => {
                     <>
                       <TouchableOpacity
                         onPress={async () => {
-                          setUpdateLoading(true);
                           if (addModalValue) {
+                            setUpdateLoading(true);
                             const limits = bulguLimits.get(
                               addModalFunction?.setSymptom,
                             );
