@@ -71,12 +71,28 @@ function UserLogin() {
   const [healthPolicy, setHealthPolicy] = useState<ConsentPolicyDTO | null>(
     null,
   );
+  const [exercisePolicy, setExercisePolicy] = useState<ConsentPolicyDTO | null>(
+    null,
+  );
+  const [studyPolicy, setStudyPolicy] = useState<ConsentPolicyDTO | null>(null);
 
-  const [kvkkApproved, setKvkkApproved] = useState(false);
-  const [kvkkModalVisible, setKvkkModalVisible] = useState(false);
+  const [consentModalVisible, setConsentModalVisible] = useState(false);
+  const [studyModalVisible, setStudyModalVisible] = useState(false);
 
+  const [kvkkAcknowledged, setKvkkAcknowledged] = useState(false);
   const [healthDataApproved, setHealthDataApproved] = useState(false);
-  const [healthDataModalVisible, setHealthDataModalVisible] = useState(false);
+  const [exerciseDataApproved, setExerciseDataApproved] = useState(false);
+  const [studyApproved, setStudyApproved] = useState(false);
+
+  const FOOTER =
+    'Rızamı dilediğim an, Profil > Ayarlar > İzinler ve Onaylar alanından geri çekebileceğimi biliyorum.';
+
+  function stripFooter(text?: string) {
+    if (!text) return '';
+    return text.trim().endsWith(FOOTER)
+      ? text.trim().slice(0, -FOOTER.length).trim()
+      : text.trim();
+  }
 
   const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -205,13 +221,18 @@ function UserLogin() {
         return;
       }
 
-      if (!kvkkApproved) {
+      if (
+        !kvkkAcknowledged ||
+        !healthDataApproved ||
+        !exerciseDataApproved ||
+        !studyApproved
+      ) {
         // if (!kvkkApproved || !healthDataApproved) {
         ToastAndroid.show(
-          'KVKK ve sağlık verilerinin paylaşılması hakkındaki sözleşmeleri kabul etmezseniz hemşireler sizin sağlık verilerinizi görüntüleyemeyeck ve bu uygulamanın asıl amacı olan sağlık sürecini daha iyi takip etme olanağını kullanamayacaksınız. Onay durumunuzu ayarlar kısmından istediğiniz zaman değiştirebilirsiniz.',
-          ToastAndroid.SHORT,
+          'Hesap oluşturabilmek için gerekli onayları vermeniz gerekmektedir.',
+          ToastAndroid.LONG,
         );
-        // return;
+        return;
       }
 
       const registerPayload: RegisterRequestPayload = {
@@ -225,7 +246,6 @@ function UserLogin() {
       const registerResponse = await register(registerPayload);
 
       // TO DO burada hata kodlarına göre hata mesajları eklenbilir
-      setLoading(false);
 
       if (
         registerResponse &&
@@ -235,7 +255,7 @@ function UserLogin() {
         const user = registerResponse.data.userDTO as User;
         const kvkkConsent: UpsertConsentDTO = {
           purpose: ConsentPurpose['KVKK_NOTICE_ACK'],
-          status: kvkkApproved
+          status: kvkkAcknowledged
             ? ConsentStatus['ACKNOWLEDGED']
             : ConsentStatus['REJECTED'],
           policyId: kvkkPolicy?.id!,
@@ -244,16 +264,38 @@ function UserLogin() {
         };
         const kvkkResponse = await giveConsent(kvkkConsent);
 
-        // const healthDataConsent: UpsertConsentDTO = {
-        //   purpose: ConsentPurpose['HEALTH_DATA_PROCESSING'],
-        //   status: healthDataApproved
-        //     ? ConsentStatus['ACCEPTED']
-        //     : ConsentStatus['REJECTED'],
-        //   policyId: healthPolicy?.id!,
-        //   locale: 'tr-TR',
-        //   source: 'MOBILE',
-        // };
-        // const healthDataResponse = await giveConsent(healthDataConsent);
+        const healthDataConsent: UpsertConsentDTO = {
+          purpose: ConsentPurpose['HEALTH_DATA_PROCESSING_ACK'],
+          status: healthDataApproved
+            ? ConsentStatus['ACCEPTED']
+            : ConsentStatus['REJECTED'],
+          policyId: healthPolicy?.id!,
+          locale: 'tr-TR',
+          source: 'MOBILE',
+        };
+        const healthDataResponse = await giveConsent(healthDataConsent);
+
+        const exerciseDataConsent: UpsertConsentDTO = {
+          purpose: ConsentPurpose['EXERCISE_DATA_PROCESSING_ACK'],
+          status: exerciseDataApproved
+            ? ConsentStatus['ACCEPTED']
+            : ConsentStatus['REJECTED'],
+          policyId: exercisePolicy?.id!,
+          locale: 'tr-TR',
+          source: 'MOBILE',
+        };
+        const exerciseDataResponse = await giveConsent(exerciseDataConsent);
+
+        const studyConsent: UpsertConsentDTO = {
+          purpose: ConsentPurpose['STUDY_CONSENT_ACK'],
+          status: studyApproved
+            ? ConsentStatus['ACCEPTED']
+            : ConsentStatus['REJECTED'],
+          policyId: studyPolicy?.id!,
+          locale: 'tr-TR',
+          source: 'MOBILE',
+        };
+        const studyResponse = await giveConsent(studyConsent);
 
         setUser(user);
 
@@ -266,6 +308,7 @@ function UserLogin() {
         //   healthDataResponse.data
         // ) {}
 
+        setLoading(false);
         navigation.navigate('App');
         navigation.dispatch(
           CommonActions.reset({
@@ -309,6 +352,12 @@ function UserLogin() {
       ConsentPolicyPurpose['HEALTH_DATA_PROCESSING'],
     );
     setHealthPolicy(health);
+    const exercise = await getLatestPolicy(
+      ConsentPolicyPurpose['EXERCISE_DATA_PROCESSING'],
+    );
+    setExercisePolicy(exercise);
+    const study = await getLatestPolicy(ConsentPolicyPurpose['STUDY_CONSENT']);
+    setStudyPolicy(study);
   };
 
   useEffect(() => {
@@ -537,39 +586,43 @@ function UserLogin() {
               <TouchableOpacity
                 className="mt-2 flex flex-row self-center items-center justify-between p-3 rounded-3xl"
                 style={{backgroundColor: colors.background.primary}}
-                onPress={() => setKvkkModalVisible(true)}>
+                onPress={() => setConsentModalVisible(true)}>
                 <Text
                   className="ml-2 font-rubik text-md mr-3"
                   style={{color: colors.text.primary}}>
-                  KVKK Metni
+                  KVKK Metni ve Açık Rıza Beyanı
                 </Text>
                 <Image
                   source={
-                    kvkkApproved ? icons.checkbox_checked : icons.checkbox_empty
-                  }
-                  className="size-6 mr-2"
-                  tintColor={colors.text.primary}
-                />
-              </TouchableOpacity>
-              {/*<TouchableOpacity
-                className="mt-2 flex flex-row self-center items-center justify-between p-3 rounded-3xl"
-                style={{backgroundColor: colors.background.primary}}
-                onPress={() => setHealthDataModalVisible(true)}>
-                <Text
-                  className="ml-2 font-rubik text-md mr-3"
-                  style={{color: colors.text.primary}}>
-                  Sağlık Verileri Sözleşmesi
-                </Text>
-                <Image
-                  source={
-                    healthDataApproved
+                    kvkkAcknowledged &&
+                    healthDataApproved &&
+                    exerciseDataApproved
                       ? icons.checkbox_checked
                       : icons.checkbox_empty
                   }
                   className="size-6 mr-2"
                   tintColor={colors.text.primary}
                 />
-              </TouchableOpacity>*/}
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="mt-2 flex flex-row self-center items-center justify-between p-3 rounded-3xl"
+                style={{backgroundColor: colors.background.primary}}
+                onPress={() => setStudyModalVisible(true)}>
+                <Text
+                  className="ml-2 font-rubik text-md mr-3"
+                  style={{color: colors.text.primary}}>
+                  Aydınlatılmış Onam Formu
+                </Text>
+                <Image
+                  source={
+                    studyApproved
+                      ? icons.checkbox_checked
+                      : icons.checkbox_empty
+                  }
+                  className="size-6 mr-2"
+                  tintColor={colors.text.primary}
+                />
+              </TouchableOpacity>
             </View>
           )}
           {!loading ? (
@@ -677,37 +730,50 @@ function UserLogin() {
       </ScrollView>
 
       <CustomModal
-        visible={kvkkModalVisible}
+        visible={consentModalVisible}
         onApprove={() => {
-          setKvkkApproved(true);
-          setKvkkModalVisible(false);
+          setKvkkAcknowledged(true);
+          setHealthDataApproved(true);
+          setExerciseDataApproved(true);
+          setConsentModalVisible(false);
         }}
         onReject={() => {
-          setKvkkApproved(false);
-          setKvkkModalVisible(false);
+          setKvkkAcknowledged(false);
+          setHealthDataApproved(false);
+          setExerciseDataApproved(false);
+          setConsentModalVisible(false);
         }}
-        onApproveText="Metni Okudum"
-        onRejectText="Kapat"
+        onApproveText={`Onaylıyorum`}
+        onRejectText="Onaylamıyorum"
         body={
           <>
             <Text
               className="font-rubik text-md"
               style={{color: colors.text.primary}}>
-              {kvkkPolicy?.content}
+              {stripFooter(kvkkPolicy?.content)}
+              {'\n'}
+              {'\n'}
+              {stripFooter(healthPolicy?.content)}
+              {'\n'}
+              {'\n'}
+              {stripFooter(exercisePolicy?.content)}
+              {'\n'}
+              {'\n'}
+              {'\n'}
+              {FOOTER}
             </Text>
-            {/* ...uzun KVKK metnini buraya koy */}
           </>
         }
       />
-      {/* <CustomModal
-        visible={healthDataModalVisible}
+      <CustomModal
+        visible={studyModalVisible}
         onApprove={() => {
-          setHealthDataApproved(true);
-          setHealthDataModalVisible(false);
+          setStudyApproved(true);
+          setStudyModalVisible(false);
         }}
         onReject={() => {
-          setHealthDataApproved(false);
-          setHealthDataModalVisible(false);
+          setStudyApproved(false);
+          setStudyModalVisible(false);
         }}
         onApproveText="Onaylıyorum"
         onRejectText="Onaylamıyorum"
@@ -716,34 +782,11 @@ function UserLogin() {
             <Text
               className="font-rubik text-md"
               style={{color: colors.text.primary}}>
-              {healthPolicy?.content}
+              {studyPolicy?.content}
             </Text>
           </>
         }
-      /> */}
-      {/* Last Caution Modal */}
-      {/* <CustomModal
-        visible={healthDataModalVisible}
-        onApprove={() => {
-          setHealthDataApproved(true);
-          setHealthDataModalVisible(false);
-        }}
-        onReject={() => {
-          setHealthDataApproved(false);
-          setHealthDataModalVisible(false);
-        }}
-        onApproveText="Onaylıyorum"
-        onRejectText="Onaylamıyorum"
-        body={
-          <>
-            <Text
-              className="font-rubik text-md"
-              style={{color: colors.text.primary}}>
-              {healthPolicy?.content}
-            </Text>
-          </>
-        }
-      /> */}
+      />
     </SafeAreaView>
   );
 }

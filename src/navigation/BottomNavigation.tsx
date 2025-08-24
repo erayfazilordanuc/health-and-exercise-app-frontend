@@ -87,6 +87,7 @@ const MindGamesNativeStack =
 
 function SettingsStack() {
   const {theme, colors, setTheme} = useTheme();
+  const {user} = useUser();
 
   return (
     <SettingsNativeStack.Navigator
@@ -155,7 +156,11 @@ function SettingsStack() {
         options={{
           header: () => (
             <CustomHeader
-              title={'İzinler ve Onaylar'}
+              title={
+                user && user.role === 'ROLE_ADMIN'
+                  ? 'İzinler'
+                  : 'İzinler ve Onaylar'
+              }
               icon={icons.shield}
               className="border-primary-300"
               backArrowEnable={true}

@@ -14,8 +14,42 @@ export const giveConsent = async (dto: UpsertConsentDTO) => {
       return [];
     }
   } catch (error) {
-    console.error('Error fetching exercises:', error);
+    console.error('Error fetching consent:', error);
     return [];
+  }
+};
+
+export const approveConsent = async (consentId: number) => {
+  try {
+    const response = await apiClient.put(`/consents/${consentId}/approve`);
+    console.log('Approve consent', response);
+
+    if (response.status >= 200 && response.status < 300) {
+      return response.data as ConsentDTO;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching consent:', error);
+    return null;
+  }
+};
+
+export const withdrawConsent = async (consentId: number) => {
+  try {
+    const response = await apiClient.patch(`/consents/${consentId}/withdraw`);
+    console.log('Withdrawn consent', response);
+
+    if (response.status >= 200 && response.status < 300) {
+      return response.data as ConsentDTO;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching consent:', error);
+    return null;
   }
 };
 
@@ -33,7 +67,7 @@ export const getLatestConsent = async (purpose: ConsentPurpose) => {
       return [];
     }
   } catch (error) {
-    console.error('Error fetching exercises:', error);
+    console.error('Error fetching consent:', error);
     return [];
   }
 };
@@ -58,7 +92,7 @@ export const getLatestPolicy = async (
       return [];
     }
   } catch (error) {
-    console.error('Error fetching exercises:', error);
+    console.error('Error fetching consent:', error);
     return [];
   }
 };

@@ -84,31 +84,29 @@ export function useSymptomsByDate(
     refetchInterval?: number | false;
   },
 ) {
-  const qc = useQueryClient();
   const dateStr = date?.toISOString().slice(0, 10);
+  const isToday = dateStr === new Date().toISOString().slice(0, 10);
 
-  return useQuery<Symptoms, Error>({
-    queryKey: dateStr
-      ? ['symptoms', 'by-date', dateStr]
-      : (['__disabled__'] as const),
+  return useQuery<Symptoms | null, Error>({
+    queryKey: dateStr ? ['symptoms', 'by-date', dateStr] : ['__disabled__'],
     enabled: !!date && (options?.enabled ?? true),
 
-    // HER ZAMAN Symptoms döndür!
-    queryFn: async (): Promise<Symptoms> => {
-      const local = await getLocal();
-      if (local) return local; // hızlı dönüş
-      const synced = await getSymptomsByDate(date ?? new Date());
-      if (synced) return synced;
-      return {} as Symptoms;
+    queryFn: async (): Promise<Symptoms | null> => {
+      if (!date) return null;
+
+      if (isToday) {
+        const local = await getLocal(date);
+        if (local) return local;
+      }
+      const synced = await getSymptomsByDate(date);
+      return synced ?? null; // <-- null dönebilir
     },
 
-    // async initialData KULLANMA!
-    // initialData: () => getLocalSymptomsByDate(dateStr!) ❌
-
-    // İstersen önceki cache’i göster:
-    // placeholderData: () =>
-    //   (dateStr ? qc.getQueryData<Symptoms>(['symptoms', 'by-date', dateStr]) : undefined),
-
+    retry: (count, err: any) => {
+      const status = err?.response?.status;
+      if ([400, 401, 403, 404].includes(status)) return false;
+      return count < 1;
+    },
     networkMode: 'always',
     staleTime: options?.staleTime ?? 60_000,
     refetchInterval: options?.refetchInterval ?? false,

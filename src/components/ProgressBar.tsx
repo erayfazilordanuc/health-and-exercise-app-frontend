@@ -144,7 +144,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         )}
       </View>
 
-      {value != null && (
+      {
+        // value != null &&
         <View
           className="w-full h-1 rounded-full overflow-hidden"
           style={{backgroundColor: colors.background.secondary}}>
@@ -156,7 +157,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             }}
           />
         </View>
-      )}
+      }
     </View>
   );
 };

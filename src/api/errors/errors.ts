@@ -1,20 +1,22 @@
-export class KvkkRequiredError extends Error {
+export class AuthRequiredError extends Error {
   status = 403;
-  constructor(message = 'KVKK consent required') {
+  constructor(message = 'Auth required') {
     super(message);
-    this.name = 'KvkkRequiredError';
+    this.name = 'AuthRequiredError';
   }
 }
-export const isKvkkRequiredError = (err: any): boolean => {
+
+export const isAuthRequiredError = (err: any): boolean => {
   // 1) Sunucudan gelen axios error
   const r = err?.response;
   const msg = String(
     r?.data?.message ?? r?.data?.error ?? err?.message ?? '',
   ).toLowerCase();
-  if (r?.status === 403 && msg.includes('kvkk consent required')) return true;
+
+  if (r?.status === 403 && msg.includes('forbidden')) return true;
 
   // 2) Daha önce çevrilmiş custom error
-  if (err instanceof KvkkRequiredError) return true;
+  if (err instanceof AuthRequiredError) return true;
 
   return false;
 };

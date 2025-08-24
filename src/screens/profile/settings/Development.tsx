@@ -79,6 +79,10 @@ const Development = () => {
 
   const [kvkkConsent, setKvkkConsent] = useState<ConsentDTO | null>(null);
   const [healthConsent, setHealthConsent] = useState<ConsentDTO | null>(null);
+  const [exerciseConsent, setExerciseConsent] = useState<ConsentDTO | null>(
+    null,
+  );
+  const [studyConsent, setStudyConsent] = useState<ConsentDTO | null>(null);
 
   const fetchConsents = async () => {
     const kvkkConsent = await getLatestConsent(
@@ -86,9 +90,17 @@ const Development = () => {
     );
     setKvkkConsent(kvkkConsent);
     const healthConsent = await getLatestConsent(
-      ConsentPurpose['HEALTH_DATA_PROCESSING'],
+      ConsentPurpose['HEALTH_DATA_PROCESSING_ACK'],
     );
     setHealthConsent(healthConsent);
+    const exerciseConsent = await getLatestConsent(
+      ConsentPurpose['EXERCISE_DATA_PROCESSING_ACK'],
+    );
+    setExerciseConsent(exerciseConsent);
+    const studyConsent = await getLatestConsent(
+      ConsentPurpose['STUDY_CONSENT_ACK'],
+    );
+    setStudyConsent(studyConsent);
   };
 
   useEffect(() => {

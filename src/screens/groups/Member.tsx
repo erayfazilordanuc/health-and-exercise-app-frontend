@@ -10,8 +10,9 @@ import {
   Image,
   RefreshControl,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   RouteProp,
@@ -47,12 +48,17 @@ import {
   getWeeklyActiveDaysProgressByUserId,
 } from '../../api/exercise/progressService';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
-import {isKvkkRequiredError} from '../../api/errors/errors';
+import {isAuthRequiredError} from '../../api/errors/errors';
 import {useAdminSymptomsByUserIdAndDate} from '../../hooks/symptomsQueries';
 import {useWeeklyActiveDaysProgressByUserId} from '../../hooks/progressQueries';
 import {useUserById} from '../../hooks/userQueries';
 import {getRoomIdByUsers, MSG_KEYS} from '../../hooks/messageQueries';
 import {useQueryClient} from '@tanstack/react-query';
+import DatePicker from 'react-native-date-picker';
+import NetInfo from '@react-native-community/netinfo';
+import {useUserSessions} from '../../hooks/sessionQueries';
+import {subDays} from 'date-fns';
+import {SessionList} from '../../components/SessionList';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -61,13 +67,57 @@ const Member = () => {
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
-  const [loading, setLoading] = useState(true);
+  const [allLoading, setAllLoading] = useState(true);
   const {user: admin} = useUser();
   const {data: member, isLoading, error} = useUserById(memberId);
   const qc = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const [lastMessage, setLastMessage] = useState<Message | null>();
-  const [kvkkApproved, setKvkkApproved] = useState(true);
+  const [accessAuthorized, setAccessAuthorized] = useState(true);
+
+  const scrollRef = useRef<ScrollView>(null);
+  const [symptomsSectionY, setSymptomsSectionY] = useState(0);
+
+  // isSymptomsLoading'in önce true olup sonra false'a düştüğünü tespit etmek için:
+  const prevSymptomsLoadingRef = useRef(false);
+
+  function scrollToSymptoms() {
+    // layout güncellenmiş olsun diye frame sonunda kaydır
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({
+        y: Math.max(0, symptomsSectionY - 12),
+        animated: true,
+      });
+    });
+  }
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const today = new Date();
+  const [symptomsDate, setSymptomsDate] = useState(today);
+  const day = (d: Date) => d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+
+  // EKRANDA:
+  const toDay = React.useMemo(() => day(new Date()), []); // örn: '2025-08-24'
+  const fromDay = React.useMemo(() => day(subDays(new Date(), 7)), []);
+
+  // const {fromISO, toISO} = useMemo(() => {
+  //   const to = new Date(); // şimdi
+  //   const from = new Date(to);
+  //   from.setDate(to.getDate() - 7); // 7 gün önce
+
+  //   // Güne yuvarla -> key stabil olsun
+  //   const day = (d: Date) => d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  //   return {fromISO: day(from), toISO: day(to)};
+  // }, [symptomsDate]);
+
+  const {
+    data: sessions,
+    isLoading: isSessionsLoading,
+    error: sessionsError,
+  } = useUserSessions(memberId, fromDay, toDay, {
+    staleTime: 5 * 60 * 1000, // 5 dk taze kalsın
+    refetchOnWindowFocus: false, // odağa gelince zorla refetch etme
+  });
 
   const {
     data: symptoms,
@@ -76,7 +126,12 @@ const Member = () => {
     error: symptomsError,
     refetch: refetchSymptoms,
     isFetching,
-  } = useAdminSymptomsByUserIdAndDate(memberId, new Date());
+  } = useAdminSymptomsByUserIdAndDate(memberId, symptomsDate);
+
+  useEffect(() => {
+    scrollToSymptoms();
+  }, [symptoms]);
+
   const {
     data: weeklyExerciseProgress = [],
     isLoading: isProgressLoading,
@@ -88,13 +143,17 @@ const Member = () => {
   });
 
   useEffect(() => {
-    if (isSymptomsError && isKvkkRequiredError(symptomsError)) {
-      setKvkkApproved(false);
+    setAllLoading(isSessionsLoading || isSymptomsLoading || isProgressLoading);
+  }, [isSessionsLoading, isSymptomsLoading, isProgressLoading]);
+
+  useEffect(() => {
+    if (isSymptomsError && isAuthRequiredError(symptomsError)) {
+      setAccessAuthorized(false);
     }
   }, [isSymptomsError, symptomsError]);
   useEffect(() => {
-    if (isProgressError && isKvkkRequiredError(progressError)) {
-      setKvkkApproved(false);
+    if (isProgressError && isAuthRequiredError(progressError)) {
+      setAccessAuthorized(false);
     }
   }, [isProgressError, progressError]);
 
@@ -186,6 +245,33 @@ const Member = () => {
     }, []),
   );
 
+  const monthAgo = useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1);
+    return d;
+  }, []);
+
+  function getWeeklyStats(sessions: SessionDTO[]) {
+    const sessionCount = sessions.length;
+
+    const totalMinutes =
+      sessions.reduce((acc, s) => acc + s.activeMs, 0) / 60000;
+
+    return {
+      sessionCount,
+      totalMinutes: Math.round(totalMinutes), // yuvarlanmış
+    };
+  }
+
+  function formatMinutes(totalMinutes: number): string {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours > 0) {
+      return `${hours} sa ${minutes} dk`;
+    }
+    return `${minutes} dk`;
+  }
+
   return (
     <View style={{paddingTop: insets.top * 1.3}} className="flex-1 px-3">
       <LinearGradient
@@ -220,6 +306,7 @@ const Member = () => {
       </View>
 
       <ScrollView
+        ref={scrollRef}
         contentContainerClassName="pb-24"
         refreshControl={
           <RefreshControl
@@ -367,135 +454,231 @@ const Member = () => {
         </View>
 
         {/* {isProgressLoading || isSymptomsLoading ? (
-          <View className="flex flex-row items-center justify-center w-full">
-            <ActivityIndicator
-              className="mt-7 self-center"
-              size="large"
-              color={colors.text.secondary} // {colors.primary[300] ?? colors.primary}
-            />
-          </View>
-        ) :  */}
-        {!kvkkApproved ? (
-          <View
-            className="p-3 rounded-2xl"
-            style={{backgroundColor: colors.background.primary}}>
-            <Text className="ml-2 text-lg font-rubik">
-              Hastanın verileri görüntülenemiyor.
-            </Text>
-            <Text className="ml-2 text-md font-rubik mt-1">
-              Veri paylaşımı için gerekli onaylar verilmemiş.
-            </Text>
-          </View>
-        ) : (
-          <>
-            {!isProgressLoading && (
-              <View
-                className="flex flex-col px-3 py-3 mb-3 pb-4"
-                style={{
-                  borderRadius: 17,
-                  backgroundColor: colors.background.primary,
-                }}>
-                <View className="flex flex-row items-center justify-between">
-                  <Text
-                    className="font-rubik mb-2 ml-2"
-                    style={{fontSize: 18, color: colors.text.primary}}>
-                    Egzersiz Takvimi
-                  </Text>
-                  <Text
-                    className="font-rubik mb-3 rounded-2xl py-2 px-3"
-                    style={{
-                      fontSize: 16,
-                      color: colors.text.primary,
-                      backgroundColor: colors.background.secondary,
-                    }}>
-                    {new Date().toLocaleDateString('tr-TR', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </Text>
-                </View>
-                {weeklyExerciseProgress && (
+            <View className="flex flex-row items-center justify-center w-full">
+              <ActivityIndicator
+                className="mt-7 self-center"
+                size="large"
+                color={colors.text.secondary} // {colors.primary[300] ?? colors.primary}
+              />
+            </View>
+          ) :  */}
+        {!allLoading ? (
+          !accessAuthorized ? (
+            <View
+              className="p-3 rounded-2xl"
+              style={{backgroundColor: colors.background.primary}}>
+              <Text className="ml-2 text-lg font-rubik">
+                Veriler görüntülenemiyor.
+              </Text>
+              <Text className="ml-2 text-md font-rubik mt-1">
+                Kullanıcının verilerine erişebilmek için gerekli onaylar
+                bulunmamaktadır.
+              </Text>
+              {/* <Text className="ml-2 text-md font-rubik mt-1">
+                Veri paylaşımı için gerekli onaylar verilmemiş.
+              </Text> */}
+            </View>
+          ) : (
+            <>
+              {!isProgressLoading && weeklyExerciseProgress && (
+                <View
+                  className="flex flex-col px-3 py-3 mb-3 pb-4"
+                  style={{
+                    borderRadius: 17,
+                    backgroundColor: colors.background.primary,
+                  }}>
+                  <View className="flex flex-row items-center justify-between">
+                    <Text
+                      className="font-rubik mb-2 ml-2"
+                      style={{fontSize: 18, color: colors.text.primary}}>
+                      Egzersiz Takvimi
+                    </Text>
+                    <Text
+                      className="font-rubik mb-3 rounded-2xl py-2 px-3"
+                      style={{
+                        fontSize: 16,
+                        color: colors.text.primary,
+                        backgroundColor: colors.background.secondary,
+                      }}>
+                      {new Date().toLocaleDateString('tr-TR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </Text>
+                  </View>
                   <CustomWeeklyProgressCalendar
                     weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
                   />
-                )}
-              </View>
-            )}
-            {!isSymptomsLoading && (
-              <View
-                className="flex flex-col pb-2 pt-1 px-5"
-                style={{
-                  borderRadius: 17,
-                  backgroundColor: colors.background.primary,
-                }}>
-                <Text
-                  className="font-rubik pt-2"
-                  style={{fontSize: 18, color: colors.text.primary}}>
-                  Bulgular
-                </Text>
-                {/* <ProgressBar
-            value={93}
-            label="Genel sağlık"
-            iconSource={icons.better_health}
-            color="#41D16F"
-          /> */}
-                {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
-                <ProgressBar
-                  value={symptoms?.pulse}
-                  label="Nabız"
-                  iconSource={icons.pulse}
-                  color="#FF3F3F"
-                />
-                {/* <ProgressBar
-            value={96}
-            label="O2 Seviyesi"
-            iconSource={icons.o2sat}
-            color="#2CA4FF"
-          /> */}
-                {/* <ProgressBar
-            value={83}
-            label="Tansiyon"
-            iconSource={icons.blood_pressure}
-            color="#FF9900"/> FDEF22*/}
-                {symptoms?.totalCaloriesBurned &&
-                symptoms?.totalCaloriesBurned > 0 ? (
-                  <ProgressBar
-                    value={symptoms?.totalCaloriesBurned}
-                    label="Yakılan Kalori"
-                    iconSource={icons.kcal}
-                    color="#FF9900"
-                  />
-                ) : (
-                  symptoms?.activeCaloriesBurned &&
-                  symptoms?.activeCaloriesBurned > 0 && (
-                    <ProgressBar
-                      value={symptoms?.activeCaloriesBurned}
-                      label="Yakılan Kalori"
-                      iconSource={icons.kcal}
-                      color="#FF9900"
+                </View>
+              )}
+              {!isSymptomsLoading && (
+                <View
+                  onLayout={e => setSymptomsSectionY(e.nativeEvent.layout.y)}
+                  className="flex flex-col pb-2 pt-1 px-5 mb-3"
+                  style={{
+                    borderRadius: 17,
+                    backgroundColor: colors.background.primary,
+                  }}>
+                  {/* <ProgressBar
+              value={93}
+              label="Genel sağlık"
+              iconSource={icons.better_health}
+              color="#41D16F"
+            /> */}
+                  {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
+                  {/* <ProgressBar
+              value={96}
+              label="O2 Seviyesi"
+              iconSource={icons.o2sat}
+              color="#2CA4FF"
+            /> */}
+                  {/* <ProgressBar
+              value={83}
+              label="Tansiyon"
+              iconSource={icons.blood_pressure}
+              color="#FF9900"/> FDEF22*/}
+                  {symptoms ? (
+                    <>
+                      <Text
+                        className="font-rubik pt-2"
+                        style={{fontSize: 18, color: colors.text.primary}}>
+                        Bulgular
+                      </Text>
+                      <ProgressBar
+                        value={symptoms?.pulse}
+                        label="Nabız"
+                        iconSource={icons.pulse}
+                        color="#FF3F3F"
+                      />
+                      {symptoms?.totalCaloriesBurned &&
+                      symptoms?.totalCaloriesBurned > 0 ? (
+                        <ProgressBar
+                          value={symptoms?.totalCaloriesBurned}
+                          label="Yakılan Kalori"
+                          iconSource={icons.kcal}
+                          color="#FF9900"
+                        />
+                      ) : (
+                        symptoms?.activeCaloriesBurned &&
+                        symptoms?.activeCaloriesBurned > 0 && (
+                          <ProgressBar
+                            value={symptoms?.activeCaloriesBurned}
+                            label="Yakılan Kalori"
+                            iconSource={icons.kcal}
+                            color="#FF9900"
+                          />
+                        )
+                      )}
+                      <ProgressBar
+                        value={symptoms?.steps}
+                        label="Adım"
+                        iconSource={icons.man_walking}
+                        color="#2CA4FF" //FDEF22
+                      />
+                      <ProgressBar
+                        value={
+                          symptoms?.sleepMinutes
+                            ? symptoms?.sleepMinutes
+                            : undefined
+                        }
+                        label="Uyku"
+                        iconSource={icons.sleep}
+                        color="#FDEF22"
+                      />
+                    </>
+                  ) : (
+                    <Text
+                      className="font-rubik pt-2"
+                      style={{fontSize: 18, color: colors.text.primary}}>
+                      Bulgu Kaydı Bulunamadı
+                    </Text>
+                  )}
+                  <TouchableOpacity
+                    onPress={async () => {
+                      const net = await NetInfo.fetch();
+                      const isOnline = !!net.isConnected;
+                      if (isOnline) setShowDatePicker(true);
+                      else
+                        ToastAndroid.show(
+                          'Bağlantı yok. İşlem gerçekleştirilemiyor.',
+                          ToastAndroid.SHORT,
+                        );
+                    }}
+                    className="px-3 py-2 rounded-xl self-end mt-1 mb-2"
+                    style={{backgroundColor: colors.primary[200]}}>
+                    <Text className="text-white font-rubik text-sm">
+                      {symptomsDate.toLocaleDateString('tr-TR')}{' '}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {showDatePicker && (
+                    <DatePicker
+                      modal
+                      locale="tr"
+                      mode="date"
+                      title="Tarih Seçin"
+                      confirmText="Tamam"
+                      cancelText="İptal"
+                      open={showDatePicker}
+                      date={symptomsDate}
+                      minimumDate={monthAgo}
+                      maximumDate={new Date()}
+                      onConfirm={d => {
+                        setSymptomsDate(d);
+                        setShowDatePicker(false);
+                      }}
+                      onCancel={() => setShowDatePicker(false)}
                     />
-                  )
-                )}
-                <ProgressBar
-                  value={symptoms?.steps}
-                  label="Adım"
-                  iconSource={icons.man_walking}
-                  color="#2CA4FF" //FDEF22
-                />
-                <ProgressBar
-                  value={
-                    symptoms?.sleepMinutes ? symptoms?.sleepMinutes : undefined
-                  }
-                  label="Uyku"
-                  iconSource={icons.sleep}
-                  color="#FDEF22"
-                />
-              </View>
-            )}
-          </>
+                  )}
+                </View>
+              )}
+              {!isSessionsLoading && (
+                <View
+                  className="flex flex-col pb-2 pt-1 px-5"
+                  style={{
+                    borderRadius: 17,
+                    backgroundColor: colors.background.primary,
+                  }}>
+                  {sessions && sessions.length > 0 ? (
+                    <View className="pb-1">
+                      <Text
+                        className="font-rubik pt-2"
+                        style={{fontSize: 18, color: colors.text.primary}}>
+                        Haftalık Oturum Bilgileri
+                      </Text>
+                      <Text
+                        className="font-rubik pt-2"
+                        style={{fontSize: 15, color: colors.text.primary}}>
+                        Uygulamaya giriş sayısı:{' '}
+                        {getWeeklyStats(sessions).sessionCount}
+                      </Text>
+                      <Text
+                        className="font-rubik pt-2"
+                        style={{fontSize: 15, color: colors.text.primary}}>
+                        {'Toplam kullanım süresi'}:{' '}
+                        {formatMinutes(getWeeklyStats(sessions).totalMinutes)}
+                      </Text>
+                      {/* <SessionList sessions={sessions} /> */}
+                    </View>
+                  ) : (
+                    <Text
+                      className="font-rubik pt-2"
+                      style={{fontSize: 18, color: colors.text.primary}}>
+                      Oturum Kaydı Bulunamadı
+                    </Text>
+                  )}
+                </View>
+              )}
+            </>
+          )
+        ) : (
+          <View
+            className="flex flex-row justify-center items-center pt-6"
+            style={{backgroundColor: 'transparent'}}>
+            <ActivityIndicator size="large" color={colors.primary[300]} />
+          </View>
         )}
-        <Text>Oturumlar</Text>
       </ScrollView>
     </View>
   );

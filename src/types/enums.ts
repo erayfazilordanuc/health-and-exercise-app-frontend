@@ -6,7 +6,9 @@ export enum LoginMethod {
 
 export enum ConsentPurpose {
   KVKK_NOTICE_ACK,
-  HEALTH_DATA_PROCESSING,
+  HEALTH_DATA_PROCESSING_ACK,
+  EXERCISE_DATA_PROCESSING_ACK,
+  STUDY_CONSENT_ACK,
 }
 
 export enum ConsentStatus {
@@ -19,6 +21,8 @@ export enum ConsentStatus {
 export enum ConsentPolicyPurpose {
   KVKK_NOTICE,
   HEALTH_DATA_PROCESSING,
+  EXERCISE_DATA_PROCESSING,
+  STUDY_CONSENT,
 }
 
 export enum ExercisePosition {

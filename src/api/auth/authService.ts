@@ -117,9 +117,6 @@ export const refreshAccessToken = async () => {
 };
 
 export const logout = async () => {
-  await queryClient.cancelQueries();
-  queryClient.clear();
-  await AsyncStorage.clear();
   const userData = await AsyncStorage.getItem('user');
   if (userData) {
     const user: User = JSON.parse(userData);
@@ -128,10 +125,14 @@ export const logout = async () => {
       const response = await apiClient.delete('/notifications/user/fcm-token', {
         data: deleteFcmTokenPayload,
       });
+      console.log('delete fcm token by user id', response);
     } catch (error) {
       console.log('error deleting', error);
     }
   }
+  await queryClient.cancelQueries();
+  queryClient.clear();
+  await AsyncStorage.clear();
 
   // const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
   // await AsyncStorage.removeItem(key);

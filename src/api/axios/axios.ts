@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {logout, refreshAccessToken} from '../auth/authService';
 import {CommonActions, useNavigation} from '@react-navigation/native';
 import {ToastAndroid} from 'react-native';
-import {isKvkkRequiredError, KvkkRequiredError} from '../errors/errors';
+import {isAuthRequiredError, AuthRequiredError} from '../errors/errors';
 
 const domain = 'eray.ordanuc.com';
 const API_BASE_URL = 'https://eray.ordanuc.com/api';
@@ -65,8 +65,8 @@ apiClient.interceptors.request.use(async config => {
 //
 //   // Bu küçük handler kalırsa da sorun yok; idempotent
 //   err => {
-//     if (isKvkkRequiredError(err)) {
-//       return Promise.reject(new KvkkRequiredError());
+//     if (isAuthRequiredError(err)) {
+//       return Promise.reject(new AuthRequiredError());
 //     }
 //     return Promise.reject(err);
 //   },
@@ -103,8 +103,8 @@ apiClient.interceptors.response.use(
     }
 
     // --- ADD: KVKK'yi en başta yakala ve KISA DEVRE ET ---
-    if (isKvkkRequiredError(error)) {
-      return Promise.reject(new KvkkRequiredError());
+    if (isAuthRequiredError(error)) {
+      return Promise.reject(new AuthRequiredError());
     }
     // --- END ADD ---
 

@@ -53,7 +53,7 @@ import CustomAlertSingleton, {
 } from '../../components/CustomAlertSingleton';
 import NotificationSetting from 'react-native-open-notification';
 import {
-  checkGoogleFitInstalled,
+  checkSamsungHInstalled,
   checkHealthConnectInstalled,
   computeHealthScore,
   getSymptoms,
@@ -225,6 +225,7 @@ const Home = () => {
 
   const calcPercent = (p?: ExerciseProgressDTO | null): number => {
     if (!p || !p.exerciseDTO || !p.exerciseDTO.videos) return 0;
+
     const total = p.exerciseDTO.videos.reduce(
       (sum, v) => sum + (v.durationSeconds ?? 0),
       0,
@@ -236,7 +237,7 @@ const Home = () => {
 
   useEffect(() => {
     initializeAppContents();
-  }, []);
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -370,56 +371,6 @@ const Home = () => {
       return merged;
     }
   };
-
-  const healthConnectReady = async () => {
-    const healthConnectInstalled = await checkHealthConnectInstalled();
-    if (!healthConnectInstalled) return false;
-
-    const googleFitInstalled = await checkGoogleFitInstalled();
-    if (!googleFitInstalled) return false;
-
-    const isHealthConnectReady = await initializeHealthConnect();
-    if (!isHealthConnectReady) return false;
-
-    return true;
-  };
-
-  // const fetchAndCalculateHealthScore = async () => {
-  //   const syncedSymptoms = await getSymptomsByDate(new Date());
-
-  //   const isHCReady = await healthConnectReady();
-  //   if (isHCReady) {
-  //     const healthConnectSymptoms = await getSymptoms();
-  //     const combinedSymptoms = await combineAndSetSymptoms(
-  //       healthConnectSymptoms!,
-  //       syncedSymptoms,
-  //     );
-  //     if (combinedSymptoms) {
-  //       setHealthScore(prev =>
-  //         computeHealthScore({
-  //           heartRate: combinedSymptoms.pulse,
-  //           steps: combinedSymptoms.steps,
-  //           totalCalories: combinedSymptoms.totalCaloriesBurned ?? undefined,
-  //           activeCalories: combinedSymptoms.activeCaloriesBurned ?? undefined,
-  //           sleepMinutes: combinedSymptoms.sleepMinutes ?? undefined,
-  //         }),
-  //       );
-  //       console.log('combineeeeeeeeeed score', combinedSymptoms);
-  //     }
-  //   } else {
-  //     if (syncedSymptoms) {
-  //       setHealthScore(prev =>
-  //         computeHealthScore({
-  //           heartRate: syncedSymptoms.pulse,
-  //           steps: syncedSymptoms.steps,
-  //           totalCalories: syncedSymptoms.totalCaloriesBurned ?? undefined,
-  //           activeCalories: syncedSymptoms.activeCaloriesBurned ?? undefined,
-  //           sleepMinutes: syncedSymptoms.sleepMinutes ?? undefined,
-  //         }),
-  //       );
-  //     }
-  //   }
-  // };
 
   return (
     <>
@@ -708,7 +659,7 @@ const Home = () => {
                         Bugün için planlanan egzersiziniz yok.
                       </Text>
                       <Text
-                        className="font-rubik mt-5 text-center"
+                        className="font-rubik mt-1 text-center"
                         style={{fontSize: 17, color: colors.text.primary}}>
                         İyi dinlenmeler!
                       </Text>

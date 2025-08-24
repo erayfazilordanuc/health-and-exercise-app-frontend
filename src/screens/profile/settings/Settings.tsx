@@ -79,6 +79,9 @@ const Settings = () => {
 
   const [isAlertVisible, setIsAlertVisible] = useState(false);
 
+  const [tapCount, setTapCount] = useState(0);
+  const [lastTapTime, setLastTapTime] = useState<number>(0);
+
   useEffect(() => {
     const fetchUser = async () => {
       const userData = await AsyncStorage.getItem('user');
@@ -98,6 +101,20 @@ const Settings = () => {
         routes: [{name: 'Launch'}],
       }),
     );
+  };
+
+  const handleSecretTap = () => {
+    const now = Date.now();
+
+    // Eğer son tıklama 1.5 saniyeden eskiyse resetle
+    if (now - lastTapTime > 1500) {
+      setTapCount(1);
+    } else {
+      setTapCount(prev => prev + 1);
+    }
+
+    console.log('tap', tapCount);
+    setLastTapTime(now);
   };
 
   return (
@@ -130,7 +147,11 @@ const Settings = () => {
           /> */}
             <SettingsItem
               icon={icons.permission}
-              title={'İzinler ve Onaylar'}
+              title={
+                user && user.role === 'ROLE_ADMIN'
+                  ? 'İzinler'
+                  : 'İzinler ve Onaylar'
+              }
               onPress={() => {
                 navigation.navigate('Permissions');
                 // if (Platform.OS === 'ios') {
@@ -141,6 +162,17 @@ const Settings = () => {
                 // navigation.navigate('Permissions');
               }}
             />
+            <SettingsItem
+              icon={icons.app_info}
+              title={'Uygulama Bilgileri'}
+              onPress={() => {
+                if (Platform.OS === 'ios') {
+                  Linking.openURL('app-settings:');
+                } else {
+                  Linking.openSettings();
+                }
+              }}
+            />
             {/* <SettingsItem
             icon={icons.shield}
             title={'Güvenlik'}
@@ -148,13 +180,15 @@ const Settings = () => {
               navigation.navigate('Security');
             }}
           /> */}
-            <SettingsItem
-              icon={icons.development}
-              title={'Geliştirme'}
-              onPress={() => {
-                navigation.navigate('Development');
-              }}
-            />
+            {tapCount > 6 && (
+              <SettingsItem
+                icon={icons.development}
+                title={'Geliştirme'}
+                onPress={() => {
+                  navigation.navigate('Development');
+                }}
+              />
+            )}
             {/* <SettingsItem
             icon={icons.language}
             title={'Dil'}
@@ -175,6 +209,14 @@ const Settings = () => {
             }}
           />
         </View>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={handleSecretTap}
+          className="h-full pb-32 pt-3"
+          style={{
+            backgroundColor: colors.background.secondary,
+          }}
+        />
       </View>
       <CustomAlert
         message={'Çıkmak istediğinize emin misiniz?'}

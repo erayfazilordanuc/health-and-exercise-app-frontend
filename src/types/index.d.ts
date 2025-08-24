@@ -31,11 +31,16 @@ type DailySessionSummaryDTO = {
 type SessionDTO = {
   id: number;
   userId: number;
-  source: string;
-  startedAt: string; // ISO datetime
-  endedAt: string; // ISO datetime
-  activeMs: number;
+  sessionId: string; // UUID string
+  source: 'MOBILE' | 'WEB' | 'API'; // daha kontrollü
+  startedAt: string; // ISO 8601 datetime
+  endedAt?: string; // ISO 8601 datetime | null olabilir
+  activeMs: number; // toplam aktif süre (ms)
+  lastHeartbeatAt?: string; // ISO 8601 datetime
   heartbeatCount: number;
+  reason?: 'logout' | 'close'; // opsiyonel, sınırlı string
+  createdAt: string; // ISO 8601 datetime
+  updatedAt: string; // ISO 8601 datetime
 };
 
 type UpsertConsentDTO = {

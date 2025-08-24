@@ -330,11 +330,11 @@ const ExercisesUser = () => {
             <>
               <Text
                 className="font-rubik text-center"
-                style={{fontSize: 18, color: colors.text.primary}}>
+                style={{fontSize: 16, color: colors.text.primary}}>
                 Bugün için planlanan egzersiziniz yok.
               </Text>
               <Text
-                className="font-rubik mt-1 text-center"
+                className="font-rubik mt-1 mb-2 text-center"
                 style={{fontSize: 18, color: colors.text.primary}}>
                 İyi dinlenmeler!
               </Text>

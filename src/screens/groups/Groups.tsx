@@ -33,7 +33,7 @@ import CustomAlertSingleton, {
 import LinearGradient from 'react-native-linear-gradient';
 
 const Groups = () => {
-  const {colors,theme} = useTheme();
+  const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const [loading, setLoading] = useState(false);
@@ -219,7 +219,8 @@ const Groups = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color: theme.name === "Light" ? "#333333" : colors.background.primary,
+            color:
+              theme.name === 'Light' ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Gruplar

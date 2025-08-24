@@ -62,11 +62,14 @@ export const getAllSymptoms = async () => {
 // };
 
 // Localde haftalık saklanabilir
-export const getLocal = async () => {
-  const localJson = await AsyncStorage.getItem(todayKey());
+export const getLocal = async (date: Date) => {
+  const localJson = await AsyncStorage.getItem(
+    keyPrefix + date.toISOString().slice(0, 10),
+  );
   console.log('localJson', localJson);
   if (localJson)
     return (JSON.parse(localJson) as LocalSymptoms).symptoms as Symptoms;
+  return null;
 };
 
 export const getSymptomsByDate = async (date: Date) => {
@@ -82,10 +85,12 @@ export const getSymptomsByDate = async (date: Date) => {
         return response.data as Symptoms;
       } else {
         console.error('Unexpected status code:', response.status);
+        return null;
       }
     }
   } catch (error) {
     console.error('Error fetching symptoms:', error);
+    return null;
   }
 };
 

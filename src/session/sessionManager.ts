@@ -11,6 +11,19 @@ const GRACE_CLOSE_MS = 10_000;
 const HISTORY_KEY = 'session_history';
 const MAX_HISTORY = 200;
 
+// ⏰ 7 günlük retention
+const HISTORY_RETENTION_DAYS = 7;
+const HISTORY_RETENTION_MS = HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+function filterByRetention(
+  list: CompletedSessionLocal[],
+): CompletedSessionLocal[] {
+  const now = Date.now();
+  return list.filter(it => {
+    const ended = Date.parse(it.endedAt ?? it.startedAt);
+    return !Number.isNaN(ended) && now - ended <= HISTORY_RETENTION_MS;
+  });
+}
+
 /** ----- Tipler ----- */
 type StopReason = 'logout' | 'close';
 
@@ -291,14 +304,23 @@ class SessionManager {
       const raw = await AsyncStorage.getItem(HISTORY_KEY);
       const list: CompletedSessionLocal[] = raw ? JSON.parse(raw) : [];
       list.unshift(entry);
-      if (list.length > MAX_HISTORY) list.length = MAX_HISTORY;
-      await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+
+      // ⏰ yaş filtresi
+      let filtered = filterByRetention(list);
+
+      if (filtered.length > MAX_HISTORY) filtered.length = MAX_HISTORY;
+      await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(filtered));
     } catch {}
   }
 
   async getSessionHistory(): Promise<CompletedSessionLocal[]> {
     const raw = await AsyncStorage.getItem(HISTORY_KEY);
-    return raw ? (JSON.parse(raw) as CompletedSessionLocal[]) : [];
+    const list = raw ? (JSON.parse(raw) as CompletedSessionLocal[]) : [];
+    const filtered = filterByRetention(list);
+    if (filtered.length !== list.length) {
+      await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(filtered));
+    }
+    return filtered;
   }
 
   async getSessionHistoryByUser(
@@ -315,9 +337,12 @@ class SessionManager {
   async pruneSessionHistory(max: number = MAX_HISTORY): Promise<void> {
     const raw = await AsyncStorage.getItem(HISTORY_KEY);
     if (!raw) return;
-    const list: CompletedSessionLocal[] = JSON.parse(raw);
-    if (list.length <= max) return;
-    list.length = max;
+    let list: CompletedSessionLocal[] = JSON.parse(raw);
+
+    // ⏰ yaş filtresi
+    list = filterByRetention(list);
+
+    if (list.length > max) list.length = max;
     await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(list));
   }
 }

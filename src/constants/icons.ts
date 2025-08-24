@@ -113,6 +113,7 @@ import next from '../assets/icons/next.png';
 import check_1 from '../assets/icons/check_1.png';
 import checkbox_empty from '../assets/icons/checkbox_empty.png';
 import checkbox_checked from '../assets/icons/checkbox_checked.png';
+import app_info from '../assets/icons/app_info.png';
 
 export default {
   google,
@@ -230,4 +231,5 @@ export default {
   check_1,
   checkbox_empty,
   checkbox_checked,
+  app_info,
 };

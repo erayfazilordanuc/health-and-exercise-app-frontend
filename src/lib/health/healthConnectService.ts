@@ -28,13 +28,13 @@ import {getInstalledApps} from 'react-native-get-app-list';
 //   }
 // };
 
-export const checkGoogleFitInstalled = async (): Promise<boolean> => {
+export const checkSamsungHInstalled = async (): Promise<boolean> => {
   if (Platform.OS !== 'android') return false;
   try {
     const apps = await getInstalledApps();
     console.log(apps);
     const isInstalled = apps.some(
-      app => app.packageName === 'com.google.android.apps.fitness',
+      app => app.packageName === 'com.sec.android.app.shealth',
     );
     console.log(isInstalled);
     return isInstalled;
@@ -441,8 +441,6 @@ export const getSymptoms = async () => {
       5000,
       -1,
     );
-
-    const sleepSessions = await withTimeout(getAllSleepSessions(), 5000, ['']);
 
     const healthConnectSymptoms: Symptoms = {
       pulse: heartRate === -1 ? null : heartRate,

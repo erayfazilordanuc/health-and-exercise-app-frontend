@@ -33,7 +33,7 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
 import LanPortScanner, {LSScanConfig} from 'react-native-lan-port-scanner';
 import {
-  checkGoogleFitInstalled,
+  checkSamsungHInstalled,
   checkHealthConnectInstalled,
   computeHealthScore,
   getAggregatedActiveCaloriesBurned,
@@ -54,6 +54,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {getUser} from '../../api/user/userService';
 import GradientText from '../../components/GradientText';
 import {
+  getLocal,
   getSymptomsByDate,
   upsertSymptomsByDate,
 } from '../../api/symptoms/symptomsService';
@@ -67,8 +68,10 @@ import Toast from 'react-native-toast-message';
 import CustomAlertSingleton, {
   CustomAlertSingletonHandle,
 } from '../../components/CustomAlertSingleton';
-import {useSymptomsByDate} from '../../hooks/symptomsQueries';
+import {SYMPTOM_KEYS, useSymptomsByDate} from '../../hooks/symptomsQueries';
 import NetInfo from '@react-native-community/netinfo';
+import {useQueryClient} from '@tanstack/react-query';
+import WeeklyStrip from '../../components/WeeklyStrip';
 
 const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -76,11 +79,12 @@ const Profile = () => {
   // const [user, setUser] = useState<User | null>(null);
   const {user} = useUser();
   const {colors, theme} = useTheme();
+  const qc = useQueryClient();
 
   const [refreshing, setRefreshing] = useState(false);
 
   const [logs, setLogs] = useState('');
-
+  const [initialized, setInitialized] = useState(false);
   const [healthScore, setHealthScore] = useState(0);
   const [heartRate, setHeartRate] = useState(0);
   const [steps, setSteps] = useState(0);
@@ -88,7 +92,7 @@ const Profile = () => {
   const [activeCaloriesBurned, setActiveCaloriesBurned] = useState(0);
   const [totalSleepMinutes, setTotalSleepMinutes] = useState(0);
   const alertRef = useRef<CustomAlertSingletonHandle>(null);
-  const [isGoogleFitInstalled, setIsGoogleFitInstalled] = useState(false);
+  const [isSamsungHInstalled, setIsSamsungHInstalled] = useState(false);
   const [isHealthConnectInstalled, setIsHealthConnectInstalled] =
     useState(false);
   const [isHealthConnectReady, setIsHealthConnectReady] = useState(false);
@@ -145,15 +149,14 @@ const Profile = () => {
   };
 
   const combineSetSymptoms = async (
-    symptoms: Symptoms,
-    syncedSymptoms?: Symptoms,
+    symptoms?: Symptoms | null,
+    syncedSymptoms?: Symptoms | null,
   ) => {
     if (symptoms) {
       const merged: Symptoms = {...symptoms};
       if (merged.pulse) {
         if (heartRate !== merged.pulse) setHeartRate(merged.pulse);
       } else if (syncedSymptoms && syncedSymptoms.pulse) {
-        console.log('burada olmalı');
         setHeartRate(syncedSymptoms.pulse);
         merged.pulse = syncedSymptoms.pulse;
       }
@@ -192,20 +195,37 @@ const Profile = () => {
       setSymptoms(merged);
 
       return merged;
+    } else if (!syncedSymptoms) {
+      setHeartRate(0);
+      setSteps(0);
+      setTotalCaloriesBurned(0);
+      setActiveCaloriesBurned(0);
+      setTotalSleepMinutes(0);
+      setSymptoms(undefined);
+      return null;
     }
   };
 
-  const syncSymptoms = async (synced: Symptoms) => {
+  const isToday = (d: Date) => {
+    const today = new Date();
+    return (
+      d.getFullYear() === today.getFullYear() &&
+      d.getMonth() === today.getMonth() &&
+      d.getDate() === today.getDate()
+    );
+  };
+
+  const syncSymptoms = async () => {
     setLoading(true);
     try {
       const hc = await getSymptoms();
       console.log('hc', hc);
       setHealthConnectSymptoms(hc);
 
-      console.log('geldi be', synced);
-      const combined = await combineSetSymptoms(hc!, synced);
+      console.log('geldi be', symptomsQ.data);
+      const combined = await combineSetSymptoms(hc!, symptomsQ.data);
       console.log('combined', combined);
-      if (combined && synced) await saveSymptoms(combined);
+      if (combined && symptomsQ.data) await saveSymptoms(combined);
     } catch (error) {
       console.log(error);
     } finally {
@@ -213,17 +233,23 @@ const Profile = () => {
     }
   };
 
-  useEffect(() => {
+  const initializeSymptoms = async () => {
     if (!user || user.role !== 'ROLE_USER') return;
-    if (!symptomsQ.isSuccess) return;
-    syncSymptoms(symptomsQ.data as Symptoms);
-  }, [user?.id, symptomsQ.dataUpdatedAt, symptomsDate]);
+    if (symptomsDate && isToday(symptomsDate) && !initialized) {
+      await syncSymptoms();
+      setInitialized(true);
+    }
+  };
+
+  useEffect(() => {
+    initializeSymptoms();
+  }, [user?.id, symptomsQ]);
 
   const onRefresh = async () => {
     setRefreshing(true);
     try {
       await checkEssentialAppsStatus();
-      symptomsQ.refetch();
+      await symptomsQ.refetch();
       // await syncSymptoms();
     } catch (e) {
       console.log(e);
@@ -266,24 +292,33 @@ const Profile = () => {
 
   const checkEssentialAppsStatus = async () => {
     setHcStateLoading(true);
-    const healthConnectInstalled = await checkHealthConnectInstalled();
-    if (!healthConnectInstalled) return;
-    setIsHealthConnectInstalled(true);
+    try {
+      const healthConnectInstalled = await checkHealthConnectInstalled();
+      setIsHealthConnectInstalled(healthConnectInstalled);
 
-    const googleFitInstalled = await checkGoogleFitInstalled();
-    if (!googleFitInstalled) return;
-    setIsGoogleFitInstalled(true);
+      const googleFitInstalled = await checkSamsungHInstalled();
+      setIsSamsungHInstalled(googleFitInstalled);
 
-    const isHealthConnectReady = await initializeHealthConnect();
-    if (!isHealthConnectReady) return;
-    setIsHealthConnectReady(isHealthConnectReady);
-    setHcStateLoading(false);
+      const healthConnectReady = await initializeHealthConnect();
+      setIsHealthConnectReady(healthConnectReady);
+
+      console.log(
+        'durumlar',
+        healthConnectInstalled,
+        googleFitInstalled,
+        healthConnectInstalled,
+      );
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setHcStateLoading(false);
+    }
   };
 
   useFocusEffect(
     useCallback(() => {
       checkEssentialAppsStatus();
-    }, [isHealthConnectInstalled, isGoogleFitInstalled]),
+    }, [isHealthConnectInstalled, isSamsungHInstalled]),
   );
 
   useFocusEffect(
@@ -301,6 +336,11 @@ const Profile = () => {
       return () => backHandler.remove();
     }, []),
   );
+
+  const mockHasData = (d: Date) => {
+    const day = d.getDate();
+    return [2, 5, 9, 15, 20, 23, 28].includes(day); // rastgele günler
+  };
 
   return (
     <>
@@ -492,7 +532,7 @@ const Profile = () => {
           {user && user.role === 'ROLE_USER' && (
             <>
               <View
-                className="flex flex-col py-2 px-5 mt-3"
+                className="flex flex-col pt-2 pb-4 px-5 mt-3"
                 style={{
                   borderRadius: 17,
                   backgroundColor: colors.background.primary,
@@ -505,7 +545,7 @@ const Profile = () => {
                   </Text>
 
                   {isHealthConnectInstalled &&
-                  isGoogleFitInstalled &&
+                  isSamsungHInstalled &&
                   isHealthConnectReady ? (
                     <View
                       className="flex flex-row items-center"
@@ -513,7 +553,7 @@ const Profile = () => {
                         borderRadius: 17,
                         backgroundColor: colors.background.primary,
                       }}>
-                      <Text style={{color: '#16d750'}}>Bağlı</Text>
+                      <Text style={{color: '#16d750'}}>Senkronize</Text>
                       <Image
                         source={icons.health_sync}
                         className="ml-2 size-6"
@@ -540,7 +580,7 @@ const Profile = () => {
                       }}
                       disabled={hcStateLoading}
                       onPress={() => {
-                        if (!isHealthConnectInstalled) {
+                        if (!isHealthConnectInstalled || !isSamsungHInstalled) {
                           setShowHCAlert(true);
                         } else if (!isHealthConnectReady) {
                           alertRef.current?.show({
@@ -606,8 +646,9 @@ const Profile = () => {
                   setSymptom={setHeartRate}
                   onAdd={setIsAddModalVisible}
                   updateDisabled={
-                    healthConnectSymptoms?.pulse &&
-                    healthConnectSymptoms?.pulse > 0
+                    (healthConnectSymptoms?.pulse &&
+                      healthConnectSymptoms?.pulse > 0) ||
+                    !isToday(symptomsDate)
                       ? true
                       : false
                   }
@@ -646,8 +687,9 @@ const Profile = () => {
                     setSymptom={setTotalCaloriesBurned}
                     onAdd={setIsAddModalVisible}
                     updateDisabled={
-                      healthConnectSymptoms?.totalCaloriesBurned &&
-                      healthConnectSymptoms?.totalCaloriesBurned > 0
+                      (healthConnectSymptoms?.totalCaloriesBurned &&
+                        healthConnectSymptoms?.totalCaloriesBurned > 0) ||
+                      !isToday(symptomsDate)
                         ? true
                         : false
                     }
@@ -663,8 +705,9 @@ const Profile = () => {
                       setSymptom={setActiveCaloriesBurned}
                       onAdd={setIsAddModalVisible}
                       updateDisabled={
-                        healthConnectSymptoms?.activeCaloriesBurned &&
-                        healthConnectSymptoms?.activeCaloriesBurned > 0
+                        (healthConnectSymptoms?.activeCaloriesBurned &&
+                          healthConnectSymptoms?.activeCaloriesBurned > 0) ||
+                        !isToday(symptomsDate)
                           ? true
                           : false
                       }
@@ -680,8 +723,9 @@ const Profile = () => {
                   setSymptom={setSteps}
                   onAdd={setIsAddModalVisible}
                   updateDisabled={
-                    healthConnectSymptoms?.steps &&
-                    healthConnectSymptoms?.steps > 0
+                    (healthConnectSymptoms?.steps &&
+                      healthConnectSymptoms?.steps > 0) ||
+                    !isToday(symptomsDate)
                       ? true
                       : false
                   }
@@ -695,13 +739,54 @@ const Profile = () => {
                   setSymptom={setTotalSleepMinutes}
                   onAdd={setShowTimePicker}
                   updateDisabled={
-                    healthConnectSymptoms?.sleepMinutes &&
-                    healthConnectSymptoms?.sleepMinutes > 0
+                    (healthConnectSymptoms?.sleepMinutes &&
+                      healthConnectSymptoms?.sleepMinutes > 0) ||
+                    !isToday(symptomsDate)
                       ? true
                       : false
                   }
                 />
-                <TouchableOpacity
+
+                <WeeklyStrip
+                  selectedDate={symptomsDate}
+                  onSelect={async d => {
+                    setSymptomsDate(d);
+                    const dateStr = d.toISOString().slice(0, 10);
+                    const fresh = await qc.fetchQuery<
+                      Symptoms | null, // TQueryFnData
+                      Error, // TError
+                      Symptoms | null, // TData
+                      ReturnType<typeof SYMPTOM_KEYS.byDate> // TQueryKey
+                    >({
+                      queryKey: SYMPTOM_KEYS.byDate(dateStr),
+                      queryFn: async (): Promise<Symptoms | null> => {
+                        // getLocal & getSymptomsByDate mümkünse string alsın (YYYY-MM-DD)
+                        const local = await getLocal(d);
+                        if (local) return local;
+
+                        const remote = await getSymptomsByDate(d);
+                        return remote ?? null;
+                      },
+                    });
+                    if (isToday(d)) {
+                      const hc = await getSymptoms();
+                      setHealthConnectSymptoms(hc);
+                      const combined = await combineSetSymptoms(hc!, fresh);
+                      if (combined && fresh) await saveSymptoms(combined);
+                    } else {
+                      await combineSetSymptoms(fresh);
+                    }
+
+                    setShowDatePicker(false);
+                  }}
+                  minDate={monthAgo}
+                  maxDate={new Date()}
+                  startOnMonday
+                  hasData={mockHasData}
+                  colors={colors}
+                />
+
+                {/* <TouchableOpacity
                   onPress={async () => {
                     const net = await NetInfo.fetch();
                     const isOnline = !!net.isConnected;
@@ -716,7 +801,6 @@ const Profile = () => {
                   style={{backgroundColor: colors.primary[200]}}>
                   <Text className="text-white font-rubik text-sm">
                     {symptomsDate.toLocaleDateString('tr-TR')}{' '}
-                    {/* seçilen tarihi göster */}
                   </Text>
                 </TouchableOpacity>
 
@@ -729,16 +813,42 @@ const Profile = () => {
                     confirmText="Tamam"
                     cancelText="İptal"
                     open={showDatePicker}
-                    date={symptoms?.createdAt ?? new Date()}
-                    maximumDate={monthAgo} // 5 yıldan küçük seçilemez
-                    minimumDate={new Date(1950, 0, 1)} // 1950 öncesi seçilemez
-                    onConfirm={d => {
+                    date={symptomsDate}
+                    minimumDate={monthAgo}
+                    maximumDate={new Date()}
+                    onConfirm={async d => {
                       setSymptomsDate(d);
+                      const dateStr = d.toISOString().slice(0, 10);
+                      const fresh = await qc.fetchQuery<
+                        Symptoms | null, // TQueryFnData
+                        Error, // TError
+                        Symptoms | null, // TData
+                        ReturnType<typeof SYMPTOM_KEYS.byDate> // TQueryKey
+                      >({
+                        queryKey: SYMPTOM_KEYS.byDate(dateStr),
+                        queryFn: async (): Promise<Symptoms | null> => {
+                          // getLocal & getSymptomsByDate mümkünse string alsın (YYYY-MM-DD)
+                          const local = await getLocal(d);
+                          if (local) return local;
+
+                          const remote = await getSymptomsByDate(d);
+                          return remote ?? null;
+                        },
+                      });
+                      if (isToday(d)) {
+                        const hc = await getSymptoms();
+                        setHealthConnectSymptoms(hc);
+                        const combined = await combineSetSymptoms(hc!, fresh);
+                        if (combined && fresh) await saveSymptoms(combined);
+                      } else {
+                        await combineSetSymptoms(fresh);
+                      }
+
                       setShowDatePicker(false);
                     }}
                     onCancel={() => setShowDatePicker(false)}
                   />
-                )}
+                )} */}
                 {/* </>
                 )} */}
                 {/* Uyku da minimalist bir grafik ile gösterilsin */}
@@ -961,15 +1071,20 @@ const Profile = () => {
         onRequestClose={() => setIsAddModalVisible(false)}>
         <View className="flex-1 justify-center items-center bg-black/40">
           <View
-            className="w-11/12 rounded-3xl p-5 py-5 items-center"
+            className="w-11/12 rounded-3xl p-5 pt-6 pb-4 items-center"
             style={{backgroundColor: colors.background.primary}}>
             <Text
-              style={{marginTop: -5, fontSize: 18, lineHeight: 26}}
+              style={{
+                marginTop: -5,
+                fontSize: 18,
+                lineHeight: 26,
+                color: colors.text.primary,
+              }}
               className="text-center font-rubik">
               Telefonunuzdaki sağlık verilerini HopeMove uygulamasından takip
               etmek için{' '}
               <Text className="font-rubik-medium">Health Connect</Text> ve
-              <Text className="font-rubik-medium"> Google Fit</Text>{' '}
+              <Text className="font-rubik-medium"> Samsung Health</Text>{' '}
               uygulamalarını indirmeniz gerekiyor.{'\n'}Şimdi Play Store’a
               gitmek istiyor musunuz?
             </Text>
@@ -990,33 +1105,51 @@ const Profile = () => {
                   );
                   // setShowHCAlert(false);
                 }}>
-                <Text className="font-rubik text-lg text-white">
-                  {isHealthConnectInstalled
-                    ? 'Health Connect indirildi'
-                    : `Health Connect'i indir`}
-                </Text>
+                <View className="flex flex-row items-center justify-center">
+                  <Text className="font-rubik text-lg text-white">
+                    {isHealthConnectInstalled
+                      ? 'Health Connect indirildi'
+                      : `Health Connect'i indir`}
+                  </Text>
+                  {isHealthConnectInstalled && (
+                    <Image
+                      source={icons.check}
+                      className="size-5 ml-3"
+                      tintColor={colors.text.primary}
+                    />
+                  )}
+                </View>
               </TouchableOpacity>
               <TouchableOpacity
                 className="py-3 px-3 rounded-2xl items-center mx-1 my-2"
-                disabled={isGoogleFitInstalled}
+                disabled={isSamsungHInstalled}
                 style={{
-                  backgroundColor: isGoogleFitInstalled
+                  backgroundColor: isSamsungHInstalled
                     ? '#16d750'
                     : colors.primary[200],
                 }}
                 onPress={() => {
                   Linking.openURL(
-                    'https://play.google.com/store/apps/details?id=com.google.android.apps.fitness',
+                    'https://play.google.com/store/apps/details?id=com.sec.android.app.shealth',
                   ).catch(err =>
                     console.warn('Failed to open Health Connect page:', err),
                   );
                   // setShowHCAlert(false);
                 }}>
-                <Text className="font-rubik text-lg text-white">
-                  {isGoogleFitInstalled
-                    ? 'Google Fit indirildi'
-                    : `Google Fit'i indir`}
-                </Text>
+                <View className="flex flex-row items-center justify-center">
+                  <Text className="font-rubik text-lg text-white">
+                    {isSamsungHInstalled
+                      ? 'Samsung Health indirildi'
+                      : `Samsung Health'i indir`}
+                  </Text>
+                  {isSamsungHInstalled && (
+                    <Image
+                      source={icons.check}
+                      className="size-5 ml-3"
+                      tintColor={colors.text.primary}
+                    />
+                  )}
+                </View>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {

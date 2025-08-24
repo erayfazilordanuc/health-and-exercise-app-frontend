@@ -36,7 +36,7 @@ import {
   isRoomExistBySenderAndReceiver,
 } from '../../api/message/messageService';
 import LinearGradient from 'react-native-linear-gradient';
-import {useGroupUsers} from '../../hooks/groupQueries';
+import {GROUP_KEYS, useGroupUsers} from '../../hooks/groupQueries';
 import {useQueryClient} from '@tanstack/react-query';
 import {useUser} from '../../contexts/UserContext';
 import {join} from 'lodash';
@@ -54,15 +54,19 @@ const Group = () => {
   const {user} = useUser();
   const [group, setGroup] = useState<Group | null>();
   const qc = useQueryClient();
-  const {data: members, isLoading: isUsersLoading} = useGroupUsers(
-    groupId ?? undefined,
-  );
+  const {
+    data: members,
+    isLoading: isUsersLoading,
+    refetch: refetchGroupUsers,
+  } = useGroupUsers(groupId ?? undefined);
   const [users, setUsers] = useState(members);
   const [admin, setAdmin] = useState<User | null>();
   const [groupSize, setGroupSize] = useState(0);
   const [isLeaveAlertVisible, setIsLeaveAlertVisible] = useState(false);
   const [lastMessage, setLastMessage] = useState<Message | null>();
-  const [joinRequests, setJoinRequests] = useState<GroupRequestDTO[]>([]);
+  const [joinRequests, setJoinRequests] = useState<GroupRequestDTO[] | null>(
+    null,
+  );
 
   const fetchLastMessage = async () => {
     if (!user || !admin) return;
@@ -128,17 +132,17 @@ const Group = () => {
 
         // admin seç
 
-        if (!group) {
-          const grpRes = await getGroupById(groupId);
-          if (!isActive || grpRes.status !== 200) return;
-          setGroup(grpRes.data);
-        }
-
         if (user.role === 'ROLE_ADMIN' && !joinRequests) {
           const groupRequests = await getGroupRequestsByGroupId(groupId);
           if (groupRequests) {
             setJoinRequests(groupRequests);
           }
+        }
+
+        if (!group) {
+          const grpRes = await getGroupById(groupId);
+          if (!isActive || grpRes.status !== 200) return;
+          setGroup(grpRes.data);
         }
       } catch (e) {
         console.error('Group screen load error', e);
@@ -247,10 +251,20 @@ const Group = () => {
 
   const respondToRequest = async (joinRequestId: number, approved: boolean) => {
     await respondToJoinRequest(joinRequestId, approved);
-    setJoinRequests(prev => prev.filter(req => req.id !== joinRequestId));
+    setJoinRequests(
+      prev => prev && prev.filter(req => req.id !== joinRequestId),
+    );
 
     if (groupId) {
-      await qc.invalidateQueries({queryKey: ['groupUsers', groupId]});
+      await refetchGroupUsers();
+      // await qc.invalidateQueries({
+      //   queryKey: GROUP_KEYS.usersByGroupId(groupId as number),
+      //   refetchType: 'active',
+      // });
+      // await qc.refetchQueries({
+      //   queryKey: GROUP_KEYS.usersByGroupId(groupId as number),
+      //   type: 'active',
+      // });
     }
   };
 
@@ -477,82 +491,85 @@ const Group = () => {
           </View>
         )}
 
-        {user && user.role === 'ROLE_ADMIN' && joinRequests.length > 0 && (
-          <View
-            className="flex flex-col justify-start /*items-center*/ pl-4 pr-4 pt-3 pb-4 mt-3" // border
-            style={{
-              borderRadius: 17,
-              backgroundColor: colors.background.primary,
-              borderColor: colors.primary[300],
-            }}>
-            <Text
-              className="font-rubik ml-1 mb-1"
-              style={{fontSize: 20, color: colors.text.primary}}>
-              Gruba katılma istekleri
-            </Text>
-            {joinRequests.map(jr => (
-              <View
-                key={jr.id}
-                className="flex flex-col items-stretch justify-center pl-4 p-2 mt-3"
-                style={{
-                  borderRadius: 15,
-                  backgroundColor: colors.background.secondary,
-                }}>
-                <View className="flex flex-row mt-1">
-                  <Text
-                    className="font-rubik-medium text-lg ml-1"
-                    style={{color: colors.text.primary}}>
-                    Adı Soyadı:{' '}
-                  </Text>
-                  <Text
-                    className="font-rubik text-lg ml-1"
-                    style={{color: colors.text.primary}}>
-                    {jr.userDTO.fullName}
-                  </Text>
-                </View>
-                <View className="flex flex-row mb-1">
-                  <Text
-                    className="font-rubik-medium text-lg ml-1"
-                    style={{color: colors.text.primary}}>
-                    Kullanıcı Adı:{' '}
-                  </Text>
-                  <Text
-                    className="font-rubik text-lg ml-1"
-                    style={{color: colors.text.primary}}>
-                    {jr.userDTO.username}
-                  </Text>
-                </View>
+        {user &&
+          user.role === 'ROLE_ADMIN' &&
+          joinRequests &&
+          joinRequests.length > 0 && (
+            <View
+              className="flex flex-col justify-start /*items-center*/ pl-4 pr-4 pt-3 pb-4 mt-3" // border
+              style={{
+                borderRadius: 17,
+                backgroundColor: colors.background.primary,
+                borderColor: colors.primary[300],
+              }}>
+              <Text
+                className="font-rubik ml-1 mb-1"
+                style={{fontSize: 20, color: colors.text.primary}}>
+                Gruba katılma istekleri
+              </Text>
+              {joinRequests.map(jr => (
+                <View
+                  key={jr.id}
+                  className="flex flex-col items-stretch justify-center pl-4 p-2 mt-3"
+                  style={{
+                    borderRadius: 15,
+                    backgroundColor: colors.background.secondary,
+                  }}>
+                  <View className="flex flex-row mt-1">
+                    <Text
+                      className="font-rubik-medium text-lg ml-1"
+                      style={{color: colors.text.primary}}>
+                      Adı Soyadı:{' '}
+                    </Text>
+                    <Text
+                      className="font-rubik text-lg ml-1"
+                      style={{color: colors.text.primary}}>
+                      {jr.userDTO.fullName}
+                    </Text>
+                  </View>
+                  <View className="flex flex-row mb-1">
+                    <Text
+                      className="font-rubik-medium text-lg ml-1"
+                      style={{color: colors.text.primary}}>
+                      Kullanıcı Adı:{' '}
+                    </Text>
+                    <Text
+                      className="font-rubik text-lg ml-1"
+                      style={{color: colors.text.primary}}>
+                      {jr.userDTO.username}
+                    </Text>
+                  </View>
 
-                <View className="flex flex-row items-center justify-center mt-2 mb-1">
-                  <TouchableOpacity
-                    className="rounded-xl mr-1 px-3 py-1"
-                    style={{
-                      backgroundColor: '#16d750',
-                    }}
-                    onPress={() => respondToRequest(jr.id!, true)}>
-                    <Text
-                      className="font-rubik text-md"
-                      style={{color: colors.background.primary}}>
-                      Onayla
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    className="rounded-xl ml-1 px-3 py-1"
-                    style={{
-                      backgroundColor: '#fd5353',
-                    }}
-                    onPress={() => respondToRequest(jr.id!, false)}>
-                    <Text
-                      className="font-rubik text-md"
-                      style={{color: colors.background.primary}}>
-                      Reddet
-                    </Text>
-                  </TouchableOpacity>
+                  <View className="flex flex-row items-center justify-center mt-2 mb-1">
+                    <TouchableOpacity
+                      className="rounded-xl mr-1 px-3 py-1"
+                      style={{
+                        backgroundColor: '#16d750',
+                      }}
+                      onPress={() => respondToRequest(jr.id!, true)}>
+                      <Text
+                        className="font-rubik text-md"
+                        style={{color: colors.background.primary}}>
+                        Onayla
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className="rounded-xl ml-1 px-3 py-1"
+                      style={{
+                        backgroundColor: '#fd5353',
+                      }}
+                      onPress={() => respondToRequest(jr.id!, false)}>
+                      <Text
+                        className="font-rubik text-md"
+                        style={{color: colors.background.primary}}>
+                        Reddet
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            ))}
-          </View>
-        )}
+              ))}
+            </View>
+          )}
 
         <View
           className="flex flex-col justify-start pl-4 p-3 mt-3" // border
