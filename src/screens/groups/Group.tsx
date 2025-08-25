@@ -522,7 +522,7 @@ const Group = () => {
                 className="font-rubik text-md"
                 style={{color: colors.text.primary}}>
                 {lastMessage.receiver === user?.username
-                  ? user?.fullName + ' : ' + lastMessage.message
+                  ? admin?.fullName + ' : ' + lastMessage.message
                   : 'Siz : ' + lastMessage.message}
               </Text>
             )}

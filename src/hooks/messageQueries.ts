@@ -69,13 +69,6 @@ export function useSendMessage({
       // 1) DB’ye kaydet
       await saveMessage(msg);
 
-      // 2) socket
-      socketService.emit('send_message', {
-        messageWithSender: msg,
-        room: roomId,
-        accessToken,
-      });
-
       return msg;
     },
 

@@ -47,18 +47,18 @@ const Chat = () => {
   const navigation = useNavigation<GroupsScreenNavigationProp>();
 
   const [message, setMessage] = useState<string>('');
-  const {data: messagesData, isLoading} = useRoomMessages(roomId);
-  const [loading, setLoading] = useState(isLoading);
-  const [messages, setMessages] = useState<Message[]>(messagesData ?? []);
-  const {mutate: send, isPending} = useSendMessage({
-    roomId,
-    sender,
-    receiver: receiver.username,
-  });
+  // const {data: messagesData, isLoading} = useRoomMessages(roomId);
+  // const [loading, setLoading] = useState(isLoading);
+  const [loading, setLoading] = useState(true);
+  const [messages, setMessages] = useState<Message[]>([]);
 
-  useEffect(() => {
-    if (messagesData) setMessages(messagesData);
-  }, [messagesData]);
+  // const {mutate: send, isPending} = useSendMessage({
+  //   roomId,
+  //   sender,
+  //   receiver: receiver.username,
+  // });
+  
+  const [initialized, setInitialized] = useState(false);
 
   const [userAmount, setUserAmount] = useState<number>(0);
 
@@ -76,54 +76,31 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    if (messagesData && messagesData.length > 0) {
+    if (messages.length > 0) {
       setTimeout(() => {
         scrollToBottom();
       }, 0);
     }
-  }, [messagesData, messages, isKeyboardVisible]);
+  }, [messages, isKeyboardVisible]);
 
-  useFocusEffect(
-    useCallback(() => {
-      const backAction = () => {
-        if (!navigatedInApp && !fromNotification && navigation.canGoBack()) {
-          return false;
-        }
+  // useEffect(() => {
+  //   if (messagesData && messagesData.length > 0) {
+  //     setTimeout(() => {
+  //       scrollToBottom();
+  //     }, 0);
+  //   }
+  // }, [messagesData, messages, isKeyboardVisible]);
 
-        if (!user) return true;
+  // useEffect(() => {
+  //   if (!initialized) {
+  //     if (messagesData) setMessages(messagesData);
+  //     setInitialized(true);
+  //   }
+  // }, [messagesData]);
 
-        if (navigatedInApp) {
-          if (user.role === 'ROLE_USER') {
-            navigation.replace('Group');
-          }
-        }
-
-        if (fromNotification) {
-          if (user.role === 'ROLE_ADMIN') {
-            navigation.replace('Group');
-            navigation.replace('Member', {
-              memberId: receiver.id,
-              fromNotification,
-            });
-          } else {
-            navigation.replace('Group');
-          }
-        }
-
-        socketService.emit('leave_room', {room: roomId, username: sender});
-        socketService.disconnect();
-
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        backAction,
-      );
-
-      return () => backHandler.remove();
-    }, []),
-  );
+  // useEffect(() => {
+  //   if (messagesData) setMessages(messagesData);
+  // }, [messagesData]);
 
   const sendMessage = async () => {
     const newMessage: Message = {
@@ -149,16 +126,20 @@ const Chat = () => {
       accessToken: accessToken,
     });
 
-    // await saveMessage(newMessage);
-    await send(newMessage);
+    await saveMessage(newMessage);
+    // await send(newMessage);
 
     setMessages(prev => [...prev, {...newMessage, sender: sender}]);
     setMessage('');
   };
 
-  const getAccessToken = async () => {
-    const accessToken = await AsyncStorage.getItem('accessToken');
-    if (accessToken) setAccessToken(accessToken);
+  const loadMessages = async () => {
+    setLoading(true);
+    const res = await getMessagesByRoomId(roomId);
+    if (res.status >= 200 && res.status <= 300 && res?.data) {
+      setMessages(res.data);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -169,6 +150,8 @@ const Chat = () => {
 
     socketService.emit('chat_init', {room: roomId, sender});
 
+    loadMessages();
+
     return () => {
       socketService.emit('leave_room', {room: roomId, username: sender});
       socketService.disconnect();
@@ -176,7 +159,11 @@ const Chat = () => {
     };
   }, []);
 
+  const listenersAttachedRef = useRef(false);
+
   useEffect(() => {
+    if (listenersAttachedRef.current) return;
+
     const handleReceiveMessage = (data: any) => {
       const msg: Message = {
         ...data.messageWithSender,
@@ -198,14 +185,23 @@ const Chat = () => {
       console.log('user has joined the chat', loginMsg);
     };
 
+    // socketService.off('receive_message');
+    // socketService.off('emit_user');
     socketService.on('receive_message', handleReceiveMessage);
     socketService.on('emit_user', handleUserLogin);
+    listenersAttachedRef.current = true;
 
     return () => {
       socketService.off('receive_message', handleReceiveMessage);
       socketService.off('emit_user', handleUserLogin);
+      listenersAttachedRef.current = false;
     };
-  }, []);
+  }, [roomId]);
+
+  const getAccessToken = async () => {
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    if (accessToken) setAccessToken(accessToken);
+  };
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -224,12 +220,46 @@ const Chat = () => {
         console.log('Klavye kapandı 😴');
       },
     );
-
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
   }, [messages]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        if (!navigatedInApp && !fromNotification && navigation.canGoBack()) {
+          return false;
+        }
+        if (!user) return true;
+        if (navigatedInApp) {
+          if (user.role === 'ROLE_USER') {
+            navigation.replace('Group');
+          }
+        }
+        if (fromNotification) {
+          if (user.role === 'ROLE_ADMIN') {
+            navigation.replace('Group');
+            navigation.replace('Member', {
+              memberId: receiver.id,
+              fromNotification,
+            });
+          } else {
+            navigation.replace('Group');
+          }
+        }
+        socketService.emit('leave_room', {room: roomId, username: sender});
+        socketService.disconnect();
+        return true;
+      };
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+      return () => backHandler.remove();
+    }, []),
+  );
 
   return (
     // <KeyboardAvoidingView
@@ -276,7 +306,7 @@ const Chat = () => {
         </View>
 
         {/* Messages */}
-        {isLoading ? (
+        {loading ? (
           <View className="flex-1 items-center justify-center w-full">
             <ActivityIndicator
               className="mt-2 self-center"
@@ -284,7 +314,7 @@ const Chat = () => {
               color={colors.primary[300] ?? colors.primary}
             />
           </View>
-        ) : messagesData && messagesData.length === 0 ? (
+        ) : messages && messages.length === 0 ? (
           <View className="flex-1 items-center justify-center px-4 pt-1">
             <Text
               className="text-center text-lg font-rubik"

@@ -15,6 +15,7 @@ import {ScreenWidth} from 'react-native-elements/dist/helpers';
 import {clamp} from 'lodash';
 import GradientText from './GradientText';
 import LinearGradient from 'react-native-linear-gradient';
+import {useIsFocused} from '@react-navigation/native';
 
 interface CustomVideoPlayerProps {
   videoDTO: ExerciseVideoDTO;
@@ -42,6 +43,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
 
   const [loading, setLoading] = useState(true);
   const [buffering, setBuffering] = useState(false);
+  const isFocused = useIsFocused();
   const [paused, setPaused] = useState(pausedParent);
   const [hasSeeked, setHasSeeked] = useState(false);
   const [ended, setEnded] = useState(false);
@@ -111,7 +113,9 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
           }}
           style={{width: '100%', height: '100%'}}
           resizeMode="contain"
-          paused={paused}
+          paused={paused || !isFocused}
+          playInBackground={false}
+          playWhenInactive={false}
           onLoadStart={() => {
             setLoading(true);
           }}

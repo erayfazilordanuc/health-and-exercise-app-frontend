@@ -47,6 +47,7 @@ import {
   useWeeklyActiveDaysProgressOfflineAware,
 } from '../../../hooks/progressQueries';
 import {isEqual} from 'lodash';
+import {Theme} from '../../../themes/themes';
 
 const {height, width} = Dimensions.get('window');
 
@@ -55,6 +56,7 @@ const ExercisesUser = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const scrollViewHeight = height / 8;
+  const isFocused = useIsFocused();
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const {user} = useUser();
@@ -146,7 +148,7 @@ const ExercisesUser = () => {
     }
   };
 
-  const defaultTabBarStyle = {
+  const makeTabBarStyle = (theme: Theme, width: number) => ({
     marginHorizontal: width / 24,
     position: 'absolute',
     bottom: 15,
@@ -161,15 +163,16 @@ const ExercisesUser = () => {
     backgroundColor:
       theme.name === 'Light' ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
     elevation: 0,
-  };
+    display: 'flex',
+  });
 
-  useLayoutEffect(() => {
-    const parentNav = navigation.getParent();
-    return () =>
-      parentNav?.setOptions({
-        tabBarStyle: defaultTabBarStyle,
-      });
-  }, [navigation]);
+  useEffect(() => {
+    if (!isFocused) return;
+    const parent = navigation.getParent(); // veya getParent('RootTabs') eğer id verdiyseniz
+    parent?.setOptions({
+      tabBarStyle: makeTabBarStyle(theme, width),
+    });
+  }, [isFocused, theme.name, width, navigation]);
 
   useFocusEffect(
     useCallback(() => {
