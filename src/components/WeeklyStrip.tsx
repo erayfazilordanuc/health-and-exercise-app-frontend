@@ -10,51 +10,42 @@ export type WeeklyStripColors = {
 export interface WeeklyStripProps {
   selectedDate: Date;
   onSelect: (date: Date) => void;
-  minDate?: Date; // seçilebilir en erken gün (dahil)
-  maxDate?: Date; // seçilebilir en geç gün (dahil)
-  startOnMonday?: boolean; // varsayılan: true
-  locale?: string; // varsayılan: 'tr-TR'
-  hasData?: (date: Date) => boolean; // nokta göstermek için
-  colors: WeeklyStripColors; // uygulamanın theme renkleri
+  minDate?: Date;
+  maxDate?: Date;
+  startOnMonday?: boolean;
+  locale?: string;
+  hasData?: (date: Date) => boolean;
+  colors: WeeklyStripColors;
 }
+
+/** ---------- LOCAL-DATE HELPERS (TZ güvenli) ---------- **/
+const normalizeDate = (d: Date) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate()); // yerel 00:00
+
+const addDays = (d: Date, days: number) =>
+  normalizeDate(new Date(d.getFullYear(), d.getMonth(), d.getDate() + days));
+
+const startOfWeek = (d: Date, monday = true) => {
+  const date = normalizeDate(d);
+  const day = date.getDay(); // 0..6 (0=Pazar)
+  const diff = monday ? (day === 0 ? -6 : 1 - day) : -day;
+  return addDays(date, diff);
+};
+
+const isSameDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
+const atMidnight = (d: Date) => normalizeDate(d); // mutasyonsuz
+const isAfterDay = (a: Date, b: Date) =>
+  atMidnight(a).getTime() > atMidnight(b).getTime();
+const isBeforeDay = (a: Date, b: Date) =>
+  atMidnight(a).getTime() < atMidnight(b).getTime();
+/** ------------------------------------------------------ **/
 
 const trShortDays = ['Pzt', 'Sal', 'Çrş', 'Per', 'Cum', 'Cmt', 'Paz'];
 const sunStartShortDays = ['Paz', 'Pzt', 'Sal', 'Çrş', 'Per', 'Cum', 'Cmt'];
-
-function startOfWeek(d: Date, monday = true) {
-  const date = new Date(d);
-  const day = date.getDay(); // 0=Pazar ... 6=Cumartesi
-  const diff = monday
-    ? day === 0
-      ? -6
-      : 1 - day // Pazartesi başlangıç
-    : -day; // Pazar başlangıç
-  date.setDate(date.getDate() + diff);
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function addDays(d: Date, days: number) {
-  const nd = new Date(d);
-  nd.setDate(nd.getDate() + days);
-  return nd;
-}
-
-function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
-function isAfterDay(a: Date, b: Date) {
-  return a.setHours(0, 0, 0, 0) > b.setHours(0, 0, 0, 0);
-}
-
-function isBeforeDay(a: Date, b: Date) {
-  return a.setHours(0, 0, 0, 0) < b.setHours(0, 0, 0, 0);
-}
 
 const WeeklyStrip: React.FC<WeeklyStripProps> = ({
   selectedDate,
@@ -66,10 +57,16 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
   hasData,
   colors,
 }) => {
-  const today = React.useMemo(() => {
-    const t = new Date();
-    t.setHours(0, 0, 0, 0);
-    return t;
+  const [today, setToday] = React.useState(() => normalizeDate(new Date()));
+
+  // İsteğe bağlı: gün döndüğünde "today" otomatik güncellensin
+  React.useEffect(() => {
+    const tick = () => {
+      const now = normalizeDate(new Date());
+      setToday(t => (t.getTime === now.getTime ? t : now));
+    };
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
   }, []);
 
   const [weekStart, setWeekStart] = React.useState(() =>
@@ -81,39 +78,36 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
     setWeekStart(startOfWeek(selectedDate, startOnMonday));
   }, [selectedDate, startOnMonday]);
 
-  const daysOfWeek = React.useMemo(() => {
-    return Array.from({length: 7}, (_, i) => addDays(weekStart, i));
-  }, [weekStart]);
+  const daysOfWeek = React.useMemo(
+    () => Array.from({length: 7}, (_, i) => addDays(weekStart, i)),
+    [weekStart],
+  );
 
   const shortDays = startOnMonday ? trShortDays : sunStartShortDays;
 
   const monthLabel = React.useMemo(() => {
     const mid = addDays(weekStart, 3);
-    return mid.toLocaleDateString(locale, {month: 'short', year: 'numeric'});
+    return mid.toLocaleDateString(locale, {month: 'long', year: 'numeric'});
   }, [weekStart, locale]);
 
   const canGoPrevWeek = React.useMemo(() => {
     if (!minDate) return true;
     const prevStart = addDays(weekStart, -7);
-    // Önceki haftanın son günü bile minDate'den küçükse gitme
     return !isBeforeDay(addDays(prevStart, 6), minDate);
   }, [weekStart, minDate]);
 
   const canGoNextWeek = React.useMemo(() => {
     const bound = maxDate ?? today;
     const nextStart = addDays(weekStart, 7);
-    // Sonraki haftanın ilk günü bile bound'dan büyükse gitme
     return !isAfterDay(nextStart, bound);
   }, [weekStart, maxDate, today]);
 
   const goPrev = () => {
-    if (!canGoPrevWeek) return;
-    setWeekStart(addDays(weekStart, -7));
+    if (canGoPrevWeek) setWeekStart(addDays(weekStart, -7));
   };
 
   const goNext = () => {
-    if (!canGoNextWeek) return;
-    setWeekStart(addDays(weekStart, 7));
+    if (canGoNextWeek) setWeekStart(addDays(weekStart, 7));
   };
 
   const isDisabled = (d: Date) => {
@@ -126,7 +120,7 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
   return (
     <View className="w-full">
       {/* Üst başlık */}
-      <View className="flex flex-row items-center justify-between mb-3 mt-1">
+      <View className="flex flex-row items-center justify-between mb-3 mt-2">
         <TouchableOpacity
           accessibilityHint="Önceki hafta"
           onPress={goPrev}
@@ -171,7 +165,7 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
               key={idx}
               activeOpacity={0.8}
               disabled={disabled}
-              onPress={() => onSelect(d)}
+              onPress={() => onSelect(normalizeDate(d))} // ← her zaman yerel 00:00 Date
               className="flex-1 mx-0.5 items-center"
               style={{opacity: disabled ? 0.45 : 1}}>
               <Text
@@ -202,7 +196,6 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
                 </Text>
               </View>
 
-              {/* küçük nokta: o güne ait veri varsa */}
               <View className="h-3 mt-1 items-center justify-center">
                 {showDot ? (
                   <View

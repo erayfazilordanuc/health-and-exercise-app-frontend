@@ -68,10 +68,15 @@ import Toast from 'react-native-toast-message';
 import CustomAlertSingleton, {
   CustomAlertSingletonHandle,
 } from '../../components/CustomAlertSingleton';
-import {SYMPTOM_KEYS, useSymptomsByDate} from '../../hooks/symptomsQueries';
+import {
+  SYMPTOM_KEYS,
+  useSaveSymptomsToday,
+  useSymptomsByDate,
+} from '../../hooks/symptomsQueries';
 import NetInfo from '@react-native-community/netinfo';
 import {useQueryClient} from '@tanstack/react-query';
 import WeeklyStrip from '../../components/WeeklyStrip';
+import {isToday} from 'date-fns';
 
 const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -104,9 +109,11 @@ const Profile = () => {
   const [showDetail, setShowDetail] = useState(false);
   const [showHCAlert, setShowHCAlert] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const saveSymptomsToday = useSaveSymptomsToday();
+
   const today = new Date();
   const [symptomsDate, setSymptomsDate] = useState(today);
-
   const symptomsQ = useSymptomsByDate(symptomsDate, {
     enabled: !!user && user.role === 'ROLE_USER',
   });
@@ -206,15 +213,6 @@ const Profile = () => {
     }
   };
 
-  const isToday = (d: Date) => {
-    const today = new Date();
-    return (
-      d.getFullYear() === today.getFullYear() &&
-      d.getMonth() === today.getMonth() &&
-      d.getDate() === today.getDate()
-    );
-  };
-
   const syncSymptoms = async () => {
     setLoading(true);
     try {
@@ -225,7 +223,8 @@ const Profile = () => {
       console.log('geldi be', symptomsQ.data);
       const combined = await combineSetSymptoms(hc!, symptomsQ.data);
       console.log('combined', combined);
-      if (combined && symptomsQ.data) await saveSymptoms(combined);
+      if (combined && symptomsQ.data)
+        await saveSymptomsToday.mutateAsync(combined);
     } catch (error) {
       console.log(error);
     } finally {
@@ -234,8 +233,9 @@ const Profile = () => {
   };
 
   const initializeSymptoms = async () => {
-    if (!user || user.role !== 'ROLE_USER') return;
+    if (user?.role !== 'ROLE_USER') return;
     if (symptomsDate && isToday(symptomsDate) && !initialized) {
+      console.log('bundand');
       await syncSymptoms();
       setInitialized(true);
     }
@@ -243,7 +243,14 @@ const Profile = () => {
 
   useEffect(() => {
     initializeSymptoms();
-  }, [user?.id, symptomsQ]);
+  }, [
+    user?.id,
+    symptomsQ.data,
+    hcStateLoading,
+    isHealthConnectInstalled,
+    isSamsungHInstalled,
+    isHealthConnectReady,
+  ]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -296,8 +303,8 @@ const Profile = () => {
       const healthConnectInstalled = await checkHealthConnectInstalled();
       setIsHealthConnectInstalled(healthConnectInstalled);
 
-      const googleFitInstalled = await checkSamsungHInstalled();
-      setIsSamsungHInstalled(googleFitInstalled);
+      const samsungHInstalled = await checkSamsungHInstalled();
+      setIsSamsungHInstalled(samsungHInstalled);
 
       const healthConnectReady = await initializeHealthConnect();
       setIsHealthConnectReady(healthConnectReady);
@@ -305,8 +312,8 @@ const Profile = () => {
       console.log(
         'durumlar',
         healthConnectInstalled,
-        googleFitInstalled,
-        healthConnectInstalled,
+        samsungHInstalled,
+        healthConnectReady,
       );
     } catch (error) {
       console.log(error);
@@ -336,11 +343,6 @@ const Profile = () => {
       return () => backHandler.remove();
     }, []),
   );
-
-  const mockHasData = (d: Date) => {
-    const day = d.getDate();
-    return [2, 5, 9, 15, 20, 23, 28].includes(day); // rastgele günler
-  };
 
   return (
     <>
@@ -532,7 +534,7 @@ const Profile = () => {
           {user && user.role === 'ROLE_USER' && (
             <>
               <View
-                className="flex flex-col pt-2 pb-4 px-5 mt-3"
+                className="flex flex-col pt-2 pb-2 px-5 mt-3"
                 style={{
                   borderRadius: 17,
                   backgroundColor: colors.background.primary,
@@ -752,27 +754,40 @@ const Profile = () => {
                   onSelect={async d => {
                     setSymptomsDate(d);
                     const dateStr = d.toISOString().slice(0, 10);
-                    const fresh = await qc.fetchQuery<
-                      Symptoms | null, // TQueryFnData
-                      Error, // TError
-                      Symptoms | null, // TData
-                      ReturnType<typeof SYMPTOM_KEYS.byDate> // TQueryKey
-                    >({
-                      queryKey: SYMPTOM_KEYS.byDate(dateStr),
-                      queryFn: async (): Promise<Symptoms | null> => {
-                        // getLocal & getSymptomsByDate mümkünse string alsın (YYYY-MM-DD)
-                        const local = await getLocal(d);
-                        if (local) return local;
+                    d.setHours(12, 0, 0, 0);
+                    // const fresh = await qc.fetchQuery<
+                    //   Symptoms | null, // TQueryFnData
+                    //   Error, // TError
+                    //   Symptoms | null, // TData
+                    //   ReturnType<typeof SYMPTOM_KEYS.byDate> // TQueryKey
+                    // >({
+                    //   queryKey: SYMPTOM_KEYS.byDate(dateStr),
+                    //   queryFn: async (): Promise<Symptoms | null> => {
+                    //     // getLocal & getSymptomsByDate mümkünse string alsın (YYYY-MM-DD)
+                    //     const local = await getLocal(d);
+                    //     if (local) return local;
 
-                        const remote = await getSymptomsByDate(d);
-                        return remote ?? null;
-                      },
-                    });
+                    //     const remote = await getSymptomsByDate(d);
+                    //     return remote ?? null;
+                    //   },
+                    // });
+                    let fresh = null;
+                    const local = await getLocal(d);
+                    if (local) fresh = local;
+
+                    if (!fresh) {
+                      const remote = await getSymptomsByDate(d);
+                      fresh = remote ?? null;
+                    }
+
+                    console.log('fresh', fresh);
+                    console.log('isToday', isToday(d));
                     if (isToday(d)) {
                       const hc = await getSymptoms();
                       setHealthConnectSymptoms(hc);
                       const combined = await combineSetSymptoms(hc!, fresh);
-                      if (combined && fresh) await saveSymptoms(combined);
+                      if (combined && fresh)
+                        await saveSymptomsToday.mutateAsync(combined);
                     } else {
                       await combineSetSymptoms(fresh);
                     }
@@ -782,7 +797,6 @@ const Profile = () => {
                   minDate={monthAgo}
                   maxDate={new Date()}
                   startOnMonday
-                  hasData={mockHasData}
                   colors={colors}
                 />
 
@@ -835,11 +849,14 @@ const Profile = () => {
                           return remote ?? null;
                         },
                       });
+                      console.log('fresh', fresh);
+                      console.log('isToday', isToday(d));
                       if (isToday(d)) {
                         const hc = await getSymptoms();
                         setHealthConnectSymptoms(hc);
                         const combined = await combineSetSymptoms(hc!, fresh);
-                        if (combined && fresh) await saveSymptoms(combined);
+                        if (combined && fresh)
+                          await saveSymptomsToday.mutateAsync(combined);
                       } else {
                         await combineSetSymptoms(fresh);
                       }
@@ -973,9 +990,11 @@ const Profile = () => {
                             }
 
                             // Güncellenmiş veriyi kaydet
-                            const savedSymptoms = await saveSymptoms(
-                              updatedSymptoms,
-                            );
+                            const savedSymptoms =
+                              await saveSymptomsToday.mutateAsync(
+                                updatedSymptoms,
+                              );
+
                             if (savedSymptoms) setSymptoms(savedSymptoms);
 
                             // Modalı kapat
@@ -1050,7 +1069,9 @@ const Profile = () => {
               setTotalSleepMinutes(totalMinutes);
               setTime(selectedTime);
 
-              const savedSymptoms = await saveSymptoms(updatedSymptoms);
+              const savedSymptoms = await saveSymptomsToday.mutateAsync(
+                updatedSymptoms,
+              );
               if (savedSymptoms) setSymptoms(savedSymptoms);
 
               setShowTimePicker(false);

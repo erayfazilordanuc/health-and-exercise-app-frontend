@@ -1,6 +1,7 @@
 import {
   keepPreviousData,
   QueryKey,
+  useMutation,
   useQuery,
   useQueryClient,
   type UseQueryOptions,
@@ -11,6 +12,7 @@ import {
   getLocal,
   getSymptomsByDate,
 } from '../api/symptoms/symptomsService';
+import {saveSymptoms} from '../lib/health/healthConnectService';
 
 export type Symptoms = {
   id?: number;
@@ -34,6 +36,19 @@ export const SYMPTOM_KEYS = {
   adminByUserAndDate: (userId: number, dateStr: string) =>
     [...SYMPTOM_KEYS.root, 'admin', 'user', userId, 'date', dateStr] as const,
 };
+
+export function useSaveSymptomsToday() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (symptoms: Symptoms) => saveSymptoms(symptoms),
+    onSuccess: (data, variables) => {
+      const t = new Date();
+      t.setHours(12, 0, 0, 0); // 🔒 key'i lokal güne sabitle
+      const todayKey = ['symptoms', 'by-date', t.toISOString().slice(0, 10)];
+      qc.setQueryData(todayKey, data ?? variables);
+    },
+  });
+}
 
 /**
  * Admin: Belirli kullanıcı + tarih için semptomları getirir.
@@ -77,41 +92,35 @@ export function useAdminSymptomsByUserIdAndDate(
 }
 
 export function useSymptomsByDate(
-  date?: Date,
+  date: Date,
   options?: {
     enabled?: boolean;
     staleTime?: number;
     refetchInterval?: number | false;
   },
 ) {
-  const dateStr = date?.toISOString().slice(0, 10);
-  const isToday = dateStr === new Date().toISOString().slice(0, 10);
+  // 🔒 lokal günü sabitle (UTC kaymasını engelle)
+  const d = new Date(date);
+  d.setHours(12, 0, 0, 0);
+  const dateStr = d.toISOString().slice(0, 10);
 
   return useQuery<Symptoms | null, Error>({
-    queryKey: dateStr ? ['symptoms', 'by-date', dateStr] : ['__disabled__'],
+    queryKey: ['symptoms', 'by-date', dateStr],
     enabled: !!date && (options?.enabled ?? true),
 
     queryFn: async (): Promise<Symptoms | null> => {
-      if (!date) return null;
-
-      if (isToday) {
-        const local = await getLocal(date);
-        if (local) return local;
-      }
-      const synced = await getSymptomsByDate(date);
-      return synced ?? null; // <-- null dönebilir
+      const local = await getLocal(d); // ← d kullan
+      if (local) return local;
+      const synced = await getSymptomsByDate(d); // ← d kullan
+      return synced ?? null;
     },
 
-    retry: (count, err: any) => {
-      const status = err?.response?.status;
-      if ([400, 401, 403, 404].includes(status)) return false;
-      return count < 1;
-    },
     networkMode: 'always',
     staleTime: options?.staleTime ?? 60_000,
     refetchInterval: options?.refetchInterval ?? false,
     refetchOnReconnect: true,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
+    retry: 0,
   });
 }

@@ -32,11 +32,9 @@ export const checkSamsungHInstalled = async (): Promise<boolean> => {
   if (Platform.OS !== 'android') return false;
   try {
     const apps = await getInstalledApps();
-    console.log(apps);
     const isInstalled = apps.some(
       app => app.packageName === 'com.sec.android.app.shealth',
     );
-    console.log(isInstalled);
     return isInstalled;
   } catch (err) {
     console.log('[GF] check failed', err);
@@ -48,11 +46,9 @@ export const checkHealthConnectInstalled = async (): Promise<boolean> => {
   if (Platform.OS !== 'android') return false;
   try {
     const apps = await getInstalledApps();
-    console.log(apps);
     const isInstalled = apps.some(
       app => app.packageName === 'com.google.android.apps.healthdata',
     );
-    console.log(isInstalled);
     return isInstalled;
   } catch (err) {
     console.log('[HC] check failed', err);
@@ -83,7 +79,6 @@ let isInitialized = false;
 const initializeService = async () => {
   if (isInitialized) return true;
   isInitialized = await initialize();
-  console.log('[HC] initialized →', isInitialized);
   return isInitialized;
 };
 
@@ -92,7 +87,6 @@ const requestReadPermission = async (recordTypes: RecordType[]) => {
   const granted = await requestPermission(
     recordTypes.map(rt => ({accessType: 'read', recordType: rt})),
   );
-  console.log('[HC] granted →', granted);
   return granted.length === recordTypes.length;
 };
 
@@ -112,7 +106,6 @@ export const initializeHealthConnect = async () => {
     allRecordTypes.map(rt => ({accessType: 'read', recordType: rt})),
   );
 
-  console.log('[HC] Permissions granted:', granted);
 
   return granted.length === allRecordTypes.length;
 };
@@ -120,10 +113,8 @@ export const initializeHealthConnect = async () => {
 const initHealth = async () => {
   const isHealthConnectReady = await initializeHealthConnect();
   if (!isHealthConnectReady) {
-    console.log('Health connect permissions not fully granted.');
     return;
   }
-  console.log('All health permissions granted. Ready to collect data.');
 };
 
 export const readSampleData = async (
@@ -142,8 +133,6 @@ export const readSampleData = async (
       endTime: endTime.toISOString(),
     },
   });
-
-  console.log('Result ' + recordType, result);
 
   return result;
 };
@@ -167,8 +156,6 @@ export const aggregatedSampleData = async (
       endTime: endTime.toISOString(),
     },
   });
-
-  console.log('Aggregated Result ' + recordType, result);
 
   return result;
 };
@@ -212,8 +199,6 @@ export const getAggregatedSteps = async () => {
 
   if (!result.COUNT_TOTAL) return -1;
 
-  console.log('Aggregated result ' + recordType, result);
-
   const steps = result.COUNT_TOTAL;
 
   return steps;
@@ -243,8 +228,6 @@ export const getAggregatedActiveCaloriesBurned = async () => {
       endTime: new Date(todayEnd()).toISOString(),
     },
   });
-
-  console.log('Aggregated result ' + recordType, result);
 
   const kcal = result.ACTIVE_CALORIES_TOTAL.inKilocalories;
 
@@ -378,6 +361,7 @@ export const saveSymptoms = async (symptoms: Symptoms) => {
     isSynced: false,
   };
 
+  console.log('the key', key);
   console.log('saved local', symptomsObjectToSave);
 
   const state = await NetInfo.fetch();

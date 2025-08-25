@@ -59,6 +59,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {useUserSessions} from '../../hooks/sessionQueries';
 import {subDays} from 'date-fns';
 import {SessionList} from '../../components/SessionList';
+import WeeklyStrip from '../../components/WeeklyStrip';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -91,14 +92,16 @@ const Member = () => {
     });
   }
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const today = new Date();
+  const [showDatePicker, setShowDatePicker] = useState(false);  
+  const today = new Date(new Date().setHours(12, 0, 0, 0));
   const [symptomsDate, setSymptomsDate] = useState(today);
   const day = (d: Date) => d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
 
   // EKRANDA:
   const toDay = React.useMemo(() => day(new Date()), []); // örn: '2025-08-24'
   const fromDay = React.useMemo(() => day(subDays(new Date(), 7)), []);
+
+  console.log(today.toString(), toDay.toString(), fromDay.toString());
 
   // const {fromISO, toISO} = useMemo(() => {
   //   const to = new Date(); // şimdi
@@ -128,6 +131,8 @@ const Member = () => {
     isFetching,
   } = useAdminSymptomsByUserIdAndDate(memberId, symptomsDate);
 
+  const [isAllInitialized, setIsAllInitialized] = useState(false);
+
   useEffect(() => {
     scrollToSymptoms();
   }, [symptoms]);
@@ -144,6 +149,10 @@ const Member = () => {
 
   useEffect(() => {
     setAllLoading(isSessionsLoading || isSymptomsLoading || isProgressLoading);
+    if (!isAllInitialized)
+      setIsAllInitialized(
+        !isSessionsLoading && !isSymptomsLoading && !isProgressLoading,
+      );
   }, [isSessionsLoading, isSymptomsLoading, isProgressLoading]);
 
   useEffect(() => {
@@ -271,6 +280,9 @@ const Member = () => {
     }
     return `${minutes} dk`;
   }
+
+  const toLocalDate = (d: Date) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
   return (
     <View style={{paddingTop: insets.top * 1.3}} className="flex-1 px-3">
@@ -462,15 +474,19 @@ const Member = () => {
               />
             </View>
           ) :  */}
-        {!allLoading ? (
+        {isAllInitialized ? (
           !accessAuthorized ? (
             <View
               className="p-3 rounded-2xl"
               style={{backgroundColor: colors.background.primary}}>
-              <Text className="ml-2 text-lg font-rubik">
+              <Text
+                className="ml-2 text-lg font-rubik"
+                style={{color: colors.text.primary}}>
                 Veriler görüntülenemiyor.
               </Text>
-              <Text className="ml-2 text-md font-rubik mt-1">
+              <Text
+                className="ml-2 text-md font-rubik mt-1"
+                style={{color: colors.text.primary}}>
                 Kullanıcının verilerine erişebilmek için gerekli onaylar
                 bulunmamaktadır.
               </Text>
@@ -480,9 +496,9 @@ const Member = () => {
             </View>
           ) : (
             <>
-              {!isProgressLoading && weeklyExerciseProgress && (
+              {weeklyExerciseProgress && (
                 <View
-                  className="flex flex-col px-3 py-3 mb-3 pb-4"
+                  className="flex flex-col px-3 py-3 mb-3"
                   style={{
                     borderRadius: 17,
                     backgroundColor: colors.background.primary,
@@ -512,10 +528,10 @@ const Member = () => {
                   />
                 </View>
               )}
-              {!isSymptomsLoading && (
+              {
                 <View
                   onLayout={e => setSymptomsSectionY(e.nativeEvent.layout.y)}
-                  className="flex flex-col pb-2 pt-1 px-5 mb-3"
+                  className="flex flex-col pb-1 pt-2 px-5 mb-3"
                   style={{
                     borderRadius: 17,
                     backgroundColor: colors.background.primary,
@@ -587,14 +603,36 @@ const Member = () => {
                         color="#FDEF22"
                       />
                     </>
+                  ) : isSymptomsLoading ? (
+                    <View className="flex flex-row items-center justify-center w-full py-20">
+                      <ActivityIndicator
+                        className="mt-2 self-center"
+                        size="large"
+                        color={colors.primary[200]} // {colors.primary[300] ?? colors.primary}
+                      />
+                    </View>
                   ) : (
                     <Text
-                      className="font-rubik pt-2"
+                      className="font-rubik py-2"
                       style={{fontSize: 18, color: colors.text.primary}}>
                       Bulgu Kaydı Bulunamadı
                     </Text>
                   )}
-                  <TouchableOpacity
+
+                  <View className="mt-1">
+                    <WeeklyStrip
+                      selectedDate={symptomsDate}
+                      onSelect={d => {
+                        d.setHours(12, 0, 0, 0);
+                        setSymptomsDate(d);
+                      }}
+                      minDate={monthAgo}
+                      maxDate={new Date()}
+                      startOnMonday
+                      colors={colors}
+                    />
+                  </View>
+                  {/* <TouchableOpacity
                     onPress={async () => {
                       const net = await NetInfo.fetch();
                       const isOnline = !!net.isConnected;
@@ -630,10 +668,10 @@ const Member = () => {
                       }}
                       onCancel={() => setShowDatePicker(false)}
                     />
-                  )}
+                  )} */}
                 </View>
-              )}
-              {!isSessionsLoading && (
+              }
+              {
                 <View
                   className="flex flex-col pb-2 pt-1 px-5"
                   style={{
@@ -669,7 +707,7 @@ const Member = () => {
                     </Text>
                   )}
                 </View>
-              )}
+              }
             </>
           )
         ) : (

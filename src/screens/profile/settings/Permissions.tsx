@@ -28,6 +28,7 @@ import {
 import ConsentCard from '../../../components/ConsentCard';
 import {CustomModal} from '../../../components/CustomModal';
 import {useUser} from '../../../contexts/UserContext';
+import {ConsentModal} from '../../../components/ConsentModal';
 
 const Permissions = () => {
   const insets = useSafeAreaInsets();
@@ -272,8 +273,10 @@ const Permissions = () => {
             />
           </View>
         )}
-        <CustomModal
+        <ConsentModal
           visible={kvkkModalVisible}
+          requireScrollToEnd
+          approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
           onApprove={async () => {
             if (kvkkConsent?.status !== 'ACKNOWLEDGED') {
               const response = await approve(kvkkConsent?.id!);
@@ -288,20 +291,21 @@ const Permissions = () => {
             }
             setKvkkModalVisible(false);
           }}
-          onApproveText={`Onaylıyorum`}
+          onApproveText="Onaylıyorum"
           onRejectText="Onaylamıyorum"
           body={
-            <>
-              <Text
-                className="font-rubik text-md"
-                style={{color: colors.text.primary}}>
-                {kvkkPolicy?.content}
-              </Text>
-            </>
+            <Text
+              className="font-rubik text-md"
+              style={{color: colors.text.primary}}>
+              {kvkkPolicy?.content}
+            </Text>
           }
         />
-        <CustomModal
+
+        <ConsentModal
           visible={healthModalVisible}
+          requireScrollToEnd
+          approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
           onApprove={async () => {
             if (healthConsent?.status !== 'ACCEPTED') {
               const response = await approve(healthConsent?.id!);
@@ -316,21 +320,21 @@ const Permissions = () => {
             }
             setHealthModalVisible(false);
           }}
-          onApproveText={`Onaylıyorum`}
+          onApproveText="Onaylıyorum"
           onRejectText="Onaylamıyorum"
           body={
-            <>
-              <Text
-                className="font-rubik text-md"
-                style={{color: colors.text.primary}}>
-                {healthPolicy?.content}
-              </Text>
-            </>
+            <Text
+              className="font-rubik text-md"
+              style={{color: colors.text.primary}}>
+              {healthPolicy?.content}
+            </Text>
           }
         />
 
-        <CustomModal
+        <ConsentModal
           visible={exerciseModalVisible}
+          requireScrollToEnd
+          approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
           onApprove={async () => {
             if (exerciseConsent?.status !== 'ACCEPTED') {
               const response = await approve(exerciseConsent?.id!);
@@ -339,50 +343,49 @@ const Permissions = () => {
             setExerciseModalVisible(false);
           }}
           onReject={async () => {
-            if (healthConsent?.status === 'ACCEPTED') {
+            if (exerciseConsent?.status === 'ACCEPTED') {
               const response = await withdraw(exerciseConsent?.id!);
               if (response) setExerciseConsent(response);
             }
             setExerciseModalVisible(false);
           }}
-          onApproveText={`Onaylıyorum`}
+          onApproveText="Onaylıyorum"
           onRejectText="Onaylamıyorum"
           body={
-            <>
-              <Text
-                className="font-rubik text-md"
-                style={{color: colors.text.primary}}>
-                {exercisePolicy?.content}
-              </Text>
-            </>
+            <Text
+              className="font-rubik text-md"
+              style={{color: colors.text.primary}}>
+              {exercisePolicy?.content}
+            </Text>
           }
         />
-        <CustomModal
+
+        <ConsentModal
           visible={studyModalVisible}
+          requireScrollToEnd
+          approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
           onApprove={async () => {
-            if (healthConsent?.status !== 'ACCEPTED') {
+            if (studyConsent?.status !== 'ACCEPTED') {
               const response = await approve(studyConsent?.id!);
               if (response) setStudyConsent(response);
             }
             setStudyModalVisible(false);
           }}
           onReject={async () => {
-            if (healthConsent?.status === 'ACCEPTED') {
+            if (studyConsent?.status === 'ACCEPTED') {
               const response = await withdraw(studyConsent?.id!);
               if (response) setStudyConsent(response);
             }
             setStudyModalVisible(false);
           }}
-          onApproveText={`Onaylıyorum`}
+          onApproveText="Onaylıyorum"
           onRejectText="Onaylamıyorum"
           body={
-            <>
-              <Text
-                className="font-rubik text-md"
-                style={{color: colors.text.primary}}>
-                {studyPolicy?.content}
-              </Text>
-            </>
+            <Text
+              className="font-rubik text-md"
+              style={{color: colors.text.primary}}>
+              {studyPolicy?.content}
+            </Text>
           }
         />
       </ScrollView>

@@ -63,6 +63,7 @@ export const getAllSymptoms = async () => {
 
 // Localde haftalık saklanabilir
 export const getLocal = async (date: Date) => {
+  console.log('the local key', keyPrefix + date.toISOString().slice(0, 10));
   const localJson = await AsyncStorage.getItem(
     keyPrefix + date.toISOString().slice(0, 10),
   );

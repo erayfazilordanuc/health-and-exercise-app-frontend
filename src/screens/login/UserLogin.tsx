@@ -44,6 +44,7 @@ import {
   ConsentStatus,
   LoginMethod,
 } from '../../types/enums';
+import {ConsentModal} from '../../components/ConsentModal';
 
 function UserLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
@@ -83,6 +84,15 @@ function UserLogin() {
   const [healthDataApproved, setHealthDataApproved] = useState(false);
   const [exerciseDataApproved, setExerciseDataApproved] = useState(false);
   const [studyApproved, setStudyApproved] = useState(false);
+
+  const [scrolledToEnd, setScrolledToEnd] = useState(false);
+
+  function handleScroll(e: any) {
+    const {layoutMeasurement, contentOffset, contentSize} = e.nativeEvent;
+    const isEnd =
+      layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+    if (isEnd) setScrolledToEnd(true);
+  }
 
   const FOOTER =
     'Rızamı dilediğim an, Profil > Ayarlar > İzinler ve Onaylar alanından geri çekebileceğimi biliyorum.';
@@ -729,7 +739,7 @@ function UserLogin() {
         </View>
       </ScrollView>
 
-      <CustomModal
+      {/* <CustomModal
         visible={consentModalVisible}
         onApprove={() => {
           setKvkkAcknowledged(true);
@@ -764,8 +774,8 @@ function UserLogin() {
             </Text>
           </>
         }
-      />
-      <CustomModal
+      /> */}
+      {/* <CustomModal
         visible={studyModalVisible}
         onApprove={() => {
           setStudyApproved(true);
@@ -785,6 +795,62 @@ function UserLogin() {
               {studyPolicy?.content}
             </Text>
           </>
+        }
+      /> */}
+      <ConsentModal
+        visible={consentModalVisible}
+        requireScrollToEnd
+        approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
+        onApprove={() => {
+          setKvkkAcknowledged(true);
+          setHealthDataApproved(true);
+          setExerciseDataApproved(true);
+          setConsentModalVisible(false);
+        }}
+        onReject={() => {
+          setKvkkAcknowledged(false);
+          setHealthDataApproved(false);
+          setExerciseDataApproved(false);
+          setConsentModalVisible(false);
+        }}
+        onApproveText="Onaylıyorum"
+        onRejectText="Onaylamıyorum"
+        body={
+          <>
+            <Text
+              className="font-rubik text-md"
+              style={{color: colors.text.primary}}>
+              {stripFooter(kvkkPolicy?.content)}
+              {'\n\n'}
+              {stripFooter(healthPolicy?.content)}
+              {'\n\n'}
+              {stripFooter(exercisePolicy?.content)}
+              {'\n\n\n'}
+              {FOOTER}
+            </Text>
+          </>
+        }
+      />
+      <ConsentModal
+        visible={studyModalVisible}
+        requireScrollToEnd
+        approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
+        onApprove={() => {
+          setStudyApproved(true);
+          setStudyModalVisible(false);
+        }}
+        onReject={() => {
+          setStudyApproved(false);
+          setStudyModalVisible(false);
+        }}
+        onApproveText="Onaylıyorum"
+        onRejectText="Onaylamıyorum"
+        body={
+          <Text
+            className="font-rubik text-md"
+            style={{color: colors.text.primary}}>
+            {studyPolicy?.content}
+          </Text>
         }
       />
     </SafeAreaView>

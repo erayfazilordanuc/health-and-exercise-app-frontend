@@ -179,8 +179,11 @@ const Groups = () => {
         </Text>
         {user && user.role === 'ROLE_USER' && !groupJoinRequest && (
           <TouchableOpacity
-            className="py-3 px-4 rounded-2xl"
-            style={{backgroundColor: colors.background.primary}}
+            className="px-4 rounded-2xl"
+            style={{
+              paddingVertical: 10,
+              backgroundColor: colors.background.primary,
+            }}
             onPress={() => {
               setGroupToJoin(item);
               setIsJoinModalVisible(true);
@@ -227,7 +230,7 @@ const Groups = () => {
         </Text>
       </View>
       <View
-        className="h-full pb-32 px-5 pt-3"
+        className="h-full pb-32 px-3 pt-3"
         style={{
           backgroundColor: 'transparent', // colors.background.secondary,
           // paddingTop: insets.top / 2,
