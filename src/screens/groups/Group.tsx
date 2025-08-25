@@ -444,6 +444,34 @@ const Group = () => {
                 className="py-2 px-3 mb-1 flex items-center justify-center"
                 style={{backgroundColor: '#3B93FF', borderRadius: 13}}
                 onPress={async () => {
+                  // if (admin && user) {
+                  //   const response = await isRoomExistBySenderAndReceiver(
+                  //     admin.username,
+                  //     user.username,
+                  //   );
+                  //   if (response && response.status === 200) {
+                  //     const roomId = response;
+                  //     if (roomId !== 0) {
+                  //       navigation.navigate('Chat', {
+                  //         roomId: roomId,
+                  //         sender: user.username,
+                  //         receiver: admin,
+                  //         fromNotification: false,
+                  //       });
+                  //     } else {
+                  //       const nextRoomResponse = await getNextRoomId();
+                  //       if (nextRoomResponse.status === 200) {
+                  //         const nextRoomId = nextRoomResponse.data;
+                  //         navigation.navigate('Chat', {
+                  //           roomId: nextRoomId,
+                  //           sender: user.username,
+                  //           receiver: admin,
+                  //           fromNotification: false,
+                  //         });
+                  //       }
+                  //     }
+                  //   }
+                  // }
                   if (!(admin && user)) return;
 
                   try {
@@ -458,8 +486,18 @@ const Group = () => {
                     });
 
                     // 2) oda yoksa yeni id al
-                    const finalRoomId =
-                      roomId !== 0 ? roomId : (await getNextRoomId()).data;
+                    let finalRoomId = roomId;
+
+                    if (roomId === 0) {
+                      const {data: newId} = await getNextRoomId();
+                      finalRoomId = newId;
+
+                      // ➤ Cache'i anında düzelt
+                      qc.setQueryData(
+                        MSG_KEYS.roomIdByUsers(user.username, admin.username),
+                        newId,
+                      );
+                    }
 
                     navigation.navigate('Chat', {
                       roomId: finalRoomId,

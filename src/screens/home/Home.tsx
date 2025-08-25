@@ -109,8 +109,6 @@ const Home = () => {
     useState<ExerciseProgressDTO | null>();
 
   const fetchProgress = async () => {
-    if (!user?.groupId) return;
-
     try {
       const todayExerciseProgress: ExerciseProgressDTO =
         await getTodaysProgress();
@@ -542,7 +540,7 @@ const Home = () => {
 
           <CustomAlertSingleton ref={alertRef} />
 
-          {user && user.role === 'ROLE_USER' && user.groupId && (
+          {user && user.role === 'ROLE_USER' && (
             <>
               {/* <ScrollView
                 horizontal

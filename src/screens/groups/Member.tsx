@@ -92,7 +92,7 @@ const Member = () => {
     });
   }
 
-  const [showDatePicker, setShowDatePicker] = useState(false);  
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const today = new Date(new Date().setHours(12, 0, 0, 0));
   const [symptomsDate, setSymptomsDate] = useState(today);
   const day = (d: Date) => d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
@@ -426,8 +426,34 @@ const Member = () => {
               onPress={async () => {
                 if (!admin || !member) return;
 
+                // const response = await isRoomExistBySenderAndReceiver(
+                //   admin.username,
+                //   member.username,
+                // );
+                // if (response && response.status === 200) {
+                //   const roomId = response;
+                //   if (roomId !== 0) {
+                //     navigation.navigate('Chat', {
+                //       roomId: roomId,
+                //       sender: admin.username,
+                //       receiver: member,
+                //       fromNotification: false,
+                //     });
+                //   } else {
+                //     const nextRoomResponse = await getNextRoomId();
+                //     if (nextRoomResponse.status === 200) {
+                //       const nextRoomId = nextRoomResponse.data;
+                //       navigation.navigate('Chat', {
+                //         roomId: nextRoomId,
+                //         sender: admin.username,
+                //         receiver: member,
+                //         fromNotification: false,
+                //       });
+                //     }
+                //   }
+                // }
                 // 1) roomId'yi cache'den al; yoksa fetch et ve cache'e yaz
-                const roomId = await qc.ensureQueryData({
+                let roomId = await qc.ensureQueryData({
                   queryKey: MSG_KEYS.roomIdByUsers(
                     admin.username,
                     member.username,
@@ -436,9 +462,18 @@ const Member = () => {
                     getRoomIdByUsers(admin.username, member.username),
                 });
 
-                // 2) roomId 0 ise yeni oda id'si çek
-                const finalRoomId =
-                  roomId !== 0 ? roomId : (await getNextRoomId()).data; // getNextRoomId -> Promise<{data:number}>
+                let finalRoomId = roomId;
+
+                if (roomId === 0) {
+                  const {data: newId} = await getNextRoomId();
+                  finalRoomId = newId;
+
+                  // ➤ Cache'i anında düzelt
+                  qc.setQueryData(
+                    MSG_KEYS.roomIdByUsers(admin.username, member.username),
+                    newId,
+                  );
+                }
 
                 navigation.navigate('Chat', {
                   roomId: finalRoomId,
