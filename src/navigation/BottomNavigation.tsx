@@ -258,48 +258,53 @@ function ProfileStack() {
 function GroupsStack() {
   const {theme, colors, setTheme} = useTheme();
 
-  const [user, setUser] = React.useState<User | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  // const [user, setUser] = React.useState<User | null>(null);
+  const {user} = useUser();
+  // const [loading, setLoading] = React.useState(true);
 
   // b) İlk render’da kullanıcıyı getir
-  React.useEffect(() => {
-    let isMounted = true;
+  // React.useEffect(() => {
+  //   let isMounted = true;
 
-    (async () => {
-      try {
-        const u = await getUser(); // API veya AsyncStorage
-        if (isMounted) setUser(u);
-      } catch (e) {
-        console.error('getUser error:', e);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    })();
+  //   (async () => {
+  //     try {
+  //       const u = await getUser(); // API veya AsyncStorage
+  //       if (isMounted) setUser(u);
+  //     } catch (e) {
+  //       console.error('getUser error:', e);
+  //     } finally {
+  //       if (isMounted) setLoading(false);
+  //     }
+  //   })();
 
-    return () => {
-      isMounted = false; // Memory-leak guard
-    };
-  }, []);
+  //   return () => {
+  //     isMounted = false; // Memory-leak guard
+  //   };
+  // }, []);
 
   // c) Kullanıcı gelene kadar gösterilecek ekran
-  if (loading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'transparent',
-        }}>
-        <ActivityIndicator size="large" color={colors.primary[300]} />
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <View
+  //       style={{
+  //         flex: 1,
+  //         alignItems: 'center',
+  //         justifyContent: 'center',
+  //         backgroundColor: 'transparent',
+  //       }}>
+  //       <ActivityIndicator size="large" color={colors.primary[300]} />
+  //     </View>
+  //   );
+  // }
 
   return (
     <>
       <GroupsNativeStack.Navigator
-        initialRouteName={`${user && user.groupId ? 'Group' : 'Groups'}`}
+        initialRouteName={`${
+          (user && !user.groupId) || (user && user.role === 'ROLE_ADMIN')
+            ? 'Groups'
+            : 'Group'
+        }`}
         screenOptions={{
           animation: 'default',
         }}>
@@ -310,7 +315,7 @@ function GroupsStack() {
             headerShown: false,
             header: () => (
               <CustomHeader
-                title={'Grup'}
+                title={'Gruplar'}
                 icon={icons.notes}
                 className="border-primary-300"
               />
@@ -690,7 +695,15 @@ export function BottomNavigator() {
             fontSize: 24,
           },
           tabBarIcon: ({focused}) => (
-            <TabIcon focused={focused} icon={icons.peopleV3} title="Grup" />
+            <TabIcon
+              focused={focused}
+              icon={icons.peopleV3}
+              title={
+                (user && !user.groupId) || (user && user.role === 'ROLE_ADMIN')
+                  ? 'Gruplar'
+                  : 'Grup'
+              }
+            />
           ),
         }}
       />

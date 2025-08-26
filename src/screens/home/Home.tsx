@@ -43,7 +43,6 @@ import images from '../../constants/images';
 import Slider from '@react-native-community/slider';
 import {useUser} from '../../contexts/UserContext';
 import {getGroupAdmin} from '../../api/group/groupService';
-import CustomWeeklyProgressCalendar from '../../components/CustomWeeklyProgressCalendar';
 import {
   getTodaysProgress,
   getWeeklyActiveDaysProgress,

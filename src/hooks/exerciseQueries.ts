@@ -54,3 +54,42 @@ export const useAllExercises = () =>
 
 export const invalidateAllExercises = (qc: QueryClient) =>
   qc.invalidateQueries({queryKey: EX_ALL_QK});
+
+async function fetchExerciseSchedule(): Promise<number[]> {
+  const {data} = await apiClient.get<number[]>('/exercises/schedule');
+  return data;
+}
+
+// --- PUT: upsert exercise schedule ---
+async function upsertSchedule(activeDays: number[]): Promise<number[]> {
+  const {data} = await apiClient.put<number[]>(
+    '/exercises/schedule',
+    {activeDays}, // { activeDays: number[] }
+  );
+  return data;
+}
+
+// --- Query Hook (uzun staleTime) ---
+export function useExerciseSchedule() {
+  return useQuery({
+    queryKey: ['exerciseSchedule'],
+    queryFn: fetchExerciseSchedule,
+    staleTime: 1000 * 60 * 60 * 12, // 12 saat
+    gcTime: 1000 * 60 * 60 * 24, // 24 saat cache'te tut
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: 1,
+  });
+}
+
+// --- Mutation Hook ---
+export function useUpsertExerciseSchedule() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: upsertSchedule,
+    onSuccess: () => {
+      qc.invalidateQueries({queryKey: ['exerciseSchedule']});
+    },
+  });
+}

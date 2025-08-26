@@ -131,7 +131,7 @@ export const logout = async () => {
     }
   }
   await queryClient.cancelQueries();
-  queryClient.clear();
+  await queryClient.clear();
   await AsyncStorage.clear();
 
   // const key = 'symptoms_' + new Date().toISOString().slice(0, 10);

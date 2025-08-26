@@ -2,15 +2,16 @@ import React, {useEffect, useRef} from 'react';
 import {View, Text, ScrollView} from 'react-native';
 import {useTheme} from '../themes/ThemeProvider';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
-
 interface CustomWeeklyProgressCalendarProps {
   todayPercent?: number;
-  weeklyPercents: number[]; // 0: Pazartesi, 1: Çarşamba, 2: Cuma
+  weeklyPercents: number[]; // aktif günlerin yüzdeleri (activeDays ile aynı sıra)
+  activeDays: number[]; // 1=Mon ... 7=Sun (ör: [1,3,5])
 }
 
 const CustomWeeklyProgressCalendar = ({
   todayPercent,
   weeklyPercents,
+  activeDays,
 }: CustomWeeklyProgressCalendarProps) => {
   const {colors, theme} = useTheme();
   const today = new Date();
@@ -18,47 +19,62 @@ const CustomWeeklyProgressCalendar = ({
     d1.toDateString() === d2.toDateString();
   const scrollRef = useRef<ScrollView>(null);
 
-  // Pazartesi'yi bul
+  // Pazartesiyi bul
   const getMonday = (d: Date) => {
     const date = new Date(d);
-    const day = date.getDay();
+    const day = date.getDay(); // 0=Sun ... 6=Sat
     const diff = day === 0 ? -6 : 1 - day;
     date.setDate(date.getDate() + diff);
     return date;
   };
-
   const monday = getMonday(today);
 
-  const fullWeek = [
-    {label: 'Pazartesi', offset: 0, isActive: true, progressIndex: 0},
-    {label: 'Salı', offset: 1, isActive: false},
-    {label: 'Çarşamba', offset: 2, isActive: true, progressIndex: 1},
-    {label: 'Perşembe', offset: 3, isActive: false},
-    {label: 'Cuma', offset: 4, isActive: true, progressIndex: 2},
-    {label: 'Cumartesi', offset: 5, isActive: false},
-    {label: 'Pazar', offset: 6, isActive: false},
-  ];
+  // Aktif günleri 1..7’a göre sırala (UI tutarlılığı için)
+  const activeDaysSorted = [...new Set(activeDays)].sort((a, b) => a - b); // ör: [1,3,5]
+
+  // Haftanın tüm günleri (label + dayNum=1..7 + aktiflik + progressIndex eşleme)
+  const baseWeek = [
+    {label: 'Pazartesi', dayNum: 1, offset: 0},
+    {label: 'Salı', dayNum: 2, offset: 1},
+    {label: 'Çarşamba', dayNum: 3, offset: 2},
+    {label: 'Perşembe', dayNum: 4, offset: 3},
+    {label: 'Cuma', dayNum: 5, offset: 4},
+    {label: 'Cumartesi', dayNum: 6, offset: 5},
+    {label: 'Pazar', dayNum: 7, offset: 6},
+  ] as const;
+
+  type WeekItem = {
+    label: string;
+    dayNum: number; // 1..7
+    offset: number; // 0..6
+    isActive: boolean;
+    progressIndex?: number; // active günse weeklyPercents eşlem indeksi
+  };
+
+  const fullWeek: WeekItem[] = baseWeek.map(d => {
+    const isActive = activeDaysSorted.includes(d.dayNum);
+    const progressIndex = isActive
+      ? activeDaysSorted.indexOf(d.dayNum)
+      : undefined;
+    return {...d, isActive, progressIndex};
+  });
 
   // Bugünün index’ini bul (scroll için)
   const todayIndex = fullWeek.findIndex(day => {
     const date = new Date(monday);
     date.setDate(monday.getDate() + day.offset);
-    return date.toDateString() === today.toDateString();
+    return isSameDay(date, today);
   });
 
   useEffect(() => {
     if (scrollRef.current && todayIndex !== -1) {
-      scrollRef.current.scrollTo({
-        x: todayIndex * 80, // yaklaşık kutu genişliği
-        animated: true,
-      });
+      scrollRef.current.scrollTo({x: todayIndex * 80, animated: true});
     }
   }, [todayIndex]);
 
   return (
     <View className="flex flex-col">
-      {/* Legend (Açıklama) */}
-      <View className="flex flex-row items-center justify-between mb-2 px-4">
+      {/* <View className="flex flex-row items-center justify-between mb-2 px-4">
         <View className="flex-col items-start space-x-2 mb-1">
           <View className="flex flex-row items-center space-x-2 mb-1 mr-1">
             <View
@@ -86,7 +102,7 @@ const CustomWeeklyProgressCalendar = ({
         <View className="flex-row items-center space-x-2">
           <View
             className="p-2 rounded-full mr-1"
-            style={{backgroundColor: colors.primary[300] /*'#4f9cff' */}}
+            style={{backgroundColor: colors.primary[300]}}
           />
           <Text
             className="text-xs font-rubik"
@@ -105,143 +121,141 @@ const CustomWeeklyProgressCalendar = ({
             Bugün
           </Text>
         </View>
-      </View>
+      </View> */}
 
-      {/* Scrollable Week */}
       <ScrollView
         ref={scrollRef}
         className="px-3 py-2 rounded-2xl mt-1"
         horizontal
-        showsHorizontalScrollIndicator={true}
+        showsHorizontalScrollIndicator
         style={{backgroundColor: colors.background.secondary}}>
-        {fullWeek.map(({label, offset, isActive, progressIndex}, index) => {
-          const date = new Date(monday);
-          date.setDate(monday.getDate() + offset);
+        {fullWeek.map(
+          ({label, offset, isActive, progressIndex, dayNum}, index) => {
+            const date = new Date(monday);
+            date.setDate(monday.getDate() + offset);
 
-          const isToday = isSameDay(date, today);
-          const isFuture = date > today;
+            const isToday = isSameDay(date, today);
+            const isFuture = date > today;
 
-          let bgColor = colors.background.secondary;
+            // Aktif gün için varsayılan arkaplan mantığı
+            let bgColor = colors.background.secondary;
 
-          if (isActive) {
-            if (progressIndex && weeklyPercents[progressIndex] === 100) {
-              bgColor = '#14E077';
-            } else if (isToday) {
-              bgColor = '#4f9cff';
-            } else if (!isFuture) {
-              bgColor = '#fd5353';
-            } else {
-              bgColor = '#4f9cff';
+            const percent =
+              progressIndex != null
+                ? weeklyPercents?.[progressIndex]
+                : undefined;
+
+            if (isActive) {
+              if (percent === 100) {
+                bgColor = '#14E077'; // tamamlandı
+              } else if (isToday) {
+                bgColor = colors.primary[300]; // bugün (yapılacak)
+              } else if (!isFuture) {
+                bgColor = '#fd5353'; // geçmişte tamamlanmamış
+              } else {
+                bgColor = colors.primary[300]; // gelecekte yapılacak
+              }
             }
-          }
 
-          console.log('ahadaranza', fullWeek[todayIndex].progressIndex);
-
-          return (
-            <View
-              key={label}
-              className={`flex flex-col items-center pb-3 pt-2 rounded-2xl ${
-                index === fullWeek.length - 1 ? 'mr-7' : ''
-              }`}
-              style={{
-                margin: 5,
-                height: 77,
-                width: 77,
-                backgroundColor: isToday
-                  ? theme.name === 'Light'
-                    ? '#B9E2FE'
-                    : '#B9E2FE'
-                  : colors.background.primary,
-              }}>
-              {/* ───────── Başlık (gün adı) ───────── */}
-              <Text
-                className="text-sm text-center font-rubik"
+            return (
+              <View
+                key={label}
+                className={`flex flex-col items-center pb-3 pt-2 rounded-2xl ${
+                  index === fullWeek.length - 1 ? 'mr-7' : ''
+                }`}
                 style={{
-                  color:
-                    isToday && theme.name === 'Dark'
-                      ? colors.background.primary
-                      : colors.text.primary,
+                  margin: 5,
+                  height: 77,
+                  width: 77,
+                  backgroundColor: isToday
+                    ? '#B9E2FE'
+                    : colors.background.primary,
                 }}>
-                {label}
-              </Text>
+                {/* Gün adı */}
+                <Text
+                  className="text-sm text-center font-rubik"
+                  style={{
+                    color:
+                      isToday && theme.name === 'Dark'
+                        ? colors.background.primary
+                        : colors.text.primary,
+                  }}>
+                  {label}
+                </Text>
 
-              {/* ───────── Gün içeriği ───────── */}
-              {isToday && isActive ? (
-                /* Bugün → Daire içine ilerleme */ <View
-                  className="flex flex-row items-center justify-center"
-                  style={{
-                    marginTop: 8,
-                    borderRadius: 100,
-                    alignSelf: 'center',
-                    width: 35,
-                    height: 35,
-                    backgroundColor: bgColor,
-                  }}>
-                  <AnimatedCircularProgress
-                    size={37} // kutu kadar
-                    width={2}
-                    fill={weeklyPercents?.[progressIndex!] ?? todayPercent}
-                    tintColor={bgColor}
-                    backgroundColor={colors.background.secondary}
-                    rotation={0} // tepe noktasından başlasın
-                    lineCap="round"
-                    style={{alignSelf: 'center'}}>
-                    {() => (
-                      <Text
-                        className="text-xs font-rubik"
-                        style={{color: colors.text.primary}}>
-                        %{weeklyPercents?.[progressIndex!] ?? todayPercent}
-                      </Text>
-                    )}
-                  </AnimatedCircularProgress>
-                </View>
-              ) : isActive &&
-                !isFuture &&
-                weeklyPercents?.[progressIndex!] !== 100 ? (
-                <View
-                  className="flex flex-row items-center justify-center"
-                  style={{
-                    marginTop: 8,
-                    borderRadius: 100,
-                    alignSelf: 'center',
-                    width: 35,
-                    height: 35,
-                    backgroundColor: '#fd5353',
-                  }}>
-                  <AnimatedCircularProgress
-                    size={37}
-                    width={2}
-                    fill={weeklyPercents?.[progressIndex!] ?? 0}
-                    tintColor="#fd5353" /* kırmızı halkalı */
-                    backgroundColor={colors.background.secondary}
-                    rotation={0}
-                    lineCap="round"
+                {/* İçerik */}
+                {isToday && isActive ? (
+                  <View
+                    className="flex flex-row items-center justify-center"
                     style={{
+                      marginTop: 8,
+                      borderRadius: 100,
                       alignSelf: 'center',
+                      width: 35,
+                      height: 35,
+                      backgroundColor: bgColor,
                     }}>
-                    {() => (
-                      <Text style={{color: colors.text.primary, fontSize: 11}}>
-                        %{weeklyPercents?.[progressIndex!] ?? 0}
-                      </Text>
-                    )}
-                  </AnimatedCircularProgress>
-                </View>
-              ) : (
-                /* ───── DİĞER ───── */
-                /* Diğer günler → Eski kare */
-                <View
-                  className="self-center flex flex-row items-center justify-center py-2 rounded-full mt-2"
-                  style={{width: 37, height: 37, backgroundColor: bgColor}}>
-                  <Text
-                    className="text-sm text-center font-rubik"
-                    style={{color: colors.text.primary}}>
-                    {date.getDate()}
-                  </Text>
-                </View>
-              )}
-            </View>
-          );
-        })}
+                    <AnimatedCircularProgress
+                      size={37}
+                      width={2}
+                      fill={percent ?? todayPercent ?? 0}
+                      tintColor={bgColor}
+                      backgroundColor={colors.background.secondary}
+                      rotation={0}
+                      lineCap="round"
+                      style={{alignSelf: 'center'}}>
+                      {() => (
+                        <Text
+                          className="text-xs font-rubik"
+                          style={{color: colors.text.primary}}>
+                          %{percent ?? todayPercent ?? 0}
+                        </Text>
+                      )}
+                    </AnimatedCircularProgress>
+                  </View>
+                ) : isActive && !isFuture && (percent ?? 0) !== 100 ? (
+                  <View
+                    className="flex flex-row items-center justify-center"
+                    style={{
+                      marginTop: 8,
+                      borderRadius: 100,
+                      alignSelf: 'center',
+                      width: 35,
+                      height: 35,
+                      backgroundColor: '#fd5353',
+                    }}>
+                    <AnimatedCircularProgress
+                      size={37}
+                      width={2}
+                      fill={percent ?? 0}
+                      tintColor="#fd5353"
+                      backgroundColor={colors.background.secondary}
+                      rotation={0}
+                      lineCap="round"
+                      style={{alignSelf: 'center'}}>
+                      {() => (
+                        <Text
+                          style={{color: colors.text.primary, fontSize: 11}}>
+                          %{percent ?? 0}
+                        </Text>
+                      )}
+                    </AnimatedCircularProgress>
+                  </View>
+                ) : (
+                  <View
+                    className="self-center flex flex-row items-center justify-center py-2 rounded-full mt-2"
+                    style={{width: 37, height: 37, backgroundColor: bgColor}}>
+                    <Text
+                      className="text-sm text-center font-rubik"
+                      style={{color: colors.text.primary}}>
+                      {date.getDate()}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            );
+          },
+        )}
       </ScrollView>
     </View>
   );

@@ -11,8 +11,15 @@ import {
   ToastAndroid,
   ActivityIndicator,
   ImageBackground,
+  Touchable,
 } from 'react-native';
-import React, {useCallback, useEffect, useLayoutEffect, useState} from 'react';
+import React, {
+  act,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../../../themes/ThemeProvider';
 import icons from '../../../constants/icons';
@@ -48,6 +55,10 @@ import {
 } from '../../../hooks/progressQueries';
 import {isEqual} from 'lodash';
 import {Theme} from '../../../themes/themes';
+import {
+  useExerciseSchedule,
+  useUpsertExerciseSchedule,
+} from '../../../hooks/exerciseQueries';
 
 const {height, width} = Dimensions.get('window');
 
@@ -61,6 +72,14 @@ const ExercisesUser = () => {
   const [initialized, setInitialized] = useState(false);
   const {user} = useUser();
   const [showModal, setShowModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+
+  const {data: activeDays, isLoading} = useExerciseSchedule();
+  const [updatedActiveDays, setUpdatedActiveDays] = useState(activeDays);
+  // updatedActiveDays: number[] | undefined
+
+  const upsertMutation = useUpsertExerciseSchedule();
+
   const [todayExerciseProgress, setTodayExerciseProgress] =
     useState<ExerciseProgressDTO | null>(null);
   const [weeklyExerciseProgress, setWeeklyExersiseProgress] = useState<
@@ -78,10 +97,15 @@ const ExercisesUser = () => {
   const fetchProgress = async () => {
     setLoading(true);
     try {
-      const todayExerciseProgressRes: ExerciseProgressDTO =
-        await getTodaysProgress();
-      // if (!isEqual(todayExerciseProgressRes, todayExerciseProgress))
-      setTodayExerciseProgress(todayExerciseProgressRes);
+      if (
+        updatedActiveDays &&
+        updatedActiveDays.includes(new Date().getDay())
+      ) {
+        const todayExerciseProgressRes: ExerciseProgressDTO =
+          await getTodaysProgress();
+        // if (!isEqual(todayExerciseProgressRes, todayExerciseProgress))
+        setTodayExerciseProgress(todayExerciseProgressRes);
+      }
 
       const weeklyExerciseProgressRes: ExerciseProgressDTO[] =
         await getWeeklyActiveDaysProgress();
@@ -166,6 +190,29 @@ const ExercisesUser = () => {
     display: 'flex',
   });
 
+  const WEEK = [
+    {num: 1, label: 'Pzt'},
+    {num: 2, label: 'Sal'},
+    {num: 3, label: 'Çar'},
+    {num: 4, label: 'Per'},
+    {num: 5, label: 'Cum'},
+    {num: 6, label: 'Cmt'},
+    {num: 7, label: 'Paz'},
+  ];
+
+  const ACTIVE_COLOR = '#0091ff';
+  const BORDER = '#e6e8ec';
+  const TEXT = '#111827';
+
+  const toggleDay = (num: number) => {
+    setUpdatedActiveDays(prev => {
+      const base = prev ?? [];
+      return base.includes(num)
+        ? base.filter(x => x !== num)
+        : [...base, num].sort((a, b) => a - b);
+    });
+  };
+
   useEffect(() => {
     if (!isFocused) return;
     const parent = navigation.getParent(); // veya getParent('RootTabs') eğer id verdiyseniz
@@ -224,9 +271,9 @@ const ExercisesUser = () => {
             borderRadius: 17,
             backgroundColor: colors.background.primary,
           }}>
-          {new Date().getDay() === 1 ||
-          new Date().getDay() === 3 ||
-          new Date().getDay() === 5 ? (
+          {/* TO DO scheduleden gelmeli */}
+          {updatedActiveDays &&
+          updatedActiveDays.includes(new Date().getDay()) ? (
             <>
               <>
                 <Text
@@ -377,10 +424,182 @@ const ExercisesUser = () => {
             <CustomWeeklyProgressCalendar
               todayPercent={calcPercent(todayExerciseProgress)}
               weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
+              activeDays={updatedActiveDays ?? []}
             />
           )}
+          <View className="flex flex-row items-center justify-between mt-2">
+            <View className="flex flex-row items-center justify-between ml-2">
+              <View className="flex-col items-start space-x-2 mr-3">
+                <View className="flex flex-row items-center space-x-2">
+                  <View
+                    className="p-2 rounded-full"
+                    style={{backgroundColor: '#14E077'}}
+                  />
+                  <Text
+                    className="text-xs font-rubik ml-1"
+                    style={{color: colors.text.primary}}>
+                    Tamamlandı
+                  </Text>
+                </View>
+                <View className="flex-row items-center space-x-2 mt-2">
+                  <View
+                    className="p-2 rounded-full"
+                    style={{backgroundColor: '#fd5353'}}
+                  />
+                  <Text
+                    className="text-xs font-rubik ml-1"
+                    style={{color: colors.text.primary}}>
+                    Tamamlanmadı
+                  </Text>
+                </View>
+              </View>
+              <View className="flex-col items-start space-x-2">
+                <View className="flex-row items-center space-x-2">
+                  <View
+                    className="p-2 rounded-full"
+                    style={{
+                      backgroundColor: colors.primary[300] /*'#4f9cff' */,
+                    }}
+                  />
+                  <Text
+                    className="text-xs font-rubik ml-1"
+                    style={{color: colors.text.primary}}>
+                    Yapılacak
+                  </Text>
+                </View>
+                <View className="flex-row items-center space-x-2 mt-2">
+                  <View
+                    className="p-2 rounded-full"
+                    style={{backgroundColor: '#B9E2FE'}}
+                  />
+                  <Text
+                    className="text-xs font-rubik ml-1"
+                    style={{color: colors.text.primary}}>
+                    Bugün
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <TouchableOpacity
+              className="self-end mt-2 py-2 px-3"
+              style={{
+                backgroundColor: colors.background.secondary,
+                borderRadius: 14,
+              }}
+              onPress={() => setShowScheduleModal(true)}>
+              <Text
+                className="text-md font-rubik"
+                style={{color: colors.text.primary}}>
+                Egzersiz Günleri
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
+      {showScheduleModal && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 20, // ✅ kenarlarda margin
+          }}>
+          <View
+            style={{
+              maxWidth: (width * 9) / 10, // ✅ tabletlerde taşmayı önler
+              borderRadius: 17,
+              backgroundColor: colors.background.primary,
+              paddingHorizontal: 20,
+              paddingVertical: 12,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Text
+              className="font-rubik-semibold text-2xl mb-4 text-center"
+              style={{color: colors.text.primary}}>
+              Egzersiz Günleri
+            </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                backgroundColor: colors.background.secondary,
+                paddingVertical: 10,
+                paddingHorizontal: 7,
+                borderRadius: 15,
+              }}>
+              {WEEK.map(day => {
+                const isActive =
+                  updatedActiveDays && updatedActiveDays.includes(day.num);
+                return (
+                  <TouchableOpacity
+                    key={day.num}
+                    onPress={() => toggleDay(day.num)}
+                    // android_ripple={{color: '#e0f0ff', borderless: false}}
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 15,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: isActive ? ACTIVE_COLOR : '#fff',
+                      borderWidth: 1,
+                      borderColor: isActive ? ACTIVE_COLOR : BORDER,
+                      marginHorizontal: 4,
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: '600',
+                        color: isActive ? '#fff' : TEXT,
+                      }}>
+                      {day.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* <Text style={{marginTop: 10, fontSize: 12, color: '#6b7280'}}>
+              Seçili:{' '}
+              {updatedActiveDays && updatedActiveDays.length ? updatedActiveDays.join(', ') : 'Yok'}
+            </Text> */}
+            <TouchableOpacity
+              className="py-2 px-4 mt-4 border"
+              style={{
+                borderRadius: 17,
+                backgroundColor: colors.background.secondary,
+                borderColor: colors.primary[125],
+              }}
+              onPress={() => {
+                if (updatedActiveDays && updatedActiveDays.length !== 3)
+                  ToastAndroid.show('Lütfen 3 gün seçiniz', ToastAndroid.SHORT);
+                else {
+                  if (updatedActiveDays) {
+                    console.log('eeevet', updatedActiveDays);
+                    upsertMutation.mutate(updatedActiveDays);
+                  } else
+                    ToastAndroid.show(
+                      'Lütfen bekleyip tekrar deneyiniz',
+                      ToastAndroid.SHORT,
+                    );
+                  setShowScheduleModal(false);
+                }
+              }}>
+              <Text
+                className="font-rubik text-md text-center"
+                style={{color: colors.text.secondary}}>
+                Tamam
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
       {showModal && (
         <View
           style={{

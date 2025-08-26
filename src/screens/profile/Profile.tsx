@@ -155,7 +155,7 @@ const Profile = () => {
     return null;
   };
 
-  const combineSetSymptoms = async (
+  const combineAndSetSymptoms = async (
     symptoms?: Symptoms | null,
     syncedSymptoms?: Symptoms | null,
   ) => {
@@ -221,7 +221,7 @@ const Profile = () => {
       setHealthConnectSymptoms(hc);
 
       console.log('geldi be', symptomsQ.data);
-      const combined = await combineSetSymptoms(hc!, symptomsQ.data);
+      const combined = await combineAndSetSymptoms(hc!, symptomsQ.data);
       console.log('combined', combined);
       if (combined && symptomsQ.data)
         await saveSymptomsToday.mutateAsync(combined);
@@ -257,6 +257,8 @@ const Profile = () => {
     try {
       await checkEssentialAppsStatus();
       await symptomsQ.refetch();
+      const hc = await getSymptoms();
+      if (hc && symptoms) combineAndSetSymptoms(hc, symptoms);
       // await syncSymptoms();
     } catch (e) {
       console.log(e);
@@ -785,11 +787,11 @@ const Profile = () => {
                     if (isToday(d)) {
                       const hc = await getSymptoms();
                       setHealthConnectSymptoms(hc);
-                      const combined = await combineSetSymptoms(hc!, fresh);
+                      const combined = await combineAndSetSymptoms(hc!, fresh);
                       if (combined && fresh)
                         await saveSymptomsToday.mutateAsync(combined);
                     } else {
-                      await combineSetSymptoms(fresh);
+                      await combineAndSetSymptoms(fresh);
                     }
 
                     setShowDatePicker(false);
@@ -854,11 +856,11 @@ const Profile = () => {
                       if (isToday(d)) {
                         const hc = await getSymptoms();
                         setHealthConnectSymptoms(hc);
-                        const combined = await combineSetSymptoms(hc!, fresh);
+                        const combined = await combineAndSetSymptoms(hc!, fresh);
                         if (combined && fresh)
                           await saveSymptomsToday.mutateAsync(combined);
                       } else {
-                        await combineSetSymptoms(fresh);
+                        await combineAndSetSymptoms(fresh);
                       }
 
                       setShowDatePicker(false);

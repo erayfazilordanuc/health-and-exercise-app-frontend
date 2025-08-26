@@ -10,6 +10,7 @@ import {
   Modal,
   ActivityIndicator,
   ToastAndroid,
+  Dimensions,
 } from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -36,7 +37,7 @@ const Groups = () => {
   const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<GroupsScreenNavigationProp>();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const {user} = useUser();
   const [groups, setGroups] = useState<Group[]>([]);
   const [myGroup, setMyGroup] = useState<Group | null>();
@@ -48,6 +49,7 @@ const Groups = () => {
   const [requestedGroupAdmin, setRequestedGroupAdmin] = useState<User>();
   const alertRef = useRef<CustomAlertSingletonHandle>(null);
 
+  const {height} = Dimensions.get('screen');
   const onCreateGroup = async () => {
     setLoading(true);
     if (user) {
@@ -145,20 +147,26 @@ const Groups = () => {
 
   const fetchRequestsAndGroups = async () => {
     if (!user) return;
+    setLoading(true);
 
-    if (user.role === 'ROLE_USER') {
-      fetchRequest(user.id!);
-    }
-
-    const response = await getAllGroups();
-    if (response) {
-      setGroups(response.data);
-      if (user) {
-        const myGroup =
-          (response.data as Group[]).find(g => g.id === user.groupId) || null;
-        if (myGroup) setMyGroup(myGroup);
+    try {
+      if (user.role === 'ROLE_USER') {
+        fetchRequest(user.id!);
       }
+
+      const response = await getAllGroups();
+      if (response) {
+        setGroups(response.data);
+        if (user) {
+          const myGroup =
+            (response.data as Group[]).find(g => g.id === user.groupId) || null;
+          if (myGroup) setMyGroup(myGroup);
+        }
+      }
+    } catch (e) {
+      console.log(e);
     }
+    setLoading(false);
   };
 
   useFocusEffect(
@@ -166,6 +174,10 @@ const Groups = () => {
       fetchRequestsAndGroups();
     }, [user]),
   );
+
+  const filterGroupsByAdmin = (groups: Group[], adminId: number) => {
+    return groups.filter(group => group.adminId === adminId);
+  };
 
   const renderItem = ({item}: {item: Group}) => (
     <View
@@ -299,42 +311,114 @@ const Groups = () => {
           </View>
         )}
 
-        <View
-          className="p-3 rounded-2xl"
-          style={{backgroundColor: colors.background.primary}}>
-          <View className="flex flex-row justify-center items-center">
-            <View
-              className="flex flex-row justify-between items-center rounded-2xl w-3/4" // border
-              style={{
-                backgroundColor: colors.background.secondary,
-                borderColor: colors.primary[300],
-              }}>
-              <Image source={icons.search} className="size-6 ml-4 mr-2" />
-              <TextInput
-                className="flex-1 font-rubik w-full"
-                style={{color: colors.text.primary}}
-                multiline={false}
-                placeholder="Grupları ara"
-                placeholderClassName="pl-4"
-                placeholderTextColor={colors.text.secondary}
-                selectionColor={colors.primary[300]}
+        {user && user.role !== 'ROLE_ADMIN' && (
+          <View
+            className="p-3 rounded-2xl"
+            style={{backgroundColor: colors.background.primary}}>
+            <View className="flex flex-row justify-center items-center">
+              <View
+                className="flex flex-row justify-between items-center rounded-2xl w-3/4" // border
+                style={{
+                  backgroundColor: colors.background.secondary,
+                  borderColor: colors.primary[300],
+                }}>
+                <Image source={icons.search} className="size-6 ml-4 mr-2" />
+                <TextInput
+                  className="flex-1 font-rubik w-full"
+                  style={{color: colors.text.primary}}
+                  multiline={false}
+                  placeholder="Grupları ara"
+                  placeholderClassName="pl-4"
+                  placeholderTextColor={colors.text.secondary}
+                  selectionColor={colors.primary[300]}
+                />
+              </View>
+            </View>
+
+            <View>
+              <FlatList
+                data={groups}
+                keyExtractor={item => (item.id ? item.id.toString() : '')}
+                renderItem={renderItem}
+                // ListEmptyComponent={
+                //   <Text className="text-center text-zinc-400">
+                //     Henüz bir grup yok
+                //   </Text>
+                // }
               />
             </View>
           </View>
+        )}
 
-          <View>
-            <FlatList
-              data={groups}
-              keyExtractor={item => (item.id ? item.id.toString() : '')}
-              renderItem={renderItem}
-              // ListEmptyComponent={
-              //   <Text className="text-center text-zinc-400">
-              //     Henüz bir grup yok
-              //   </Text>
-              // }
-            />
-          </View>
-        </View>
+        {user &&
+          user.role === 'ROLE_ADMIN' &&
+          (loading ? (
+            <View
+              style={{
+                marginTop: height / 3,
+              }}>
+              <ActivityIndicator
+                className="mt-2 self-center"
+                size="large"
+                color={'#474747'}
+              />
+            </View>
+          ) : (
+            <View
+              className="px-4 pb-4 pt-3 rounded-2xl"
+              style={{backgroundColor: colors.background.primary}}>
+              {/* <View className="flex flex-row justify-center items-center">
+              <View
+                className="flex flex-row justify-between items-center rounded-2xl w-3/4" // border
+                style={{
+                  backgroundColor: colors.background.secondary,
+                  borderColor: colors.primary[300],
+                }}>
+                <Image source={icons.search} className="size-6 ml-4 mr-2" />
+                <TextInput
+                  className="flex-1 font-rubik w-full"
+                  style={{color: colors.text.primary}}
+                  multiline={false}
+                  placeholder="Grupları ara"
+                  placeholderClassName="pl-4"
+                  placeholderTextColor={colors.text.secondary}
+                  selectionColor={colors.primary[300]}
+                />
+              </View>
+            </View> */}
+              <Text
+                className="text-2xl font-rubik mb-1 ml-1"
+                style={{color: colors.text.primary}}>
+                Gruplarım
+              </Text>
+              {filterGroupsByAdmin(groups, user.id!).map(
+                (group: Group, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    className="flex flex-row items-center justify-between mt-3"
+                    style={{
+                      padding: 15,
+                      borderRadius: 15,
+                      backgroundColor: colors.background.secondary,
+                    }}
+                    onPress={() =>
+                      navigation.navigate('Group', {groupId: group.id})
+                    }>
+                    <Text
+                      className="text-2xl font-rubik-medium"
+                      style={{color: colors.primary[200]}}>
+                      {group.name}
+                    </Text>
+                    <Image
+                      source={icons.arrow}
+                      className="size-5 mr-2"
+                      tintColor={colors.primary[200]}
+                    />
+                  </TouchableOpacity>
+                ),
+              )}
+            </View>
+          ))}
 
         <CustomAlertSingleton ref={alertRef} />
 
@@ -469,14 +553,15 @@ const Groups = () => {
 
             {/* Buton */}
             <TouchableOpacity
-              className="w-32 h-16 bg-blue-500 rounded-3xl flex items-center justify-center"
+              className="w-44 bg-blue-500 flex items-center justify-center"
+              style={{borderRadius: 17, height: 50}}
               onPress={() => {
                 setIsCreateModalVisible(true);
               }}>
               <Text
                 className="font-rubik text-lg"
                 style={{color: colors.background.secondary}}>
-                Grup Oluştur
+                Yeni Grup Oluştur
               </Text>
             </TouchableOpacity>
           </View>

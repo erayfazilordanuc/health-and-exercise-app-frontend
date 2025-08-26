@@ -954,76 +954,75 @@ const EditExercise = () => {
             Egzersizi Sil
           </Text>
         </TouchableOpacity>
-        <Modal
-          transparent
-          visible={isVideoUploadModalVisible}
-          animationType="fade"
-          onRequestClose={() => {}}>
-          <BlurView
-            style={{flex: 1}}
-            blurType="dark"
-            blurAmount={10}
-            reducedTransparencyFallbackColor="rgba(0,0,0,0.6)">
-            <View className="flex-1 justify-center items-center">
-              <View
-                className="w-11/12 max-w-lg rounded-3xl p-6 items-center"
-                style={{
-                  backgroundColor: colors.background.primary,
-                  shadowColor: '#000',
-                  shadowOpacity: 0.25,
-                  shadowRadius: 10,
-                  elevation: 10,
-                }}>
-                <Text
-                  className="font-rubik-semibold text-2xl mb-4 text-center"
-                  style={{color: colors.primary[200]}}>
-                  Videolar Kaydediliyor
-                </Text>
-
-                <Text
-                  className="font-rubik text-lg mb-2"
-                  style={{color: colors.text.primary}}>
-                  Video {uploadingVideoIndex + 1} / {pendingVideos.length}
-                </Text>
-
-                <Text
-                  className="font-rubik-bold text-3xl mt-1 mb-3"
-                  style={{color: colors.primary[200]}}>
-                  %{videoUploadPercent}
-                </Text>
-
-                <View className="w-full items-center mb-4">
-                  <Progress.Bar
-                    progress={videoUploadPercent / 100}
-                    width={150}
-                    color={colors.primary[200]}
-                    height={8}
-                    borderRadius={4}
-                  />
-                </View>
-
-                <Text
-                  className="font-rubik text-sm text-center"
-                  style={{color: colors.text.third}}>
-                  Lütfen ekrandan ayrılmayınız
-                </Text>
-              </View>
-            </View>
-          </BlurView>
-        </Modal>
-
-        <CustomAlert
-          message={'Egzersizi silmek istediğinize emin misiniz?'}
-          visible={isDeleteExerciseModalVisible}
-          onYes={() => {
-            onDeleteExercise();
-            setIsDeleteExerciseModalVisible(false);
-          }}
-          onCancel={() => {
-            setIsDeleteExerciseModalVisible(false);
-          }}
-        />
       </ScrollView>
+      <Modal
+        transparent
+        visible={isVideoUploadModalVisible}
+        animationType="fade"
+        onRequestClose={() => {}}>
+        <BlurView
+          style={{flex: 1}}
+          blurType="dark"
+          blurAmount={10}
+          reducedTransparencyFallbackColor="rgba(0,0,0,0.6)">
+          <View className="flex-1 justify-center items-center">
+            <View
+              className="w-11/12 max-w-lg rounded-3xl p-6 items-center"
+              style={{
+                backgroundColor: colors.background.primary,
+                shadowColor: '#000',
+                shadowOpacity: 0.25,
+                shadowRadius: 10,
+                elevation: 10,
+              }}>
+              <Text
+                className="font-rubik-semibold text-2xl mb-4 text-center"
+                style={{color: colors.primary[200]}}>
+                Videolar Kaydediliyor
+              </Text>
+
+              <Text
+                className="font-rubik text-lg mb-2"
+                style={{color: colors.text.primary}}>
+                Video {uploadingVideoIndex + 1} / {pendingVideos.length}
+              </Text>
+
+              <Text
+                className="font-rubik-bold text-3xl mt-1 mb-3"
+                style={{color: colors.primary[200]}}>
+                %{videoUploadPercent}
+              </Text>
+
+              <View className="w-full items-center mb-4">
+                <Progress.Bar
+                  progress={videoUploadPercent / 100}
+                  width={150}
+                  color={colors.primary[200]}
+                  height={8}
+                  borderRadius={4}
+                />
+              </View>
+
+              <Text
+                className="font-rubik text-sm text-center"
+                style={{color: colors.text.third}}>
+                Lütfen ekrandan ayrılmayınız
+              </Text>
+            </View>
+          </View>
+        </BlurView>
+      </Modal>
+      <CustomAlert
+        message={'Egzersizi silmek istediğinize emin misiniz?'}
+        visible={isDeleteExerciseModalVisible}
+        onYes={() => {
+          onDeleteExercise();
+          setIsDeleteExerciseModalVisible(false);
+        }}
+        onCancel={() => {
+          setIsDeleteExerciseModalVisible(false);
+        }}
+      />
     </>
   );
 };

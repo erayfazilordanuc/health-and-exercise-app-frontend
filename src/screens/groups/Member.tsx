@@ -560,7 +560,60 @@ const Member = () => {
                   </View>
                   <CustomWeeklyProgressCalendar
                     weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
+                    activeDays={[1, 2, 3]}
                   />
+                  <View className="flex flex-row items-center justify-between ml-2">
+                    <View className="flex-col items-start space-x-2 mr-3">
+                      <View className="flex flex-row items-center space-x-2">
+                        <View
+                          className="p-2 rounded-full"
+                          style={{backgroundColor: '#14E077'}}
+                        />
+                        <Text
+                          className="text-xs font-rubik ml-1"
+                          style={{color: colors.text.primary}}>
+                          Tamamlandı
+                        </Text>
+                      </View>
+                      <View className="flex-row items-center space-x-2 mt-2">
+                        <View
+                          className="p-2 rounded-full"
+                          style={{backgroundColor: '#fd5353'}}
+                        />
+                        <Text
+                          className="text-xs font-rubik ml-1"
+                          style={{color: colors.text.primary}}>
+                          Tamamlanmadı
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="flex-col items-start space-x-2">
+                      <View className="flex-row items-center space-x-2">
+                        <View
+                          className="p-2 rounded-full"
+                          style={{
+                            backgroundColor: colors.primary[300] /*'#4f9cff' */,
+                          }}
+                        />
+                        <Text
+                          className="text-xs font-rubik ml-1"
+                          style={{color: colors.text.primary}}>
+                          Yapılacak
+                        </Text>
+                      </View>
+                      <View className="flex-row items-center space-x-2 mt-2">
+                        <View
+                          className="p-2 rounded-full"
+                          style={{backgroundColor: '#B9E2FE'}}
+                        />
+                        <Text
+                          className="text-xs font-rubik ml-1"
+                          style={{color: colors.text.primary}}>
+                          Bugün
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
               )}
               {

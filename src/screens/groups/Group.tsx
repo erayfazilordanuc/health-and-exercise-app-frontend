@@ -58,7 +58,7 @@ const Group = () => {
     data: members,
     isLoading: isUsersLoading,
     refetch: refetchGroupUsers,
-  } = useGroupUsers(groupId ?? undefined);
+  } = useGroupUsers(groupId);
   const [users, setUsers] = useState(members);
   const [admin, setAdmin] = useState<User | null>();
   const [groupSize, setGroupSize] = useState(0);
@@ -88,7 +88,8 @@ const Group = () => {
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
-        navigation.navigate('Home');
+        if (user && user.role === 'ROLE_ADMIN') navigation.navigate('Groups');
+        else navigation.navigate('Home');
         return true;
       };
 
@@ -116,14 +117,21 @@ const Group = () => {
           const list: User[] = members;
           setGroupSize(list.length);
 
-          const sorted = [
-            ...list.filter(u => u.role === 'ROLE_ADMIN'),
-            ...list.filter(u => u.role !== 'ROLE_ADMIN'),
-          ];
-          setUsers(sorted);
+          // const sorted = [
+          //   ...list.filter(u => u.role === 'ROLE_ADMIN'),
+          //   ...list.filter(u => u.role !== 'ROLE_ADMIN'),
+          // ];
+          // setUsers(sorted);
 
-          if (!admin && sorted.length > 0) {
-            const adminUser = sorted[0];
+          // if (!admin && sorted.length > 0) {
+          //   const adminUser = sorted[0];
+          //   setAdmin(adminUser);
+
+          //   await fetchLastMessage();
+          // }
+
+          if (!admin && members.length > 0) {
+            const adminUser = members[0];
             setAdmin(adminUser);
 
             await fetchLastMessage();
@@ -629,7 +637,7 @@ const Group = () => {
             </Text>
           </View>
 
-          <View className="mt-4">
+          <View className="mt-2">
             {users &&
               users.map((user: User) => (
                 <View key={user.id?.toString() ?? user.username}>
