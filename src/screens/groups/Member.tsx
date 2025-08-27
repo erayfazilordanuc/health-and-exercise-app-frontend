@@ -177,10 +177,11 @@ const Member = () => {
   }, [isProgressError, progressError]);
 
   const fetchLastMessage = async () => {
-    if (!member) return;
+    if (!member || !admin) return;
 
+    console.log('içerde');
     const lastMessage = await getLastMessageBySenderAndReceiver(
-      admin!.username,
+      admin.username,
       member.username,
     );
 
@@ -200,8 +201,9 @@ const Member = () => {
 
   useFocusEffect(
     useCallback(() => {
+      console.log('dışarda');
       fetchLastMessage();
-    }, [memberId, member]),
+    }, [member, admin]), // memberId, TO DO test et
   );
 
   const calcPercent = (p?: ExerciseProgressDTO | null): number => {

@@ -163,10 +163,19 @@ function UserLogin() {
         console.log('Message:', message);
 
         if (status === 403) message = 'Kullanıcı adı veya şifre hatalı';
+        if (status === 502) message = 'Bir hata oluştu';
         ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
       } else if (error instanceof Error) {
         console.log('Genel hata yakalandı:', error.message);
 
+        const maybeStatus = (error as any).status;
+        if (maybeStatus === 403) {
+          ToastAndroid.show(
+            'Kullanıcı adı veya şifre hatalı',
+            ToastAndroid.SHORT,
+          );
+          return;
+        }
         ToastAndroid.show(error.message, ToastAndroid.SHORT);
       } else {
         console.log('Bilinmeyen hata:', error);
@@ -226,6 +235,14 @@ function UserLogin() {
       if (password.length < 8) {
         ToastAndroid.show(
           'Lütfen en az 8 karakter içeren bir şifre giriniz',
+          ToastAndroid.SHORT,
+        );
+        return;
+      }
+
+      if (date > fiveYearsAgo) {
+        ToastAndroid.show(
+          'Lütfen geçerli bir tarih giriniz',
           ToastAndroid.SHORT,
         );
         return;
@@ -340,10 +357,10 @@ function UserLogin() {
         console.log('Message:', message);
 
         if (status === 500) message = 'Bu kullanıcı adı zaten alınmış';
+        if (status === 502) message = 'Bir hata oluştu';
         ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
       } else if (error instanceof Error) {
         console.log('Genel hata yakalandı:', error.message);
-
         ToastAndroid.show(error.message, ToastAndroid.SHORT);
       } else {
         console.log('Bilinmeyen hata:', error);

@@ -74,13 +74,26 @@ const Group = () => {
       user.username,
     );
     if (lastMessageResponse && lastMessageResponse.message) {
+      if (lastMessageResponse.message.startsWith('dailyStatus')) {
+        const match = lastMessageResponse.message.match(/dailyStatus(\d+)/);
+        const score = parseInt(match![1], 10);
+
+        lastMessageResponse.message =
+          '\n' +
+          new Date().toLocaleDateString() +
+          `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+      }
       setLastMessage(lastMessageResponse);
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-      if (user && user.role === 'ROLE_USER') fetchLastMessage();
+      console.log('dışarda');
+      if (user && user.role === 'ROLE_USER') {
+        console.log('içerde');
+        fetchLastMessage();
+      }
     }, [user, admin]),
   );
 

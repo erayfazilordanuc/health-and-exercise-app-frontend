@@ -74,7 +74,8 @@ const ExercisesUser = () => {
   const [showModal, setShowModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
-  const {data: activeDays, isLoading} = useExerciseSchedule();
+  const {data: activeDays, isLoading: isScheduleLoading} =
+    useExerciseSchedule();
   const [updatedActiveDays, setUpdatedActiveDays] = useState(activeDays);
   const [backupActiveDays, setBackupActiveDays] = useState(activeDays);
 
@@ -241,6 +242,12 @@ const ExercisesUser = () => {
       return () => backHandler.remove();
     }, []),
   );
+
+  const isScheduleModalVisible = () => {
+    if (!activeDays && !isScheduleLoading) return true;
+    if (activeDays && activeDays.length < 3) return true;
+    return showScheduleModal;
+  };
 
   return (
     <View className="flex-1">
@@ -503,7 +510,7 @@ const ExercisesUser = () => {
           </View>
         </View>
       </View>
-      {showScheduleModal && (
+      {isScheduleModalVisible() && (
         <View
           style={{
             position: 'absolute',
@@ -531,6 +538,13 @@ const ExercisesUser = () => {
               style={{color: colors.text.primary}}>
               Egzersiz Günleri
             </Text>
+            {!isScheduleLoading && !activeDays && (
+              <Text
+                className="font-rubik-semibold text-lg mb-4 text-center"
+                style={{color: colors.text.primary}}>
+                Egzersiz yapmak istediğiniz 3 gün seçiniz
+              </Text>
+            )}
             <View
               style={{
                 flexDirection: 'row',
@@ -585,6 +599,13 @@ const ExercisesUser = () => {
                   borderColor: colors.primary[125],
                 }}
                 onPress={async () => {
+                  if (!activeDays && !isScheduleLoading) {
+                    ToastAndroid.show(
+                      'Lütfen bir egzersiz düzeni seçiniz',
+                      ToastAndroid.SHORT,
+                    );
+                    return;
+                  }
                   setUpdatedActiveDays(backupActiveDays);
                   setShowScheduleModal(false);
                 }}>

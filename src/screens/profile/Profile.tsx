@@ -876,16 +876,12 @@ const Profile = () => {
                       if (isHealthConnectInstalled && isHealthConnectReady) {
                         const hc = await getSymptoms();
                         setHealthConnectSymptoms(hc);
-                        if (fresh) {
-                          const combined = combineSymptoms(hc!, fresh);
-                          if (!combined) return;
-                          setSymptoms(combined);
-                          if (
-                            JSON.stringify(fresh) === JSON.stringify(combined)
-                          )
-                            return;
-                          await saveSymptomsToday.mutateAsync(combined);
-                        }
+                        const combined = combineSymptoms(hc, fresh);
+                        if (!combined) return;
+                        setSymptoms(combined);
+                        if (JSON.stringify(fresh) === JSON.stringify(combined))
+                          return;
+                        await saveSymptomsToday.mutateAsync(combined);
                       } else {
                         const combined = combineSymptoms(fresh);
                         if (combined) {
