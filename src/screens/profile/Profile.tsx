@@ -158,7 +158,7 @@ const Profile = () => {
     return null;
   };
 
-  const combineAndSetSymptoms = async (
+  const combineSymptoms = (
     symptoms?: Symptoms | null,
     syncedSymptoms?: Symptoms | null,
     date?: Date,
@@ -214,8 +214,6 @@ const Profile = () => {
         setTotalSleepMinutes(0);
       }
 
-      setSymptoms(merged);
-
       return merged;
     } else if (!syncedSymptoms) {
       console.log('burada');
@@ -237,7 +235,8 @@ const Profile = () => {
       setHealthConnectSymptoms(hc);
 
       console.log('geldi be', symptomsQ.data);
-      const combined = await combineAndSetSymptoms(hc!, symptomsQ.data);
+      const combined = combineSymptoms(hc!, symptomsQ.data);
+      if (combined) setSymptoms(combined);
       console.log('combined', combined);
       if (combined && symptomsQ.data)
         await saveSymptomsToday.mutateAsync(combined);
@@ -250,36 +249,50 @@ const Profile = () => {
 
   const initOnceRef = useRef(false);
   const syncInFlightRef = useRef(false);
-
   const initializeSymptoms = async () => {
+    // 1) beklenmeyen durumlara erken çık
     if (initOnceRef.current) return;
     if (user?.role !== 'ROLE_USER') return;
     if (!(symptomsDate && isTodayLocal(symptomsDate))) return;
 
-    initOnceRef.current = true; // kilidi erkenden koy
+    // ✅ Sağlık uygulamaları check tamamlanmadan hiç başlama
+    if (hcStateLoading) return;
+
+    initOnceRef.current = true;
     try {
       if (syncInFlightRef.current) return;
       syncInFlightRef.current = true;
-      await syncSymptoms(); // içinde save çağrısı olabilir
+      await syncSymptoms();
     } finally {
       syncInFlightRef.current = false;
     }
   };
 
   useEffect(() => {
-    initializeSymptoms();
-    // kullanıcı veya gün değişirse yeniden izin ver
-    // (ör. farklı güne geçince tekrar sync isteyebilirsin)
-    // reset:
-    return () => {};
-  }, [user?.id, symptomsDate, hcStateLoading]);
+    // query bittiğinde ve bugün seçiliyken, init henüz yapılmadıysa bir kez dene
+    if (
+      !initOnceRef.current &&
+      !symptomsQ.isFetching &&
+      isTodayLocal(symptomsDate)
+    ) {
+      initializeSymptoms();
+    }
+  }, [symptomsQ.isFetching, symptomsDate]);
+
+  // useEffect(() => {
+  //   initializeSymptoms();
+  //   // kullanıcı veya gün değişirse yeniden izin ver
+  //   // (ör. farklı güne geçince tekrar sync isteyebilirsin)
+  //   // reset:
+  //   return () => {};
+  // }, [user?.id, symptomsQ.data, hcStateLoading]);
 
   // const initializeSymptoms = async () => {
   //   if (user?.role !== 'ROLE_USER') return;
   //   if (symptomsDate && isTodayLocal(symptomsDate) && !initialized) {
   //     console.log('bundand');
-  //     await syncSymptoms();
   //     setInitialized(true);
+  //     await syncSymptoms();
   //   }
   // };
 
@@ -293,7 +306,11 @@ const Profile = () => {
       await checkEssentialAppsStatus();
       await symptomsQ.refetch();
       const hc = await getSymptoms();
-      if (hc && symptoms) combineAndSetSymptoms(hc, symptoms);
+      if (hc && symptoms) {
+        const combined = combineSymptoms(hc, symptomsQ.data);
+        if (combined) setSymptoms(combined);
+      }
+
       // await syncSymptoms();
     } catch (e) {
       console.log(e);
@@ -829,15 +846,20 @@ const Profile = () => {
                     if (isTodayLocal(d)) {
                       const hc = await getSymptoms();
                       setHealthConnectSymptoms(hc);
-                      const combined = await combineAndSetSymptoms(hc!, fresh);
-                      if (combined && fresh)
+                      const combined = combineSymptoms(hc!, fresh);
+                      if (combined && fresh) {
+                        setSymptoms(combined);
+                        if (JSON.stringify(fresh) === JSON.stringify(combined))
+                          return;
                         await saveSymptomsToday.mutateAsync(combined);
+                      }
                     } else {
-                      await combineAndSetSymptoms(
+                      const combined = combineSymptoms(
                         fresh,
                         null,
                         atLocalMidnight(d),
                       );
+                      if (combined) setSymptoms(combined);
                     }
 
                     setShowDatePicker(false);
@@ -902,11 +924,11 @@ const Profile = () => {
                       if (isTodayLocal(d)) {
                         const hc = await getSymptoms();
                         setHealthConnectSymptoms(hc);
-                        const combined = await combineAndSetSymptoms(hc!, fresh);
+                        const combined = await combineSymptoms(hc!, fresh);
                         if (combined && fresh)
                           await saveSymptomsToday.mutateAsync(combined);
                       } else {
-                        await combineAndSetSymptoms(fresh);
+                        await combineSymptoms(fresh);
                       }
 
                       setShowDatePicker(false);
