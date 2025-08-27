@@ -58,7 +58,6 @@ import {
   getSymptoms,
   initializeHealthConnect,
 } from '../../lib/health/healthConnectService';
-import {getSymptomsByDate} from '../../api/symptoms/symptomsService';
 import {BlurView} from '@react-native-community/blur';
 import {
   useTodaysProgressOfflineFirst,
@@ -121,7 +120,7 @@ const Home = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchProgress();
+      if (user && user.role === 'ROLE_USER') fetchProgress();
     }, []),
   );
 

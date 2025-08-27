@@ -76,7 +76,8 @@ import {
 import NetInfo from '@react-native-community/netinfo';
 import {useQueryClient} from '@tanstack/react-query';
 import WeeklyStrip from '../../components/WeeklyStrip';
-import {isToday} from 'date-fns';
+import {isSameDay} from 'date-fns';
+import {atLocalMidnight, ymdLocal} from '../../utils/dates';
 
 const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -112,11 +113,13 @@ const Profile = () => {
 
   const saveSymptomsToday = useSaveSymptomsToday();
 
-  const today = new Date();
+  const today = atLocalMidnight(new Date());
   const [symptomsDate, setSymptomsDate] = useState(today);
   const symptomsQ = useSymptomsByDate(symptomsDate, {
     enabled: !!user && user.role === 'ROLE_USER',
   });
+
+  const isTodayLocal = (d: Date) => isSameDay(new Date(), d);
 
   const [symptoms, setSymptoms] = useState<Symptoms>();
 
@@ -158,7 +161,9 @@ const Profile = () => {
   const combineAndSetSymptoms = async (
     symptoms?: Symptoms | null,
     syncedSymptoms?: Symptoms | null,
+    date?: Date,
   ) => {
+    console.log('syncedds', symptoms, syncedSymptoms);
     if (symptoms) {
       const merged: Symptoms = {...symptoms};
       if (merged.pulse) {
@@ -166,6 +171,8 @@ const Profile = () => {
       } else if (syncedSymptoms && syncedSymptoms.pulse) {
         setHeartRate(syncedSymptoms.pulse);
         merged.pulse = syncedSymptoms.pulse;
+      } else if (date && !isTodayLocal(date)) {
+        setHeartRate(0);
       }
 
       if (merged.steps) {
@@ -173,6 +180,8 @@ const Profile = () => {
       } else if (syncedSymptoms && syncedSymptoms.steps) {
         setSteps(syncedSymptoms.steps);
         merged.steps = syncedSymptoms.steps;
+      } else if (date && !isTodayLocal(date)) {
+        setSteps(0);
       }
 
       if (merged.totalCaloriesBurned) {
@@ -181,6 +190,8 @@ const Profile = () => {
       } else if (syncedSymptoms && syncedSymptoms.totalCaloriesBurned) {
         setTotalCaloriesBurned(syncedSymptoms.totalCaloriesBurned);
         merged.totalCaloriesBurned = syncedSymptoms.totalCaloriesBurned;
+      } else if (date && !isTodayLocal(date)) {
+        setTotalCaloriesBurned(0);
       }
 
       if (merged.activeCaloriesBurned) {
@@ -189,6 +200,8 @@ const Profile = () => {
       } else if (syncedSymptoms && syncedSymptoms.activeCaloriesBurned) {
         setActiveCaloriesBurned(syncedSymptoms.activeCaloriesBurned);
         merged.activeCaloriesBurned = syncedSymptoms.activeCaloriesBurned;
+      } else if (date && !isTodayLocal(date)) {
+        setActiveCaloriesBurned(0);
       }
 
       if (merged.sleepMinutes) {
@@ -197,12 +210,15 @@ const Profile = () => {
       } else if (syncedSymptoms && syncedSymptoms.sleepMinutes) {
         setTotalSleepMinutes(syncedSymptoms.sleepMinutes);
         merged.sleepMinutes = syncedSymptoms.sleepMinutes;
+      } else if (date && !isTodayLocal(date)) {
+        setTotalSleepMinutes(0);
       }
 
       setSymptoms(merged);
 
       return merged;
     } else if (!syncedSymptoms) {
+      console.log('burada');
       setHeartRate(0);
       setSteps(0);
       setTotalCaloriesBurned(0);
@@ -232,25 +248,44 @@ const Profile = () => {
     }
   };
 
+  const initOnceRef = useRef(false);
+  const syncInFlightRef = useRef(false);
+
   const initializeSymptoms = async () => {
+    if (initOnceRef.current) return;
     if (user?.role !== 'ROLE_USER') return;
-    if (symptomsDate && isToday(symptomsDate) && !initialized) {
-      console.log('bundand');
-      await syncSymptoms();
-      setInitialized(true);
+    if (!(symptomsDate && isTodayLocal(symptomsDate))) return;
+
+    initOnceRef.current = true; // kilidi erkenden koy
+    try {
+      if (syncInFlightRef.current) return;
+      syncInFlightRef.current = true;
+      await syncSymptoms(); // içinde save çağrısı olabilir
+    } finally {
+      syncInFlightRef.current = false;
     }
   };
 
   useEffect(() => {
     initializeSymptoms();
-  }, [
-    user?.id,
-    symptomsQ.data,
-    hcStateLoading,
-    isHealthConnectInstalled,
-    isSamsungHInstalled,
-    isHealthConnectReady,
-  ]);
+    // kullanıcı veya gün değişirse yeniden izin ver
+    // (ör. farklı güne geçince tekrar sync isteyebilirsin)
+    // reset:
+    return () => {};
+  }, [user?.id, symptomsDate, hcStateLoading]);
+
+  // const initializeSymptoms = async () => {
+  //   if (user?.role !== 'ROLE_USER') return;
+  //   if (symptomsDate && isTodayLocal(symptomsDate) && !initialized) {
+  //     console.log('bundand');
+  //     await syncSymptoms();
+  //     setInitialized(true);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   initializeSymptoms();
+  // }, [user, symptomsQ.data, hcStateLoading]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -324,10 +359,16 @@ const Profile = () => {
     }
   };
 
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     checkEssentialAppsStatus();
+  //   }, [isHealthConnectInstalled, isSamsungHInstalled]),
+  // );
+
   useFocusEffect(
     useCallback(() => {
       checkEssentialAppsStatus();
-    }, [isHealthConnectInstalled, isSamsungHInstalled]),
+    }, []),
   );
 
   useFocusEffect(
@@ -652,7 +693,7 @@ const Profile = () => {
                   updateDisabled={
                     (healthConnectSymptoms?.pulse &&
                       healthConnectSymptoms?.pulse > 0) ||
-                    !isToday(symptomsDate)
+                    !isTodayLocal(symptomsDate)
                       ? true
                       : false
                   }
@@ -693,7 +734,7 @@ const Profile = () => {
                     updateDisabled={
                       (healthConnectSymptoms?.totalCaloriesBurned &&
                         healthConnectSymptoms?.totalCaloriesBurned > 0) ||
-                      !isToday(symptomsDate)
+                      !isTodayLocal(symptomsDate)
                         ? true
                         : false
                     }
@@ -711,7 +752,7 @@ const Profile = () => {
                       updateDisabled={
                         (healthConnectSymptoms?.activeCaloriesBurned &&
                           healthConnectSymptoms?.activeCaloriesBurned > 0) ||
-                        !isToday(symptomsDate)
+                        !isTodayLocal(symptomsDate)
                           ? true
                           : false
                       }
@@ -729,7 +770,7 @@ const Profile = () => {
                   updateDisabled={
                     (healthConnectSymptoms?.steps &&
                       healthConnectSymptoms?.steps > 0) ||
-                    !isToday(symptomsDate)
+                    !isTodayLocal(symptomsDate)
                       ? true
                       : false
                   }
@@ -745,7 +786,7 @@ const Profile = () => {
                   updateDisabled={
                     (healthConnectSymptoms?.sleepMinutes &&
                       healthConnectSymptoms?.sleepMinutes > 0) ||
-                    !isToday(symptomsDate)
+                    !isTodayLocal(symptomsDate)
                       ? true
                       : false
                   }
@@ -753,10 +794,12 @@ const Profile = () => {
 
                 <WeeklyStrip
                   selectedDate={symptomsDate}
-                  onSelect={async d => {
-                    setSymptomsDate(d);
-                    const dateStr = d.toISOString().slice(0, 10);
-                    d.setHours(12, 0, 0, 0);
+                  onSelect={async picked => {
+                    const d = new Date(picked); // clone
+
+                    // 2) Yerel gün anahtarını tek yerden üret
+                    const dayKey = ymdLocal(d);
+                    setSymptomsDate(atLocalMidnight(d));
                     // const fresh = await qc.fetchQuery<
                     //   Symptoms | null, // TQueryFnData
                     //   Error, // TError
@@ -773,25 +816,28 @@ const Profile = () => {
                     //     return remote ?? null;
                     //   },
                     // });
-                    let fresh = null;
-                    const local = await getLocal(d);
+                    let fresh: Symptoms | null = null;
+
+                    const local = await getLocal(dayKey); // <-- string key
                     if (local) fresh = local;
 
                     if (!fresh) {
-                      const remote = await getSymptomsByDate(d);
+                      const remote = await getSymptomsByDate(dayKey); // <-- string key
                       fresh = remote ?? null;
                     }
-
-                    console.log('fresh', fresh);
-                    console.log('isToday', isToday(d));
-                    if (isToday(d)) {
+                    console.log('is', isTodayLocal(d), dayKey);
+                    if (isTodayLocal(d)) {
                       const hc = await getSymptoms();
                       setHealthConnectSymptoms(hc);
                       const combined = await combineAndSetSymptoms(hc!, fresh);
                       if (combined && fresh)
                         await saveSymptomsToday.mutateAsync(combined);
                     } else {
-                      await combineAndSetSymptoms(fresh);
+                      await combineAndSetSymptoms(
+                        fresh,
+                        null,
+                        atLocalMidnight(d),
+                      );
                     }
 
                     setShowDatePicker(false);
@@ -852,8 +898,8 @@ const Profile = () => {
                         },
                       });
                       console.log('fresh', fresh);
-                      console.log('isToday', isToday(d));
-                      if (isToday(d)) {
+                      console.log('isTodayLocal', isTodayLocal(d));
+                      if (isTodayLocal(d)) {
                         const hc = await getSymptoms();
                         setHealthConnectSymptoms(hc);
                         const combined = await combineAndSetSymptoms(hc!, fresh);

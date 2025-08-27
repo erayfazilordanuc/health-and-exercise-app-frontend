@@ -76,7 +76,14 @@ const ExercisesUser = () => {
 
   const {data: activeDays, isLoading} = useExerciseSchedule();
   const [updatedActiveDays, setUpdatedActiveDays] = useState(activeDays);
-  // updatedActiveDays: number[] | undefined
+  const [backupActiveDays, setBackupActiveDays] = useState(activeDays);
+
+  useEffect(() => {
+    if (activeDays && activeDays.length) {
+      setUpdatedActiveDays(activeDays);
+      setBackupActiveDays(activeDays);
+    }
+  }, [activeDays]);
 
   const upsertMutation = useUpsertExerciseSchedule();
 
@@ -569,34 +576,66 @@ const ExercisesUser = () => {
               Seçili:{' '}
               {updatedActiveDays && updatedActiveDays.length ? updatedActiveDays.join(', ') : 'Yok'}
             </Text> */}
-            <TouchableOpacity
-              className="py-2 px-4 mt-4 border"
-              style={{
-                borderRadius: 17,
-                backgroundColor: colors.background.secondary,
-                borderColor: colors.primary[125],
-              }}
-              onPress={() => {
-                if (updatedActiveDays && updatedActiveDays.length !== 3)
-                  ToastAndroid.show('Lütfen 3 gün seçiniz', ToastAndroid.SHORT);
-                else {
-                  if (updatedActiveDays) {
-                    console.log('eeevet', updatedActiveDays);
-                    upsertMutation.mutate(updatedActiveDays);
-                  } else
+            <View className="flex flex-row items-center justify-center">
+              <TouchableOpacity
+                className="py-2 px-4 mt-4 border mr-2"
+                style={{
+                  borderRadius: 17,
+                  backgroundColor: colors.background.secondary,
+                  borderColor: colors.primary[125],
+                }}
+                onPress={async () => {
+                  setUpdatedActiveDays(backupActiveDays);
+                  setShowScheduleModal(false);
+                }}>
+                <Text
+                  className="font-rubik text-md text-center"
+                  style={{color: colors.text.secondary}}>
+                  İptal
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="py-2 px-4 mt-4 border ml-2"
+                style={{
+                  borderRadius: 17,
+                  backgroundColor: colors.background.secondary,
+                  borderColor: colors.primary[125],
+                }}
+                onPress={async () => {
+                  if (updatedActiveDays && updatedActiveDays.length !== 3)
                     ToastAndroid.show(
-                      'Lütfen bekleyip tekrar deneyiniz',
+                      'Lütfen 3 gün seçiniz',
                       ToastAndroid.SHORT,
                     );
-                  setShowScheduleModal(false);
-                }
-              }}>
-              <Text
-                className="font-rubik text-md text-center"
-                style={{color: colors.text.secondary}}>
-                Tamam
-              </Text>
-            </TouchableOpacity>
+                  else {
+                    if (updatedActiveDays) {
+                      const net = await NetInfo.fetch();
+                      const isOnline = !!net.isConnected;
+                      if (isOnline) {
+                        upsertMutation.mutate(updatedActiveDays);
+                        setBackupActiveDays(updatedActiveDays);
+                        setShowScheduleModal(false);
+                        return;
+                      } else
+                        ToastAndroid.show(
+                          'Bir hata oluştu, internet bağlantınızı kontrol edin',
+                          ToastAndroid.SHORT,
+                        );
+                    } else
+                      ToastAndroid.show(
+                        'Lütfen bekleyip tekrar deneyiniz',
+                        ToastAndroid.SHORT,
+                      );
+                    setUpdatedActiveDays(backupActiveDays);
+                  }
+                }}>
+                <Text
+                  className="font-rubik text-md text-center"
+                  style={{color: colors.text.secondary}}>
+                  Kaydet
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       )}
@@ -618,12 +657,13 @@ const ExercisesUser = () => {
               maxWidth: (width * 9) / 10, // ✅ tabletlerde taşmayı önler
               borderRadius: 17,
               backgroundColor: colors.background.primary,
-              padding: 20,
+
+              paddingVertical: 15,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
             <Text
-              className="font-rubik-semibold text-2xl mb-4 text-center"
+              className="font-rubik-semibold text-2xl mb-3 text-center"
               style={{color: colors.text.primary}}>
               Egzersiz Türü Seçimi
             </Text>
@@ -635,8 +675,10 @@ const ExercisesUser = () => {
             </Text>
             <View className="flex flex-row justify-between items-center">
               <TouchableOpacity
-                className="flex-1 py-3 mt-2 mr-1 border"
+                className="mt-2 mr-1 border"
                 style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 10,
                   borderRadius: 17,
                   backgroundColor: colors.primary[175],
                   borderColor: colors.primary[150],
@@ -649,8 +691,10 @@ const ExercisesUser = () => {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className="flex-1 py-3 mt-2 ml-2 border"
+                className="mt-2 ml-2 border"
                 style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 10,
                   borderRadius: 17,
                   backgroundColor: colors.primary[175],
                   borderColor: colors.primary[150],

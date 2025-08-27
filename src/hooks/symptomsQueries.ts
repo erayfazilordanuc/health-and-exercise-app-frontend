@@ -13,6 +13,7 @@ import {
   getSymptomsByDate,
 } from '../api/symptoms/symptomsService';
 import {saveSymptoms} from '../lib/health/healthConnectService';
+import {ymdLocal} from '../utils/dates';
 
 export type Symptoms = {
   id?: number;
@@ -42,9 +43,7 @@ export function useSaveSymptomsToday() {
   return useMutation({
     mutationFn: (symptoms: Symptoms) => saveSymptoms(symptoms),
     onSuccess: (data, variables) => {
-      const t = new Date();
-      t.setHours(12, 0, 0, 0); // 🔒 key'i lokal güne sabitle
-      const todayKey = ['symptoms', 'by-date', t.toISOString().slice(0, 10)];
+      const todayKey = ['symptoms', 'by-date', ymdLocal(new Date())];
       qc.setQueryData(todayKey, data ?? variables);
     },
   });
@@ -100,18 +99,16 @@ export function useSymptomsByDate(
   },
 ) {
   // 🔒 lokal günü sabitle (UTC kaymasını engelle)
-  const d = new Date(date);
-  d.setHours(12, 0, 0, 0);
-  const dateStr = d.toISOString().slice(0, 10);
+  const dateStr = date ? ymdLocal(date) : '';
 
   return useQuery<Symptoms | null, Error>({
     queryKey: ['symptoms', 'by-date', dateStr],
     enabled: !!date && (options?.enabled ?? true),
 
     queryFn: async (): Promise<Symptoms | null> => {
-      const local = await getLocal(d); // ← d kullan
+      const local = await getLocal(dateStr); // ← d kullan
       if (local) return local;
-      const synced = await getSymptomsByDate(d); // ← d kullan
+      const synced = await getSymptomsByDate(dateStr); // ← d kullan
       return synced ?? null;
     },
 

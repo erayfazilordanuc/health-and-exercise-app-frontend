@@ -59,7 +59,6 @@ const Group = () => {
     isLoading: isUsersLoading,
     refetch: refetchGroupUsers,
   } = useGroupUsers(groupId);
-  const [users, setUsers] = useState(members);
   const [admin, setAdmin] = useState<User | null>();
   const [groupSize, setGroupSize] = useState(0);
   const [isLeaveAlertVisible, setIsLeaveAlertVisible] = useState(false);
@@ -102,137 +101,46 @@ const Group = () => {
     }, []),
   );
 
-  useEffect(() => {
-    let isActive = true;
+  const fetchMembers = async () => {
+    if (members) {
+      console.log('mememebers', members);
+      const list: User[] = members;
+      setGroupSize(list.length);
 
-    const loadAll = async () => {
-      setLoading(true);
-      try {
-        if (!isActive || !user) return;
-
-        if (!groupId) return;
-        console.log('param', groupId);
-
-        if (members) {
-          const list: User[] = members;
-          setGroupSize(list.length);
-
-          // const sorted = [
-          //   ...list.filter(u => u.role === 'ROLE_ADMIN'),
-          //   ...list.filter(u => u.role !== 'ROLE_ADMIN'),
-          // ];
-          // setUsers(sorted);
-
-          // if (!admin && sorted.length > 0) {
-          //   const adminUser = sorted[0];
-          //   setAdmin(adminUser);
-
-          //   await fetchLastMessage();
-          // }
-
-          if (!admin && members.length > 0) {
-            const adminUser = members[0];
-            setAdmin(adminUser);
-
-            await fetchLastMessage();
-          }
-        }
-
-        // admin seç
-
-        if (user.role === 'ROLE_ADMIN' && !joinRequests) {
-          const groupRequests = await getGroupRequestsByGroupId(groupId);
-          if (groupRequests) {
-            setJoinRequests(groupRequests);
-          }
-        }
-
-        if (!group) {
-          const grpRes = await getGroupById(groupId);
-          if (!isActive || grpRes.status !== 200) return;
-          setGroup(grpRes.data);
-        }
-      } catch (e) {
-        console.error('Group screen load error', e);
+      if (!admin && members.length > 0) {
+        const adminUser = members[0];
+        setAdmin(adminUser);
       }
-      setLoading(false);
-    };
+    }
+  };
 
-    loadAll();
-    return () => {
-      isActive = false;
-    };
-  }, [user, members, groupId]);
+  useEffect(() => {
+    setLoading(true);
+    fetchMembers();
+    setLoading(false);
+  }, [members]);
 
-  // const fetchMembersAndSetAdmin = async (
-  //   groupId: number,
-  //   isActive: boolean,
-  // ) => {
-  //   const membersRes = await getUsersByGroupId(groupId);
-  //   if (!isActive || membersRes.status !== 200) return;
-  //   const list: User[] = Array.isArray(membersRes.data)
-  //     ? membersRes.data
-  //     : [membersRes.data];
-  //   setGroupSize(list.length);
-  //   const sorted = [
-  //     ...list.filter(u => u.role === 'ROLE_ADMIN'),
-  //     ...list.filter(u => u.role !== 'ROLE_ADMIN'),
-  //   ];
-  //   setUsers(sorted);
+  const fetchRequests = async (user: User) => {
+    const groupRequests = await getGroupRequestsByGroupId(groupId);
+    if (groupRequests) {
+      setJoinRequests(groupRequests);
+    }
+  };
 
-  //   if (!admin) {
-  //     const adminUser: User = sorted[0];
-  //     setAdmin(adminUser);
-  //     return adminUser;
-  //   }
+  useEffect(() => {
+    if (user && user.role === 'ROLE_ADMIN' && !joinRequests)
+      fetchRequests(user);
+  }, [user]);
 
-  //   return admin;
-  // };
+  const fetchGroup = async () => {
+    const grpRes = await getGroupById(groupId);
+    if (grpRes.status !== 200) return;
+    setGroup(grpRes.data);
+  };
 
-  // useEffect(() => {
-  //   let isActive = true;
-
-  //   const loadAll = async () => {
-  //     setLoading(true);
-  //     try {
-  //       // 1. user’ı çek
-  //       const u = await getUser();
-  //       if (!isActive) return;
-  //       setUser(u);
-
-  //       if (!groupId) return;
-  //       console.log('param', groupId);
-
-  //       // 2. grup bilgisini çek
-  //       const grpRes = await getGroupById(groupId);
-  //       if (!isActive || grpRes.status !== 200) return;
-  //       setGroup(grpRes.data);
-
-  //       // 3. üye listesini çek
-  //       const adminUser = await fetchMembersAndSetAdmin(groupId, isActive);
-
-  //       // 4. admin’i ayıkla
-
-  //       if (adminUser) fetchLastMessage(u, adminUser);
-
-  //       if (u.role === 'ROLE_ADMIN') {
-  //         const groupRequests = await getGroupRequestsByGroupId(groupId);
-  //         if (groupRequests) {
-  //           setJoinRequests(groupRequests);
-  //         }
-  //       }
-  //     } catch (e) {
-  //       console.error('Group screen load error', e);
-  //     }
-  //     setLoading(false);
-  //   };
-
-  //   loadAll();
-
-  //   return () => {
-  //     isActive = false;
-  //   };
-  // }, [groupId]);
+  useEffect(() => {
+    if (!group) fetchGroup();
+  }, [groupId]);
 
   const onLeaveGroup = async () => {
     ToastAndroid.show(
@@ -265,14 +173,6 @@ const Group = () => {
 
     if (groupId) {
       await refetchGroupUsers();
-      // await qc.invalidateQueries({
-      //   queryKey: GROUP_KEYS.usersByGroupId(groupId as number),
-      //   refetchType: 'active',
-      // });
-      // await qc.refetchQueries({
-      //   queryKey: GROUP_KEYS.usersByGroupId(groupId as number),
-      //   type: 'active',
-      // });
     }
   };
 
@@ -638,8 +538,8 @@ const Group = () => {
           </View>
 
           <View className="mt-2">
-            {users &&
-              users.map((user: User) => (
+            {members &&
+              members.map((user: User) => (
                 <View key={user.id?.toString() ?? user.username}>
                   {renderItem({item: user})}
                 </View>
@@ -689,8 +589,8 @@ const Group = () => {
           )} */}
 
           {/* {!loading &&
-            users &&
-            users.length === 0 &&
+            members &&
+            members.length === 0 &&
             user &&
             user.role === 'ROLE_ADMIN' && (
               <TouchableOpacity

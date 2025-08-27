@@ -2,11 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 import {getUser} from '../user/userService';
 import NetInfo from '@react-native-community/netinfo';
+import {ymdLocal} from '../../utils/dates';
 
-const todayStart = () => new Date().setHours(0, 0, 0, 0);
-const todayEnd = () => new Date().setHours(23, 59, 59, 999);
 const keyPrefix = 'symptoms_';
-const todayStr = () => new Date().toISOString().slice(0, 10);
+const todayStr = () => ymdLocal(new Date());
 const todayKey = () => keyPrefix + todayStr();
 
 export const getSymptomsById = async (id: number) => {
@@ -62,19 +61,15 @@ export const getAllSymptoms = async () => {
 // };
 
 // Localde haftalık saklanabilir
-export const getLocal = async (date: Date) => {
-  console.log('the local key', keyPrefix + date.toISOString().slice(0, 10));
-  const localJson = await AsyncStorage.getItem(
-    keyPrefix + date.toISOString().slice(0, 10),
-  );
+export const getLocal = async (dateStr: string) => {
+  const localJson = await AsyncStorage.getItem(keyPrefix + dateStr);
   console.log('localJson', localJson);
   if (localJson)
     return (JSON.parse(localJson) as LocalSymptoms).symptoms as Symptoms;
   return null;
 };
 
-export const getSymptomsByDate = async (date: Date) => {
-  const dateStr = date.toISOString().slice(0, 10);
+export const getSymptomsByDate = async (dateStr: string) => {
   try {
     const net = await NetInfo.fetch();
     const isOnline = !!net.isConnected;
@@ -98,7 +93,8 @@ export const getSymptomsByDate = async (date: Date) => {
 export const upsertSymptomsById = async (id: number) => {};
 
 export const upsertSymptomsByDate = async (date: Date, symptoms: Symptoms) => {
-  const dateVariable = date.toISOString().slice(0, 10);
+  const dateVariable = ymdLocal(date);
+  console.log(dateVariable);
   const upsertDTO: UpdateSymptomsDTO = {
     pulse: symptoms.pulse,
     steps: symptoms.steps,

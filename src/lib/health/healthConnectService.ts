@@ -13,6 +13,7 @@ import {Alert, Linking, Platform, ToastAndroid} from 'react-native';
 import Toast from 'react-native-toast-message';
 import DeviceInfo from 'react-native-device-info';
 import {getInstalledApps} from 'react-native-get-app-list';
+import {ymdLocal} from '../../utils/dates';
 
 // export const isHealthConnectInstalled = async (): Promise<boolean> => {
 //   if (Platform.OS !== 'android') return false;
@@ -71,7 +72,7 @@ export const checkHealthConnectAvailable = async (): Promise<boolean> => {
 const todayStart = () => new Date().setHours(0, 0, 0, 0);
 const todayEnd = () => new Date().setHours(23, 59, 59, 999);
 const keyPrefix = 'symptoms_';
-const todayStr = () => new Date().toISOString().slice(0, 10);
+const todayStr = () => ymdLocal(new Date());
 const todayKey = () => keyPrefix + todayStr();
 
 let isInitialized = false;
@@ -105,7 +106,6 @@ export const initializeHealthConnect = async () => {
   const granted = await requestPermission(
     allRecordTypes.map(rt => ({accessType: 'read', recordType: rt})),
   );
-
 
   return granted.length === allRecordTypes.length;
 };
@@ -174,6 +174,7 @@ export const getHeartRate = async () => {
 };
 
 export const getSteps = async () => {
+  console.log('consoleee', todayEnd(), todayStart());
   const result: any = await readSampleData('Steps');
 
   if (!result.records) return -1;

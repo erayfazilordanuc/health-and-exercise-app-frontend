@@ -39,6 +39,7 @@ import {
 import {getLatestConsent} from '../../../api/consent/consentService';
 import {ConsentPurpose} from '../../../types/enums';
 import {getMySessions} from '../../../api/session/sessionService';
+import {ymdLocal} from '../../../utils/dates';
 
 const Development = () => {
   const insets = useSafeAreaInsets();
@@ -349,7 +350,7 @@ const Development = () => {
 
   const testGetAllSymptomsByDate = async () => {
     try {
-      const symptomsResponse = await getSymptomsByDate(today);
+      const symptomsResponse = await getSymptomsByDate(ymdLocal(today));
 
       const symptomsData = JSON.stringify(symptomsResponse, null, 2);
       console.log('symptomsData', symptomsData);
