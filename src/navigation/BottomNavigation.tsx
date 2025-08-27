@@ -684,10 +684,10 @@ export function BottomNavigator() {
 
         // Tasarım korunuyor, sabit height yok, dinamik minHeight + padding var
         tabBarStyle: {
-          minHeight: 56 + Math.max(insets.bottom, 0),
+          minHeight: 50 + Math.max(insets.bottom, 0),
           height: undefined,
-          paddingTop: 9,
-          paddingBottom: Math.max(insets.bottom, 8),
+          paddingTop: 11,
+          paddingBottom: Math.max(insets.bottom, 11),
 
           // mevcut görünümü koru
           marginHorizontal: width / 24,

@@ -1245,7 +1245,7 @@ const Profile = () => {
                   {isHealthConnectInstalled && (
                     <Image
                       source={icons.check}
-                      className="size-5 ml-3"
+                      className="size-5 ml-2"
                       tintColor={colors.text.primary}
                     />
                   )}
@@ -1276,7 +1276,7 @@ const Profile = () => {
                   {isSamsungHInstalled && (
                     <Image
                       source={icons.check}
-                      className="size-5 ml-3"
+                      className="size-5 ml-2"
                       tintColor={colors.text.primary}
                     />
                   )}

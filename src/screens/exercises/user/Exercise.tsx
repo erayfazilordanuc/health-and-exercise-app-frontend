@@ -115,13 +115,13 @@ const Exercise = () => {
     width: number,
     insetsBottom: number,
   ) => ({
-    minHeight: 56 + Math.max(insetsBottom, 0),
+    minHeight: 50 + Math.max(insetsBottom, 0),
     height: undefined,
-    paddingTop: 9,
-    paddingBottom: Math.max(insetsBottom, 8),
+    paddingTop: 11,
+    paddingBottom: Math.max(insetsBottom, 11),
 
     // mevcut görünümü koru
-    marginHorizontal: portraitWidth / 24,
+    marginHorizontal: width / 24,
     position: 'absolute',
     bottom: 15,
     left: 15,
@@ -178,8 +178,18 @@ const Exercise = () => {
   useFocusEffect(
     useCallback(() => {
       // ekrana girince
+      const {height, width} = Dimensions.get('window');
+      const isPortrait = height >= width;
+      if (!isPortrait) {
+        Orientation.lockToPortrait();
+        StatusBar.setHidden(true, 'fade');
+
+        const portraitInsts = useSafeAreaInsets();
+        setPortraitInsets(portraitInsts);
+        setPortraitWidth(width);
+      }
+
       Orientation.unlockAllOrientations();
-      StatusBar.setHidden(true, 'fade');
 
       return () => {
         // ekrandan çıkarken (blur) her zaman geri aç
