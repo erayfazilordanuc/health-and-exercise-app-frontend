@@ -261,7 +261,7 @@ const Profile = () => {
     // 1) beklenmeyen durumlara erken çık
     if (initOnceRef.current) return;
 
-    if (user?.role !== 'ROLE_USER') return;
+    if (!user || user.role !== 'ROLE_USER') return;
 
     if (!(symptomsDate && isTodayLocal(symptomsDate))) return;
 
@@ -413,8 +413,8 @@ const Profile = () => {
 
   useFocusEffect(
     useCallback(() => {
-      checkEssentialAppsStatus();
-    }, []),
+      if (user && user.role === 'ROLE_USER') checkEssentialAppsStatus();
+    }, [user]),
   );
 
   useFocusEffect(

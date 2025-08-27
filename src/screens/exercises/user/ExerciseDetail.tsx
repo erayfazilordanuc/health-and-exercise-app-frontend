@@ -34,6 +34,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../../../contexts/UserContext';
 import Orientation from 'react-native-orientation-locker';
 import {calcPercent} from '../../../api/exercise/exerciseService';
+import {Theme} from '../../../themes/themes';
 
 type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'ExerciseDetail'>;
 const ExerciseDetail = () => {
@@ -181,30 +182,50 @@ const ExerciseDetail = () => {
     };
   }, []);
 
-  const defaultTabBarStyle = {
-    marginHorizontal: width / 24,
-    position: 'absolute',
-    bottom: 15,
-    left: 15,
-    right: 15,
-    height: 56,
-    borderRadius: 40,
-    borderWidth: 1,
-    borderTopWidth: 0.9,
-    borderColor:
-      theme.name === 'Light' ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
-    backgroundColor:
-      theme.name === 'Light' ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
-    elevation: 0,
-  };
+  // const makeTabBarStyle = (theme: Theme, width: number) => ({
+  //   // marginHorizontal: width / 24,
+  //   // position: 'absolute',
+  //   // bottom: 15,
+  //   // left: 15,
+  //   // right: 15,
+  //   // height: 56,
+  //   // borderRadius: 40,
+  //   // borderWidth: 1,
+  //   // borderTopWidth: 0.9,
+  //   // borderColor:
+  //   //   theme.name === 'Light' ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
+  //   // backgroundColor:
+  //   //   theme.name === 'Light' ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
+  //   // elevation: 0,
+  //   // display: 'flex',
+  //   minHeight: 56 + Math.max(insets.bottom, 0),
+  //   height: undefined,
+  //   paddingTop: 6,
+  //   paddingBottom: Math.max(insets.bottom, 8),
 
-  useLayoutEffect(() => {
-    const parentNav = navigation.getParent();
-    return () =>
-      parentNav?.setOptions({
-        tabBarStyle: defaultTabBarStyle,
-      });
-  }, [navigation]);
+  //   // mevcut görünümü koru
+  //   marginHorizontal: width / 24,
+  //   position: 'absolute',
+  //   bottom: 15,
+  //   left: 15,
+  //   right: 15,
+  //   borderRadius: 40,
+  //   borderWidth: 1,
+  //   borderTopWidth: 0.9,
+  //   borderColor:
+  //     theme.name === 'Light' ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
+  //   backgroundColor:
+  //     theme.name === 'Light' ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
+  //   elevation: 0,
+  // });
+
+  // useLayoutEffect(() => {
+  //   const parentNav = navigation.getParent();
+  //   return () =>
+  //     parentNav?.setOptions({
+  //       tabBarStyle: makeTabBarStyle(theme, width),
+  //     });
+  // }, [navigation]);
 
   return (
     <>

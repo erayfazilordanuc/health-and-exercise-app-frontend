@@ -293,9 +293,6 @@ const Member = () => {
     return `${minutes} dk`;
   }
 
-  const toLocalDate = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
   return (
     <View style={{paddingTop: insets.top * 1.3}} className="flex-1 px-3">
       <LinearGradient

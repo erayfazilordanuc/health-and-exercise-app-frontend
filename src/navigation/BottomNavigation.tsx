@@ -53,6 +53,7 @@ import ExerciseDetail from '../screens/exercises/user/ExerciseDetail';
 import Exercise from '../screens/exercises/user/Exercise';
 import DeviceInfo from 'react-native-device-info';
 import sessionManager from '../session/sessionManager';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 
@@ -325,7 +326,7 @@ function GroupsStack() {
         <GroupsNativeStack.Screen
           name="Group"
           component={Group}
-          initialParams={{groupId: user && user.groupId ? user.groupId : null}}
+          initialParams={{groupId: user!.groupId}} // ALERT sıkıntı çıkartabilir ama çok düşük ihtimal
           options={{
             headerShown: false,
             header: () => (
@@ -628,6 +629,7 @@ export default function CustomTabButton({
 }
 
 export function BottomNavigator() {
+  const insets = useSafeAreaInsets();
   const {theme, colors, setTheme} = useTheme();
   const {width} = Dimensions.get('screen');
   const {user} = useUser();
@@ -652,20 +654,47 @@ export function BottomNavigator() {
       key={theme.name}
       screenOptions={{
         tabBarShowLabel: false,
+        // // tabBarStyle: {
+        // //   backgroundColor: colors.background.primary,
+        // //   borderColor: colors.background.primary,
+        // //   position: 'absolute',
+        // //   minHeight: 60,
+        // //   borderTopWidth: 0,
+        // // },
         // tabBarStyle: {
-        //   backgroundColor: colors.background.primary,
-        //   borderColor: colors.background.primary,
+        //   marginHorizontal: width / 24,
         //   position: 'absolute',
-        //   minHeight: 60,
-        //   borderTopWidth: 0,
+        //   bottom: 15,
+        //   left: 15,
+        //   right: 15,
+        //   // height: 56,
+        //   borderRadius: 40,
+        //   borderWidth: 1,
+        //   borderTopWidth: 0.9,
+        //   borderColor:
+        //     theme.name === 'Light'
+        //       ? 'rgba(0,0,0,0.09)'
+        //       : 'rgba(150,150,150,0.09)',
+        //   backgroundColor:
+        //     theme.name === 'Light'
+        //       ? 'rgba(255,255,255,0.95)'
+        //       : 'rgba(25,25,25,0.95)',
+        //   elevation: 0,
         // },
+
+        // Tasarım korunuyor, sabit height yok, dinamik minHeight + padding var
         tabBarStyle: {
+          minHeight: 56 + Math.max(insets.bottom, 0),
+          height: undefined,
+          paddingTop: 9,
+          paddingBottom: Math.max(insets.bottom, 8),
+
+          // mevcut görünümü koru
           marginHorizontal: width / 24,
           position: 'absolute',
           bottom: 15,
           left: 15,
           right: 15,
-          height: 56,
           borderRadius: 40,
           borderWidth: 1,
           borderTopWidth: 0.9,
@@ -678,6 +707,18 @@ export function BottomNavigator() {
               ? 'rgba(255,255,255,0.95)'
               : 'rgba(25,25,25,0.95)',
           elevation: 0,
+        },
+
+        // item yüksekliğini serbest bırak; margin yerine padding kullan
+        tabBarItemStyle: {
+          height: 'auto',
+          paddingVertical: 0,
+        },
+
+        // ÖNEMLİ: İkonları saran container ortalansın; margin hilesi yok
+        tabBarIconStyle: {
+          margin: 0,
+          padding: 0,
         },
         tabBarHideOnKeyboard: true,
         tabBarButton: props => <CustomTabButton {...props} />,
