@@ -230,16 +230,24 @@ const Profile = () => {
   const syncSymptoms = async () => {
     setLoading(true);
     try {
-      const hc = await getSymptoms();
-      console.log('hc', hc);
-      setHealthConnectSymptoms(hc);
+      if (isHealthConnectInstalled && isHealthConnectReady) {
+        const hc = await getSymptoms();
+        console.log('hc', hc);
+        setHealthConnectSymptoms(hc);
 
-      console.log('geldi be', symptomsQ.data);
-      const combined = combineSymptoms(hc!, symptomsQ.data);
-      if (combined) setSymptoms(combined);
-      console.log('combined', combined);
-      if (combined && symptomsQ.data)
-        await saveSymptomsToday.mutateAsync(combined);
+        console.log('geldi be', symptomsQ.data);
+        const combined = combineSymptoms(hc!, symptomsQ.data);
+        if (combined) setSymptoms(combined);
+        console.log('combined', combined);
+        if (combined && symptomsQ.data)
+          await saveSymptomsToday.mutateAsync(combined);
+      } else {
+        const combined = combineSymptoms(symptomsQ.data);
+        if (combined) {
+          setSymptoms(combined);
+          await saveSymptomsToday.mutateAsync(combined);
+        }
+      }
     } catch (error) {
       console.log(error);
     } finally {
@@ -321,9 +329,14 @@ const Profile = () => {
     try {
       await checkEssentialAppsStatus();
       await symptomsQ.refetch();
-      const hc = await getSymptoms();
-      if (hc && symptoms) {
-        const combined = combineSymptoms(hc, symptomsQ.data);
+      if (isHealthConnectInstalled && isHealthConnectReady) {
+        const hc = await getSymptoms();
+        if (hc && symptoms) {
+          const combined = combineSymptoms(hc, symptomsQ.data);
+          if (combined) setSymptoms(combined);
+        }
+      } else {
+        const combined = combineSymptoms(symptomsQ.data);
         if (combined) setSymptoms(combined);
       }
 
@@ -860,14 +873,29 @@ const Profile = () => {
                     }
                     console.log('is', isTodayLocal(d), dayKey);
                     if (isTodayLocal(d)) {
-                      const hc = await getSymptoms();
-                      setHealthConnectSymptoms(hc);
-                      const combined = combineSymptoms(hc!, fresh);
-                      if (combined && fresh) {
-                        setSymptoms(combined);
-                        if (JSON.stringify(fresh) === JSON.stringify(combined))
-                          return;
-                        await saveSymptomsToday.mutateAsync(combined);
+                      if (isHealthConnectInstalled && isHealthConnectReady) {
+                        const hc = await getSymptoms();
+                        setHealthConnectSymptoms(hc);
+                        if (fresh) {
+                          const combined = combineSymptoms(hc!, fresh);
+                          if (!combined) return;
+                          setSymptoms(combined);
+                          if (
+                            JSON.stringify(fresh) === JSON.stringify(combined)
+                          )
+                            return;
+                          await saveSymptomsToday.mutateAsync(combined);
+                        }
+                      } else {
+                        const combined = combineSymptoms(fresh);
+                        if (combined) {
+                          setSymptoms(combined);
+                          if (
+                            JSON.stringify(fresh) === JSON.stringify(combined)
+                          )
+                            return;
+                          await saveSymptomsToday.mutateAsync(combined);
+                        }
                       }
                     } else {
                       const combined = combineSymptoms(
