@@ -119,19 +119,19 @@ const ExercisesUser = () => {
 
       // if (!isEqual(weeklyExerciseProgressRes, weeklyExerciseProgress))
       setWeeklyExersiseProgress(weeklyExerciseProgressRes);
+      if (!initialized) setInitialized(true);
     } catch (error) {
       console.log(error);
       ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
     } finally {
       setLoading(false);
-      if (!initialized) setInitialized(true);
     }
   };
 
   useFocusEffect(
     useCallback(() => {
       fetchProgress();
-    }, []),
+    }, [updatedActiveDays]),
   );
 
   const onStartExercise = async (position: ExercisePosition) => {

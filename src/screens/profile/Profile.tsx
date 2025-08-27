@@ -252,7 +252,9 @@ const Profile = () => {
   const initializeSymptoms = async () => {
     // 1) beklenmeyen durumlara erken çık
     if (initOnceRef.current) return;
+
     if (user?.role !== 'ROLE_USER') return;
+
     if (!(symptomsDate && isTodayLocal(symptomsDate))) return;
 
     // ✅ Sağlık uygulamaları check tamamlanmadan hiç başlama
@@ -261,8 +263,22 @@ const Profile = () => {
     initOnceRef.current = true;
     try {
       if (syncInFlightRef.current) return;
+      console.log(
+        initOnceRef.current,
+        user,
+        symptomsDate,
+        hcStateLoading,
+        syncInFlightRef.current,
+      );
       syncInFlightRef.current = true;
       await syncSymptoms();
+      console.log(
+        initOnceRef.current,
+        user,
+        symptomsDate,
+        hcStateLoading,
+        syncInFlightRef.current,
+      );
     } finally {
       syncInFlightRef.current = false;
     }
@@ -277,7 +293,7 @@ const Profile = () => {
     ) {
       initializeSymptoms();
     }
-  }, [symptomsQ.isFetching, symptomsDate]);
+  }, [user, symptomsQ.data, symptomsDate, hcStateLoading]);
 
   // useEffect(() => {
   //   initializeSymptoms();
