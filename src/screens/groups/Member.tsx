@@ -60,6 +60,10 @@ import {useUserSessions} from '../../hooks/sessionQueries';
 import {subDays} from 'date-fns';
 import {SessionList} from '../../components/SessionList';
 import WeeklyStrip from '../../components/WeeklyStrip';
+import {
+  useExerciseSchedule,
+  useExerciseScheduleAdmin,
+} from '../../hooks/exerciseQueries';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -75,6 +79,12 @@ const Member = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [lastMessage, setLastMessage] = useState<Message | null>();
   const [accessAuthorized, setAccessAuthorized] = useState(true);
+
+  const {
+    data: activeDays,
+    isLoading: isScheduleLoading,
+    error: scheduleError,
+  } = useExerciseScheduleAdmin(memberId, {enabled: !!memberId});
 
   const scrollRef = useRef<ScrollView>(null);
   const [symptomsSectionY, setSymptomsSectionY] = useState(0);
@@ -531,7 +541,7 @@ const Member = () => {
             </View>
           ) : (
             <>
-              {weeklyExerciseProgress && (
+              {weeklyExerciseProgress && activeDays && (
                 <View
                   className="flex flex-col px-3 py-3 mb-3"
                   style={{
@@ -560,9 +570,9 @@ const Member = () => {
                   </View>
                   <CustomWeeklyProgressCalendar
                     weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
-                    activeDays={[1, 2, 3]}
+                    activeDays={activeDays}
                   />
-                  <View className="flex flex-row items-center justify-between ml-2">
+                  <View className="flex flex-row items-center justify-start ml-2 mt-3">
                     <View className="flex-col items-start space-x-2 mr-3">
                       <View className="flex flex-row items-center space-x-2">
                         <View

@@ -1,4 +1,10 @@
-import {useQuery, QueryClient, queryOptions} from '@tanstack/react-query';
+import {
+  useQuery,
+  QueryClient,
+  queryOptions,
+  UseQueryOptions,
+  keepPreviousData,
+} from '@tanstack/react-query';
 import type {AxiosError} from 'axios';
 import apiClient from '../api/axios/axios';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
@@ -55,7 +61,7 @@ export const useAllExercises = () =>
 export const invalidateAllExercises = (qc: QueryClient) =>
   qc.invalidateQueries({queryKey: EX_ALL_QK});
 
-async function fetchExerciseSchedule(): Promise<number[]> {
+async function fetchMyExerciseSchedule(): Promise<number[]> {
   const {data} = await apiClient.get<number[]>('/exercises/schedule');
   return data;
 }
@@ -73,7 +79,7 @@ async function upsertSchedule(activeDays: number[]): Promise<number[]> {
 export function useExerciseSchedule() {
   return useQuery({
     queryKey: ['exerciseSchedule'],
-    queryFn: fetchExerciseSchedule,
+    queryFn: fetchMyExerciseSchedule,
     staleTime: 1000 * 60 * 60 * 12, // 12 saat
     gcTime: 1000 * 60 * 60 * 24, // 24 saat cache'te tut
     refetchOnWindowFocus: false,
@@ -91,5 +97,51 @@ export function useUpsertExerciseSchedule() {
     onSuccess: () => {
       qc.invalidateQueries({queryKey: ['exerciseSchedule']});
     },
+  });
+}
+
+const scheduleQueryKey = (userId?: number) =>
+  ['exerciseScheduleAdmin', userId] as const;
+
+async function fetchExerciseScheduleAdmin(userId: number): Promise<number[]> {
+  const {data} = await apiClient.get<number[]>('/exercises/schedule', {
+    params: {userId},
+  });
+  return data;
+}
+
+// queryKey ve queryFn dışındaki opsiyonlara izin verelim
+type UseExerciseScheduleAdminOptions = Omit<
+  UseQueryOptions<
+    number[],
+    AxiosError,
+    number[],
+    ReturnType<typeof scheduleQueryKey>
+  >,
+  'queryKey' | 'queryFn'
+>;
+
+export function useExerciseScheduleAdmin(
+  userId?: number,
+  options?: UseExerciseScheduleAdminOptions,
+) {
+  const enabled = typeof userId === 'number' && (options?.enabled ?? true);
+
+  return useQuery<
+    number[],
+    AxiosError,
+    number[],
+    ReturnType<typeof scheduleQueryKey>
+  >({
+    queryKey: scheduleQueryKey(userId),
+    queryFn: () => fetchExerciseScheduleAdmin(userId!), // enabled true iken güvenli
+    enabled,
+    staleTime: 1000 * 60 * 60 * 12,
+    gcTime: 1000 * 60 * 60 * 24,
+    placeholderData: keepPreviousData, // 🔑 v5’te bununla önceki data korunur
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: 1,
+    ...options,
   });
 }
