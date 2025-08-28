@@ -171,7 +171,8 @@ const Profile = () => {
       } else if (syncedSymptoms && syncedSymptoms.pulse) {
         setHeartRate(syncedSymptoms.pulse);
         merged.pulse = syncedSymptoms.pulse;
-      } else if (date && !isTodayLocal(date)) {
+      } else {
+        // if (date && !isTodayLocal(date))
         setHeartRate(0);
       }
 
@@ -180,7 +181,7 @@ const Profile = () => {
       } else if (syncedSymptoms && syncedSymptoms.steps) {
         setSteps(syncedSymptoms.steps);
         merged.steps = syncedSymptoms.steps;
-      } else if (date && !isTodayLocal(date)) {
+      } else {
         setSteps(0);
       }
 
@@ -190,7 +191,7 @@ const Profile = () => {
       } else if (syncedSymptoms && syncedSymptoms.totalCaloriesBurned) {
         setTotalCaloriesBurned(syncedSymptoms.totalCaloriesBurned);
         merged.totalCaloriesBurned = syncedSymptoms.totalCaloriesBurned;
-      } else if (date && !isTodayLocal(date)) {
+      } else {
         setTotalCaloriesBurned(0);
       }
 
@@ -200,7 +201,7 @@ const Profile = () => {
       } else if (syncedSymptoms && syncedSymptoms.activeCaloriesBurned) {
         setActiveCaloriesBurned(syncedSymptoms.activeCaloriesBurned);
         merged.activeCaloriesBurned = syncedSymptoms.activeCaloriesBurned;
-      } else if (date && !isTodayLocal(date)) {
+      } else {
         setActiveCaloriesBurned(0);
       }
 
@@ -210,7 +211,8 @@ const Profile = () => {
       } else if (syncedSymptoms && syncedSymptoms.sleepMinutes) {
         setTotalSleepMinutes(syncedSymptoms.sleepMinutes);
         merged.sleepMinutes = syncedSymptoms.sleepMinutes;
-      } else if (date && !isTodayLocal(date)) {
+      } else {
+        // if (date && !isTodayLocal(date))
         setTotalSleepMinutes(0);
       }
 
@@ -894,6 +896,13 @@ const Profile = () => {
                         }
                       }
                     } else {
+                      const net = await NetInfo.fetch();
+                      const isOnline = !!net.isConnected;
+                      if (!isOnline)
+                        ToastAndroid.show(
+                          'İnternet bağlantısı yok, veriler yüklenemedi',
+                          ToastAndroid.SHORT,
+                        );
                       const combined = combineSymptoms(
                         fresh,
                         null,
