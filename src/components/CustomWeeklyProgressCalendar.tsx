@@ -198,7 +198,7 @@ const CustomWeeklyProgressCalendar = ({
                     <AnimatedCircularProgress
                       size={37}
                       width={2}
-                      fill={percent ?? todayPercent ?? 0}
+                      fill={todayPercent ?? 0}
                       tintColor={bgColor}
                       backgroundColor={colors.background.secondary}
                       rotation={0}
@@ -208,7 +208,7 @@ const CustomWeeklyProgressCalendar = ({
                         <Text
                           className="text-xs font-rubik"
                           style={{color: colors.text.primary}}>
-                          %{percent ?? todayPercent ?? 0}
+                          %{todayPercent ?? 0}
                         </Text>
                       )}
                     </AnimatedCircularProgress>

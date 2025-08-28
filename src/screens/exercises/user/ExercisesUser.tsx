@@ -455,12 +455,12 @@ const ExercisesUser = () => {
           </View>
           {weeklyExerciseProgress && (
             <CustomWeeklyProgressCalendar
-              todayPercent={calcPercent(todayExerciseProgress)}
+              todayPercent={todayPercent}
               weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
               activeDays={updatedActiveDays ?? []}
             />
           )}
-          <View className="flex flex-row items-center justify-between mt-2">
+          <View className="flex flex-row items-center justify-between mt-3">
             <View className="flex flex-row items-center justify-between ml-2">
               <View className="flex-col items-start space-x-2 mr-3">
                 <View className="flex flex-row items-center space-x-2">
@@ -514,7 +514,7 @@ const ExercisesUser = () => {
               </View>
             </View>
             <TouchableOpacity
-              className="self-end mt-2 py-2 px-3"
+              className="self-end py-2 px-3"
               style={{
                 backgroundColor: colors.background.secondary,
                 borderRadius: 14,

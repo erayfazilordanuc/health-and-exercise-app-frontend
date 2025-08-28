@@ -67,6 +67,7 @@ import {useIsFocused} from '@react-navigation/native';
 import {getRoomIdByUsers, MSG_KEYS} from '../../hooks/messageQueries';
 import {useQueryClient} from '@tanstack/react-query';
 import {useGroupAdminByGroupId} from '../../hooks/groupQueries';
+import {useExerciseSchedule} from '../../hooks/exerciseQueries';
 // import {
 //   isExerciseReminderScheduled,
 //   registerExerciseReminder,
@@ -92,6 +93,9 @@ const Home = () => {
 
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
+
+  const {data: activeDays, isLoading: isScheduleLoading} =
+    useExerciseSchedule();
 
   const {
     data: adminRQ,
@@ -551,9 +555,8 @@ const Home = () => {
                     borderRadius: 20,
                     backgroundColor: colors.background.primary,
                   }}>
-                  {new Date().getDay() === 1 ||
-                  new Date().getDay() === 3 ||
-                  new Date().getDay() === 5 ? (
+                  {activeDays &&
+                  activeDays.includes(new Date().getDay()) ? (
                     <>
                       <>
                         <Text
