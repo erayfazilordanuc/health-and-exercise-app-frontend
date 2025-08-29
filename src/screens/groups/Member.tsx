@@ -49,7 +49,12 @@ import {
 } from '../../api/exercise/progressService';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {isAuthRequiredError} from '../../api/errors/errors';
-import {useAdminSymptomsByUserIdAndDate} from '../../hooks/symptomsQueries';
+import {
+  useAdminDoneStepGoals,
+  useAdminSymptomsByUserIdAndDate,
+  useAdminWeeklyStepGoal,
+  useAdminWeeklySteps,
+} from '../../hooks/symptomsQueries';
 import {useWeeklyActiveDaysProgressByUserId} from '../../hooks/progressQueries';
 import {useUserById} from '../../hooks/userQueries';
 import {getRoomIdByUsers, MSG_KEYS} from '../../hooks/messageQueries';
@@ -64,6 +69,7 @@ import {
   useExerciseSchedule,
   useExerciseScheduleAdmin,
 } from '../../hooks/exerciseQueries';
+import {extractAxiosMessage} from '@/src/api/axios/axios';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -85,6 +91,16 @@ const Member = () => {
     isLoading: isScheduleLoading,
     error: scheduleError,
   } = useExerciseScheduleAdmin(memberId, {enabled: !!memberId});
+
+  const {data: weeklySteps} = useAdminWeeklySteps(memberId, {
+    enabled: !!memberId,
+  });
+  const {data: weeklyGoal} = useAdminWeeklyStepGoal(memberId, {
+    enabled: !!memberId,
+  });
+  const {data: doneGoals} = useAdminDoneStepGoals(memberId, {
+    enabled: !!memberId,
+  });
 
   const scrollRef = useRef<ScrollView>(null);
   const [symptomsSectionY, setSymptomsSectionY] = useState(0);
@@ -625,111 +641,111 @@ const Member = () => {
                   </View>
                 </View>
               )}
-              {
-                <View
-                  onLayout={e => setSymptomsSectionY(e.nativeEvent.layout.y)}
-                  className="flex flex-col pb-1 pt-2 px-5 mb-3"
-                  style={{
-                    borderRadius: 17,
-                    backgroundColor: colors.background.primary,
-                  }}>
-                  {/* <ProgressBar
+
+              <View
+                onLayout={e => setSymptomsSectionY(e.nativeEvent.layout.y)}
+                className="flex flex-col pb-1 pt-2 px-5 mb-3"
+                style={{
+                  borderRadius: 17,
+                  backgroundColor: colors.background.primary,
+                }}>
+                {/* <ProgressBar
               value={93}
               label="Genel sağlık"
               iconSource={icons.better_health}
               color="#41D16F"
             /> */}
-                  {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
-                  {/* <ProgressBar
+                {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
+                {/* <ProgressBar
               value={96}
               label="O2 Seviyesi"
               iconSource={icons.o2sat}
               color="#2CA4FF"
             /> */}
-                  {/* <ProgressBar
+                {/* <ProgressBar
               value={83}
               label="Tansiyon"
               iconSource={icons.blood_pressure}
               color="#FF9900"/> FDEF22*/}
-                  {symptoms ? (
-                    <>
-                      <Text
-                        className="font-rubik pt-2"
-                        style={{fontSize: 18, color: colors.text.primary}}>
-                        Bulgular
-                      </Text>
+                {symptoms ? (
+                  <>
+                    <Text
+                      className="font-rubik pt-2"
+                      style={{fontSize: 18, color: colors.text.primary}}>
+                      Bulgular
+                    </Text>
+                    <ProgressBar
+                      value={symptoms?.pulse}
+                      label="Nabız"
+                      iconSource={icons.pulse}
+                      color="#FF3F3F"
+                    />
+                    {symptoms?.totalCaloriesBurned &&
+                    symptoms?.totalCaloriesBurned > 0 ? (
                       <ProgressBar
-                        value={symptoms?.pulse}
-                        label="Nabız"
-                        iconSource={icons.pulse}
-                        color="#FF3F3F"
+                        value={symptoms?.totalCaloriesBurned}
+                        label="Yakılan Kalori"
+                        iconSource={icons.kcal}
+                        color="#FF9900"
                       />
-                      {symptoms?.totalCaloriesBurned &&
-                      symptoms?.totalCaloriesBurned > 0 ? (
+                    ) : (
+                      symptoms?.activeCaloriesBurned &&
+                      symptoms?.activeCaloriesBurned > 0 && (
                         <ProgressBar
-                          value={symptoms?.totalCaloriesBurned}
+                          value={symptoms?.activeCaloriesBurned}
                           label="Yakılan Kalori"
                           iconSource={icons.kcal}
                           color="#FF9900"
                         />
-                      ) : (
-                        symptoms?.activeCaloriesBurned &&
-                        symptoms?.activeCaloriesBurned > 0 && (
-                          <ProgressBar
-                            value={symptoms?.activeCaloriesBurned}
-                            label="Yakılan Kalori"
-                            iconSource={icons.kcal}
-                            color="#FF9900"
-                          />
-                        )
-                      )}
-                      <ProgressBar
-                        value={symptoms?.steps}
-                        label="Adım"
-                        iconSource={icons.man_walking}
-                        color="#2CA4FF" //FDEF22
-                      />
-                      <ProgressBar
-                        value={
-                          symptoms?.sleepMinutes
-                            ? symptoms?.sleepMinutes
-                            : undefined
-                        }
-                        label="Uyku"
-                        iconSource={icons.sleep}
-                        color="#FDEF22"
-                      />
-                    </>
-                  ) : isSymptomsLoading ? (
-                    <View className="flex flex-row items-center justify-center w-full py-20">
-                      <ActivityIndicator
-                        className="mt-2 self-center"
-                        size="large"
-                        color={colors.primary[200]} // {colors.primary[300] ?? colors.primary}
-                      />
-                    </View>
-                  ) : (
-                    <Text
-                      className="font-rubik py-2"
-                      style={{fontSize: 18, color: colors.text.primary}}>
-                      Bulgu Kaydı Bulunamadı
-                    </Text>
-                  )}
-
-                  <View className="mt-1">
-                    <WeeklyStrip
-                      selectedDate={symptomsDate}
-                      onSelect={d => {
-                        d.setHours(12, 0, 0, 0);
-                        setSymptomsDate(d);
-                      }}
-                      minDate={monthAgo}
-                      maxDate={new Date()}
-                      startOnMonday
-                      colors={colors}
+                      )
+                    )}
+                    <ProgressBar
+                      value={symptoms?.steps}
+                      label="Adım"
+                      iconSource={icons.man_walking}
+                      color="#2CA4FF" //FDEF22
+                    />
+                    <ProgressBar
+                      value={
+                        symptoms?.sleepMinutes
+                          ? symptoms?.sleepMinutes
+                          : undefined
+                      }
+                      label="Uyku"
+                      iconSource={icons.sleep}
+                      color="#FDEF22"
+                    />
+                  </>
+                ) : isSymptomsLoading ? (
+                  <View className="flex flex-row items-center justify-center w-full py-20">
+                    <ActivityIndicator
+                      className="mt-2 self-center"
+                      size="large"
+                      color={colors.primary[200]} // {colors.primary[300] ?? colors.primary}
                     />
                   </View>
-                  {/* <TouchableOpacity
+                ) : (
+                  <Text
+                    className="font-rubik py-2"
+                    style={{fontSize: 18, color: colors.text.primary}}>
+                    Bulgu Kaydı Bulunamadı
+                  </Text>
+                )}
+
+                <View className="mt-1">
+                  <WeeklyStrip
+                    selectedDate={symptomsDate}
+                    onSelect={d => {
+                      d.setHours(12, 0, 0, 0);
+                      setSymptomsDate(d);
+                    }}
+                    minDate={monthAgo}
+                    maxDate={new Date()}
+                    startOnMonday
+                    colors={colors}
+                  />
+                </View>
+                {/* <TouchableOpacity
                     onPress={async () => {
                       const net = await NetInfo.fetch();
                       const isOnline = !!net.isConnected;
@@ -766,8 +782,72 @@ const Member = () => {
                       onCancel={() => setShowDatePicker(false)}
                     />
                   )} */}
+              </View>
+
+              <View
+                className="flex-col rounded-2xl px-4 py-3 mb-3"
+                style={{backgroundColor: colors.background.primary}}>
+                <Text
+                  className="font-rubik text-xl ml-1 mb-3"
+                  style={{color: colors.text.primary}}>
+                  Haftalık Adım Hedefi
+                </Text>
+                {weeklyGoal ? (
+                  <View
+                    className="flex-col rounded-2xl p-3 mb-2"
+                    style={{backgroundColor: colors.background.secondary}}>
+                    {weeklyGoal.isDone && (
+                      <View className="flex-row items-center justify-start mb-2">
+                        <Text
+                          className="font-rubik text-lg ml-2"
+                          style={{color: '#16d750'}}>
+                          Tamamlandı
+                        </Text>
+                        <Image
+                          source={icons.check}
+                          className="size-5 ml-2"
+                          tintColor={'#16d750'}
+                        />
+                      </View>
+                    )}
+                    <Text
+                      className="font-rubik text-lg ml-2 mb-2"
+                      style={{color: colors.text.primary}}>
+                      Hedef: {' ' + weeklyGoal.goal} adım
+                    </Text>
+                    <Text
+                      className="font-rubik text-lg ml-2 mb-1"
+                      style={{color: colors.text.primary}}>
+                      İlerleme: {' ' + weeklySteps} adım
+                    </Text>
+                  </View>
+                ) : (
+                  <View
+                    className="flex-col rounded-2xl p-3 mb-2 self-start"
+                    style={{backgroundColor: colors.background.secondary}}>
+                    <Text
+                      className="font-rubik text-lg ml-3 mr-3"
+                      style={{color: colors.text.primary}}>
+                      Hedef mevcut değil
+                    </Text>
+                  </View>
+                )}
+
+                <View className="flex-row items-center justify-start self-start my-1">
+                  <Text
+                    className="font-rubik text-lg ml-3 mr-1"
+                    style={{color: colors.text.primary}}>
+                    Hedef Başarım Rozetleri:{' '}
+                  </Text>
+                  <Image source={icons.badge1_colorful} className="size-7" />
+                  <Text
+                    className="font-rubik text-lg ml-1"
+                    style={{color: colors.text.primary}}>
+                    {doneGoals?.length ?? 0}
+                  </Text>
                 </View>
-              }
+              </View>
+
               {
                 <View
                   className="flex flex-col pb-2 pt-1 px-5"

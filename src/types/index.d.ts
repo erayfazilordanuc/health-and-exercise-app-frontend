@@ -135,6 +135,15 @@ type Symptoms = {
   updatedAt?: Date | null;
 };
 
+type StepGoalDTO = {
+  id: number;
+  userId: number;
+  goal: number;
+  isDone: boolean;
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
+};
+
 type UpdateSymptomsDTO = {
   pulse?: number;
   steps?: number;
@@ -153,11 +162,18 @@ type Group = {
   id?: number;
   name: string;
   adminId: number;
+  exerciseEnabled: boolean;
 };
 
 type CreateGroupDTO = {
   name: string;
   adminId: number;
+};
+
+type UpdateGroupDTO = {
+  id: number;
+  name: string;
+  exerciseEnabled: boolean;
 };
 
 type GroupDTO = {

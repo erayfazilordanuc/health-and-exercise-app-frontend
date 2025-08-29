@@ -11,7 +11,8 @@ import {
   ToastAndroid,
   RefreshControl,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import {List, Surface, Switch, TouchableRipple} from 'react-native-paper';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   RouteProp,
@@ -26,6 +27,7 @@ import {
   getGroupById,
   getGroupRequestsByGroupId,
   respondToJoinRequest,
+  updateGroup,
 } from '../../api/group/groupService';
 import {setGestureState} from 'react-native-reanimated';
 import CustomAlert from '../../components/CustomAlert';
@@ -36,11 +38,20 @@ import {
   isRoomExistBySenderAndReceiver,
 } from '../../api/message/messageService';
 import LinearGradient from 'react-native-linear-gradient';
-import {GROUP_KEYS, useGroupUsers} from '../../hooks/groupQueries';
+import {
+  GROUP_KEYS,
+  useGroupById,
+  useGroupUsers,
+  useUpdateGroup,
+} from '../../hooks/groupQueries';
 import {useQueryClient} from '@tanstack/react-query';
 import {useUser} from '../../contexts/UserContext';
-import {join} from 'lodash';
+import {join, update} from 'lodash';
+import NetInfo from '@react-native-community/netinfo';
 import {getRoomIdByUsers, MSG_KEYS} from '../../hooks/messageQueries';
+import CustomAlertSingleton, {
+  CustomAlertSingletonHandle,
+} from '../../components/CustomAlertSingleton';
 
 const Group = () => {
   const insets = useSafeAreaInsets();
@@ -49,11 +60,16 @@ const Group = () => {
   const {params} = useRoute<GroupRouteProp>();
   const {groupId} = params;
   const navigation = useNavigation<GroupsScreenNavigationProp>();
+  const qc = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const {user} = useUser();
-  const [group, setGroup] = useState<Group | null>();
-  const qc = useQueryClient();
+  const {data: group, isLoading, error} = useGroupById(groupId);
+  const [exerciseEnabled, setExerciseEnabled] = useState(
+    group?.exerciseEnabled,
+  );
+  const updateMut = useUpdateGroup();
+  const alertRef = useRef<CustomAlertSingletonHandle>(null);
   const {
     data: members,
     isLoading: isUsersLoading,
@@ -145,15 +161,15 @@ const Group = () => {
       fetchRequests(user);
   }, [user]);
 
-  const fetchGroup = async () => {
-    const grpRes = await getGroupById(groupId);
-    if (grpRes.status !== 200) return;
-    setGroup(grpRes.data);
-  };
+  // const fetchGroup = async () => {
+  //   const grpRes = await getGroupById(groupId);
+  //   if (grpRes.status !== 200) return;
+  //   setGroup(grpRes.data);
+  // };
 
-  useEffect(() => {
-    if (!group) fetchGroup();
-  }, [groupId]);
+  // useEffect(() => {
+  //   if (!group) fetchGroup();
+  // }, [groupId]);
 
   const onLeaveGroup = async () => {
     ToastAndroid.show(
@@ -328,7 +344,7 @@ const Group = () => {
                     {admin?.fullName}
                   </Text>
                 </View>
-                <View className="flex flex-row items-center mt-1 mb-1">
+                <View className="flex flex-row items-center mb-1">
                   <Text
                     className="font-rubik-medium text-lg"
                     style={{color: colors.text.primary}}>
@@ -337,8 +353,7 @@ const Group = () => {
                   <Text
                     className="font-rubik text-lg"
                     style={{color: colors.text.primary}}>
-                    {/* {admin?.email} */}
-                    {'(Hemşirenin e-posta adresi)'}
+                    {admin?.email}
                   </Text>
                 </View>
               </>
@@ -450,6 +465,75 @@ const Group = () => {
           </View>
         )}
 
+        {user && user.role === 'ROLE_ADMIN' && (
+          <View
+            className="flex flex-column justify-start px-4 p-3 mt-3"
+            style={{
+              borderRadius: 17,
+              backgroundColor: colors.background.primary,
+              borderColor: colors.primary[300],
+            }}>
+            <Text
+              className="font-rubik ml-1"
+              style={{fontSize: 20, color: colors.text.primary}}>
+              Grup Ayarları
+            </Text>
+
+            <View
+              className="flex flex-row justify-start items-center mt-2 py-3 px-3 rounded-2xl self-start"
+              style={{
+                backgroundColor: colors.background.secondary,
+              }}>
+              <Text
+                className="font-rubik ml-1"
+                style={{fontSize: 16, color: colors.text.primary}}>
+                Egzersiz Etkinliği
+              </Text>
+
+              <Switch
+                className="ml-1"
+                value={exerciseEnabled}
+                onValueChange={async (value: boolean) => {
+                  setExerciseEnabled(value);
+                  alertRef.current?.show({
+                    message: value
+                      ? 'Grup için egzersiz yapma özelliğini etkinleştirmek istediğinize emin misiniz?'
+                      : 'Grup için egzersiz yapma özelliğini devre dışı bırakmak istediğinize emin misiniz?',
+                    secondMessage: value
+                      ? undefined
+                      : 'Bu işlem egzersiz yapan kullanıcıların verilerinin kaydedilmemesine sebep olacaktır.',
+                    isPositive: value ? true : false,
+                    onYesText: 'Evet',
+                    onCancelText: 'İptal',
+                    onYes: async () => {
+                      if (group && group.id) {
+                        const updateDTO: UpdateGroupDTO = {
+                          id: group.id,
+                          name: group.name,
+                          exerciseEnabled: value,
+                        };
+                        console.log('update dto', updateDTO);
+                        const response = await updateMut.mutateAsync(updateDTO);
+                        if (
+                          (!response.data && response.status > 300) ||
+                          response.status < 200
+                        )
+                          setExerciseEnabled(prev => !prev);
+                      }
+                    },
+                    onCancel: () => setExerciseEnabled(prev => !prev),
+                  });
+                }}
+                thumbColor={colors.background.primary}
+                trackColor={{
+                  false: '#B5B5B5',
+                  true: colors.primary[300],
+                }}
+              />
+            </View>
+          </View>
+        )}
+
         {user &&
           user.role === 'ROLE_ADMIN' &&
           joinRequests &&
@@ -462,7 +546,7 @@ const Group = () => {
                 borderColor: colors.primary[300],
               }}>
               <Text
-                className="font-rubik ml-1 mb-1"
+                className="font-rubik ml-1"
                 style={{fontSize: 20, color: colors.text.primary}}>
                 Gruba katılma istekleri
               </Text>
@@ -550,7 +634,7 @@ const Group = () => {
             </Text>
           </View>
 
-          <View className="mt-2">
+          <View className="mt-3">
             {members &&
               members.map((user: User) => (
                 <View key={user.id?.toString() ?? user.username}>
@@ -639,6 +723,8 @@ const Group = () => {
           {/* Buton */}
         </View>
       )}
+
+      <CustomAlertSingleton ref={alertRef} />
     </View>
   );
 };

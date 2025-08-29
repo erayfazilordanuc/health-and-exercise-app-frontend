@@ -2,7 +2,6 @@ import axios, {AxiosError} from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {logout, refreshAccessToken} from '../auth/authService';
 import {CommonActions, useNavigation} from '@react-navigation/native';
-import {ToastAndroid} from 'react-native';
 import {isAuthRequiredError, AuthRequiredError} from '../errors/errors';
 
 const domain = 'eray.ordanuc.com';
@@ -162,3 +161,12 @@ export function isAxiosErr(e: unknown): e is AxiosError {
 
 export default apiClient;
 export {getApiBaseUrl, getIPv4};
+
+export const extractAxiosMessage = (err: unknown) => {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data as any;
+    // Spring'te bazen "message", bazen "detail" (ProblemDetail) olur
+    return data?.message || data?.detail || data?.error || err.message;
+  }
+  return (err as Error)?.message ?? 'Bilinmeyen hata';
+};

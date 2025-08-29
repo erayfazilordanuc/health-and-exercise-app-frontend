@@ -1,14 +1,45 @@
-import {QueryClient, useQuery, UseQueryOptions} from '@tanstack/react-query';
-import {getGroupAdmin, getUsersByGroupId} from '../api/group/groupService';
+import {
+  keepPreviousData,
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions,
+} from '@tanstack/react-query';
+import {
+  getGroupAdmin,
+  getGroupById,
+  getUsersByGroupId,
+  updateGroup,
+} from '../api/group/groupService';
 import type {AxiosError} from 'axios';
 // import type { User } from '<<PROJENE_GÖRE_USER_TIPI_YOLU>>';
 
 export const GROUP_KEYS = {
   root: ['groups'] as const,
+  list: () => [...GROUP_KEYS.root, 'list'] as const,
+  byId: (id: number) => ['group', id] as const,
   usersByGroupId: (groupId: number) =>
     [...GROUP_KEYS.root, 'users', groupId] as const,
   adminByGroupId: (groupId: number) =>
     [...GROUP_KEYS.root, 'admin', groupId] as const,
+};
+
+export const useGroupById = (id: number, options?: {enabled?: boolean}) => {
+  return useQuery<Group, Error>({
+    queryKey: ['group', id] as const,
+    queryFn: async () => {
+      const res = await getGroupById(id);
+      return res.data as Group;
+    },
+    enabled: options?.enabled, // buraya bağladık
+    networkMode: 'offlineFirst',
+    staleTime: 5 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
 };
 
 /* --------------------------- GROUP USERS (User[]) --------------------------- */
@@ -99,3 +130,46 @@ export const prefetchGroupAdmin = (qc: QueryClient, groupId: number) =>
     queryFn: () => getGroupAdmin(groupId),
     staleTime: 5 * 60 * 1000,
   });
+
+export const useUpdateGroup = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (dto: UpdateGroupDTO) => updateGroup(dto), // bu axios Response döndürüyor
+    // Optimistic update (tek grup cache’ini anında güncelle)
+    onMutate: async dto => {
+      await qc.cancelQueries({queryKey: GROUP_KEYS.byId(dto.id)});
+      const prev = qc.getQueryData<Group>(GROUP_KEYS.byId(dto.id));
+
+      if (prev) {
+        const next: Group = {
+          ...prev,
+          ...(dto.name !== undefined ? {name: dto.name} : {}),
+          ...(dto.exerciseEnabled !== undefined
+            ? {exerciseEnabled: dto.exerciseEnabled}
+            : {}),
+        };
+        qc.setQueryData(GROUP_KEYS.byId(dto.id), next);
+      }
+      return {prev};
+    },
+    onError: (_err, dto, ctx) => {
+      // rollback
+      if (ctx?.prev) qc.setQueryData(GROUP_KEYS.byId(dto.id), ctx.prev);
+    },
+    onSuccess: (res, dto) => {
+      // server’dan dönen kesin veriyi cache’e yaz (axios response -> data)
+      const data = (res as any)?.data as Group | undefined;
+      if (data?.id) qc.setQueryData(GROUP_KEYS.byId(data.id), data);
+      else qc.invalidateQueries({queryKey: GROUP_KEYS.byId(dto.id)});
+    },
+    onSettled: (_res, _err, dto) => {
+      // liste ve ilişkili query’leri tazele
+      qc.invalidateQueries({queryKey: GROUP_KEYS.list()});
+      if (dto?.id) {
+        qc.invalidateQueries({queryKey: GROUP_KEYS.usersByGroupId(dto.id)});
+        qc.invalidateQueries({queryKey: GROUP_KEYS.adminByGroupId(dto.id)});
+      }
+    },
+  });
+};

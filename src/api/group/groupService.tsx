@@ -103,3 +103,9 @@ export const createGroup = async (createGroupDTO: CreateGroupDTO) => {
   console.log('Create group', response);
   return response;
 };
+
+export const updateGroup = async (updateGroupDTO: UpdateGroupDTO) => {
+  const response = await apiClient.put(`/groups`, updateGroupDTO);
+  console.log('Update group', response);
+  return response;
+};

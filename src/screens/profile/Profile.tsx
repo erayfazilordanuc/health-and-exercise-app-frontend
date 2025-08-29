@@ -56,6 +56,7 @@ import GradientText from '../../components/GradientText';
 import {
   getLocal,
   getSymptomsByDate,
+  getWeeklyStepGoal,
   upsertSymptomsByDate,
 } from '../../api/symptoms/symptomsService';
 import {Float} from 'react-native/Libraries/Types/CodegenTypes';
@@ -70,14 +71,20 @@ import CustomAlertSingleton, {
 } from '../../components/CustomAlertSingleton';
 import {
   SYMPTOM_KEYS,
+  useCompleteStepGoal,
+  useCreateStepGoal,
+  useDoneStepGoals,
   useSaveSymptomsToday,
   useSymptomsByDate,
+  useWeeklyStepGoal,
+  useWeeklySteps,
 } from '../../hooks/symptomsQueries';
 import NetInfo from '@react-native-community/netinfo';
 import {useQueryClient} from '@tanstack/react-query';
 import WeeklyStrip from '../../components/WeeklyStrip';
 import {isSameDay} from 'date-fns';
 import {atLocalMidnight, ymdLocal} from '../../utils/dates';
+import {extractAxiosMessage} from '../../api/axios/axios';
 
 const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -110,6 +117,15 @@ const Profile = () => {
   const [showDetail, setShowDetail] = useState(false);
   const [showHCAlert, setShowHCAlert] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const {data: weekly, isLoading: wLoading} = useWeeklyStepGoal();
+  const [weeklyGoal, setWeeklyGoal] = useState(weekly);
+  const {data: dones, isLoading: dLoading} = useDoneStepGoals();
+  const createMut = useCreateStepGoal();
+  const completeMut = useCompleteStepGoal();
+  const [newStepGoalValue, setNewStepGoalValue] = useState('');
+  const [goaling, setGoaling] = useState(false);
+  const {data: weeklySteps = 0, isLoading, error} = useWeeklySteps();
 
   const saveSymptomsToday = useSaveSymptomsToday();
 
@@ -232,6 +248,7 @@ const Profile = () => {
   const syncSymptoms = async () => {
     setLoading(true);
     try {
+      console.log('eeeee');
       if (isHealthConnectInstalled && isHealthConnectReady) {
         const hc = await getSymptoms();
         console.log('hc', hc);
@@ -241,8 +258,7 @@ const Profile = () => {
         const combined = combineSymptoms(hc!, symptomsQ.data);
         if (combined) setSymptoms(combined);
         console.log('combined', combined);
-        if (combined && symptomsQ.data)
-          await saveSymptomsToday.mutateAsync(combined);
+        if (combined) await saveSymptomsToday.mutateAsync(combined);
       } else {
         const combined = combineSymptoms(symptomsQ.data);
         if (combined) {
@@ -419,6 +435,22 @@ const Profile = () => {
     }, [user]),
   );
 
+  const checkGoalAchieved = async () => {
+    if (weeklySteps && weeklyGoal) {
+      if (!weeklyGoal.isDone) {
+        if (weeklySteps > weeklyGoal.goal) {
+          const result = await completeMut.mutateAsync(weeklyGoal.id);
+          if (result)
+            setWeeklyGoal(prev => (prev ? {...prev, isDone: true} : prev));
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    checkGoalAchieved();
+  }, [weeklySteps, weeklyGoal]);
+
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
@@ -516,27 +548,44 @@ const Profile = () => {
                   {user?.fullName}
                 </GradientText>
                 {user && user.role === 'ROLE_USER' ? (
-                  <View className="flex flex-row">
-                    <Image
-                      source={icons.patient}
-                      className="size-9 mr-2"
-                      tintColor={colors.text.primary}
-                    />
-                    {/* <Image
-                      source={icons.badge1_colorful_bordered}
-                      className="size-8 mr-2"
-                    /> */}
-                    {/* <Image
-                      source={icons.badge1_colorful}
-                      className="size-8 mr-2"
-                    />
-                    <Image
-                      source={icons.badge1}
-                      tintColor={colors.text.primary} // Eğer renkli değilse tintColor verilsin
-                      className="size-8"
-                    /> */}
+                  <View className="flex flex-row items-center justify-end">
+                    <TouchableOpacity
+                      className="py-2 px-3"
+                      style={{
+                        borderRadius: 13,
+                        backgroundColor: colors.primary[200],
+                      }}
+                      onPress={() => {
+                        setShowDetail(!showDetail);
+                      }}>
+                      <Text
+                        className="text-md font-rubik"
+                        style={{color: 'white'}}>
+                        {showDetail ? 'Detayları Gizle' : 'Detay'}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 ) : (
+                  // <View className="flex flex-row">
+                  //   <Image
+                  //     source={icons.patient}
+                  //     className="size-9 mr-2"
+                  //     tintColor={colors.text.primary}
+                  //   />
+                  //   {/* <Image
+                  //     source={icons.badge1_colorful_bordered}
+                  //     className="size-8 mr-2"
+                  //   /> */}
+                  //   {/* <Image
+                  //     source={icons.badge1_colorful}
+                  //     className="size-8 mr-2"
+                  //   />
+                  //   <Image
+                  //     source={icons.badge1}
+                  //     tintColor={colors.text.primary} // Eğer renkli değilse tintColor verilsin
+                  //     className="size-8"
+                  //   /> */}
+                  // </View>
                   <View className="flex flex-row">
                     <Image
                       source={icons.nurse}
@@ -602,21 +651,6 @@ const Profile = () => {
                   </View>
                 </>
               )}
-              <View className="flex flex-row items-center justify-end">
-                <TouchableOpacity
-                  className="py-2 px-3"
-                  style={{
-                    borderRadius: 13,
-                    backgroundColor: colors.primary[200],
-                  }}
-                  onPress={() => {
-                    setShowDetail(!showDetail);
-                  }}>
-                  <Text className="text-md font-rubik" style={{color: 'white'}}>
-                    {showDetail ? 'Detayları Gizle' : 'Detay'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
             </View>
             {/* Buraya dğer bilgiler, rozetler falan filan */}
           </View>
@@ -624,6 +658,151 @@ const Profile = () => {
           {/* <HeartRateSimpleChart/> */}
           {user && user.role === 'ROLE_USER' && (
             <>
+              <View
+                className="flex-col rounded-2xl px-4 py-3 mt-3"
+                style={{backgroundColor: colors.background.primary}}>
+                <Text
+                  className="font-rubik text-xl ml-1 mb-3"
+                  style={{color: colors.text.primary}}>
+                  Haftalık Adım Hedefi
+                </Text>
+                {weeklyGoal ? (
+                  <View
+                    className="flex-col rounded-2xl p-3 mb-2"
+                    style={{backgroundColor: colors.background.secondary}}>
+                    {weeklyGoal.isDone && (
+                      <View className="flex-row items-center justify-start mb-2">
+                        <Text
+                          className="font-rubik text-lg ml-2"
+                          style={{color: '#16d750'}}>
+                          Başarıyla tamamlandı!
+                        </Text>
+                        <Image
+                          source={icons.check}
+                          className="size-5 ml-2"
+                          tintColor={'#16d750'}
+                        />
+                      </View>
+                    )}
+                    <Text
+                      className="font-rubik text-lg ml-2 mb-2"
+                      style={{color: colors.text.primary}}>
+                      Hedef: {' ' + weekly?.goal} adım
+                    </Text>
+                    <Text
+                      className="font-rubik text-lg ml-2 mb-1"
+                      style={{color: colors.text.primary}}>
+                      İlerleme: {' ' + weeklySteps} adım
+                    </Text>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    className="py-2 px-2 pr-3 rounded-2xl self-start mt-1 mb-3"
+                    style={{backgroundColor: colors.background.secondary}}
+                    onPress={() => {
+                      setGoaling(true);
+                    }}
+                    disabled={goaling}>
+                    <View className="flex-col items-center">
+                      <Text
+                        className="font-rubik text-lg ml-1 mr-2"
+                        style={{color: colors.text.primary}}>
+                        Bu Hafta İçin Hedef Ekle{' '}
+                        {!goaling && <Text>{'  '}+ </Text>}
+                      </Text>
+                      {goaling && (
+                        <>
+                          <TextInput
+                            className="rounded-2xl mt-2 mb-3 px-3"
+                            style={{
+                              backgroundColor: colors.background.primary,
+                              color: colors.text.primary,
+                            }}
+                            value={newStepGoalValue}
+                            onChangeText={value => setNewStepGoalValue(value)}
+                            placeholder="Örn: 15000 adım"
+                            selectionColor={colors.primary[300]}
+                            keyboardType="numeric"
+                          />
+                          <View className="flex-row items-center">
+                            <TouchableOpacity
+                              className="py-2 px-3 rounded-2xl mb-1 mr-1"
+                              style={{backgroundColor: 'gray'}}
+                              onPress={() => {
+                                setGoaling(false);
+                                setNewStepGoalValue('');
+                              }}>
+                              <Text style={{color: 'white'}}>İptal</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              className="py-2 px-3 rounded-2xl mb-1 ml-1"
+                              style={{backgroundColor: '#16d750'}}
+                              onPress={async () => {
+                                if (newStepGoalValue) {
+                                  if (parseInt(newStepGoalValue) > 100000) {
+                                    ToastAndroid.show(
+                                      'Lütfen geçerli bir değer giriniz',
+                                      ToastAndroid.SHORT,
+                                    );
+                                    return;
+                                  }
+                                  try {
+                                    const stepGoal =
+                                      await createMut.mutateAsync(
+                                        parseInt(newStepGoalValue),
+                                      );
+                                    if (stepGoal) {
+                                      setGoaling(false);
+                                      setWeeklyGoal(stepGoal);
+                                    } else {
+                                      ToastAndroid.show(
+                                        'Bir hata oluştu',
+                                        ToastAndroid.SHORT,
+                                      );
+                                    }
+                                  } catch (error) {
+                                    console.log(
+                                      'create step goal error',
+                                      error,
+                                    );
+                                    const msg = extractAxiosMessage(error);
+                                    // Örn: "Önceki haftadaki ilerlemenize göre bu kadar düşük bir hedef giremezsiniz"
+                                    ToastAndroid.show(
+                                      msg && msg === 'Bad Request'
+                                        ? 'Girdiğiniz değer önceki ilerlemenize göre çok düşük'
+                                        : 'Bir hata oluştu',
+                                      ToastAndroid.LONG,
+                                    );
+                                  }
+                                } else
+                                  ToastAndroid.show(
+                                    'Lütfen bir değer giriniz',
+                                    ToastAndroid.SHORT,
+                                  );
+                              }}>
+                              <Text style={{color: 'white'}}>Kaydet</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                )}
+
+                <View className="flex-row items-center justify-start self-start my-1">
+                  <Text
+                    className="font-rubik text-lg ml-3 mr-1"
+                    style={{color: colors.text.primary}}>
+                    Hedef Başarım Rozetleri:{' '}
+                  </Text>
+                  <Image source={icons.badge1_colorful} className="size-7" />
+                  <Text
+                    className="font-rubik text-lg ml-1"
+                    style={{color: colors.text.primary}}>
+                    {dones?.length ?? 0}
+                  </Text>
+                </View>
+              </View>
               <View
                 className="flex flex-col pt-2 pb-2 px-5 mt-3"
                 style={{
@@ -896,13 +1075,15 @@ const Profile = () => {
                         }
                       }
                     } else {
-                      const net = await NetInfo.fetch();
-                      const isOnline = !!net.isConnected;
-                      if (!isOnline)
-                        ToastAndroid.show(
-                          'İnternet bağlantısı yok, veriler yüklenemedi',
-                          ToastAndroid.SHORT,
-                        );
+                      if (!fresh) {
+                        const net = await NetInfo.fetch();
+                        const isOnline = !!net.isConnected;
+                        if (!isOnline)
+                          ToastAndroid.show(
+                            'Veriler yüklenemedi, internet bağlantınızı kontrol edin',
+                            ToastAndroid.SHORT,
+                          );
+                      }
                       const combined = combineSymptoms(
                         fresh,
                         null,

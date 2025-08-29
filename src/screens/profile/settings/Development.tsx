@@ -40,9 +40,9 @@ import {getLatestConsent} from '../../../api/consent/consentService';
 import {ConsentPurpose} from '../../../types/enums';
 import {getMySessions} from '../../../api/session/sessionService';
 import {ymdLocal} from '../../../utils/dates';
+import {getLatestHeartRate} from '../../../lib/health/healthConnectService';
 
 const Development = () => {
-  const insets = useSafeAreaInsets();
   const {theme, colors, setTheme} = useTheme();
 
   const [user, setUser] = useState<User | null>(null);
@@ -373,17 +373,37 @@ const Development = () => {
     }
   };
 
-  const testGetLocalSymptoms = async () => {
+  // const testGetLocalSymptoms = async () => {
+  //   try {
+  //     const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
+  //     const localData = await AsyncStorage.getItem(key);
+  //     if (!localData) return;
+  //     const localSymptoms: LocalSymptoms = JSON.parse(localData);
+  //     const localSymptomsString = JSON.stringify(localSymptoms, null, 2);
+  //     console.log('symptomsLocalData', localSymptomsString);
+  //     setLog6(`Local Symptoms Response:\n${localSymptomsString}`);
+  //     fetchTokens();
+  //     fetchUser();
+  //   } catch (error) {
+  //     if (error instanceof AxiosError) {
+  //       console.log(error.response);
+  //       setLog6(
+  //         `Axios Error: ${JSON.stringify(
+  //           error.response?.data || error.message,
+  //         )}`,
+  //       );
+  //     } else if (error instanceof Error) {
+  //       setLog6(`Generic Error: ${error.message}`);
+  //     } else {
+  //       setLog6('Unknown error occurred.');
+  //     }
+  //   }
+  // };
+
+  const testGetHeartRate = async () => {
     try {
-      const key = 'symptoms_' + new Date().toISOString().slice(0, 10);
-      const localData = await AsyncStorage.getItem(key);
-      if (!localData) return;
-      const localSymptoms: LocalSymptoms = JSON.parse(localData);
-      const localSymptomsString = JSON.stringify(localSymptoms, null, 2);
-      console.log('symptomsLocalData', localSymptomsString);
-      setLog6(`Local Symptoms Response:\n${localSymptomsString}`);
-      fetchTokens();
-      fetchUser();
+      const heartRate = await getLatestHeartRate();
+      setLog6(`Latest Heart Rate:\n${heartRate}`);
     } catch (error) {
       if (error instanceof AxiosError) {
         console.log(error.response);
@@ -948,13 +968,13 @@ const Development = () => {
             style={{
               backgroundColor: colors.background.secondary,
             }}
-            onPress={testGetLocalSymptoms}>
+            onPress={testGetHeartRate}>
             <GradientText
               className="text-lg font-rubik-medium ml-2"
               start={{x: 0, y: 0}}
               end={{x: 0.3, y: 0}}
               colors={[colors.primary[300], '#40E0D0']}>
-              Get Local Symptoms
+              Get Heart Rate {'(Last 10 minutes)'}
             </GradientText>
           </TouchableOpacity>
           <View className="p-4 rounded-2xl">

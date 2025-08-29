@@ -125,7 +125,7 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
           accessibilityHint="Önceki hafta"
           onPress={goPrev}
           disabled={!canGoPrevWeek}
-          className="px-3 py-2 rounded-xl"
+          className="px-3 pt-1 pb-2 rounded-xl"
           style={{
             backgroundColor: colors.background.secondary,
             opacity: canGoPrevWeek ? 1 : 0.5,
@@ -143,7 +143,7 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
           accessibilityHint="Sonraki hafta"
           onPress={goNext}
           disabled={!canGoNextWeek}
-          className="px-3 py-2 rounded-xl"
+          className="px-3 pt-1 pb-2 rounded-xl"
           style={{
             backgroundColor: colors.background.secondary,
             opacity: canGoNextWeek ? 1 : 0.5,
@@ -175,9 +175,10 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
               </Text>
 
               <View
-                className="h-12 rounded-full items-center justify-center"
+                className="rounded-full items-center justify-center"
                 style={{
-                  width: 36,
+                  height: 40,
+                  width: 38,
                   backgroundColor: selected
                     ? colors.primary[200] || '#0077FF'
                     : colors.background.secondary,

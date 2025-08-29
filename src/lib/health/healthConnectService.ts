@@ -160,6 +160,93 @@ export const aggregatedSampleData = async (
   return result;
 };
 
+type HRPoint = {time: string; bpm: number; origin?: string};
+
+const readHeartRatePoints = async (start: Date, end: Date) => {
+  if (!(await initializeService())) return [];
+
+  const res = await readRecords('HeartRate', {
+    timeRangeFilter: {
+      operator: 'between',
+      startTime: start.toISOString(),
+      endTime: end.toISOString(),
+    },
+  });
+
+  const points: {time: string; bpm: number; origin?: string}[] = [];
+
+  for (const r of (res as any).records ?? []) {
+    if (Array.isArray(r.samples)) {
+      for (const s of r.samples) {
+        points.push({
+          time: s.time ?? r.startTime,
+          bpm: s.beatsPerMinute,
+          origin: r.dataOrigin?.packageName,
+        });
+      }
+    } else if (typeof r.beatsPerMinute === 'number') {
+      points.push({
+        time: r.time ?? r.startTime,
+        bpm: r.beatsPerMinute,
+        origin: r.dataOrigin?.packageName,
+      });
+    }
+  }
+
+  // burada kendi sıralamanı yap
+  points.sort(
+    (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
+  );
+
+  return points;
+};
+
+// En güncel nabız (son N gün içinde)
+export const getLatestHeartRate = async (
+  daysBack = 7,
+): Promise<number | -1> => {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - daysBack);
+
+  const points = await readHeartRatePoints(start, end);
+  if (!points.length) return -1;
+  return points[0].bpm;
+};
+
+// Belirli bir günün (örn. dün) tüm nabız noktaları
+export const getHeartRateForDate = async (date: Date): Promise<HRPoint[]> => {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+  return readHeartRatePoints(start, end);
+};
+
+export const getDailyLatestHeartRateValue = async (
+  date: Date,
+): Promise<number | -1> => {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+
+  const points = await readHeartRatePoints(start, end); // yeni→eski sıralı
+  if (!points.length) return -1;
+  return points[0].bpm;
+};
+
+// Zaman bilgisini de istiyorsan:
+export const getDailyLatestHeartRatePoint = async (date: Date) => {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+
+  const points = await readHeartRatePoints(start, end);
+  return points[0] ?? null; // { time, bpm, origin }
+};
+
 export const getHeartRate = async () => {
   const result: any = await readSampleData('HeartRate');
 
@@ -355,6 +442,7 @@ function withTimeout<T>(
 }
 
 export const saveSymptoms = async (symptoms: Symptoms) => {
+  console.log('eeeee');
   const key = todayKey();
 
   let symptomsObjectToSave: LocalSymptoms = {
@@ -401,7 +489,12 @@ export const saveSymptoms = async (symptoms: Symptoms) => {
 
 export const getSymptoms = async () => {
   if (await initializeService()) {
-    const heartRate = await withTimeout(getHeartRate(), 5000, -1);
+    // const heartRate = await withTimeout(getHeartRate(), 5000, -1);
+    const heartRate = await withTimeout(
+      getDailyLatestHeartRateValue(new Date()),
+      5000,
+      -1,
+    );
 
     let aggregatedSteps = await withTimeout(getAggregatedSteps(), 5000, -1);
 
@@ -421,14 +514,20 @@ export const getSymptoms = async () => {
       -1,
     );
 
+    // const totalSleepMinutes = await withTimeout(
+    //   getTotalSleepMinutes(),
+    //   5000,
+    //   -1,
+    // );
+
     const totalSleepMinutes = await withTimeout(
-      getTotalSleepMinutes(),
+      getTodaySleepSummary().then(r => r.totalMinutes),
       5000,
       -1,
     );
 
     const healthConnectSymptoms: Symptoms = {
-      pulse: heartRate === -1 ? null : heartRate,
+      pulse: heartRate === -1 ? undefined : heartRate,
       steps: aggregatedSteps === -1 ? null : aggregatedSteps,
       totalCaloriesBurned:
         totalCaloriesBurned === -1 ? null : Math.round(totalCaloriesBurned),
@@ -442,6 +541,110 @@ export const getSymptoms = async () => {
     return healthConnectSymptoms;
   }
 };
+// “Bugün” için toplam uyku
+// ---- Types ----
+export interface SleepSessionRaw {
+  startTime?: string; // ISO
+  endTime?: string; // ISO
+  startDate?: string; // bazı SDK sürümleri
+  endDate?: string; // bazı SDK sürümleri
+  dataOrigin?: {packageName?: string};
+}
+
+export interface TodaySleepSession {
+  start: string; // ISO
+  end: string; // ISO
+  durationMinutesToday: number; // sadece bugüne düşen kısım
+  origin?: string;
+}
+
+export interface TodaySleepSummary {
+  totalMinutes: number;
+  pretty: string; // "8h 59m"
+  sessions: TodaySleepSession[];
+}
+
+const isValidDate = (d: Date) => !Number.isNaN(d.getTime());
+
+// Gün sınırı (00:00–23:59) + sorgu aralığını genişlet (dün 18:00 → bugün 23:59)
+const dayBounds = (ref: Date = new Date()) => {
+  const start = new Date(ref);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(ref);
+  end.setHours(23, 59, 59, 999);
+  const qStart = new Date(start);
+  qStart.setDate(qStart.getDate() - 1);
+  qStart.setHours(18, 0, 0, 0);
+  return {start, end, qStart};
+};
+
+// iki aralığın kesişimini (ms) al
+const overlapMs = (a0: Date, a1: Date, b0: Date, b1: Date): number =>
+  Math.max(
+    0,
+    Math.min(a1.getTime(), b1.getTime()) - Math.max(a0.getTime(), b0.getTime()),
+  );
+
+// “Bugün” için toplam uyku (SleepSession)
+export const getTodaySleepSummary = async (opts?: {
+  onlySamsung?: boolean;
+}): Promise<TodaySleepSummary> => {
+  if (!(await initializeService())) {
+    return {totalMinutes: 0, pretty: '0h 0m', sessions: []};
+  }
+
+  const {start: dayStart, end: dayEnd, qStart} = dayBounds(new Date());
+
+  const res = await readRecords('SleepSession', {
+    timeRangeFilter: {
+      operator: 'between',
+      startTime: qStart.toISOString(),
+      endTime: dayEnd.toISOString(),
+    },
+  });
+
+  const raw: SleepSessionRaw[] = Array.isArray(res?.records)
+    ? res.records!
+    : [];
+
+  const filtered = opts?.onlySamsung
+    ? raw.filter(r =>
+        r?.dataOrigin?.packageName?.toLowerCase?.().includes('samsung'),
+      )
+    : raw;
+
+  // normalize
+  const sessions = filtered
+    .map(r => {
+      const s = new Date(r.startTime ?? r.startDate ?? 0);
+      const e = new Date(r.endTime ?? r.endDate ?? 0);
+      return {start: s, end: e, origin: r.dataOrigin?.packageName};
+    })
+    .filter(se => isValidDate(se.start) && isValidDate(se.end))
+    .map(se => {
+      const ms = overlapMs(se.start, se.end, dayStart, dayEnd);
+      return {...se, durationMsToday: ms};
+    })
+    .filter(se => (se.durationMsToday ?? 0) > 0)
+    .sort((a, b) => b.end.getTime() - a.end.getTime());
+
+  const totalMs = sessions.reduce(
+    (sum, s) => sum + (s.durationMsToday ?? 0),
+    0,
+  );
+  const totalMinutes = Math.round(totalMs / 60000);
+  const pretty = `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`;
+
+  const outSessions: TodaySleepSession[] = sessions.map(s => ({
+    start: s.start.toISOString(),
+    end: s.end.toISOString(),
+    durationMinutesToday: Math.round((s.durationMsToday ?? 0) / 60000),
+    origin: s.origin,
+  }));
+
+  return {totalMinutes, pretty, sessions: outSessions};
+};
+
 const clampPct = (n: number) => Math.max(0, Math.min(100, n));
 
 const linearScore = (v?: number, min = 0, max = 1) => {

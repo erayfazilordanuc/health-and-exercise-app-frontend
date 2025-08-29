@@ -84,7 +84,7 @@ export function useExerciseSchedule() {
     gcTime: 1000 * 60 * 60 * 24, // 24 saat cache'te tut
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    retry: 1,
+    retry: 0,
   });
 }
 

@@ -59,6 +59,7 @@ import {
   useExerciseSchedule,
   useUpsertExerciseSchedule,
 } from '../../../hooks/exerciseQueries';
+import {useGroupById} from '../../../hooks/groupQueries';
 
 const {height, width} = Dimensions.get('window');
 
@@ -71,6 +72,13 @@ const ExercisesUser = () => {
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const {user} = useUser();
+  const {
+    data: group,
+    isLoading,
+    error,
+  } = useGroupById(user?.groupId!, {
+    enabled: !!user?.groupId,
+  });
   const [showModal, setShowModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
@@ -263,6 +271,7 @@ const ExercisesUser = () => {
   );
 
   const isScheduleModalVisible = () => {
+    if (user && !user.groupId) return false;
     if (!activeDays && !isScheduleLoading) return true;
     if (activeDays && activeDays.length < 3) return true;
     return showScheduleModal;
@@ -293,242 +302,268 @@ const ExercisesUser = () => {
           {user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler'}
         </Text>
       </View>
-      <View
-        className="h-full pb-32 px-3 mt-3"
-        style={{
-          backgroundColor: 'transparent', // colors.background.secondary,
-        }}>
+      {user && user.groupId && group && group.exerciseEnabled ? (
         <View
-          className="px-5 pt-2 mb-3"
+          className="h-full pb-32 px-3 mt-3"
           style={{
-            borderRadius: 17,
-            backgroundColor: colors.background.primary,
+            backgroundColor: 'transparent', // colors.background.secondary,
           }}>
-          {/* TO DO scheduleden gelmeli */}
-          {updatedActiveDays &&
-          updatedActiveDays.includes(new Date().getDay()) ? (
-            <>
+          <View
+            className="px-5 pt-2 mb-3"
+            style={{
+              borderRadius: 17,
+              backgroundColor: colors.background.primary,
+            }}>
+            {/* TO DO scheduleden gelmeli */}
+            {updatedActiveDays &&
+            updatedActiveDays.includes(new Date().getDay()) ? (
+              <>
+                <>
+                  <Text
+                    className="font-rubik text-center"
+                    style={{fontSize: 17, color: colors.text.primary}}>
+                    Bugünün Egzersizi
+                  </Text>
+
+                  {initialized ? (
+                    <View className="flex flex-row justify-center items-center mt-3 mb-3">
+                      {!(
+                        todayExerciseProgress &&
+                        todayExerciseProgress.totalProgressDuration
+                      ) ? (
+                        <TouchableOpacity
+                          className="flex flex-row justify-center items-center py-3 pl-3"
+                          style={{
+                            borderRadius: 17,
+                            backgroundColor: colors.primary[175],
+                          }}
+                          onPress={() => {
+                            setShowModal(true);
+                          }}>
+                          <Text className="text-xl font-rubik">
+                            Egzersize başla
+                          </Text>
+                          <Image
+                            source={icons.gymnastic_1}
+                            className="size-16"
+                          />
+                        </TouchableOpacity>
+                      ) : todayExerciseProgress.exerciseDTO &&
+                        todayExerciseProgress.exerciseDTO.videos &&
+                        todayExerciseProgress.totalProgressDuration ===
+                          todayExerciseProgress.exerciseDTO.videos.reduce(
+                            (sum, v) => sum + (v.durationSeconds ?? 0),
+                            0,
+                          ) ? (
+                        <TouchableOpacity
+                          className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
+                          style={{
+                            borderRadius: 17,
+                            backgroundColor: '#3BC476',
+                          }}
+                          onPress={onContinueExercise}>
+                          <Text className="text-xl font-rubik">
+                            Tamamlandı!{'\n'}Egzersizi gör
+                          </Text>
+                          <Image
+                            source={icons.gymnastic_1}
+                            className="size-16"
+                          />
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          className="flex flex-row justify-center items-center ml-1 py-3 pl-3 px-1"
+                          style={{
+                            borderRadius: 17,
+                            backgroundColor: '#FFAA33',
+                          }}
+                          onPress={onContinueExercise}>
+                          <Text className="text-xl font-rubik mx-2">
+                            Egzersize{'\n'}devam et
+                          </Text>
+                          <Image
+                            source={icons.gymnastic_1}
+                            className="size-16"
+                          />
+                        </TouchableOpacity>
+                      )}
+                      {todayExerciseProgress &&
+                        todayExerciseProgress.totalProgressDuration &&
+                        todayExerciseProgress.totalProgressDuration > 0 && (
+                          <View className="flex justify-center items-center ml-10">
+                            <AnimatedCircularProgress
+                              size={100}
+                              width={6}
+                              rotation={0}
+                              lineCap="round"
+                              fill={todayPercent}
+                              tintColor={colors.primary[300]}
+                              onAnimationComplete={() =>
+                                console.log('onAnimationComplete')
+                              }
+                              backgroundColor={colors.background.secondary}>
+                              {() => (
+                                <Text
+                                  className="font-rubik"
+                                  style={{
+                                    fontSize: 22,
+                                    color: colors.text.primary,
+                                  }}>
+                                  %{todayPercent}
+                                </Text>
+                              )}
+                            </AnimatedCircularProgress>
+                          </View>
+                        )}
+                    </View>
+                  ) : (
+                    <View
+                      className="flex flex-row justify-center items-center pt-10 pb-12"
+                      style={{backgroundColor: 'transparent'}}>
+                      <ActivityIndicator
+                        size="small"
+                        color={colors.primary[300]}
+                      />
+                    </View>
+                  )}
+                </>
+              </>
+            ) : (
               <>
                 <Text
                   className="font-rubik text-center"
-                  style={{fontSize: 17, color: colors.text.primary}}>
-                  Bugünün Egzersizi
+                  style={{fontSize: 16, color: colors.text.primary}}>
+                  Bugün için planlanan egzersiziniz yok.
                 </Text>
-
-                {initialized ? (
-                  <View className="flex flex-row justify-center items-center mt-3 mb-3">
-                    {!(
-                      todayExerciseProgress &&
-                      todayExerciseProgress.totalProgressDuration
-                    ) ? (
-                      <TouchableOpacity
-                        className="flex flex-row justify-center items-center py-3 pl-3"
-                        style={{
-                          borderRadius: 17,
-                          backgroundColor: colors.primary[175],
-                        }}
-                        onPress={() => {
-                          setShowModal(true);
-                        }}>
-                        <Text className="text-xl font-rubik">
-                          Egzersize başla
-                        </Text>
-                        <Image source={icons.gymnastic_1} className="size-16" />
-                      </TouchableOpacity>
-                    ) : todayExerciseProgress.exerciseDTO &&
-                      todayExerciseProgress.exerciseDTO.videos &&
-                      todayExerciseProgress.totalProgressDuration ===
-                        todayExerciseProgress.exerciseDTO.videos.reduce(
-                          (sum, v) => sum + (v.durationSeconds ?? 0),
-                          0,
-                        ) ? (
-                      <TouchableOpacity
-                        className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
-                        style={{
-                          borderRadius: 17,
-                          backgroundColor: '#3BC476',
-                        }}
-                        onPress={onContinueExercise}>
-                        <Text className="text-xl font-rubik">
-                          Tamamlandı!{'\n'}Egzersizi gör
-                        </Text>
-                        <Image source={icons.gymnastic_1} className="size-16" />
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        className="flex flex-row justify-center items-center ml-1 py-3 pl-3 px-1"
-                        style={{
-                          borderRadius: 17,
-                          backgroundColor: '#FFAA33',
-                        }}
-                        onPress={onContinueExercise}>
-                        <Text className="text-xl font-rubik mx-2">
-                          Egzersize{'\n'}devam et
-                        </Text>
-                        <Image source={icons.gymnastic_1} className="size-16" />
-                      </TouchableOpacity>
-                    )}
-                    {todayExerciseProgress &&
-                      todayExerciseProgress.totalProgressDuration &&
-                      todayExerciseProgress.totalProgressDuration > 0 && (
-                        <View className="flex justify-center items-center ml-10">
-                          <AnimatedCircularProgress
-                            size={100}
-                            width={6}
-                            rotation={0}
-                            lineCap="round"
-                            fill={todayPercent}
-                            tintColor={colors.primary[300]}
-                            onAnimationComplete={() =>
-                              console.log('onAnimationComplete')
-                            }
-                            backgroundColor={colors.background.secondary}>
-                            {() => (
-                              <Text
-                                className="font-rubik"
-                                style={{
-                                  fontSize: 22,
-                                  color: colors.text.primary,
-                                }}>
-                                %{todayPercent}
-                              </Text>
-                            )}
-                          </AnimatedCircularProgress>
-                        </View>
-                      )}
-                  </View>
-                ) : (
-                  <View
-                    className="flex flex-row justify-center items-center pt-10 pb-12"
-                    style={{backgroundColor: 'transparent'}}>
-                    <ActivityIndicator
-                      size="small"
-                      color={colors.primary[300]}
-                    />
-                  </View>
-                )}
+                <Text
+                  className="font-rubik mt-1 mb-2 text-center"
+                  style={{fontSize: 18, color: colors.text.primary}}>
+                  İyi dinlenmeler!
+                </Text>
               </>
-            </>
-          ) : (
-            <>
-              <Text
-                className="font-rubik text-center"
-                style={{fontSize: 16, color: colors.text.primary}}>
-                Bugün için planlanan egzersiziniz yok.
-              </Text>
-              <Text
-                className="font-rubik mt-1 mb-2 text-center"
-                style={{fontSize: 18, color: colors.text.primary}}>
-                İyi dinlenmeler!
-              </Text>
-            </>
-          )}
-        </View>
+            )}
+          </View>
 
-        <View
-          className="flex flex-col px-3 py-3 mb-3"
-          style={{
-            borderRadius: 17,
-            backgroundColor: colors.background.primary,
-          }}>
-          <View className="flex flex-row items-center justify-between">
-            <Text
-              className="font-rubik mb-2 ml-2"
-              style={{fontSize: 19, color: colors.text.primary}}>
-              Egzersiz Takvimi
-            </Text>
-            <Text
-              className="font-rubik mb-1 mr-1 rounded-xl"
-              style={{
-                paddingVertical: 5,
-                paddingHorizontal: 9,
-                fontSize: 14,
-                color: colors.text.primary,
-                backgroundColor: colors.background.secondary,
-              }}>
-              {new Date().toLocaleDateString('tr-TR', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </Text>
-          </View>
-          {weeklyExerciseProgress && (
-            <CustomWeeklyProgressCalendar
-              todayPercent={todayPercent}
-              weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
-              activeDays={updatedActiveDays ?? []}
-            />
-          )}
-          <View className="flex flex-row items-center justify-between mt-3">
-            <View className="flex flex-row items-center justify-between ml-2">
-              <View className="flex-col items-start space-x-2 mr-3">
-                <View className="flex flex-row items-center space-x-2">
-                  <View
-                    className="p-2 rounded-full"
-                    style={{backgroundColor: '#14E077'}}
-                  />
-                  <Text
-                    className="text-xs font-rubik ml-1"
-                    style={{color: colors.text.primary}}>
-                    Tamamlandı
-                  </Text>
-                </View>
-                <View className="flex-row items-center space-x-2 mt-2">
-                  <View
-                    className="p-2 rounded-full"
-                    style={{backgroundColor: '#fd5353'}}
-                  />
-                  <Text
-                    className="text-xs font-rubik ml-1"
-                    style={{color: colors.text.primary}}>
-                    Tamamlanmadı
-                  </Text>
-                </View>
-              </View>
-              <View className="flex-col items-start space-x-2">
-                <View className="flex-row items-center space-x-2">
-                  <View
-                    className="p-2 rounded-full"
-                    style={{
-                      backgroundColor: colors.primary[300] /*'#4f9cff' */,
-                    }}
-                  />
-                  <Text
-                    className="text-xs font-rubik ml-1"
-                    style={{color: colors.text.primary}}>
-                    Yapılacak
-                  </Text>
-                </View>
-                <View className="flex-row items-center space-x-2 mt-2">
-                  <View
-                    className="p-2 rounded-full"
-                    style={{backgroundColor: '#B9E2FE'}}
-                  />
-                  <Text
-                    className="text-xs font-rubik ml-1"
-                    style={{color: colors.text.primary}}>
-                    Bugün
-                  </Text>
-                </View>
-              </View>
-            </View>
-            <TouchableOpacity
-              className="self-end py-2 px-3"
-              style={{
-                backgroundColor: colors.background.secondary,
-                borderRadius: 14,
-              }}
-              onPress={() => setShowScheduleModal(true)}>
+          <View
+            className="flex flex-col px-3 py-3 mb-3"
+            style={{
+              borderRadius: 17,
+              backgroundColor: colors.background.primary,
+            }}>
+            <View className="flex flex-row items-center justify-between">
               <Text
-                className="text-md font-rubik"
-                style={{color: colors.text.primary}}>
-                Egzersiz Günleri
+                className="font-rubik mb-2 ml-2"
+                style={{fontSize: 19, color: colors.text.primary}}>
+                Egzersiz Takvimi
               </Text>
-            </TouchableOpacity>
+              <Text
+                className="font-rubik mb-1 mr-1 rounded-xl"
+                style={{
+                  paddingVertical: 5,
+                  paddingHorizontal: 9,
+                  fontSize: 14,
+                  color: colors.text.primary,
+                  backgroundColor: colors.background.secondary,
+                }}>
+                {new Date().toLocaleDateString('tr-TR', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </Text>
+            </View>
+            {weeklyExerciseProgress && (
+              <CustomWeeklyProgressCalendar
+                todayPercent={todayPercent}
+                weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
+                activeDays={updatedActiveDays ?? []}
+              />
+            )}
+            <View className="flex flex-row items-center justify-between mt-3">
+              <View className="flex flex-row items-center justify-between ml-2">
+                <View className="flex-col items-start space-x-2 mr-3">
+                  <View className="flex flex-row items-center space-x-2">
+                    <View
+                      className="p-2 rounded-full"
+                      style={{backgroundColor: '#14E077'}}
+                    />
+                    <Text
+                      className="text-xs font-rubik ml-1"
+                      style={{color: colors.text.primary}}>
+                      Tamamlandı
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center space-x-2 mt-2">
+                    <View
+                      className="p-2 rounded-full"
+                      style={{backgroundColor: '#fd5353'}}
+                    />
+                    <Text
+                      className="text-xs font-rubik ml-1"
+                      style={{color: colors.text.primary}}>
+                      Tamamlanmadı
+                    </Text>
+                  </View>
+                </View>
+                <View className="flex-col items-start space-x-2">
+                  <View className="flex-row items-center space-x-2">
+                    <View
+                      className="p-2 rounded-full"
+                      style={{
+                        backgroundColor: colors.primary[300] /*'#4f9cff' */,
+                      }}
+                    />
+                    <Text
+                      className="text-xs font-rubik ml-1"
+                      style={{color: colors.text.primary}}>
+                      Yapılacak
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center space-x-2 mt-2">
+                    <View
+                      className="p-2 rounded-full"
+                      style={{backgroundColor: '#B9E2FE'}}
+                    />
+                    <Text
+                      className="text-xs font-rubik ml-1"
+                      style={{color: colors.text.primary}}>
+                      Bugün
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              <TouchableOpacity
+                className="self-end py-2 px-3"
+                style={{
+                  backgroundColor: colors.background.secondary,
+                  borderRadius: 14,
+                }}
+                onPress={() => setShowScheduleModal(true)}>
+                <Text
+                  className="text-md font-rubik"
+                  style={{color: colors.text.primary}}>
+                  Egzersiz Günleri
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
+      ) : (
+        <View
+          className="rounded-2xl px-1 pt-2 mx-4 mt-3"
+          style={{backgroundColor: colors.background.primary}}>
+          <Text
+            className="font-rubik text-center"
+            style={{fontSize: 18, color: colors.text.primary}}>
+            Egzersiz özelliği etkin değil.
+          </Text>
+          <Text
+            className="font-rubik mt-1 mb-2 text-center"
+            style={{fontSize: 14, color: colors.text.primary}}>
+            Egzersiz yapabilmek için uygun bir gruba dahil olmanız gerekiyor.
+          </Text>
+        </View>
+      )}
       {isScheduleModalVisible() && (
         <View
           style={{

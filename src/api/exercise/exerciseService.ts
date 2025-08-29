@@ -59,6 +59,27 @@ export const getTodayExerciseByPosition = async (
   }
 };
 
+// For future implementations
+// backend flow: find group by user, find admin by group, find exercise by admin and return it...
+export const getTodayExerciseByGroup = async (position: ExercisePosition) => {
+  try {
+    const response = await apiClient.get(`/exercises/today`, {
+      params: {position: ExercisePosition[position]},
+    });
+    console.log('today exercise', response);
+
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    } else {
+      console.error('Unexpected status code:', response.status);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    return [];
+  }
+};
+
 export const createExercise = async (createExerciseDTO: CreateExerciseDTO) => {
   try {
     console.log('create DTO', createExerciseDTO);

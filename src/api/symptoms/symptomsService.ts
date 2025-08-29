@@ -20,6 +20,63 @@ export const getAllSymptoms = async () => {
   return response;
 };
 
+export const createStepGoal = async (goal: number): Promise<StepGoalDTO> => {
+  const res = await apiClient.put('/symptoms/step-goal', null, {
+    params: {goal},
+  });
+  return res.data;
+};
+
+export const completeStepGoal = async (id: number): Promise<StepGoalDTO> => {
+  const res = await apiClient.put(`/symptoms/step-goal/id/${id}/done`);
+  return res.data;
+};
+
+export const getWeeklyStepGoal = async (): Promise<StepGoalDTO> => {
+  const res = await apiClient.get('/symptoms/step-goal/weekly');
+  return res.data;
+};
+
+export const getDoneStepGoals = async (): Promise<StepGoalDTO[]> => {
+  const res = await apiClient.get('/symptoms/step-goal/done');
+  return res.data;
+};
+
+export const getWeeklyStepsTotal = async (
+  start: string,
+  end: string,
+): Promise<number> => {
+  const res = await apiClient.get('/symptoms/steps/weekly', {
+    params: {start, end}, // örn: 2025-08-25 .. 2025-08-29
+  });
+  const data = res.data;
+  return typeof data === 'number' ? data : data?.total ?? 0;
+};
+
+export const adminGetWeeklySteps = async (userId: number): Promise<number> => {
+  const res = await apiClient.get(`/symptoms/user/id/${userId}/steps/weekly`);
+  const data = res.data;
+  return typeof data === 'number' ? data : data?.total ?? 0;
+};
+
+// Bu hafta step-goal (tek kayıt) – admin, belirli kullanıcı
+export const adminGetWeeklyStepGoal = async (
+  userId: number,
+): Promise<StepGoalDTO> => {
+  const res = await apiClient.get(
+    `/symptoms/user/id/${userId}/step-goal/weekly`,
+  );
+  return res.data;
+};
+
+// Tamamlanan hedefler listesi – admin, belirli kullanıcı
+export const adminGetDoneStepGoals = async (
+  userId: number,
+): Promise<StepGoalDTO[]> => {
+  const res = await apiClient.get(`/symptoms/user/id/${userId}/step-goal/done`);
+  return res.data;
+};
+
 // const combine = async (synced: Symptoms, local: Symptoms) => {
 //   if (!synced.pulse) {
 //     if (heartRate !== merged.pulse) setHeartRate(merged.pulse);
