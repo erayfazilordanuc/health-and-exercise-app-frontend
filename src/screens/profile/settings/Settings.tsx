@@ -21,7 +21,7 @@ import {Avatar} from 'react-native-elements';
 import CustomAvatar from '../../../components/CustomAvatar';
 import {useTheme} from '../../../themes/ThemeProvider';
 import CustomAlert from '../../../components/CustomAlert';
-import {logout} from '../../../api/auth/authService';
+import {useLogout} from '../../../api/auth/authService';
 import NotificationSetting from 'react-native-open-notification';
 
 interface SettingsItemProps {
@@ -76,7 +76,7 @@ const Settings = () => {
   const {colors} = useTheme();
 
   const [user, setUser] = useState<User | null>(null);
-
+  const logout = useLogout();
   const [isAlertVisible, setIsAlertVisible] = useState(false);
 
   const [tapCount, setTapCount] = useState(0);

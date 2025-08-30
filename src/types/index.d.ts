@@ -1,3 +1,14 @@
+type ThemeOption =
+  | 'blueLight'
+  | 'blueDark'
+  | 'blueSystem'
+  | 'purpleLight'
+  | 'purpleDark'
+  | 'purpleSystem'
+  | 'greenLight'
+  | 'greenDark'
+  | 'greenSystem';
+
 type User = {
   id?: number;
   username: string;
@@ -8,6 +19,7 @@ type User = {
   role: string;
   groupId?: number;
   achievements: AchievementDTO[];
+  theme: ThemeOption;
 };
 
 type SessionState = {
@@ -93,11 +105,12 @@ type UserTheme = {
 
 type UpdateUserDTO = {
   id: number;
-  username: string;
-  email?: string;
-  birthDate?: string;
-  fullName: string;
+  username?: string | null;
+  email?: string | null;
+  birthDate?: string | null;
+  fullName?: string | null;
   groupId?: number | null;
+  theme?: ThemeOption | null;
 };
 
 type LoginRequestPayload = {
@@ -112,6 +125,7 @@ type RegisterRequestPayload = {
   birthDate?: string;
   password: string;
   gender?: string;
+  theme: ThemeOption;
 };
 
 type AdminLoginRequestPayload = {

@@ -57,7 +57,7 @@ const Chat = () => {
   //   sender,
   //   receiver: receiver.username,
   // });
-  
+
   const [initialized, setInitialized] = useState(false);
 
   const [userAmount, setUserAmount] = useState<number>(0);
@@ -298,7 +298,10 @@ const Chat = () => {
             Sohbet:{' '}
             <Text
               style={{
-                color: theme.name === 'Light' ? colors.primary[200] : '#0077FF',
+                color:
+                  theme.name === 'Light'
+                    ? colors.primary[200]
+                    : colors.primary[300],
               }}>
               {' ' + receiver.fullName}
             </Text>

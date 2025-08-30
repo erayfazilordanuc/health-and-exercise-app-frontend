@@ -166,7 +166,10 @@ const ExercisesAdmin = () => {
       )}
       <View className="absolute bottom-24 right-3 items-center">
         <TouchableOpacity
-          className="w-36 h-16 bg-blue-500 rounded-3xl flex items-center justify-center"
+          className="w-36 h-16 rounded-3xl flex items-center justify-center"
+          style={{
+            backgroundColor: colors.primary[200],
+          }}
           onPress={() => {
             navigation.navigate('EditExercise', {exercise: null});
           }}>

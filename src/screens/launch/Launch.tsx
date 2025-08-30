@@ -14,7 +14,7 @@ import {
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTheme} from '../../themes/ThemeProvider';
-import {Theme, themes} from '../../themes/themes';
+import {parseTheme, Theme, themes} from '../../themes/themes';
 import {checkHealthConnectAvailable} from '../../lib/health/healthConnectService';
 import {useNotificationNavigation} from '../../hooks/useNotificationNavigation';
 import {useUser} from '../../contexts/UserContext';
@@ -41,37 +41,52 @@ const Launch = () => {
     const user: User = JSON.parse(userData!);
 
     if (user) {
-      const userThemeJson = await AsyncStorage.getItem(
-        `${user.username}-main-theme`,
-      );
       setUser(user);
-      if (userThemeJson) {
-        const userTheme: UserTheme = userThemeJson
-          ? JSON.parse(userThemeJson)
-          : null;
-        if (theme) {
-          setTheme(userTheme.theme);
+      if (user.theme) {
+        const {color, mode, themeObj} = parseTheme(user.theme);
+        if (color && themeObj) {
+          if (mode === 'system') {
+            setTheme(colorScheme === 'dark' ? themeObj.dark : themeObj.light);
+          } else {
+            setTheme(mode === 'dark' ? themeObj.dark : themeObj.light);
+          }
         }
-      } else {
-        const newUserTheme: UserTheme = {
-          theme:
-            colorScheme === 'dark' ? themes.primary.dark : themes.primary.light,
-          isDefault: true,
-        };
-        setTheme(
-          colorScheme === 'dark' ? themes.primary.dark : themes.primary.light,
-        );
-        await AsyncStorage.setItem(
-          `${user!.username}-main-theme`,
-          JSON.stringify(newUserTheme),
-        );
       }
-    }
+    } else
+      setTheme(colorScheme === 'light' ? themes.blue.light : themes.blue.dark);
+
+    // if (user) {
+    //   const userThemeJson = await AsyncStorage.getItem(
+    //     `${user.username}-main-theme`,
+    //   );
+    //   setUser(user);
+    //   if (userThemeJson) {
+    //     const userTheme: UserTheme = userThemeJson
+    //       ? JSON.parse(userThemeJson)
+    //       : null;
+    //     if (theme) {
+    //       setTheme(userTheme.theme);
+    //     }
+    //   } else {
+    //     const newUserTheme: UserTheme = {
+    //       theme:
+    //         colorScheme === 'dark' ? themes.blue.dark : themes.blue.light,
+    //       isDefault: true,
+    //     };
+    //     setTheme(
+    //       colorScheme === 'dark' ? themes.blue.dark : themes.blue.light,
+    //     );
+    //     await AsyncStorage.setItem(
+    //       `${user!.username}-main-theme`,
+    //       JSON.stringify(newUserTheme),
+    //     );
+    //   }
+    // }
 
     const accessToken = await AsyncStorage.getItem('accessToken');
     const refreshToken = await AsyncStorage.getItem('refreshToken');
 
-    if (accessToken || refreshToken || userData) {
+    if (accessToken || refreshToken || user) {
       // if (user.role === 'ROLE_USER') {
       //   console.log('bura59');
       //   const isHealthConnectInstalled = await checkHealthConnectAvailable();
@@ -87,8 +102,8 @@ const Launch = () => {
   };
 
   // useEffect(() => {
-  //   if (colorScheme == 'light') setTheme(themes.primary.light);
-  //   else setTheme(themes.primary.dark);
+  //   if (colorScheme == 'light') setTheme(themes.blue.light);
+  //   else setTheme(themes.blue.dark);
   // }, [colorScheme]);
 
   useEffect(() => {

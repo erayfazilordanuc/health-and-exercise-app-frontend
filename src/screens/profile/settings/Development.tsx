@@ -428,7 +428,7 @@ const Development = () => {
 
   return (
     <View
-      className={`flex-1 pb-16 px-3 pt-3`}
+      className={`flex-1 mb-24 px-3 pt-3`}
       style={{backgroundColor: colors.background.secondary}}>
       <ScrollView>
         <View
@@ -629,7 +629,7 @@ const Development = () => {
             style={{color: colors.text.primary}}>
             Session Queue:{'\n'}
             <Text selectable className="text-sm font-rubik">
-              {JSON.stringify(sessionQueue, null, 2)}
+              {/* {JSON.stringify(sessionQueue, null, 2)} */}
             </Text>
           </Text>
         </View>
@@ -641,7 +641,7 @@ const Development = () => {
             style={{color: colors.text.primary}}>
             Session History:{'\n'}
             <Text selectable className="text-sm font-rubik">
-              {JSON.stringify(sessionHistory, null, 2)}
+              {/* {JSON.stringify(sessionHistory, null, 2)} */}
             </Text>
           </Text>
         </View>
@@ -653,7 +653,7 @@ const Development = () => {
             style={{color: colors.text.primary}}>
             DB Sessions:{'\n'}
             <Text selectable className="text-sm font-rubik">
-              {JSON.stringify(dbSessions, null, 2)}
+              {/* {JSON.stringify(dbSessions, null, 2)} */}
             </Text>
           </Text>
         </View>

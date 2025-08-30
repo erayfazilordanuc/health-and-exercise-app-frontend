@@ -13,6 +13,7 @@ import {
   ImageBackground,
   Modal,
   Dimensions,
+  useColorScheme,
 } from 'react-native';
 import {
   CommonActions,
@@ -45,10 +46,12 @@ import {
   LoginMethod,
 } from '../../types/enums';
 import {ConsentModal} from '../../components/ConsentModal';
+import {parseTheme} from '../../themes/themes';
 
 function UserLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
   const {theme, colors, setTheme} = useTheme();
+  const colorScheme = useColorScheme();
   const {height} = Dimensions.get('screen');
   const netInfo = useNetInfo();
   const [loading, setLoading] = useState(false);
@@ -142,6 +145,16 @@ function UserLogin() {
       if (loginResponse && loginResponse.status === 200 && loginResponse.data) {
         const user = loginResponse.data.userDTO as User;
         setUser(user);
+        if (user.theme) {
+          const {color, mode, themeObj} = parseTheme(user.theme);
+          if (color && themeObj) {
+            if (mode === 'system') {
+              setTheme(colorScheme === 'dark' ? themeObj.dark : themeObj.light);
+            } else {
+              setTheme(mode === 'dark' ? themeObj.dark : themeObj.light);
+            }
+          }
+        }
         navigation.navigate('App');
         navigation.dispatch(
           CommonActions.reset({
@@ -269,6 +282,7 @@ function UserLogin() {
         birthDate: birthDate,
         password: password.trim(),
         gender: gender,
+        theme: 'blueSystem',
       };
       const registerResponse = await register(registerPayload);
 

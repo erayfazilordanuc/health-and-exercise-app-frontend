@@ -149,11 +149,11 @@ const CustomWeeklyProgressCalendar = ({
               if (percent === 100) {
                 bgColor = '#14E077'; // tamamlandı
               } else if (isToday) {
-                bgColor = colors.primary[300]; // bugün (yapılacak)
+                bgColor = '#0091ff'; // bugün (yapılacak)
               } else if (!isFuture) {
                 bgColor = '#fd5353'; // geçmişte tamamlanmamış
               } else {
-                bgColor = colors.primary[300]; // gelecekte yapılacak
+                bgColor = '#0091ff'; // gelecekte yapılacak
               }
             }
 

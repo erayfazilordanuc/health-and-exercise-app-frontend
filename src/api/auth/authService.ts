@@ -5,6 +5,9 @@ import {Platform} from 'react-native';
 import {useUser} from '../../contexts/UserContext';
 import {themes} from '../../themes/themes';
 import {queryClient} from '../../lib/react-query/client';
+import {useTheme} from '../../themes/ThemeProvider';
+import {useQueryClient} from '@tanstack/react-query';
+import {useCallback} from 'react';
 
 const REMINDER_FLAG = 'EXERCISE_REMINDER_SCHEDULED';
 const TEST_REMINDER_FLAG = 'EXERCISE_REMINDER_TEST_SET';
@@ -18,14 +21,6 @@ export const login = async (credentials: LoginRequestPayload) => {
   await AsyncStorage.setItem('user', JSON.stringify(user));
   await AsyncStorage.setItem('accessToken', accessToken);
   await AsyncStorage.setItem('refreshToken', refreshToken);
-  const newUserTheme: UserTheme = {
-    theme: themes.primary.light,
-    isDefault: true,
-  };
-  await AsyncStorage.setItem(
-    `${user.username}-main-theme`,
-    JSON.stringify(newUserTheme),
-  );
   return response;
 };
 
@@ -38,14 +33,6 @@ export const register = async (credentials: RegisterRequestPayload) => {
   await AsyncStorage.setItem('user', JSON.stringify(user));
   await AsyncStorage.setItem('accessToken', accessToken);
   await AsyncStorage.setItem('refreshToken', refreshToken);
-  const newUserTheme: UserTheme = {
-    theme: themes.primary.light,
-    isDefault: true,
-  };
-  await AsyncStorage.setItem(
-    `${user.username}-main-theme`,
-    JSON.stringify(newUserTheme),
-  );
   return response;
 };
 
@@ -60,7 +47,7 @@ export const loginAdmin = async (credentials: AdminLoginRequestPayload) => {
     await AsyncStorage.setItem('accessToken', accessToken);
     await AsyncStorage.setItem('refreshToken', refreshToken);
     const newUserTheme: UserTheme = {
-      theme: themes.primary.light,
+      theme: themes.blue.light,
       isDefault: true,
     };
     await AsyncStorage.setItem(
@@ -84,7 +71,7 @@ export const registerAdmin = async (
     await AsyncStorage.setItem('accessToken', accessToken);
     await AsyncStorage.setItem('refreshToken', refreshToken);
     const newUserTheme: UserTheme = {
-      theme: themes.primary.light,
+      theme: themes.blue.light,
       isDefault: true,
     };
     await AsyncStorage.setItem(
@@ -115,6 +102,35 @@ export const refreshAccessToken = async () => {
     return newAccessToken;
   } else throw new Error('No refresh token found.');
 };
+
+export function useLogout() {
+  const {user, setUser} = useUser();
+  const queryClient = useQueryClient();
+
+  const logout = useCallback(async () => {
+    const userId = user?.id;
+
+    setUser(null);
+
+    if (userId) {
+      try {
+        await apiClient.delete('/notifications/user/fcm-token', {
+          data: {userId, platform: Platform.OS},
+        });
+      } catch (err) {
+        console.log('error deleting fcm token', err);
+      }
+    }
+
+    await queryClient.cancelQueries();
+    queryClient.removeQueries(); // v4/v5 için güvenli
+    queryClient.getMutationCache()?.clear?.();
+
+    await AsyncStorage.clear();
+  }, [user?.id, setUser, queryClient]);
+
+  return logout;
+}
 
 export const logout = async () => {
   const userData = await AsyncStorage.getItem('user');

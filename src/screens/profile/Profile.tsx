@@ -118,8 +118,14 @@ const Profile = () => {
   const [showHCAlert, setShowHCAlert] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const {data: weekly, isLoading: wLoading} = useWeeklyStepGoal();
+  const {data: weekly, isLoading: wLoading} = useWeeklyStepGoal({
+    enabled: user?.role === 'ROLE_USER',
+  });
   const [weeklyGoal, setWeeklyGoal] = useState(weekly);
+  useEffect(() => {
+    setWeeklyGoal(weekly);
+  }, [weekly]);
+
   const {data: dones, isLoading: dLoading} = useDoneStepGoals();
   const createMut = useCreateStepGoal();
   const completeMut = useCompleteStepGoal();
@@ -544,7 +550,7 @@ const Profile = () => {
                   className="font-rubik-medium text-2xl"
                   start={{x: 0, y: 0}}
                   end={{x: 0.7, y: 0}}
-                  colors={[colors.primary[300], '#40E0D0']}>
+                  colors={[colors.primary[300], colors.secondary[300]]}>
                   {user?.fullName}
                 </GradientText>
                 {user && user.role === 'ROLE_USER' ? (

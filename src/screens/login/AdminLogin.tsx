@@ -209,6 +209,7 @@ function AdminLogin() {
         birthDate: birthDate,
         password: password.trim(),
         gender: gender,
+        theme: 'blueSystem',
       };
 
       const requestPayload: AdminRegisterRequestPayload = {

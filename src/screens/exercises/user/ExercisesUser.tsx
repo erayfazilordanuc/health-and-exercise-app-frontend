@@ -510,7 +510,7 @@ const ExercisesUser = () => {
                     <View
                       className="p-2 rounded-full"
                       style={{
-                        backgroundColor: colors.primary[300] /*'#4f9cff' */,
+                        backgroundColor: '#4f9cff' /*'#4f9cff' */,
                       }}
                     />
                     <Text

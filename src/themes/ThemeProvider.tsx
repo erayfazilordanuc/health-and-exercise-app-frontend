@@ -7,7 +7,7 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-import {Theme, themes} from './themes';
+import {parseTheme, Theme, themes} from './themes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Tema Tipi
@@ -21,8 +21,8 @@ interface ThemeContextProps {
 
 // ThemeContext
 export const ThemeContext = createContext<ThemeContextProps>({
-  theme: themes.primary.light,
-  colors: themes.primary.light.colors,
+  theme: themes.blue.light,
+  colors: themes.blue.light.colors,
   setTheme: (theme: Theme) => {},
   // For initialization
 });
@@ -35,39 +35,29 @@ interface ThemeProviderProps {
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({children}) => {
   const colorScheme = useColorScheme();
   const [theme, setTheme] = useState<Theme>(
-    colorScheme === 'dark' ? themes.primary.dark : themes.primary.light,
+    colorScheme === 'dark' ? themes.blue.dark : themes.blue.light,
   );
 
   const onSchemeChange = async () => {
     const userData = await AsyncStorage.getItem('user');
-    const user: User = JSON.parse(userData!);
+    if (userData) {
+      const user: User = JSON.parse(userData);
 
-    if (user) {
-      const userThemeJson = await AsyncStorage.getItem(
-        `${user.username}-main-theme`,
-      );
-      if (userThemeJson) {
-        const userTheme: UserTheme = userThemeJson
-          ? JSON.parse(userThemeJson)
-          : null;
-        if (theme) {
-          if (userTheme.isDefault) {
-            setTheme(
-              colorScheme === 'dark'
-                ? themes.primary.dark
-                : themes.primary.light,
-            );
-          } else {
-            setTheme(userTheme.theme);
-          }
+      if (user.theme) {
+        const {color, mode, themeObj} = parseTheme(user.theme);
+        if (!color || !themeObj) return;
+
+        if (mode === 'system') {
+          setTheme(colorScheme === 'dark' ? themeObj.dark : themeObj.light);
+          return;
+        } else {
+          setTheme(mode === 'dark' ? themeObj.dark : themeObj.light);
           return;
         }
       }
     }
 
-    setTheme(
-      colorScheme === 'light' ? themes.primary.light : themes.primary.dark,
-    );
+    setTheme(colorScheme === 'light' ? themes.blue.light : themes.blue.dark);
   };
 
   useEffect(() => {

@@ -33,6 +33,9 @@ export const colorScheme = {
     250: '#0080ff',
     300: '#0061FF',
   },
+  secondary: {
+    300: '#40E0D0',
+  },
   background: {
     primary: '#555555',
     secondary: '3b3b3b',
@@ -46,6 +49,7 @@ export const colorScheme = {
   },
   gradient: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
+  isLight: false,
 };
 
 export const gradientLightColors = ['#E8FEFF', '#A3DDFF', '#A2FCE8'];

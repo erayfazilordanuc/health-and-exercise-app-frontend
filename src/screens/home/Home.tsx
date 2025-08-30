@@ -425,7 +425,7 @@ const Home = () => {
               className="pl-2 text-2xl font-rubik-medium text-center mb-1"
               start={{x: 0, y: 0}}
               end={{x: 0.7, y: 0}}
-              colors={[colors.primary[300], '#40E0D0']}>
+              colors={[colors.primary[300], colors.secondary[300]]}>
               {user?.fullName}
             </GradientText>
             {!isAdmin ? (
@@ -659,7 +659,10 @@ const Home = () => {
                       )}
                       <TouchableOpacity
                         className="py-2 px-3 flex items-center justify-center"
-                        style={{backgroundColor: '#3B93FF', borderRadius: 13}}
+                        style={{
+                          backgroundColor: colors.primary[200],
+                          borderRadius: 13,
+                        }}
                         onPress={async () => {
                           if (admin && user) {
                             const roomId = await qc.ensureQueryData({

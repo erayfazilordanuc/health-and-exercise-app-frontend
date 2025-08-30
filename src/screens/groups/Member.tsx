@@ -335,7 +335,10 @@ const Member = () => {
           Hasta:{'  '}
           <Text
             style={{
-              color: theme.name === 'Light' ? colors.primary[200] : '#0077FF',
+              color:
+                theme.name === 'Light'
+                  ? colors.primary[200]
+                  : colors.primary[300],
             }}>
             {member && member.fullName ? member.fullName : ''}
           </Text>
@@ -447,7 +450,8 @@ const Member = () => {
               </Text>
             )}
             <TouchableOpacity
-              className="py-2 px-3 mb-1 bg-blue-500 rounded-2xl flex items-center justify-center"
+              className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center"
+              style={{backgroundColor: colors.primary[200]}}
               onPress={async () => {
                 if (!admin || !member) return;
 
@@ -516,7 +520,7 @@ const Member = () => {
           </View>
           {lastMessage && !lastMessage.message.startsWith('dailyStatus') && (
             <Text
-              className="font-rubik text-md"
+              className="font-rubik text-md mt-1"
               style={{color: colors.text.primary}}>
               {lastMessage.receiver === admin?.username
                 ? member?.fullName + ' : ' + lastMessage.message
@@ -617,7 +621,7 @@ const Member = () => {
                         <View
                           className="p-2 rounded-full"
                           style={{
-                            backgroundColor: colors.primary[300] /*'#4f9cff' */,
+                            backgroundColor: '#4f9cff' /*'#4f9cff' */,
                           }}
                         />
                         <Text

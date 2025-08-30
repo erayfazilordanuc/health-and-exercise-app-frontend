@@ -553,8 +553,12 @@ const Groups = () => {
 
             {/* Buton */}
             <TouchableOpacity
-              className="w-44 bg-blue-500 flex items-center justify-center"
-              style={{borderRadius: 17, height: 50}}
+              className="w-44 flex items-center justify-center"
+              style={{
+                backgroundColor: colors.primary[200],
+                borderRadius: 17,
+                height: 50,
+              }}
               onPress={() => {
                 setIsCreateModalVisible(true);
               }}>

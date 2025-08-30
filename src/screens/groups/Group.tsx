@@ -68,6 +68,10 @@ const Group = () => {
   const [exerciseEnabled, setExerciseEnabled] = useState(
     group?.exerciseEnabled,
   );
+  useEffect(() => {
+    if (group) setExerciseEnabled(group.exerciseEnabled);
+  }, [group]);
+
   const updateMut = useUpdateGroup();
   const alertRef = useRef<CustomAlertSingletonHandle>(null);
   const {
@@ -377,8 +381,8 @@ const Group = () => {
                 </Text>
               )}
               <TouchableOpacity
-                className="py-2 px-3 mb-1 flex items-center justify-center"
-                style={{backgroundColor: '#3B93FF', borderRadius: 13}}
+                className="py-2 px-3 flex items-center justify-center"
+                style={{backgroundColor: colors.primary[200], borderRadius: 13}}
                 onPress={async () => {
                   // if (admin && user) {
                   //   const response = await isRoomExistBySenderAndReceiver(
@@ -455,7 +459,7 @@ const Group = () => {
             </View>
             {lastMessage && (
               <Text
-                className="font-rubik text-md"
+                className="font-rubik text-md mt-1"
                 style={{color: colors.text.primary}}>
                 {lastMessage.receiver === user?.username
                   ? admin?.fullName + ' : ' + lastMessage.message
