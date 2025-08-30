@@ -544,30 +544,46 @@ const Home = () => {
                           {initialized ? (
                             <View className="flex flex-row justify-center items-center mt-4 mb-1">
                               <TouchableOpacity
-                                disabled={
-                                  todayExerciseProgress?.totalProgressDuration !==
-                                    null &&
-                                  todayExerciseProgress?.totalProgressDuration ===
-                                    calcPercent(todayExerciseProgress)
-                                }
                                 className="flex flex-row justify-center items-center rounded-2xl py-3 pl-2"
                                 style={{
                                   backgroundColor:
                                     todayExerciseProgress?.totalProgressDuration &&
                                     calcPercent(todayExerciseProgress) === 100
-                                      ? '#55CC88'
+                                      ? colors.isLight
+                                        ? '#ABF7CE'
+                                        : '#48785D'
                                       : todayExerciseProgress?.totalProgressDuration &&
                                         todayExerciseProgress.totalProgressDuration >
                                           0
-                                      ? '#FFAA33'
-                                      : colors.primary[175],
+                                      ? colors.isLight
+                                        ? '#FFECD1'
+                                        : '#967757'
+                                      : colors.isLight
+                                      ? colors.background.third
+                                      : colors.primary[200],
                                 }}
                                 onPress={() =>
                                   navigation.navigate('Exercises', {
                                     screen: 'ExercisesUser',
                                   })
                                 }>
-                                <Text className="text-xl font-rubik ml-1">
+                                <Text
+                                  className="text-xl font-rubik ml-1"
+                                  style={{
+                                    color:
+                                      todayExerciseProgress?.totalProgressDuration &&
+                                      calcPercent(todayExerciseProgress) === 100
+                                        ? '#55CC88'
+                                        : todayExerciseProgress?.totalProgressDuration &&
+                                          todayExerciseProgress.totalProgressDuration >
+                                            0
+                                        ? '#FAA020'
+                                        : colors.isLight
+                                        ? colors.primary[200]
+                                        : colors.background.third,
+                                  }}>
+                                  {/* '#FFAA33' */}
+                                  {/* colors.primary[200] */}
                                   {todayExerciseProgress?.totalProgressDuration &&
                                   calcPercent(todayExerciseProgress) === 100
                                     ? 'Tamamlandı'
@@ -580,7 +596,20 @@ const Home = () => {
                                 <Image
                                   source={icons.gymnastic_1}
                                   className="size-12"
+                                  tintColor={
+                                    todayExerciseProgress?.totalProgressDuration &&
+                                    calcPercent(todayExerciseProgress) === 100
+                                      ? '#55CC88'
+                                      : todayExerciseProgress?.totalProgressDuration &&
+                                        todayExerciseProgress.totalProgressDuration >
+                                          0
+                                      ? '#FAA020'
+                                      : colors.isLight
+                                      ? colors.primary[200]
+                                      : colors.background.third
+                                  }
                                 />
+                                {/*colors.primary[200]*/}
                               </TouchableOpacity>
                               {todayExerciseProgress &&
                                 todayExerciseProgress.totalProgressDuration &&
@@ -660,7 +689,7 @@ const Home = () => {
                       <TouchableOpacity
                         className="py-2 px-3 flex items-center justify-center"
                         style={{
-                          backgroundColor: colors.primary[200],
+                          backgroundColor: colors.background.third,
                           borderRadius: 13,
                         }}
                         onPress={async () => {
@@ -706,7 +735,7 @@ const Home = () => {
                         <Text
                           className="font-rubik text-md text-center"
                           style={{
-                            color: colors.background.secondary,
+                            color: colors.primary[200],
                             marginTop: 1,
                           }}>
                           Sohbete Git

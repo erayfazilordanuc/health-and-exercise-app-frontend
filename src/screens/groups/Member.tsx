@@ -69,7 +69,8 @@ import {
   useExerciseSchedule,
   useExerciseScheduleAdmin,
 } from '../../hooks/exerciseQueries';
-import {extractAxiosMessage} from '@/src/api/axios/axios';
+import {parseTheme} from '../../themes/themes';
+import ColorCircle from '../../components/ColorCircle';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -309,6 +310,14 @@ const Member = () => {
     return `${minutes} dk`;
   }
 
+  const getMembersTheme = () => {
+    if (member?.theme) {
+      const {themeObj} = parseTheme(member?.theme);
+      console.log('theme object', themeObj);
+      return themeObj;
+    }
+  };
+
   return (
     <View style={{paddingTop: insets.top * 1.3}} className="flex-1 px-3">
       <LinearGradient
@@ -433,6 +442,31 @@ const Member = () => {
               {member?.gender === 'male' ? 'Erkek' : 'Kadın'}
             </Text>
           </View>
+          {getMembersTheme() && (
+            <View className="flex flex-row items-center mt-1 mb-1">
+              <Text
+                className="font-rubik-medium text-lg"
+                style={{color: colors.text.primary}}>
+                Kullandığı Tema:{'  '}
+              </Text>
+              <Text
+                className="font-rubik-medium text-lg"
+                style={{color: colors.text.primary}}>
+                {getMembersTheme()?.light.name.startsWith('blue')
+                  ? 'Mavi-Turkuaz '
+                  : getMembersTheme()?.light.name.startsWith('purple')
+                  ? 'Mor-Pembe '
+                  : getMembersTheme()?.light.name.startsWith('green')
+                  ? 'Yeşil-Sarı '
+                  : ''}
+              </Text>
+              <ColorCircle
+                color1={getMembersTheme()?.light.colors.primary[300]!}
+                color2={getMembersTheme()?.light.colors.secondary[300]!}
+                padding={14}
+              />
+            </View>
+          )}
         </View>
 
         <View
@@ -451,7 +485,7 @@ const Member = () => {
             )}
             <TouchableOpacity
               className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center"
-              style={{backgroundColor: colors.primary[200]}}
+              style={{backgroundColor: colors.background.third}}
               onPress={async () => {
                 if (!admin || !member) return;
 
@@ -513,7 +547,7 @@ const Member = () => {
               }}>
               <Text
                 className="font-rubik text-md"
-                style={{color: colors.background.secondary}}>
+                style={{color: colors.primary[200]}}>
                 Sohbet
               </Text>
             </TouchableOpacity>
@@ -798,7 +832,7 @@ const Member = () => {
                 </Text>
                 {weeklyGoal ? (
                   <View
-                    className="flex-col rounded-2xl p-3 mb-2"
+                    className="flex-col rounded-2xl pl-5 pr-7 py-2 mb-2"
                     style={{backgroundColor: colors.background.secondary}}>
                     {weeklyGoal.isDone && (
                       <View className="flex-row items-center justify-start mb-2">
@@ -820,7 +854,7 @@ const Member = () => {
                       Hedef: {' ' + weeklyGoal.goal} adım
                     </Text>
                     <Text
-                      className="font-rubik text-lg ml-2 mb-1"
+                      className="font-rubik text-lg ml-2"
                       style={{color: colors.text.primary}}>
                       İlerleme: {' ' + weeklySteps} adım
                     </Text>

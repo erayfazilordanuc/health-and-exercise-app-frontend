@@ -335,7 +335,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
               style={{
                 width: `${progress * 100}%`,
                 height: '100%',
-                backgroundColor: colors.primary[250],
+                backgroundColor: '#0A9FFF', // '#2CFF6B', // colors.primary[250],
                 borderRadius: 10,
               }}
             />

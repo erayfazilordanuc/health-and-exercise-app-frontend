@@ -187,6 +187,7 @@ const Preferences = () => {
                 <ColorCircle
                   color1={theme.colors.primary[300]}
                   color2={theme.colors.secondary[300]}
+                  padding={14}
                 />
               </View>
             </View>
@@ -277,6 +278,16 @@ const Preferences = () => {
                   className="size-7 mr-1"
                   tintColor={colors.text.primary}
                 />
+                {getOption().mode === 'system' && (
+                  <Text
+                    className="font-rubik ml-3"
+                    style={{
+                      fontSize: 12,
+                      color: colors.text.primary,
+                    }}>
+                    (Cihazınızdaki açık/koyu moduna{'\n'}otomatik uyum sağlar.)
+                  </Text>
+                )}
               </View>
             </View>
             <View className="flex flex-row items-center justify-center">

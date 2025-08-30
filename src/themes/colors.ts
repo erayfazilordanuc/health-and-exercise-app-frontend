@@ -26,6 +26,7 @@ export const colors = {
 export const colorScheme = {
   primary: {
     100: '#0061FF0A',
+    112: '#0061FF0A',
     125: '#0061FF0A',
     150: '#0061FF0A',
     175: '#dff2ff',

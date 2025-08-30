@@ -326,7 +326,7 @@ function GroupsStack() {
         <GroupsNativeStack.Screen
           name="Group"
           component={Group}
-          initialParams={{groupId: user!.groupId}} // ALERT sıkıntı çıkartabilir ama çok düşük ihtimal
+          initialParams={{groupId: user?.groupId}} // ALERT sıkıntı çıkartabilir ama çok düşük ihtimal
           options={{
             headerShown: false,
             header: () => (

@@ -18,11 +18,12 @@ export type Theme = {
 const blueLightColors = {
   primary: {
     100: '#0061FF0A',
+    112: '#0061FF0A',
     125: '#dff2ff',
     150: '#5dbfff',
     175: '#42b2fc',
     200: '#2d99ff', // 92b4e5
-    250: '#2CFF6B', // 0080ff
+    250: '#0A9FFF', // 0080ff
     300: '#0091ff',
   },
   secondary: {
@@ -31,7 +32,7 @@ const blueLightColors = {
   background: {
     primary: 'white',
     secondary: '#ecf1f3',
-    third: '#88bff9',
+    third: '#dff2ff',
     fourth: '#d9e5f1',
   }, // #eaf0f3 #eaf0f3
   text: {
@@ -47,11 +48,12 @@ const blueLightColors = {
 const blueDarkColors = {
   primary: {
     100: '#0061FF0A',
+    112: '#0061FF0A',
     125: '#dff2ff',
     150: '#5dbfff',
     175: '#42b2fc',
     200: '#13a2ff', // 3e5c8a
-    250: '#2CFF6B',
+    250: '#0A9FFF',
     300: '#0091ff', // 3B82F6 / #0061FF
   },
   secondary: {
@@ -76,6 +78,7 @@ const blueDarkColors = {
 const purpleLightColors = {
   primary: {
     100: '#0061FF0A',
+    112: '#0061FF0A',
     125: '#EEDFFF',
     150: '#A95DFF',
     175: '#B066FF',
@@ -89,7 +92,7 @@ const purpleLightColors = {
   background: {
     primary: 'white',
     secondary: '#ecf1f3',
-    third: '#88bff9',
+    third: '#EEDFFF',
     fourth: '#d9e5f1',
   }, // #eaf0f3 #eaf0f3
   text: {
@@ -105,6 +108,7 @@ const purpleLightColors = {
 const purpleDarkColors = {
   primary: {
     100: '#0061FF0A',
+    112: '#0061FF0A',
     125: '#EEDFFF',
     150: '#B470FF',
     175: '#B066FF',
@@ -118,7 +122,7 @@ const purpleDarkColors = {
   background: {
     primary: '#252525',
     secondary: '#171717',
-    third: '#313e47',
+    third: '#3B3B3B',
     fourth: '#2f373d',
   }, //primary: '#2f2f2f'
   text: {
@@ -134,10 +138,11 @@ const purpleDarkColors = {
 const greenLightColors = {
   primary: {
     100: '#0061FF0A',
-    125: '#DFFFE9',
+    112: '#0061FF0A',
+    125: '#EBFFF2',
     150: '#5DFF90',
     175: '#26ED66',
-    200: '#35E543',
+    200: '#2AD13B',
     250: '#15D14A',
     300: '#15D443',
   },
@@ -147,7 +152,7 @@ const greenLightColors = {
   background: {
     primary: 'white',
     secondary: '#ecf1f3',
-    third: '#88bff9',
+    third: '#EBFFF2',
     fourth: '#d9e5f1',
   }, // #eaf0f3 #eaf0f3
   text: {
@@ -163,6 +168,7 @@ const greenLightColors = {
 const greenDarkColors = {
   primary: {
     100: '#0061FF0A',
+    112: '#0061FF0A',
     125: '#DFFFE9',
     150: '#5DFF90',
     175: '#26ED66',
@@ -176,7 +182,7 @@ const greenDarkColors = {
   background: {
     primary: '#252525',
     secondary: '#171717',
-    third: '#313e47',
+    third: '#474747',
     fourth: '#2f373d',
   }, //primary: '#2f2f2f'
   text: {
@@ -193,31 +199,31 @@ const greenDarkColors = {
 export const themes: Record<string, ThemeType> = {
   blue: {
     light: {
-      name: 'Light',
+      name: 'blue light',
       colors: blueLightColors,
     },
     dark: {
-      name: 'Dark',
+      name: 'blue dark',
       colors: blueDarkColors,
     },
   },
   purple: {
     light: {
-      name: 'Light',
+      name: 'purple light',
       colors: purpleLightColors,
     },
     dark: {
-      name: 'Dark',
+      name: 'purple dark',
       colors: purpleDarkColors,
     },
   },
   green: {
     light: {
-      name: 'Light',
+      name: 'green light',
       colors: greenLightColors,
     },
     dark: {
-      name: 'Dark',
+      name: 'green dark',
       colors: greenDarkColors,
     },
   },

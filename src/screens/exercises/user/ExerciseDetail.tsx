@@ -409,7 +409,7 @@ const ExerciseDetail = () => {
                             <Text
                               className=" font-rubik text-xl px-3" // bg-blue-500 '#55CC88' '#FFAA33'
                               style={{
-                                borderRadius: 19,
+                                borderRadius: 14,
                                 paddingVertical: 10,
                                 backgroundColor: color,
                                 color: colors.background.primary,
@@ -435,7 +435,7 @@ const ExerciseDetail = () => {
                         <Text
                           className=" font-rubik text-xl px-3" // bg-blue-500 '#55CC88' '#FFAA33'
                           style={{
-                            borderRadius: 15,
+                            borderRadius: 14,
                             paddingVertical: 10,
                             backgroundColor: color,
                             color: colors.background.primary,

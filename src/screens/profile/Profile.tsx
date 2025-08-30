@@ -559,14 +559,14 @@ const Profile = () => {
                       className="py-2 px-3"
                       style={{
                         borderRadius: 13,
-                        backgroundColor: colors.primary[200],
+                        backgroundColor: colors.background.third,
                       }}
                       onPress={() => {
                         setShowDetail(!showDetail);
                       }}>
                       <Text
                         className="text-md font-rubik"
-                        style={{color: 'white'}}>
+                        style={{color: colors.primary[200]}}>
                         {showDetail ? 'Detayları Gizle' : 'Detay'}
                       </Text>
                     </TouchableOpacity>
@@ -674,7 +674,7 @@ const Profile = () => {
                 </Text>
                 {weeklyGoal ? (
                   <View
-                    className="flex-col rounded-2xl p-3 mb-2"
+                    className="flex-col rounded-2xl pl-5 pr-7 py-2 mb-2 self-start"
                     style={{backgroundColor: colors.background.secondary}}>
                     {weeklyGoal.isDone && (
                       <View className="flex-row items-center justify-start mb-2">
@@ -696,7 +696,7 @@ const Profile = () => {
                       Hedef: {' ' + weekly?.goal} adım
                     </Text>
                     <Text
-                      className="font-rubik text-lg ml-2 mb-1"
+                      className="font-rubik text-lg ml-2"
                       style={{color: colors.text.primary}}>
                       İlerleme: {' ' + weeklySteps} adım
                     </Text>
@@ -704,7 +704,7 @@ const Profile = () => {
                 ) : (
                   <TouchableOpacity
                     className="py-2 px-2 pr-3 rounded-2xl self-start mt-1 mb-3"
-                    style={{backgroundColor: colors.background.secondary}}
+                    style={{backgroundColor: colors.primary[125]}}
                     onPress={() => {
                       setGoaling(true);
                     }}
@@ -712,7 +712,7 @@ const Profile = () => {
                     <View className="flex-col items-center">
                       <Text
                         className="font-rubik text-lg ml-1 mr-2"
-                        style={{color: colors.text.primary}}>
+                        style={{color: colors.primary[200]}}>
                         Bu Hafta İçin Hedef Ekle{' '}
                         {!goaling && <Text>{'  '}+ </Text>}
                       </Text>

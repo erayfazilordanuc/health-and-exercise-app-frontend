@@ -33,6 +33,7 @@
     "dayjs": "^1.11.13",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
+    "lucide-react-native": "^0.542.0",
     "nativewind": "^4.1.23",
     "react": "19.0.0",
     "react-native": "0.79.2",

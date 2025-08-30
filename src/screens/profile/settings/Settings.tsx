@@ -23,6 +23,7 @@ import {useTheme} from '../../../themes/ThemeProvider';
 import CustomAlert from '../../../components/CustomAlert';
 import {useLogout} from '../../../api/auth/authService';
 import NotificationSetting from 'react-native-open-notification';
+import {useUser} from '../../../contexts/UserContext';
 
 interface SettingsItemProps {
   icon: ImageSourcePropType;
@@ -75,22 +76,12 @@ const Settings = () => {
   const insets = useSafeAreaInsets();
   const {colors} = useTheme();
 
-  const [user, setUser] = useState<User | null>(null);
+  const {user} = useUser();
   const logout = useLogout();
   const [isAlertVisible, setIsAlertVisible] = useState(false);
 
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState<number>(0);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const userData = await AsyncStorage.getItem('user');
-      const user: User = JSON.parse(userData!);
-      setUser(user);
-    };
-
-    fetchUser();
-  }, []);
 
   const handleLogout = async () => {
     await logout();

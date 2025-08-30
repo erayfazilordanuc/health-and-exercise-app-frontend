@@ -382,7 +382,10 @@ const Group = () => {
               )}
               <TouchableOpacity
                 className="py-2 px-3 flex items-center justify-center"
-                style={{backgroundColor: colors.primary[200], borderRadius: 13}}
+                style={{
+                  backgroundColor: colors.background.third,
+                  borderRadius: 13,
+                }}
                 onPress={async () => {
                   // if (admin && user) {
                   //   const response = await isRoomExistBySenderAndReceiver(
@@ -452,7 +455,7 @@ const Group = () => {
                 }}>
                 <Text
                   className="font-rubik text-md"
-                  style={{color: colors.background.secondary, marginTop: 1}}>
+                  style={{color: colors.primary[200], marginTop: 1}}>
                   Sohbete Git
                 </Text>
               </TouchableOpacity>

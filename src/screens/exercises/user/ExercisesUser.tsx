@@ -60,6 +60,7 @@ import {
   useUpsertExerciseSchedule,
 } from '../../../hooks/exerciseQueries';
 import {useGroupById} from '../../../hooks/groupQueries';
+import {Dumbbell, Armchair} from 'lucide-react-native';
 
 const {height, width} = Dimensions.get('window');
 
@@ -335,17 +336,20 @@ const ExercisesUser = () => {
                           className="flex flex-row justify-center items-center py-3 pl-3"
                           style={{
                             borderRadius: 17,
-                            backgroundColor: colors.primary[175],
+                            backgroundColor: colors.primary[125],
                           }}
                           onPress={() => {
                             setShowModal(true);
                           }}>
-                          <Text className="text-xl font-rubik">
+                          <Text
+                            className="text-xl font-rubik"
+                            style={{color: colors.primary[200]}}>
                             Egzersize başla
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
                             className="size-16"
+                            tintColor={colors.primary[200]}
                           />
                         </TouchableOpacity>
                       ) : todayExerciseProgress.exerciseDTO &&
@@ -359,15 +363,20 @@ const ExercisesUser = () => {
                           className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
                           style={{
                             borderRadius: 17,
-                            backgroundColor: '#3BC476',
+                            backgroundColor: colors.isLight
+                              ? '#ABF7CE'
+                              : '#4D8A69',
                           }}
                           onPress={onContinueExercise}>
-                          <Text className="text-xl font-rubik">
+                          <Text
+                            className="text-xl font-rubik"
+                            style={{color: '#3BC476'}}>
                             Tamamlandı!{'\n'}Egzersizi gör
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
                             className="size-16"
+                            tintColor={'#3BC476'}
                           />
                         </TouchableOpacity>
                       ) : (
@@ -375,16 +384,22 @@ const ExercisesUser = () => {
                           className="flex flex-row justify-center items-center ml-1 py-3 pl-3 px-1"
                           style={{
                             borderRadius: 17,
-                            backgroundColor: '#FFAA33',
+                            backgroundColor: colors.isLight
+                              ? '#FFECD1'
+                              : '#967757',
                           }}
                           onPress={onContinueExercise}>
-                          <Text className="text-xl font-rubik mx-2">
+                          <Text
+                            className="text-xl font-rubik mx-2"
+                            style={{color: '#FAA020'}}>
                             Egzersize{'\n'}devam et
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
                             className="size-16"
+                            tintColor={'#FAA020'}
                           />
+                          {/* '#FFAA33' */}
                         </TouchableOpacity>
                       )}
                       {todayExerciseProgress &&
@@ -648,7 +663,7 @@ const ExercisesUser = () => {
               <TouchableOpacity
                 className="py-2 px-4 mt-4 border mr-2"
                 style={{
-                  borderRadius: 17,
+                  borderRadius: 13,
                   backgroundColor: colors.background.secondary,
                   borderColor: colors.primary[125],
                 }}
@@ -672,7 +687,7 @@ const ExercisesUser = () => {
               <TouchableOpacity
                 className="py-2 px-4 mt-4 border ml-2"
                 style={{
-                  borderRadius: 17,
+                  borderRadius: 13,
                   backgroundColor: colors.background.secondary,
                   borderColor: colors.primary[125],
                 }}
@@ -727,74 +742,54 @@ const ExercisesUser = () => {
             alignItems: 'center',
             paddingHorizontal: 20, // ✅ kenarlarda margin
           }}>
-          <View
-            style={{
-              maxWidth: (width * 9) / 10, // ✅ tabletlerde taşmayı önler
-              borderRadius: 17,
-              backgroundColor: colors.background.primary,
-
-              paddingVertical: 15,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Text
-              className="font-rubik-semibold text-2xl mb-3 text-center"
-              style={{color: colors.text.primary}}>
+          <View className="bg-white rounded-2xl p-6 items-center">
+            <Text className="text-xl font-rubik-medium text-gray-800 mb-3">
               Egzersiz Türü Seçimi
             </Text>
-            <Text
-              className="font-rubik text-lg mb-3 text-center"
-              style={{color: colors.text.secondary}}>
+            <Text className="font-rubik text-center text-gray-500 mb-6">
               Bugünkü egzersizinizi ayakta mı yoksa oturarak mı yapmak
               istediğinizi seçiniz.
             </Text>
-            <View className="flex flex-row justify-between items-center">
+
+            <View className="flex-row justify-between w-full">
+              {/* Ayakta */}
               <TouchableOpacity
-                className="mt-2 mr-1 border"
-                style={{
-                  paddingHorizontal: 10,
-                  paddingVertical: 10,
-                  borderRadius: 17,
-                  backgroundColor: colors.primary[175],
-                  borderColor: colors.primary[150],
-                }}
-                onPress={() => onStartExercise(ExercisePosition.STANDING)}>
+                onPress={() => onStartExercise(ExercisePosition.STANDING)}
+                className="flex-1 rounded-2xl p-5 mx-2 items-center"
+                style={{backgroundColor: colors.primary[125]}}>
+                {/*bg-blue-100 */}
+                <Dumbbell size={40} color={colors.primary[200]} />
+                {/*color="#3B82F6"*/}
                 <Text
-                  className="font-rubik-semibold text-2xl text-center"
-                  style={{color: colors.background.primary}}>
+                  className="mt-3 font-rubik-semibold text-lg"
+                  style={{color: colors.primary[200]}}>
+                  {/*text-blue-600 */}
                   Ayakta
                 </Text>
               </TouchableOpacity>
+
+              {/* Oturarak */}
               <TouchableOpacity
-                className="mt-2 ml-2 border"
-                style={{
-                  paddingHorizontal: 10,
-                  paddingVertical: 10,
-                  borderRadius: 17,
-                  backgroundColor: colors.primary[175],
-                  borderColor: colors.primary[150],
-                }}
-                onPress={() => onStartExercise(ExercisePosition.SEATED)}>
+                onPress={() => onStartExercise(ExercisePosition.SEATED)}
+                className="flex-1 rounded-2xl p-5 mx-2 items-center"
+                style={{backgroundColor: colors.primary[125]}}>
+                {/*bg-blue-100 */}
+                <Armchair size={40} color={colors.primary[200]} />
+                {/*color="#3B82F6"*/}
                 <Text
-                  className="font-rubik-semibold text-2xl text-center"
-                  style={{color: colors.background.primary}}>
+                  className="mt-3 font-rubik-semibold text-lg"
+                  style={{color: colors.primary[200]}}>
+                  {/*text-blue-600 */}
                   Oturarak
                 </Text>
               </TouchableOpacity>
             </View>
+
+            {/* Geri Dön */}
             <TouchableOpacity
-              className="py-2 px-4 mt-6 border"
-              style={{
-                borderRadius: 17,
-                backgroundColor: colors.background.secondary,
-                borderColor: colors.primary[125],
-              }}
-              onPress={() => setShowModal(false)}>
-              <Text
-                className="font-rubik text-md text-center"
-                style={{color: colors.text.secondary}}>
-                Geri Dön
-              </Text>
+              onPress={() => setShowModal(false)}
+              className="mt-6 bg-gray-100 px-5 py-3 rounded-xl">
+              <Text className="text-gray-600 font-rubik">Geri Dön</Text>
             </TouchableOpacity>
           </View>
         </View>

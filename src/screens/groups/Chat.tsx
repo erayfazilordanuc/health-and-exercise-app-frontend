@@ -321,7 +321,7 @@ const Chat = () => {
           <View className="flex-1 items-center justify-center px-4 pt-1">
             <Text
               className="text-center text-lg font-rubik"
-              style={{color: colors.text.primary}}>
+              style={{color: colors.background.primary}}>
               Henüz bu görüşmede bir mesaj bulunmuyor.
             </Text>
             <Text className="text-center text-2xl mt-2">💬</Text>
