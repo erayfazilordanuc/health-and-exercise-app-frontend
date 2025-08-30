@@ -295,7 +295,7 @@ const Preferences = () => {
                 className="mr-1 py-2 px-4 rounded-2xl flex flex-row items-center justify-center"
                 style={{
                   // backgroundColor:
-                  //   theme.name === 'Light'
+                  //   theme.colors.isLight
                   //     ? colors.background.primary
                   //     : colors.background.secondary,
                   backgroundColor: colors.background.secondary,

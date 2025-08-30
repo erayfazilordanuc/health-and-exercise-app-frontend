@@ -280,13 +280,13 @@ const Group = () => {
           className="pl-7 font-rubik-semibold pr-7"
           style={{
             color:
-              theme.name === 'Light' ? '#333333' : colors.background.primary,
+              theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Grup:{'  '}
           <Text
             style={{
-              color: theme.name === 'Light' ? colors.primary[200] : '#2F2F30',
+              color: theme.colors.isLight ? colors.primary[200] : '#2F2F30',
             }}>
             {group && group.name ? group.name : ''}
           </Text>

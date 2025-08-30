@@ -68,7 +68,7 @@ const ExercisesAdmin = () => {
           className="pl-7 font-rubik-semibold"
           style={{
             color:
-              theme.name === 'Light'
+              theme.colors.isLight
                 ? colors.text.primary
                 : colors.background.secondary,
             fontSize: 24,

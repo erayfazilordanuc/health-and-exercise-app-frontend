@@ -88,7 +88,7 @@ export default function AppNavigator() {
     <NavigationContainer theme={navTheme}>
       <StatusBar
         backgroundColor={colors.background.secondary}
-        barStyle={theme.name === 'Light' ? 'dark-content' : 'light-content'}
+        barStyle={theme.colors.isLight ? 'dark-content' : 'light-content'}
       />
       <AppStack />
     </NavigationContainer>

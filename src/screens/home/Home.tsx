@@ -392,7 +392,7 @@ const Home = () => {
           className="pl-7 font-rubik-semibold"
           style={{
             color:
-              theme.name === 'Light' ? '#333333' : colors.background.primary,
+              theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Ana Ekran
@@ -469,7 +469,7 @@ const Home = () => {
                 </Text>
                 <Image
                   source={
-                    theme.name === 'Light'
+                    theme.colors.isLight
                       ? images.dailyStatus
                       : images.dailyStatusDark
                   }

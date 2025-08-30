@@ -292,14 +292,14 @@ const Chat = () => {
             className="font-rubik-semibold"
             style={{
               color:
-                theme.name === 'Light' ? '#2F2F30' : colors.background.primary,
+                theme.colors.isLight ? '#2F2F30' : colors.background.primary,
               fontSize: 24,
             }}>
             Sohbet:{' '}
             <Text
               style={{
                 color:
-                  theme.name === 'Light'
+                  theme.colors.isLight
                     ? colors.primary[200]
                     : colors.primary[300],
               }}>
@@ -396,7 +396,7 @@ const Chat = () => {
             backgroundColor: colors.background.primary,
             borderWidth: 1,
             borderColor:
-              theme.name === 'Light'
+              theme.colors.isLight
                 ? 'rgba(150,150,150,0.09)'
                 : 'rgba(150,150,150,0.09)',
             marginBottom: keyboardHeight,

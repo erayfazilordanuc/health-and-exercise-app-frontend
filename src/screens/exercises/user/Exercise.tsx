@@ -71,9 +71,9 @@ const Exercise = () => {
   //   // borderWidth: 1,
   //   // borderTopWidth: 0.9,
   //   // borderColor:
-  //   //   theme.name === 'Light' ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
+  //   //   theme.colors.isLight ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
   //   // backgroundColor:
-  //   //   theme.name === 'Light' ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
+  //   //   theme.colors.isLight ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
   //   // elevation: 0,
   //   // display: 'flex',
   //   minHeight: 56 + Math.max(insets.bottom, 0),
@@ -91,9 +91,9 @@ const Exercise = () => {
   //   borderWidth: 1,
   //   borderTopWidth: 0.9,
   //   borderColor:
-  //     theme.name === 'Light' ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
+  //     theme.colors.isLight ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
   //   backgroundColor:
-  //     theme.name === 'Light' ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
+  //     theme.colors.isLight ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
   //   elevation: 0,
   // });
 
@@ -130,9 +130,9 @@ const Exercise = () => {
     borderWidth: 1,
     borderTopWidth: 0.9,
     borderColor:
-      theme.name === 'Light' ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
+      theme.colors.isLight ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
     backgroundColor:
-      theme.name === 'Light' ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
+      theme.colors.isLight ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
     elevation: 0,
   });
 

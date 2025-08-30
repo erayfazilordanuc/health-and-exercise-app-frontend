@@ -492,7 +492,7 @@ const Profile = () => {
           className="pl-7 font-rubik-semibold"
           style={{
             color:
-              theme.name === 'Light' ? '#333333' : colors.background.primary,
+              theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Profil {user?.role === 'ROLE_ADMIN' ? ' (Hemşire)' : ''}
@@ -506,7 +506,7 @@ const Profile = () => {
             source={icons.settings}
             className="size-9"
             tintColor={
-              theme.name === 'Light' ? '#333333' : colors.background.primary
+              theme.colors.isLight ? '#333333' : colors.background.primary
             }
           />
         </TouchableOpacity>

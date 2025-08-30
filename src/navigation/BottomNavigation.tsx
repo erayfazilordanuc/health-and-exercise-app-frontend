@@ -672,11 +672,11 @@ export function BottomNavigator() {
         //   borderWidth: 1,
         //   borderTopWidth: 0.9,
         //   borderColor:
-        //     theme.name === 'Light'
+        //     theme.colors.isLight
         //       ? 'rgba(0,0,0,0.09)'
         //       : 'rgba(150,150,150,0.09)',
         //   backgroundColor:
-        //     theme.name === 'Light'
+        //     theme.colors.isLight
         //       ? 'rgba(255,255,255,0.95)'
         //       : 'rgba(25,25,25,0.95)',
         //   elevation: 0,
@@ -699,11 +699,11 @@ export function BottomNavigator() {
           borderWidth: 1,
           borderTopWidth: 0.9,
           borderColor:
-            theme.name === 'Light'
+            theme.colors.isLight
               ? 'rgba(0,0,0,0.09)'
               : 'rgba(150,150,150,0.09)',
           backgroundColor:
-            theme.name === 'Light'
+            theme.colors.isLight
               ? 'rgba(255,255,255,0.95)'
               : 'rgba(25,25,25,0.95)',
           elevation: 0,

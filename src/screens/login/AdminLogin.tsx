@@ -323,7 +323,7 @@ function AdminLogin() {
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
               backgroundColor:
-                theme.name === 'Light' ? colors.background.primary : '#333333',
+                theme.colors.isLight ? colors.background.primary : '#333333',
             }}>
             <TextInput
               placeholderTextColor={'gray'}
@@ -342,7 +342,7 @@ function AdminLogin() {
           className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
           style={{
             backgroundColor:
-              theme.name === 'Light' ? colors.background.primary : '#333333',
+              theme.colors.isLight ? colors.background.primary : '#333333',
           }}>
           <TextInput
             placeholderTextColor={'gray'}
@@ -363,7 +363,7 @@ function AdminLogin() {
               className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
               style={{
                 backgroundColor:
-                  theme.name === 'Light'
+                  theme.colors.isLight
                     ? colors.background.primary
                     : '#333333',
               }}>
@@ -385,7 +385,7 @@ function AdminLogin() {
               style={{
                 borderColor: '#7AADFF',
                 backgroundColor:
-                  theme.name === 'Light'
+                  theme.colors.isLight
                     ? colors.background.primary
                     : '#333333',
               }}>
@@ -437,7 +437,7 @@ function AdminLogin() {
               className="z-50 mt-2"
               style={{
                 backgroundColor:
-                  theme.name === 'Light'
+                  theme.colors.isLight
                     ? colors.background.primary
                     : '#333333',
                 borderRadius: 25,
@@ -474,7 +474,7 @@ function AdminLogin() {
                   borderRadius: 20,
                   borderColor: 'gray',
                   backgroundColor:
-                    theme.name === 'Light'
+                    theme.colors.isLight
                       ? colors.background.primary
                       : '#333333',
                 }}
@@ -487,7 +487,7 @@ function AdminLogin() {
           className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
           style={{
             backgroundColor:
-              theme.name === 'Light' ? colors.background.primary : '#333333',
+              theme.colors.isLight ? colors.background.primary : '#333333',
           }}>
           <TextInput
             placeholderTextColor={'gray'}
@@ -518,7 +518,7 @@ function AdminLogin() {
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
               backgroundColor:
-                theme.name === 'Light' ? colors.background.primary : '#333333',
+                theme.colors.isLight ? colors.background.primary : '#333333',
             }}>
             <TextInput
               placeholderTextColor={'gray'}
@@ -543,7 +543,7 @@ function AdminLogin() {
                 className="shadow-md shadow-zinc-350 rounded-3xl w-1/2 py-2 mt-3"
                 style={{
                   backgroundColor:
-                    theme.name === 'Light'
+                    theme.colors.isLight
                       ? colors.background.primary
                       : '#333333',
                 }}>
@@ -562,7 +562,7 @@ function AdminLogin() {
                 className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
                 style={{
                   backgroundColor:
-                    theme.name === 'Light'
+                    theme.colors.isLight
                       ? colors.background.primary
                       : '#333333',
                 }}>

@@ -338,14 +338,14 @@ const Member = () => {
           className="pl-4 font-rubik-semibold pr-7"
           style={{
             color:
-              theme.name === 'Light' ? '#333333' : colors.background.primary,
+              theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Hasta:{'  '}
           <Text
             style={{
               color:
-                theme.name === 'Light'
+                theme.colors.isLight
                   ? colors.primary[200]
                   : colors.primary[300],
             }}>

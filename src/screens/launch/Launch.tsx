@@ -159,7 +159,7 @@ const Launch = () => {
         className="px-6 py-3 rounded-2xl mb-2"
         style={{
           backgroundColor:
-            theme.name === 'Light' ? colors.background.primary : '#333333',
+            theme.colors.isLight ? colors.background.primary : '#333333',
         }}
         onPress={() => {
           navigation.navigate('UserLogin');
@@ -176,7 +176,7 @@ const Launch = () => {
         className="px-6 py-3 rounded-2xl"
         style={{
           backgroundColor:
-            theme.name === 'Light' ? colors.background.primary : '#333333',
+            theme.colors.isLight ? colors.background.primary : '#333333',
         }}
         onPress={() => {
           navigation.navigate('AdminLogin');

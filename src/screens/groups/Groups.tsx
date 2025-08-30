@@ -235,7 +235,7 @@ const Groups = () => {
           className="pl-7 font-rubik-semibold"
           style={{
             color:
-              theme.name === 'Light' ? '#333333' : colors.background.primary,
+              theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Gruplar
