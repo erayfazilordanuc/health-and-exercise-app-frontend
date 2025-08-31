@@ -61,6 +61,7 @@ import {
 } from '../../../hooks/exerciseQueries';
 import {useGroupById} from '../../../hooks/groupQueries';
 import {Dumbbell, Armchair} from 'lucide-react-native';
+import {isTodayExerciseDay} from '../../../utils/dates';
 
 const {height, width} = Dimensions.get('window');
 
@@ -114,10 +115,7 @@ const ExercisesUser = () => {
   const fetchProgress = async () => {
     setLoading(true);
     try {
-      if (
-        updatedActiveDays &&
-        updatedActiveDays.includes(new Date().getDay())
-      ) {
+      if (updatedActiveDays && isTodayExerciseDay(updatedActiveDays)) {
         const todayExerciseProgressRes: ExerciseProgressDTO =
           await getTodaysProgress();
         // if (!isEqual(todayExerciseProgressRes, todayExerciseProgress))
@@ -296,8 +294,7 @@ const ExercisesUser = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color:
-              theme.colors.isLight ? '#333333' : colors.background.primary,
+            color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           {user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler'}
@@ -316,8 +313,7 @@ const ExercisesUser = () => {
               backgroundColor: colors.background.primary,
             }}>
             {/* TO DO scheduleden gelmeli */}
-            {updatedActiveDays &&
-            updatedActiveDays.includes(new Date().getDay()) ? (
+            {updatedActiveDays && isTodayExerciseDay(updatedActiveDays) ? (
               <>
                 <>
                   <Text
@@ -386,18 +382,20 @@ const ExercisesUser = () => {
                             borderRadius: 17,
                             backgroundColor: colors.isLight
                               ? '#FFECD1'
-                              : '#967757',
+                              : '#473E31',
                           }}
                           onPress={onContinueExercise}>
                           <Text
                             className="text-xl font-rubik mx-2"
-                            style={{color: '#FAA020'}}>
+                            style={{
+                              color: colors.isLight ? '#FAA020' : '#FF9800',
+                            }}>
                             Egzersize{'\n'}devam et
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
                             className="size-16"
-                            tintColor={'#FAA020'}
+                            tintColor={colors.isLight ? '#FAA020' : '#FF9800'}
                           />
                           {/* '#FFAA33' */}
                         </TouchableOpacity>
@@ -548,15 +546,15 @@ const ExercisesUser = () => {
                 </View>
               </View>
               <TouchableOpacity
-                className="self-end py-2 px-3"
+                className="self-end py-2 px-3 mb-1"
                 style={{
                   backgroundColor: colors.background.secondary,
-                  borderRadius: 14,
+                  borderRadius: 12,
                 }}
                 onPress={() => setShowScheduleModal(true)}>
                 <Text
-                  className="text-md font-rubik"
-                  style={{color: colors.text.primary}}>
+                  className="text-sm font-rubik"
+                  style={{color: colors.text.secondary}}>
                   Egzersiz Günleri
                 </Text>
               </TouchableOpacity>
@@ -604,7 +602,7 @@ const ExercisesUser = () => {
             }}>
             <Text
               className="font-rubik-semibold text-2xl mb-4 text-center"
-              style={{color: colors.text.primary}}>
+              style={{color: colors.text.secondary}}>
               Egzersiz Günleri
             </Text>
             {!isScheduleLoading && !activeDays && (

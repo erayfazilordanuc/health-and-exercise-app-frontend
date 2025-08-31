@@ -129,10 +129,12 @@ const Exercise = () => {
     borderRadius: 40,
     borderWidth: 1,
     borderTopWidth: 0.9,
-    borderColor:
-      theme.colors.isLight ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
-    backgroundColor:
-      theme.colors.isLight ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
+    borderColor: theme.colors.isLight
+      ? 'rgba(0,0,0,0.09)'
+      : 'rgba(150,150,150,0.09)',
+    backgroundColor: theme.colors.isLight
+      ? 'rgba(255,255,255,0.95)'
+      : 'rgba(25,25,25,0.95)',
     elevation: 0,
   });
 
@@ -178,11 +180,11 @@ const Exercise = () => {
   useFocusEffect(
     useCallback(() => {
       // ekrana girince
+      StatusBar.setHidden(true, 'fade');
       const {height, width} = Dimensions.get('window');
       const isPortrait = height >= width;
       if (!isPortrait) {
         Orientation.lockToPortrait();
-        StatusBar.setHidden(true, 'fade');
 
         const portraitInsts = useSafeAreaInsets();
         setPortraitInsets(portraitInsts);

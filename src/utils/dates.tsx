@@ -7,3 +7,7 @@ export const ymdLocal = (d: Date) => {
 
 export const atLocalMidnight = (d: Date) =>
   new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+
+export const isTodayExerciseDay = (days: number[]) => {
+  return days.includes(((new Date().getDay() + 6) % 7) + 1);
+};

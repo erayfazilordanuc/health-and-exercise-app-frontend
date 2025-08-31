@@ -176,7 +176,7 @@ const CustomWeeklyProgressCalendar = ({
                   className="text-sm text-center font-rubik"
                   style={{
                     color:
-                      isToday && theme.name === 'Dark'
+                      isToday && !theme.colors.isLight
                         ? colors.background.primary
                         : colors.text.primary,
                   }}>

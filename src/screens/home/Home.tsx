@@ -68,6 +68,7 @@ import {getRoomIdByUsers, MSG_KEYS} from '../../hooks/messageQueries';
 import {useQueryClient} from '@tanstack/react-query';
 import {useGroupAdminByGroupId, useGroupById} from '../../hooks/groupQueries';
 import {useExerciseSchedule} from '../../hooks/exerciseQueries';
+import {isTodayExerciseDay} from '../../utils/dates';
 // import {
 //   isExerciseReminderScheduled,
 //   registerExerciseReminder,
@@ -391,8 +392,7 @@ const Home = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color:
-              theme.colors.isLight ? '#333333' : colors.background.primary,
+            color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Ana Ekran
@@ -532,7 +532,7 @@ const Home = () => {
                       borderRadius: 20,
                       backgroundColor: colors.background.primary,
                     }}>
-                    {activeDays && activeDays.includes(new Date().getDay()) ? (
+                    {activeDays && isTodayExerciseDay(activeDays) ? (
                       <>
                         <>
                           <Text
@@ -557,7 +557,7 @@ const Home = () => {
                                           0
                                       ? colors.isLight
                                         ? '#FFECD1'
-                                        : '#967757'
+                                        : '#473E31'
                                       : colors.isLight
                                       ? colors.background.third
                                       : colors.primary[200],
