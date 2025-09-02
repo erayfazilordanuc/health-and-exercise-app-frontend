@@ -332,14 +332,14 @@ const ExercisesUser = () => {
                           className="flex flex-row justify-center items-center py-3 pl-3"
                           style={{
                             borderRadius: 17,
-                            backgroundColor: colors.primary[125],
+                            backgroundColor: colors.primary[200],
                           }}
                           onPress={() => {
                             setShowModal(true);
                           }}>
                           <Text
                             className="text-xl font-rubik"
-                            style={{color: colors.primary[200]}}>
+                            style={{color: colors.background.third}}>
                             Egzersize başla
                           </Text>
                           <Image
@@ -359,20 +359,20 @@ const ExercisesUser = () => {
                           className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
                           style={{
                             borderRadius: 17,
-                            backgroundColor: colors.isLight
-                              ? '#ABF7CE'
-                              : '#4D8A69',
+                            backgroundColor: '#3BC476',
                           }}
                           onPress={onContinueExercise}>
                           <Text
                             className="text-xl font-rubik"
-                            style={{color: '#3BC476'}}>
+                            style={{
+                              color: colors.isLight ? '#ABF7CE' : '#4D8A69',
+                            }}>
                             Tamamlandı!{'\n'}Egzersizi gör
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
                             className="size-16"
-                            tintColor={'#3BC476'}
+                            tintColor={colors.isLight ? '#ABF7CE' : '#4D8A69'}
                           />
                         </TouchableOpacity>
                       ) : (
@@ -381,21 +381,21 @@ const ExercisesUser = () => {
                           style={{
                             borderRadius: 17,
                             backgroundColor: colors.isLight
-                              ? '#FFECD1'
-                              : '#473E31',
+                              ? '#FAA020'
+                              : '#FF9800',
                           }}
                           onPress={onContinueExercise}>
                           <Text
                             className="text-xl font-rubik mx-2"
                             style={{
-                              color: colors.isLight ? '#FAA020' : '#FF9800',
+                              color: colors.isLight ? '#FFECD1' : '#473E31',
                             }}>
                             Egzersize{'\n'}devam et
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
                             className="size-16"
-                            tintColor={colors.isLight ? '#FAA020' : '#FF9800'}
+                            tintColor={colors.isLight ? '#FFECD1' : '#473E31'}
                           />
                           {/* '#FFAA33' */}
                         </TouchableOpacity>
@@ -487,7 +487,6 @@ const ExercisesUser = () => {
             </View>
             {weeklyExerciseProgress && (
               <CustomWeeklyProgressCalendar
-                todayPercent={todayPercent}
                 weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
                 activeDays={updatedActiveDays ?? []}
               />
@@ -740,11 +739,18 @@ const ExercisesUser = () => {
             alignItems: 'center',
             paddingHorizontal: 20, // ✅ kenarlarda margin
           }}>
-          <View className="bg-white rounded-2xl p-6 items-center">
-            <Text className="text-xl font-rubik-medium text-gray-800 mb-3">
+          <View
+            className="bg-white rounded-2xl p-6 items-center"
+            style={{backgroundColor: colors.background.primary}}>
+            <Text
+              className="text-xl font-rubik-medium mb-3"
+              style={{color: colors.text.primary}}>
               Egzersiz Türü Seçimi
             </Text>
-            <Text className="font-rubik text-center text-gray-500 mb-6">
+            <Text
+              className={`font-rubik text-center ${
+                theme.colors.isLight ? 'text-gray-500' : 'text-gray-400'
+              } mb-6`}>
               Bugünkü egzersizinizi ayakta mı yoksa oturarak mı yapmak
               istediğinizi seçiniz.
             </Text>
@@ -754,7 +760,7 @@ const ExercisesUser = () => {
               <TouchableOpacity
                 onPress={() => onStartExercise(ExercisePosition.STANDING)}
                 className="flex-1 rounded-2xl p-5 mx-2 items-center"
-                style={{backgroundColor: colors.primary[125]}}>
+                style={{backgroundColor: colors.background.third}}>
                 {/*bg-blue-100 */}
                 <Dumbbell size={40} color={colors.primary[200]} />
                 {/*color="#3B82F6"*/}
@@ -770,7 +776,7 @@ const ExercisesUser = () => {
               <TouchableOpacity
                 onPress={() => onStartExercise(ExercisePosition.SEATED)}
                 className="flex-1 rounded-2xl p-5 mx-2 items-center"
-                style={{backgroundColor: colors.primary[125]}}>
+                style={{backgroundColor: colors.background.third}}>
                 {/*bg-blue-100 */}
                 <Armchair size={40} color={colors.primary[200]} />
                 {/*color="#3B82F6"*/}
@@ -786,8 +792,17 @@ const ExercisesUser = () => {
             {/* Geri Dön */}
             <TouchableOpacity
               onPress={() => setShowModal(false)}
-              className="mt-6 bg-gray-100 px-5 py-3 rounded-xl">
-              <Text className="text-gray-600 font-rubik">Geri Dön</Text>
+              className="mt-6 px-5 rounded-xl"
+              style={{
+                paddingVertical: 10,
+                backgroundColor: theme.colors.isLight ? '#EDEDED' : '#303030',
+              }}>
+              <Text
+                className={`${
+                  theme.colors.isLight ? 'text-gray-600' : 'text-gray-400'
+                } font-rubik`}>
+                Geri Dön
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

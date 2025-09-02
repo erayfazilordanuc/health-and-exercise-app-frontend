@@ -719,9 +719,7 @@ const Home = () => {
                                       ? colors.isLight
                                         ? '#FFECD1'
                                         : '#473E31'
-                                      : colors.isLight
-                                      ? colors.background.third
-                                      : colors.primary[200],
+                                      : colors.background.third,
                                 }}
                                 onPress={() =>
                                   navigation.navigate('Exercises', {
@@ -739,9 +737,7 @@ const Home = () => {
                                           todayExerciseProgress.totalProgressDuration >
                                             0
                                         ? '#FAA020'
-                                        : colors.isLight
-                                        ? colors.primary[200]
-                                        : colors.background.third,
+                                        : colors.primary[200],
                                   }}>
                                   {/* '#FFAA33' */}
                                   {/* colors.primary[200] */}
@@ -765,9 +761,7 @@ const Home = () => {
                                         todayExerciseProgress.totalProgressDuration >
                                           0
                                       ? '#FAA020'
-                                      : colors.isLight
-                                      ? colors.primary[200]
-                                      : colors.background.third
+                                      : colors.primary[200]
                                   }
                                 />
                                 {/*colors.primary[200]*/}

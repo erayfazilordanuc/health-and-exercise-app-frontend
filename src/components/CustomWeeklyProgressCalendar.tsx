@@ -3,13 +3,11 @@ import {View, Text, ScrollView} from 'react-native';
 import {useTheme} from '../themes/ThemeProvider';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 interface CustomWeeklyProgressCalendarProps {
-  todayPercent?: number;
   weeklyPercents: number[]; // aktif günlerin yüzdeleri (activeDays ile aynı sıra)
   activeDays: number[]; // 1=Mon ... 7=Sun (ör: [1,3,5])
 }
 
 const CustomWeeklyProgressCalendar = ({
-  todayPercent,
   weeklyPercents,
   activeDays,
 }: CustomWeeklyProgressCalendarProps) => {
@@ -143,9 +141,7 @@ const CustomWeeklyProgressCalendar = ({
             let bgColor = colors.background.secondary;
 
             const percent =
-              progressIndex != null
-                ? weeklyPercents?.[progressIndex]
-                : undefined;
+              progressIndex != null ? weeklyPercents?.[progressIndex] : 0;
 
             if (isActive) {
               if (percent === 100) {
@@ -200,7 +196,7 @@ const CustomWeeklyProgressCalendar = ({
                     <AnimatedCircularProgress
                       size={37}
                       width={2}
-                      fill={todayPercent ?? 0}
+                      fill={percent}
                       tintColor={bgColor}
                       backgroundColor={colors.background.secondary}
                       rotation={0}
@@ -210,12 +206,12 @@ const CustomWeeklyProgressCalendar = ({
                         <Text
                           className="text-xs font-rubik"
                           style={{color: colors.text.primary}}>
-                          %{todayPercent ?? 0}
+                          %{percent}
                         </Text>
                       )}
                     </AnimatedCircularProgress>
                   </View>
-                ) : isActive && !isFuture && (percent ?? 0) !== 100 ? (
+                ) : isActive && !isFuture && percent !== 100 ? (
                   <View
                     className="flex flex-row items-center justify-center"
                     style={{
@@ -229,7 +225,7 @@ const CustomWeeklyProgressCalendar = ({
                     <AnimatedCircularProgress
                       size={37}
                       width={2}
-                      fill={percent ?? 0}
+                      fill={percent}
                       tintColor="#fd5353"
                       backgroundColor={colors.background.secondary}
                       rotation={0}
@@ -238,7 +234,7 @@ const CustomWeeklyProgressCalendar = ({
                       {() => (
                         <Text
                           style={{color: colors.text.primary, fontSize: 11}}>
-                          %{percent ?? 0}
+                          %{percent}
                         </Text>
                       )}
                     </AnimatedCircularProgress>
