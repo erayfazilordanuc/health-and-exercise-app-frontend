@@ -31,6 +31,8 @@ const CustomWeeklyProgressCalendar = ({
 
   // Aktif günleri 1..7’a göre sırala (UI tutarlılığı için)
   const activeDaysSorted = [...new Set(activeDays)].sort((a, b) => a - b); // ör: [1,3,5]
+  console.log(activeDays);
+  console.log(activeDaysSorted);
 
   // Haftanın tüm günleri (label + dayNum=1..7 + aktiflik + progressIndex eşleme)
   const baseWeek = [

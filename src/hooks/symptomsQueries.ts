@@ -9,14 +9,14 @@ import {
 import type {AxiosError} from 'axios';
 import {
   adminGetDoneStepGoals,
-  adminGetSymptomsByUserIdAndDate,
+  adminGetLatestSymptomsByUserIdAndDate,
   adminGetWeeklyStepGoal,
   adminGetWeeklySteps,
   completeStepGoal,
   createStepGoal,
   getDoneStepGoals,
   getLocal,
-  getSymptomsByDate,
+  getLatestSymptomsByDate,
   getWeeklyStepGoal,
   getWeeklyStepsTotal,
 } from '../api/symptoms/symptomsService';
@@ -57,14 +57,19 @@ export function useSaveSymptomsToday() {
       console.log('[saveSymptomsToday] onMutate -> payload:', vars);
     },
     onSuccess: async (data, variables) => {
-      console.log('[saveSymptomsToday] onSuccess -> data:', data);
       const todayKey = ['symptoms', 'by-date', ymdLocal(new Date())];
-      qc.setQueryData(todayKey, data ?? variables);
 
-      await Promise.all([
-        qc.invalidateQueries({queryKey: STEP_GOAL_KEYS.weekly()}),
-        qc.invalidateQueries({queryKey: STEP_GOAL_KEYS.done()}),
-      ]);
+      const prev = qc.getQueryData<Symptoms>(todayKey);
+      const next = data ?? variables;
+
+      qc.setQueryData(todayKey, next);
+
+      if (prev?.steps !== next?.steps) {
+        await Promise.all([
+          qc.invalidateQueries({queryKey: STEP_GOAL_KEYS.weekly()}),
+          qc.invalidateQueries({queryKey: STEP_GOAL_KEYS.done()}),
+        ]);
+      }
     },
     onError: err => {
       console.log('[saveSymptomsToday] onError ->', err);
@@ -102,7 +107,7 @@ export function useAdminSymptomsByUserIdAndDate(
     enabled: !!userId && !!date,
     queryFn: async () => {
       if (!userId || !date) throw new Error('userId/date required');
-      const res = await adminGetSymptomsByUserIdAndDate(userId, date);
+      const res = await adminGetLatestSymptomsByUserIdAndDate(userId, date);
       return res.data as Symptoms;
     },
     staleTime: 5 * 60 * 1000,
@@ -131,7 +136,7 @@ export function useSymptomsByDate(
     queryFn: async (): Promise<Symptoms | null> => {
       const local = await getLocal(dateStr); // ← d kullan
       if (local) return local;
-      const synced = await getSymptomsByDate(dateStr); // ← d kullan
+      const synced = await getLatestSymptomsByDate(dateStr); // ← d kullan
       return synced ?? null;
     },
 

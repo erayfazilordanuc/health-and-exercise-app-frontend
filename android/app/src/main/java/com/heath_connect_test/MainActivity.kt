@@ -6,6 +6,8 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import dev.matinzd.healthconnect.permissions.HealthConnectPermissionDelegate
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 class MainActivity : ReactActivity() {
 
@@ -19,6 +21,7 @@ class MainActivity : ReactActivity() {
     super.onCreate(savedInstanceState)
     // In order to handle permission contract results, we need to set the permission delegate.
     HealthConnectPermissionDelegate.setPermissionDelegate(this)
+    WindowCompat.setDecorFitsSystemWindows(window, false)
   }
 
   /**

@@ -55,9 +55,7 @@ import {getUser} from '../../api/user/userService';
 import GradientText from '../../components/GradientText';
 import {
   getLocal,
-  getSymptomsByDate,
-  getWeeklyStepGoal,
-  upsertSymptomsByDate,
+  getLatestSymptomsByDate,
 } from '../../api/symptoms/symptomsService';
 import {Float} from 'react-native/Libraries/Types/CodegenTypes';
 import {Linking} from 'react-native';
@@ -83,7 +81,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {useQueryClient} from '@tanstack/react-query';
 import WeeklyStrip from '../../components/WeeklyStrip';
 import {isSameDay} from 'date-fns';
-import {atLocalMidnight, ymdLocal} from '../../utils/dates';
+import {atLocalMidnight, isTodayLocal, ymdLocal} from '../../utils/dates';
 import {extractAxiosMessage} from '../../api/axios/axios';
 
 const Profile = () => {
@@ -140,8 +138,6 @@ const Profile = () => {
   const symptomsQ = useSymptomsByDate(symptomsDate, {
     enabled: !!user && user.role === 'ROLE_USER',
   });
-
-  const isTodayLocal = (d: Date) => isSameDay(new Date(), d);
 
   const [symptoms, setSymptoms] = useState<Symptoms>();
 
@@ -327,13 +323,13 @@ const Profile = () => {
     }
   }, [user, symptomsQ.data, symptomsDate, hcStateLoading]);
 
-  // useEffect(() => {
-  //   initializeSymptoms();
-  //   // kullanıcı veya gün değişirse yeniden izin ver
-  //   // (ör. farklı güne geçince tekrar sync isteyebilirsin)
-  //   // reset:
-  //   return () => {};
-  // }, [user?.id, symptomsQ.data, hcStateLoading]);
+  useEffect(() => {
+    initializeSymptoms();
+    // kullanıcı veya gün değişirse yeniden izin ver
+    // (ör. farklı güne geçince tekrar sync isteyebilirsin)
+    // reset:
+    return () => {};
+  }, [user?.id, symptomsQ.data, hcStateLoading]);
 
   // const initializeSymptoms = async () => {
   //   if (user?.role !== 'ROLE_USER') return;
@@ -344,9 +340,9 @@ const Profile = () => {
   //   }
   // };
 
-  // useEffect(() => {
-  //   initializeSymptoms();
-  // }, [user, symptomsQ.data, hcStateLoading]);
+  useEffect(() => {
+    initializeSymptoms();
+  }, [user, symptomsQ.data, hcStateLoading]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -491,8 +487,7 @@ const Profile = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color:
-              theme.colors.isLight ? '#333333' : colors.background.primary,
+            color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Profil {user?.role === 'ROLE_ADMIN' ? ' (Hemşire)' : ''}
@@ -553,53 +548,23 @@ const Profile = () => {
                   colors={[colors.primary[300], colors.secondary[300]]}>
                   {user?.fullName}
                 </GradientText>
-                {user && user.role === 'ROLE_USER' ? (
-                  <View className="flex flex-row items-center justify-end">
-                    <TouchableOpacity
-                      className="py-2 px-3"
-                      style={{
-                        borderRadius: 13,
-                        backgroundColor: colors.background.third,
-                      }}
-                      onPress={() => {
-                        setShowDetail(!showDetail);
-                      }}>
-                      <Text
-                        className="text-md font-rubik"
-                        style={{color: colors.primary[200]}}>
-                        {showDetail ? 'Detayları Gizle' : 'Detay'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  // <View className="flex flex-row">
-                  //   <Image
-                  //     source={icons.patient}
-                  //     className="size-9 mr-2"
-                  //     tintColor={colors.text.primary}
-                  //   />
-                  //   {/* <Image
-                  //     source={icons.badge1_colorful_bordered}
-                  //     className="size-8 mr-2"
-                  //   /> */}
-                  //   {/* <Image
-                  //     source={icons.badge1_colorful}
-                  //     className="size-8 mr-2"
-                  //   />
-                  //   <Image
-                  //     source={icons.badge1}
-                  //     tintColor={colors.text.primary} // Eğer renkli değilse tintColor verilsin
-                  //     className="size-8"
-                  //   /> */}
-                  // </View>
-                  <View className="flex flex-row">
-                    <Image
-                      source={icons.nurse}
-                      className="size-9 mr-2"
-                      tintColor={colors.text.primary}
-                    />
-                  </View>
-                )}
+                <View className="flex flex-row items-center justify-end">
+                  <TouchableOpacity
+                    className="py-2 px-3"
+                    style={{
+                      borderRadius: 13,
+                      backgroundColor: colors.background.third,
+                    }}
+                    onPress={() => {
+                      setShowDetail(!showDetail);
+                    }}>
+                    <Text
+                      className="text-md font-rubik"
+                      style={{color: colors.primary[200]}}>
+                      {showDetail ? 'Detayları Gizle' : 'Detay'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
               <View className="flex flex-row items-center mt-3 mb-1">
                 <Text
@@ -1041,11 +1006,11 @@ const Profile = () => {
                     // >({
                     //   queryKey: SYMPTOM_KEYS.byDate(dateStr),
                     //   queryFn: async (): Promise<Symptoms | null> => {
-                    //     // getLocal & getSymptomsByDate mümkünse string alsın (YYYY-MM-DD)
+                    //     // getLocal & getLatestSymptomsByDate mümkünse string alsın (YYYY-MM-DD)
                     //     const local = await getLocal(d);
                     //     if (local) return local;
 
-                    //     const remote = await getSymptomsByDate(d);
+                    //     const remote = await getLatestSymptomsByDate(d);
                     //     return remote ?? null;
                     //   },
                     // });
@@ -1055,7 +1020,7 @@ const Profile = () => {
                     if (local) fresh = local;
 
                     if (!fresh) {
-                      const remote = await getSymptomsByDate(dayKey); // <-- string key
+                      const remote = await getLatestSymptomsByDate(dayKey); // <-- string key
                       fresh = remote ?? null;
                     }
                     console.log('is', isTodayLocal(d), dayKey);
@@ -1147,11 +1112,11 @@ const Profile = () => {
                       >({
                         queryKey: SYMPTOM_KEYS.byDate(dateStr),
                         queryFn: async (): Promise<Symptoms | null> => {
-                          // getLocal & getSymptomsByDate mümkünse string alsın (YYYY-MM-DD)
+                          // getLocal & getLatestSymptomsByDate mümkünse string alsın (YYYY-MM-DD)
                           const local = await getLocal(d);
                           if (local) return local;
 
-                          const remote = await getSymptomsByDate(d);
+                          const remote = await getLatestSymptomsByDate(d);
                           return remote ?? null;
                         },
                       });

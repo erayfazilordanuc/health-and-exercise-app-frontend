@@ -80,7 +80,7 @@ export function useExerciseSchedule() {
   return useQuery({
     queryKey: ['exerciseSchedule'],
     queryFn: fetchMyExerciseSchedule,
-    staleTime: 1000 * 60 * 60 * 12, // 12 saat
+    staleTime: 1000 * 60 * 5, // 12 saat
     gcTime: 1000 * 60 * 60 * 24, // 24 saat cache'te tut
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -100,13 +100,13 @@ export function useUpsertExerciseSchedule() {
   });
 }
 
-const scheduleQueryKey = (userId?: number) =>
+export const scheduleQueryKey = (userId?: number) =>
   ['exerciseScheduleAdmin', userId] as const;
 
-async function fetchExerciseScheduleAdmin(userId: number): Promise<number[]> {
-  const {data} = await apiClient.get<number[]>('/exercises/schedule', {
-    params: {userId},
-  });
+async function fetchExerciseScheduleForAdmin(
+  userId: number,
+): Promise<number[]> {
+  const {data} = await apiClient.get<number[]>(`/exercises/schedule/${userId}`);
   return data;
 }
 
@@ -134,9 +134,9 @@ export function useExerciseScheduleAdmin(
     ReturnType<typeof scheduleQueryKey>
   >({
     queryKey: scheduleQueryKey(userId),
-    queryFn: () => fetchExerciseScheduleAdmin(userId!), // enabled true iken güvenli
+    queryFn: () => fetchExerciseScheduleForAdmin(userId!), // enabled true iken güvenli
     enabled,
-    staleTime: 1000 * 60 * 60 * 12,
+    staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60 * 24,
     placeholderData: keepPreviousData, // 🔑 v5’te bununla önceki data korunur
     refetchOnWindowFocus: false,

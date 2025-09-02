@@ -10,7 +10,21 @@ import Toast, {BaseToastProps, ErrorToast} from 'react-native-toast-message';
 import {UserProvider} from './contexts/UserContext';
 import {ReactQueryProvider} from './lib/react-query/provider';
 import {focusManager} from '@tanstack/react-query';
-import {AppState} from 'react-native';
+import {AppState, StatusBar} from 'react-native';
+
+function GlobalStatusBar() {
+  // ThemeProvider içindeyken çalışır
+  const {theme} = useTheme();
+  const bar = theme.colors.isLight ? 'dark-content' : 'light-content';
+  return (
+    <StatusBar
+      translucent // içerik status bar altına girsin
+      backgroundColor="transparent"
+      barStyle={bar}
+      animated
+    />
+  );
+}
 
 export default function App() {
   focusManager.setEventListener(handleFocus => {
@@ -22,6 +36,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
+      <GlobalStatusBar />
       <UserProvider>
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
           <ReactQueryProvider>

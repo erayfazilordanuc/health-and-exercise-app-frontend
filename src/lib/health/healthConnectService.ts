@@ -7,7 +7,9 @@ import {
   RecordType,
   aggregateRecord,
 } from 'react-native-health-connect';
-import {upsertSymptomsByDate} from '../../api/symptoms/symptomsService';
+import {
+  createSymptoms,
+} from '../../api/symptoms/symptomsService';
 import NetInfo from '@react-native-community/netinfo';
 import {Alert, Linking, Platform, ToastAndroid} from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -403,19 +405,6 @@ export const getAllSleepSessions = async () => {
   return sessions;
 };
 
-export const saveData = async (key: string, symptoms: Symptoms) => {
-  const response = await upsertSymptomsByDate(new Date(), symptoms);
-  let isSynced = false;
-  if (response.status === 200) {
-    isSynced = true;
-  }
-  const localSymptoms: LocalSymptoms = {
-    symptoms: symptoms,
-    isSynced: isSynced,
-  };
-  await AsyncStorage.setItem(key, JSON.stringify(localSymptoms));
-};
-
 function withTimeout<T>(
   promise: Promise<T>,
   ms: number,
@@ -473,7 +462,8 @@ export const saveSymptoms = async (symptoms: Symptoms) => {
   try {
     if (!symptoms) return;
 
-    const response = await upsertSymptomsByDate(new Date(), symptoms);
+    // const response = await upsertSymptomsByDate(new Date(), symptoms);
+    const response = await createSymptoms(symptoms);
     if (response.status === 200) {
       symptomsObjectToSave.isSynced = true;
     }

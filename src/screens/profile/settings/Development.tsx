@@ -28,7 +28,7 @@ import {
   adminGetSymptomsById,
   adminGetSymptomsByUserId,
   getAllSymptoms,
-  getSymptomsByDate,
+  getLatestSymptomsByDate,
   getSymptomsById,
 } from '../../../api/symptoms/symptomsService';
 import {useFocusEffect} from '@react-navigation/native';
@@ -350,7 +350,7 @@ const Development = () => {
 
   const testGetAllSymptomsByDate = async () => {
     try {
-      const symptomsResponse = await getSymptomsByDate(ymdLocal(today));
+      const symptomsResponse = await getLatestSymptomsByDate(ymdLocal(today));
 
       const symptomsData = JSON.stringify(symptomsResponse, null, 2);
       console.log('symptomsData', symptomsData);

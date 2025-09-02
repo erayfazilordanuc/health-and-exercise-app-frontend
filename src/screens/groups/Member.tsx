@@ -33,10 +33,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import icons from '../../constants/icons';
 import ProgressBar from '../../components/ProgressBar';
 import {
-  adminGetSymptomsByUserId,
-  adminGetSymptomsByUserIdAndDate,
-} from '../../api/symptoms/symptomsService';
-import {
   getLastMessageBySenderAndReceiver,
   getNextRoomId,
   isRoomExistBySenderAndReceiver,
@@ -66,6 +62,7 @@ import {subDays} from 'date-fns';
 import {SessionList} from '../../components/SessionList';
 import WeeklyStrip from '../../components/WeeklyStrip';
 import {
+  scheduleQueryKey,
   useExerciseSchedule,
   useExerciseScheduleAdmin,
 } from '../../hooks/exerciseQueries';
@@ -92,6 +89,7 @@ const Member = () => {
     isLoading: isScheduleLoading,
     error: scheduleError,
   } = useExerciseScheduleAdmin(memberId, {enabled: !!memberId});
+  console.log(activeDays);
 
   const {data: weeklySteps} = useAdminWeeklySteps(memberId, {
     enabled: !!memberId,
@@ -258,6 +256,11 @@ const Member = () => {
       setRefreshing(true);
       await fetchLastMessage();
       await Promise.all([refetchSymptoms(), refetchProgress()]);
+      console.log(weeklyExerciseProgress);
+      await qc.invalidateQueries({
+        queryKey: scheduleQueryKey(memberId),
+        exact: true,
+      });
     } finally {
       setRefreshing(false);
     }
@@ -337,17 +340,15 @@ const Member = () => {
         <Text
           className="pl-4 font-rubik-semibold pr-7"
           style={{
-            color:
-              theme.colors.isLight ? '#333333' : colors.background.primary,
+            color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Hasta:{'  '}
           <Text
             style={{
-              color:
-                theme.colors.isLight
-                  ? colors.primary[200]
-                  : colors.primary[300],
+              color: theme.colors.isLight
+                ? colors.primary[200]
+                : colors.primary[300],
             }}>
             {member && member.fullName ? member.fullName : ''}
           </Text>
@@ -608,9 +609,11 @@ const Member = () => {
                       Egzersiz Takvimi
                     </Text>
                     <Text
-                      className="font-rubik mb-3 rounded-2xl py-2 px-3"
+                      className="font-rubik mb-3 rounded-xl"
                       style={{
-                        fontSize: 16,
+                        paddingVertical: 5,
+                        paddingHorizontal: 9,
+                        fontSize: 14,
                         color: colors.text.primary,
                         backgroundColor: colors.background.secondary,
                       }}>
@@ -625,7 +628,7 @@ const Member = () => {
                     weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
                     activeDays={activeDays}
                   />
-                  <View className="flex flex-row items-center justify-start ml-2 mt-3">
+                  <View className="flex flex-row items-center justify-start ml-2 mt-3 my-1">
                     <View className="flex-col items-start space-x-2 mr-3">
                       <View className="flex flex-row items-center space-x-2">
                         <View
@@ -832,9 +835,9 @@ const Member = () => {
                 </Text>
                 {weeklyGoal ? (
                   <View
-                    className="flex-col rounded-2xl pl-5 pr-7 py-2 mb-2"
+                    className="flex-col rounded-2xl pl-3 pr-7 py-2 mb-2 self-start"
                     style={{backgroundColor: colors.background.secondary}}>
-                    {weeklyGoal.isDone && (
+                    {weeklySteps && weeklySteps > weeklyGoal.goal && (
                       <View className="flex-row items-center justify-start mb-2">
                         <Text
                           className="font-rubik text-lg ml-2"
@@ -881,7 +884,14 @@ const Member = () => {
                   <Text
                     className="font-rubik text-lg ml-1"
                     style={{color: colors.text.primary}}>
-                    {doneGoals?.length ?? 0}
+                    {doneGoals && doneGoals.length
+                      ? weeklySteps &&
+                        weeklyGoal &&
+                        weeklySteps > weeklyGoal.goal &&
+                        !weeklyGoal.isDone
+                        ? doneGoals?.length + 1
+                        : doneGoals?.length
+                      : 1}
                   </Text>
                 </View>
               </View>
