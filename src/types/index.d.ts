@@ -7,7 +7,10 @@ type ThemeOption =
   | 'purpleSystem'
   | 'greenLight'
   | 'greenDark'
-  | 'greenSystem';
+  | 'greenSystem'
+  | 'redLight'
+  | 'redDark'
+  | 'redSystem';
 
 type User = {
   id?: number;

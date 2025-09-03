@@ -243,6 +243,23 @@ const Preferences = () => {
                   color2={themes.green.light.colors.secondary[300]}
                 />
               </TouchableOpacity>
+              <TouchableOpacity
+                className="flex-row items-center p-2 rounded-2xl mt-2"
+                style={{backgroundColor: colors.background.secondary}}
+                onPress={() => handleThemeColorChange('red')}>
+                <Text
+                  className="font-rubik ml-1 mr-2"
+                  style={{
+                    fontSize: 16,
+                    color: colors.text.primary,
+                  }}>
+                  Kırmızı-Turuncu
+                </Text>
+                <ColorCircle
+                  color1={themes.red.light.colors.primary[300]}
+                  color2={themes.red.light.colors.secondary[300]}
+                />
+              </TouchableOpacity>
             </View>
           </View>
 

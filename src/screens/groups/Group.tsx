@@ -10,8 +10,9 @@ import {
   Image,
   ToastAndroid,
   RefreshControl,
+  Switch,
 } from 'react-native';
-import {List, Surface, Switch, TouchableRipple} from 'react-native-paper';
+// import {List, Surface, Switch, TouchableRipple} from 'react-native-paper';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
@@ -279,8 +280,7 @@ const Group = () => {
         <Text
           className="pl-7 font-rubik-semibold pr-7"
           style={{
-            color:
-              theme.colors.isLight ? '#333333' : colors.background.primary,
+            color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Grup:{'  '}
@@ -497,46 +497,56 @@ const Group = () => {
                 Egzersiz Etkinliği
               </Text>
 
-              <Switch
-                className="ml-1"
-                value={exerciseEnabled}
-                onValueChange={async (value: boolean) => {
-                  setExerciseEnabled(value);
-                  alertRef.current?.show({
-                    message: value
-                      ? 'Grup için egzersiz yapma özelliğini etkinleştirmek istediğinize emin misiniz?'
-                      : 'Grup için egzersiz yapma özelliğini devre dışı bırakmak istediğinize emin misiniz?',
-                    secondMessage: value
-                      ? undefined
-                      : 'Bu işlem egzersiz yapan kullanıcıların verilerinin kaydedilmemesine sebep olacaktır.',
-                    isPositive: value ? true : false,
-                    onYesText: 'Evet',
-                    onCancelText: 'İptal',
-                    onYes: async () => {
-                      if (group && group.id) {
-                        const updateDTO: UpdateGroupDTO = {
-                          id: group.id,
-                          name: group.name,
-                          exerciseEnabled: value,
-                        };
-                        console.log('update dto', updateDTO);
-                        const response = await updateMut.mutateAsync(updateDTO);
-                        if (
-                          (!response.data && response.status > 300) ||
-                          response.status < 200
-                        )
-                          setExerciseEnabled(prev => !prev);
-                      }
-                    },
-                    onCancel: () => setExerciseEnabled(prev => !prev),
-                  });
-                }}
-                thumbColor={colors.background.primary}
-                trackColor={{
-                  false: '#B5B5B5',
-                  true: colors.primary[300],
-                }}
-              />
+              <View
+                className="ml-3"
+                style={{
+                  borderRadius: 20,
+                  backgroundColor: exerciseEnabled
+                    ? colors.primary[300]
+                    : '#B5B5B5',
+                }}>
+                <Switch
+                  value={exerciseEnabled}
+                  onValueChange={async (value: boolean) => {
+                    setExerciseEnabled(value);
+                    alertRef.current?.show({
+                      message: value
+                        ? 'Grup için egzersiz yapma özelliğini etkinleştirmek istediğinize emin misiniz?'
+                        : 'Grup için egzersiz yapma özelliğini devre dışı bırakmak istediğinize emin misiniz?',
+                      secondMessage: value
+                        ? undefined
+                        : 'Bu işlem egzersiz yapan kullanıcıların verilerinin kaydedilmemesine sebep olacaktır.',
+                      isPositive: value ? true : false,
+                      onYesText: 'Evet',
+                      onCancelText: 'İptal',
+                      onYes: async () => {
+                        if (group && group.id) {
+                          const updateDTO: UpdateGroupDTO = {
+                            id: group.id,
+                            name: group.name,
+                            exerciseEnabled: value,
+                          };
+                          console.log('update dto', updateDTO);
+                          const response = await updateMut.mutateAsync(
+                            updateDTO,
+                          );
+                          if (
+                            (!response.data && response.status > 300) ||
+                            response.status < 200
+                          )
+                            setExerciseEnabled(prev => !prev);
+                        }
+                      },
+                      onCancel: () => setExerciseEnabled(prev => !prev),
+                    });
+                  }}
+                  thumbColor={colors.background.primary}
+                  trackColor={{
+                    false: '#B5B5B5',
+                    true: colors.primary[300],
+                  }}
+                />
+              </View>
             </View>
           </View>
         )}

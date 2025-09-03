@@ -451,7 +451,7 @@ const Member = () => {
                 Kullandığı Tema:{'  '}
               </Text>
               <Text
-                className="font-rubik-medium text-lg"
+                className="font-rubik text-lg"
                 style={{color: colors.text.primary}}>
                 {getMembersTheme()?.light.name.startsWith('blue')
                   ? 'Mavi-Turkuaz '
@@ -459,6 +459,8 @@ const Member = () => {
                   ? 'Mor-Pembe '
                   : getMembersTheme()?.light.name.startsWith('green')
                   ? 'Yeşil-Sarı '
+                  : getMembersTheme()?.light.name.startsWith('red')
+                  ? 'Kırmızı-Turuncu '
                   : ''}
               </Text>
               <ColorCircle

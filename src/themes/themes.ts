@@ -195,6 +195,66 @@ const greenDarkColors = {
   isLight: false,
 };
 
+const redLightColors = {
+  primary: {
+    100: '#0061FF0A',
+    112: '#0061FF0A',
+    125: '#FFEBEE',
+    150: '#FF5D5D',
+    175: '#ED2633',
+    200: '#F73B45',
+    250: '#F72039',
+    300: '#ED133A',
+  },
+  secondary: {
+    300: '#F56C11',
+  },
+  background: {
+    primary: 'white',
+    secondary: '#ecf1f3',
+    third: '#FFEBEC',
+    fourth: '#d9e5f1',
+  }, // #eaf0f3 #eaf0f3
+  text: {
+    primary: 'black',
+    secondary: '#5d5d5d',
+    third: '#666876',
+  },
+  gradient: ['#F2E8DA', '#F5AEB3', '#FCE7CC', '#EDD1D5'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
+  gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
+  isLight: true,
+};
+
+const redDarkColors = {
+  primary: {
+    100: '#0061FF0A',
+    112: '#0061FF0A',
+    125: '#FFEBEE',
+    150: '#FF5D5D',
+    175: '#ED2633',
+    200: '#F73B45',
+    250: '#F72039',
+    300: '#ED133A',
+  },
+  secondary: {
+    300: '#F56C11',
+  },
+  background: {
+    primary: '#252525',
+    secondary: '#171717',
+    third: '#474747',
+    fourth: '#2f373d',
+  }, //primary: '#2f2f2f'
+  text: {
+    primary: 'white',
+    secondary: '#eef2f8',
+    third: '#666876',
+  }, // secondary: '#3a3a3a
+  gradient: ['#F2E8DA', '#F5AEB3', '#FCE7CC', '#EDD1D5'], // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
+  gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
+  isLight: false,
+};
+
 // Tema nesnesi
 export const themes: Record<string, ThemeType> = {
   blue: {
@@ -227,9 +287,19 @@ export const themes: Record<string, ThemeType> = {
       colors: greenDarkColors,
     },
   },
+  red: {
+    light: {
+      name: 'red light',
+      colors: redLightColors,
+    },
+    dark: {
+      name: 'red dark',
+      colors: redDarkColors,
+    },
+  },
 };
 
-export type ThemeColor = 'blue' | 'purple' | 'green';
+export type ThemeColor = 'blue' | 'purple' | 'green' | 'red';
 export type ThemeMode = 'dark' | 'light' | 'system';
 
 export function parseTheme(theme: string): {
@@ -237,7 +307,7 @@ export function parseTheme(theme: string): {
   mode: ThemeMode;
   themeObj: ThemeType; // hem light hem dark seti
 } {
-  const regex = /^(blue|purple|green)(Light|Dark|System)$/i;
+  const regex = /^(blue|purple|green|red)(Light|Dark|System)$/i;
   const match = theme.match(regex);
 
   if (!match) {
