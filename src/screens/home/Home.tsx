@@ -77,6 +77,7 @@ import {
   useSaveSymptomsToday,
   useSymptomsByDate,
 } from '../../hooks/symptomsQueries';
+import {calcPercent} from '../../api/exercise/exerciseService';
 // import {
 //   isExerciseReminderScheduled,
 //   registerExerciseReminder,
@@ -237,18 +238,6 @@ const Home = () => {
         }
       }
     }
-  };
-
-  const calcPercent = (p?: ExerciseProgressDTO | null): number => {
-    if (!p || !p.exerciseDTO || !p.exerciseDTO.videos) return 0;
-
-    const total = p.exerciseDTO.videos.reduce(
-      (sum, v) => sum + (v.durationSeconds ?? 0),
-      0,
-    );
-    return total === 0
-      ? 0
-      : Math.round((p.totalProgressDuration / total) * 100);
   };
 
   useEffect(() => {

@@ -144,7 +144,7 @@ const CustomWeeklyProgressCalendar = ({
             let bgColor = colors.background.secondary;
 
             const percent =
-              progressIndex != null ? weeklyPercents?.[progressIndex] : 0;
+              progressIndex != null ? weeklyPercents?.[progressIndex] ?? 0 : 0;
 
             if (isActive) {
               if (percent === 100) {

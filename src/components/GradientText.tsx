@@ -22,12 +22,15 @@ const GradientText: React.FC<GradientTextProps> = ({
 }) => {
   const {colors: themeColors} = useTheme();
 
-  const gradientColors = colors || [themeColors.primary[300], '#40E0D0'];
+  const gradientColors = colors || [
+    themeColors.primary[300],
+    themeColors.secondary[300],
+  ];
 
   return (
     <MaskedView
       maskElement={
-        <Text style={[styles.maskText, style]} {...props} >
+        <Text style={[styles.maskText, style]} {...props}>
           {children}
         </Text>
       }>

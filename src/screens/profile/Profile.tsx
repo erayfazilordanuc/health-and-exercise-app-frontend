@@ -669,7 +669,7 @@ const Profile = () => {
                 ) : (
                   <TouchableOpacity
                     className="py-2 px-2 pr-3 rounded-2xl self-start mt-1 mb-3"
-                    style={{backgroundColor: colors.primary[125]}}
+                    style={{backgroundColor: colors.background.third}}
                     onPress={() => {
                       setGoaling(true);
                     }}

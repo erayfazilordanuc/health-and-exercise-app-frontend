@@ -152,7 +152,7 @@ const greenLightColors = {
   background: {
     primary: 'white',
     secondary: '#ecf1f3',
-    third: '#EBFFF2',
+    third: '#D4FFE5',
     fourth: '#d9e5f1',
   }, // #eaf0f3 #eaf0f3
   text: {

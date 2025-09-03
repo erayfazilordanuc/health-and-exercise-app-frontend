@@ -229,6 +229,24 @@ const Exercise = () => {
             time,
           );
 
+          const key = `exerciseProgress_${new Date()
+            .toISOString()
+            .slice(0, 10)}`;
+          await AsyncStorage.setItem(
+            key,
+            JSON.stringify({
+              ...updatedProgress,
+              totalProgressDuration: newTotalProgressDuration,
+              // local tarafta isEnd geldiyse force true yaz
+              videoProgress: updatedProgress.videoProgress.map(vp =>
+                vp.videoId ===
+                exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id
+                  ? {...vp, isCompeleted: vp.isCompeleted || !!isEnd}
+                  : vp,
+              ),
+            }),
+          );
+
           setUpdatedProgress(prev => {
             const existingIndex = prev.videoProgress?.findIndex(
               vp =>
@@ -256,7 +274,12 @@ const Exercise = () => {
                 ...prev,
                 totalProgressDuration: newTotalProgressDuration,
                 videoProgress: prev.videoProgress.map((item, idx) =>
-                  idx === existingIndex ? newVideoProgressItem : item,
+                  idx === existingIndex
+                    ? {
+                        ...newVideoProgressItem,
+                        isCompeleted: item.isCompeleted || !!isEnd,
+                      }
+                    : item,
                 ),
               };
             }
@@ -264,9 +287,8 @@ const Exercise = () => {
         }
 
         console.log('updatedProgress', updatedProgress);
-        const key = `exerciseProgress_${new Date().toISOString().slice(0, 10)}`;
-        await AsyncStorage.setItem(
-          key,
+        console.log(
+          'saved local today progress',
           JSON.stringify({
             ...updatedProgress,
             totalProgressDuration: newTotalProgressDuration,
@@ -318,7 +340,12 @@ const Exercise = () => {
         onDurationProgress={handleDurationProgress}
         onVideoEnd={() => {
           console.log('eeeeend');
-          syncExerciseProgress(exercise.videos[videoIdxToShow].durationSeconds);
+          syncExerciseProgress(
+            exercise.videos[videoIdxToShow].durationSeconds,
+            undefined,
+            true,
+          );
+          console.log(videoIdxToShow, exercise.videos.length);
           if (videoIdxToShow + 1 < exercise.videos.length) {
             syncExerciseProgress(1, videoIdxToShow + 1, true);
             setStartSecSync(0);
@@ -327,11 +354,16 @@ const Exercise = () => {
             );
             setVideoIdxToShow(prev => prev + 1);
           } else {
+            setDoneVideosDuration(
+              prev => prev + exercise.videos[videoIdxToShow].durationSeconds,
+            );
             // const parentNav = navigation.getParent();
             // parentNav?.setOptions({
             //   tabBarStyle: makeTabBarStyle(theme, width),
             // });
-            navigation.navigate('ExercisesUser');
+            setTimeout(() => {
+              navigation.navigate('ExercisesUser');
+            }, 1000);
           }
         }}
         onExit={() => setIsBackActionAlertVisible(true)}

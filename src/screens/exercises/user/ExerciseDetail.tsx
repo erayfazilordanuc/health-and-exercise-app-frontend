@@ -35,9 +35,17 @@ import {useUser} from '../../../contexts/UserContext';
 import Orientation from 'react-native-orientation-locker';
 import {calcPercent} from '../../../api/exercise/exerciseService';
 import {Theme} from '../../../themes/themes';
-import { checkHealthConnectInstalled, checkSamsungHInstalled, getSymptoms, initializeHealthConnect } from '../../../lib/health/healthConnectService';
-import { atLocalMidnight, isTodayLocal } from '../../../utils/dates';
-import { useSaveSymptomsToday, useSymptomsByDate } from '../../../hooks/symptomsQueries';
+import {
+  checkHealthConnectInstalled,
+  checkSamsungHInstalled,
+  getSymptoms,
+  initializeHealthConnect,
+} from '../../../lib/health/healthConnectService';
+import {atLocalMidnight, isTodayLocal} from '../../../utils/dates';
+import {
+  useSaveSymptomsToday,
+  useSymptomsByDate,
+} from '../../../hooks/symptomsQueries';
 
 type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'ExerciseDetail'>;
 const ExerciseDetail = () => {

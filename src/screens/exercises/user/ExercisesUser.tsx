@@ -54,7 +54,7 @@ import {
   useWeeklyActiveDaysProgressOfflineAware,
 } from '../../../hooks/progressQueries';
 import {isEqual} from 'lodash';
-import {Theme} from '../../../themes/themes';
+import {Theme, themes} from '../../../themes/themes';
 import {
   useExerciseSchedule,
   useUpsertExerciseSchedule,
@@ -339,13 +339,15 @@ const ExercisesUser = () => {
                           }}>
                           <Text
                             className="text-xl font-rubik"
-                            style={{color: colors.background.third}}>
+                            style={{
+                              color: colors.background.third,
+                            }}>
                             Egzersize başla
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
                             className="size-16"
-                            tintColor={colors.primary[200]}
+                            tintColor={colors.background.third}
                           />
                         </TouchableOpacity>
                       ) : todayExerciseProgress.exerciseDTO &&
@@ -365,14 +367,14 @@ const ExercisesUser = () => {
                           <Text
                             className="text-xl font-rubik"
                             style={{
-                              color: colors.isLight ? '#ABF7CE' : '#4D8A69',
+                              color: colors.background.third,
                             }}>
                             Tamamlandı!{'\n'}Egzersizi gör
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
                             className="size-16"
-                            tintColor={colors.isLight ? '#ABF7CE' : '#4D8A69'}
+                            tintColor={colors.background.third}
                           />
                         </TouchableOpacity>
                       ) : (

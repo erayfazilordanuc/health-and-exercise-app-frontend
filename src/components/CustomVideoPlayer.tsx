@@ -368,14 +368,14 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={() => {
-                setShowNextButton(false);
                 onVideoEnd();
+                setShowNextButton(false);
                 setPaused(false);
               }}
               style={{marginTop: 5}} // sadece dış boşluklar burada kalsın
             >
               <LinearGradient
-                colors={[colors.primary[300], '#40E0D0']} // ister temaya göre değiştir
+                colors={[colors.primary[300], colors.secondary[300]]} // ister temaya göre değiştir
                 start={{x: 0, y: 0}}
                 end={{x: 1, y: 1}}
                 className="flex flex-row"
