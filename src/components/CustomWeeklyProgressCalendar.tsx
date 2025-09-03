@@ -1,7 +1,10 @@
 import React, {useEffect, useRef} from 'react';
 import {View, Text, ScrollView} from 'react-native';
 import {useTheme} from '../themes/ThemeProvider';
-import {AnimatedCircularProgress} from 'react-native-circular-progress';
+import {
+  AnimatedCircularProgress,
+  CircularProgress,
+} from 'react-native-circular-progress';
 interface CustomWeeklyProgressCalendarProps {
   weeklyPercents: number[]; // aktif günlerin yüzdeleri (activeDays ile aynı sıra)
   activeDays: number[]; // 1=Mon ... 7=Sun (ör: [1,3,5])
@@ -193,7 +196,7 @@ const CustomWeeklyProgressCalendar = ({
                       height: 35,
                       backgroundColor: bgColor,
                     }}>
-                    <AnimatedCircularProgress
+                    <CircularProgress
                       size={37}
                       width={2}
                       fill={percent}
@@ -209,7 +212,7 @@ const CustomWeeklyProgressCalendar = ({
                           %{percent}
                         </Text>
                       )}
-                    </AnimatedCircularProgress>
+                    </CircularProgress>
                   </View>
                 ) : isActive && !isFuture && percent !== 100 ? (
                   <View
@@ -222,7 +225,7 @@ const CustomWeeklyProgressCalendar = ({
                       height: 35,
                       backgroundColor: '#fd5353',
                     }}>
-                    <AnimatedCircularProgress
+                    <CircularProgress
                       size={37}
                       width={2}
                       fill={percent}
@@ -237,7 +240,7 @@ const CustomWeeklyProgressCalendar = ({
                           %{percent}
                         </Text>
                       )}
-                    </AnimatedCircularProgress>
+                    </CircularProgress>
                   </View>
                 ) : (
                   <View
