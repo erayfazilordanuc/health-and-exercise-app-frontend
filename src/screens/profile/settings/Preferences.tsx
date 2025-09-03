@@ -70,8 +70,10 @@ const Preferences = () => {
       };
       console.log('dto', updateDTO);
       const response = await updateUser(updateDTO);
-      if (response.status >= 200 && response.status <= 300)
+      if (response.status >= 200 && response.status <= 300) {
+        AsyncStorage.setItem('user', JSON.stringify(response.data as User));
         setUser(response.data);
+      }
     }
   };
 
@@ -90,31 +92,11 @@ const Preferences = () => {
         theme: nextThemeOption,
       };
       const response = await updateUser(updateDTO);
-      if (response.status >= 200 && response.status <= 300)
+      if (response.status >= 200 && response.status <= 300) {
+        AsyncStorage.setItem('user', JSON.stringify(response.data as User));
         setUser(response.data);
+      }
     }
-  };
-
-  const handleThemeChange = async (theme: ThemeOption) => {
-    const {color, mode, themeObj} = parseTheme(theme);
-
-    if (mode === 'system') {
-      setTheme(colorScheme === 'dark' ? themeObj.dark : themeObj.light);
-    } else {
-      setTheme(mode === 'dark' ? themeObj.dark : themeObj.light);
-    }
-    if (user && user.id) {
-      const updateDTO: UpdateUserDTO = {
-        id: user.id,
-        theme: theme,
-      };
-      const response = await updateUser(updateDTO);
-      const {setUser} = useUser();
-      if (response.status <= 300 && response.status >= 200)
-        setUser(response.data);
-    }
-
-    console.log(theme);
   };
 
   return (
