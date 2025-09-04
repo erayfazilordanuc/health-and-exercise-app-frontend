@@ -145,12 +145,25 @@ function AdminLogin() {
         console.log('Status:', status);
         console.log('Message:', message);
 
-        if (status === 403) message = 'Kullanıcı adı veya şifre hatalı';
+        if (status === 403 || status === 500)
+          message = 'Kullanıcı adı veya şifre hatalı';
+        if (status === 502) message = 'Bir hata oluştu';
         ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
       } else if (error instanceof Error) {
         console.log('Genel hata yakalandı:', error.message);
 
-        ToastAndroid.show(error.message, ToastAndroid.SHORT);
+        const maybeStatus = (error as any).status;
+        if (maybeStatus === 403 || maybeStatus === 500) {
+          ToastAndroid.show(
+            'Kullanıcı adı veya şifre hatalı',
+            ToastAndroid.SHORT,
+          );
+          return;
+        }
+        ToastAndroid.show(
+          'Bir hata oluştu, kullanıcı adı ve şifrenizi kontrol ediniz',
+          ToastAndroid.LONG,
+        );
       } else {
         console.log('Bilinmeyen hata:', error);
 
@@ -252,13 +265,14 @@ function AdminLogin() {
         console.log('Message:', message);
 
         if (status === 500) message = 'Bu kullanıcı adı zaten alınmış';
-        if (status === 400)
+        if (status === 502) message = 'Bir hata oluştu';
+        if (status?.toString().startsWith('4'))
           message = 'Girilen bilgilere ait bir hemşire yetkinliği bulunamadı';
         ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
       } else if (error instanceof Error) {
         console.log('Genel hata yakalandı:', error.message);
-
-        ToastAndroid.show(error.message, ToastAndroid.SHORT);
+        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
+        // ToastAndroid.show(error.message, ToastAndroid.SHORT);
       } else {
         console.log('Bilinmeyen hata:', error);
 
@@ -322,8 +336,9 @@ function AdminLogin() {
           <View
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
-              backgroundColor:
-                theme.colors.isLight ? colors.background.primary : '#333333',
+              backgroundColor: theme.colors.isLight
+                ? colors.background.primary
+                : '#333333',
             }}>
             <TextInput
               placeholderTextColor={'gray'}
@@ -341,8 +356,9 @@ function AdminLogin() {
         <View
           className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
           style={{
-            backgroundColor:
-              theme.colors.isLight ? colors.background.primary : '#333333',
+            backgroundColor: theme.colors.isLight
+              ? colors.background.primary
+              : '#333333',
           }}>
           <TextInput
             placeholderTextColor={'gray'}
@@ -362,10 +378,9 @@ function AdminLogin() {
             <View
               className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
               style={{
-                backgroundColor:
-                  theme.colors.isLight
-                    ? colors.background.primary
-                    : '#333333',
+                backgroundColor: theme.colors.isLight
+                  ? colors.background.primary
+                  : '#333333',
               }}>
               <TextInput
                 placeholderTextColor={'gray'}
@@ -384,10 +399,9 @@ function AdminLogin() {
               className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
               style={{
                 borderColor: '#7AADFF',
-                backgroundColor:
-                  theme.colors.isLight
-                    ? colors.background.primary
-                    : '#333333',
+                backgroundColor: theme.colors.isLight
+                  ? colors.background.primary
+                  : '#333333',
               }}>
               <Text
                 className="text-lg font-rubik ml-6 py-3 flex-1"
@@ -436,10 +450,9 @@ function AdminLogin() {
             <View
               className="z-50 mt-2"
               style={{
-                backgroundColor:
-                  theme.colors.isLight
-                    ? colors.background.primary
-                    : '#333333',
+                backgroundColor: theme.colors.isLight
+                  ? colors.background.primary
+                  : '#333333',
                 borderRadius: 25,
                 paddingHorizontal: 22,
                 zIndex: 3000,
@@ -473,10 +486,9 @@ function AdminLogin() {
                 containerStyle={{
                   borderRadius: 20,
                   borderColor: 'gray',
-                  backgroundColor:
-                    theme.colors.isLight
-                      ? colors.background.primary
-                      : '#333333',
+                  backgroundColor: theme.colors.isLight
+                    ? colors.background.primary
+                    : '#333333',
                 }}
                 activeColor={colors.primary?.[100] ?? '#D6EFFF'}
               />
@@ -486,8 +498,9 @@ function AdminLogin() {
         <View
           className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
           style={{
-            backgroundColor:
-              theme.colors.isLight ? colors.background.primary : '#333333',
+            backgroundColor: theme.colors.isLight
+              ? colors.background.primary
+              : '#333333',
           }}>
           <TextInput
             placeholderTextColor={'gray'}
@@ -517,8 +530,9 @@ function AdminLogin() {
           <View
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
-              backgroundColor:
-                theme.colors.isLight ? colors.background.primary : '#333333',
+              backgroundColor: theme.colors.isLight
+                ? colors.background.primary
+                : '#333333',
             }}>
             <TextInput
               placeholderTextColor={'gray'}
@@ -542,10 +556,9 @@ function AdminLogin() {
                 onPress={handleLogin}
                 className="shadow-md shadow-zinc-350 rounded-3xl w-1/2 py-2 mt-3"
                 style={{
-                  backgroundColor:
-                    theme.colors.isLight
-                      ? colors.background.primary
-                      : '#333333',
+                  backgroundColor: theme.colors.isLight
+                    ? colors.background.primary
+                    : '#333333',
                 }}>
                 <Text
                   className="text-xl font-rubik text-center py-1"
@@ -561,10 +574,9 @@ function AdminLogin() {
                 }}
                 className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
                 style={{
-                  backgroundColor:
-                    theme.colors.isLight
-                      ? colors.background.primary
-                      : '#333333',
+                  backgroundColor: theme.colors.isLight
+                    ? colors.background.primary
+                    : '#333333',
                 }}>
                 <Text
                   className="text-xl font-rubik text-center py-1"

@@ -363,7 +363,7 @@ const Exercise = () => {
             // });
             setTimeout(() => {
               navigation.navigate('ExercisesUser');
-            }, 1000);
+            }, 250);
           }
         }}
         onExit={() => setIsBackActionAlertVisible(true)}
@@ -408,7 +408,7 @@ const Exercise = () => {
 
           setPaused(true);
 
-          navigation.navigate('ExerciseDetail', {
+          navigation.replace('ExerciseDetail', {
             progress: updatedProgress,
             totalDurationSec: exercise.videos.reduce(
               (sum, v) => sum + (v.durationSeconds ?? 0),

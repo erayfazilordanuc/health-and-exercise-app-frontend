@@ -1,3 +1,4 @@
+import icons from '../constants/icons';
 import {colors, colorScheme} from './colors';
 
 export type ThemeType = {
@@ -43,6 +44,8 @@ const blueLightColors = {
   gradient: ['#C5F0F0', '#9DDCFA', '#CCFCF4', '#DFEFF2'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: true,
+  playButton: icons.play_blue,
+  pauseButton: icons.pause_blue,
 };
 
 const blueDarkColors = {
@@ -73,6 +76,8 @@ const blueDarkColors = {
   gradient: ['#C5F0F0', '#9DDCFA', '#CCFCF4', '#DFEFF2'], // ['#9AAED6', '#C5D6D5', '#876073', '#A1815D'] // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: false,
+  playButton: icons.play_blue,
+  pauseButton: icons.pause_blue,
 };
 
 const purpleLightColors = {
@@ -103,6 +108,8 @@ const purpleLightColors = {
   gradient: ['#E8D3E5', '#DEC9F2', '#FCCCF1', '#E0D1EB'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: true,
+  playButton: icons.play_purple,
+  pauseButton: icons.pause_purple,
 };
 
 const purpleDarkColors = {
@@ -133,6 +140,8 @@ const purpleDarkColors = {
   gradient: ['#E8D3E5', '#DEC9F2', '#FCCCF1', '#E0D1EB'], // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: false,
+  playButton: icons.play_purple,
+  pauseButton: icons.pause_purple,
 };
 
 const greenLightColors = {
@@ -163,6 +172,8 @@ const greenLightColors = {
   gradient: ['#EBF2DA', '#AEF5C2', '#EDFCCC', '#D1EDDE'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: true,
+  playButton: icons.play_green,
+  pauseButton: icons.pause_green,
 };
 
 const greenDarkColors = {
@@ -193,6 +204,8 @@ const greenDarkColors = {
   gradient: ['#EBF2DA', '#AEF5C2', '#EDFCCC', '#D1EDDE'], // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: false,
+  playButton: icons.play_green,
+  pauseButton: icons.pause_green,
 };
 
 const redLightColors = {
@@ -223,6 +236,8 @@ const redLightColors = {
   gradient: ['#F2E8DA', '#F5AEB3', '#FCE7CC', '#EDD1D5'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: true,
+  playButton: icons.play_red,
+  pauseButton: icons.pause_red,
 };
 
 const redDarkColors = {
@@ -253,6 +268,8 @@ const redDarkColors = {
   gradient: ['#F2E8DA', '#F5AEB3', '#FCE7CC', '#EDD1D5'], // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: false,
+  playButton: icons.play_red,
+  pauseButton: icons.pause_red,
 };
 
 // Tema nesnesi

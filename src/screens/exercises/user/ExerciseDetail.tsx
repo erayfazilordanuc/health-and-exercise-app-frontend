@@ -58,6 +58,7 @@ const ExerciseDetail = () => {
   const [loading, setLoading] = useState(true);
   const {user} = useUser();
   const {progress, totalDurationSec, fromMain} = params;
+  console.log('ahadadada', progress);
   const todayPercent = calcPercent(progress);
 
   const [startAt, setStartAt] = useState(0);
@@ -80,14 +81,14 @@ const ExerciseDetail = () => {
   };
 
   const getColor = () =>
-    progress.totalProgressDuration === totalDurationSec
+    calcPercent(progress) === 100
       ? '#3BC476'
       : progress.totalProgressDuration === 0
       ? colors.primary[200]
       : '#FFAA33';
   const [color, setColor] = useState(getColor());
 
-  const isDone = progress.totalProgressDuration === totalDurationSec;
+  const isDone = calcPercent(progress) === 100;
 
   useEffect(() => {
     calculateNavPayloads();
@@ -238,159 +239,6 @@ const ExerciseDetail = () => {
   //     });
   // }, [navigation]);
 
-  const today = atLocalMidnight(new Date());
-  const [symptomsDate, setSymptomsDate] = useState(today);
-  const symptomsQ = useSymptomsByDate(symptomsDate, {
-    enabled: !!user && user.role === 'ROLE_USER',
-  });
-  const saveSymptomsToday = useSaveSymptomsToday();
-  const [isSamsungHInstalled, setIsSamsungHInstalled] = useState(false);
-  const [isHealthConnectInstalled, setIsHealthConnectInstalled] =
-    useState(false);
-  const [isHealthConnectReady, setIsHealthConnectReady] = useState(false);
-  const [hcStateLoading, setHcStateLoading] = useState(true);
-
-  const combineSymptoms = (
-    symptoms?: Symptoms | null,
-    syncedSymptoms?: Symptoms | null,
-    date?: Date,
-  ) => {
-    console.log('syncedds', symptoms, syncedSymptoms);
-    if (symptoms) {
-      const merged: Symptoms = {...symptoms};
-      if (merged.pulse) {
-      } else if (syncedSymptoms && syncedSymptoms.pulse) {
-        merged.pulse = syncedSymptoms.pulse;
-      }
-
-      if (merged.steps) {
-      } else if (syncedSymptoms && syncedSymptoms.steps) {
-        merged.steps = syncedSymptoms.steps;
-      }
-
-      if (merged.totalCaloriesBurned) {
-      } else if (syncedSymptoms && syncedSymptoms.totalCaloriesBurned) {
-        merged.totalCaloriesBurned = syncedSymptoms.totalCaloriesBurned;
-      }
-
-      if (merged.activeCaloriesBurned) {
-      } else if (syncedSymptoms && syncedSymptoms.activeCaloriesBurned) {
-        merged.activeCaloriesBurned = syncedSymptoms.activeCaloriesBurned;
-      }
-
-      if (merged.sleepMinutes) {
-      } else if (syncedSymptoms && syncedSymptoms.sleepMinutes) {
-        merged.sleepMinutes = syncedSymptoms.sleepMinutes;
-      }
-
-      return merged;
-    } else if (!syncedSymptoms) {
-      console.log('burada');
-      return null;
-    }
-  };
-  const syncSymptoms = async () => {
-    setLoading(true);
-    try {
-      console.log('eeeee');
-      if (isHealthConnectInstalled && isHealthConnectReady) {
-        const hc = await getSymptoms();
-
-        console.log('geldi be', symptomsQ.data);
-        const combined = combineSymptoms(hc!, symptomsQ.data);
-        console.log('combined', combined);
-        if (combined) await saveSymptomsToday.mutateAsync(combined);
-      } else {
-        const combined = combineSymptoms(symptomsQ.data);
-        if (combined) {
-          await saveSymptomsToday.mutateAsync(combined);
-        }
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const initOnceRef = useRef(false);
-  const syncInFlightRef = useRef(false);
-  const initializeSymptoms = async () => {
-    if (initOnceRef.current) return;
-
-    if (!user || user.role !== 'ROLE_USER') return;
-
-    if (!(symptomsDate && isTodayLocal(symptomsDate))) return;
-
-    if (hcStateLoading) return;
-
-    initOnceRef.current = true;
-    try {
-      if (syncInFlightRef.current) return;
-      console.log(
-        initOnceRef.current,
-        user,
-        symptomsDate,
-        hcStateLoading,
-        syncInFlightRef.current,
-      );
-      syncInFlightRef.current = true;
-      await syncSymptoms();
-      console.log(
-        initOnceRef.current,
-        user,
-        symptomsDate,
-        hcStateLoading,
-        syncInFlightRef.current,
-      );
-    } finally {
-      syncInFlightRef.current = false;
-    }
-  };
-
-  useEffect(() => {
-    // query bittiğinde ve bugün seçiliyken, init henüz yapılmadıysa bir kez dene
-    if (
-      !initOnceRef.current &&
-      !symptomsQ.isFetching &&
-      isTodayLocal(symptomsDate)
-    ) {
-      initializeSymptoms();
-    }
-  }, [user, symptomsQ.data, symptomsDate, hcStateLoading]);
-
-  const checkEssentialAppsStatus = async () => {
-    setHcStateLoading(true);
-    try {
-      const healthConnectInstalled = await checkHealthConnectInstalled();
-      setIsHealthConnectInstalled(healthConnectInstalled);
-
-      const samsungHInstalled = await checkSamsungHInstalled();
-      setIsSamsungHInstalled(samsungHInstalled);
-
-      const healthConnectReady = await initializeHealthConnect();
-      setIsHealthConnectReady(healthConnectReady);
-
-      console.log(
-        'durumlar',
-        healthConnectInstalled,
-        samsungHInstalled,
-        healthConnectReady,
-      );
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setHcStateLoading(false);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!initOnceRef.current && user && user.role === 'ROLE_USER')
-        checkEssentialAppsStatus();
-    }, [user]),
-  );
-
   return (
     <>
       <View
@@ -426,7 +274,7 @@ const ExerciseDetail = () => {
           <Text className="text-xl font-rubik-medium" style={{color: color}}>
             {`%${todayPercent}`}
           </Text>
-          {progress.totalProgressDuration === totalDurationSec && (
+          {calcPercent(progress) === 100 && (
             <Text className="text-xl font-rubik-medium" style={{color: color}}>
               Egzersiz Tamamlandı
             </Text>

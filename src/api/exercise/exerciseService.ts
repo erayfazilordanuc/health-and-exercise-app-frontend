@@ -254,14 +254,29 @@ export const deleteVideoFromExercise = async (
 };
 
 export const calcPercent = (p?: ExerciseProgressDTO | null): number => {
-  if (!p || !p.exerciseDTO || !p.exerciseDTO.videos) return 0;
+  console.log('dto', p);
+
+  if (
+    !p ||
+    !p.exerciseDTO ||
+    !p.exerciseDTO.videos ||
+    !p.videoProgress ||
+    p.videoProgress.length === 0
+  )
+    return 0;
+  console.log('p.total', p.totalProgressDuration);
+
+  let allDone = true;
+  for (const vp of p.videoProgress) {
+    if (!vp.isCompeleted) allDone = false;
+  }
+  if (allDone) return 100;
+
   const total = p.exerciseDTO.videos.reduce(
     (sum, v) => sum + (v.durationSeconds ?? 0),
     0,
   );
-  console.log('dto', p);
   console.log('total', total);
-  console.log('p.total', p.totalProgressDuration);
   console.log(
     'result percent',
     total === 0 ? 0 : Math.round((p.totalProgressDuration / total) * 100),

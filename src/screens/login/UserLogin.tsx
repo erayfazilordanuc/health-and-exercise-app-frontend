@@ -182,14 +182,16 @@ function UserLogin() {
         console.log('Genel hata yakalandı:', error.message);
 
         const maybeStatus = (error as any).status;
-        if (maybeStatus === 403) {
+        if (maybeStatus === 403 || maybeStatus === 500) {
           ToastAndroid.show(
             'Kullanıcı adı veya şifre hatalı',
             ToastAndroid.SHORT,
           );
           return;
         }
-        ToastAndroid.show(error.message, ToastAndroid.SHORT);
+        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
+
+        // ToastAndroid.show(error.message, ToastAndroid.SHORT);
       } else {
         console.log('Bilinmeyen hata:', error);
 
@@ -375,7 +377,8 @@ function UserLogin() {
         ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
       } else if (error instanceof Error) {
         console.log('Genel hata yakalandı:', error.message);
-        ToastAndroid.show(error.message, ToastAndroid.SHORT);
+        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
+        // ToastAndroid.show(error.message, ToastAndroid.SHORT);
       } else {
         console.log('Bilinmeyen hata:', error);
 
@@ -450,10 +453,9 @@ function UserLogin() {
             <View
               className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
               style={{
-                backgroundColor:
-                  theme.colors.isLight
-                    ? colors.background.primary
-                    : '#333333',
+                backgroundColor: theme.colors.isLight
+                  ? colors.background.primary
+                  : '#333333',
               }}>
               <TextInput
                 placeholderTextColor={'gray'}
@@ -471,8 +473,9 @@ function UserLogin() {
           <View
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
-              backgroundColor:
-                theme.colors.isLight ? colors.background.primary : '#333333',
+              backgroundColor: theme.colors.isLight
+                ? colors.background.primary
+                : '#333333',
             }}>
             <TextInput
               placeholderTextColor={'gray'}
@@ -493,10 +496,9 @@ function UserLogin() {
                 className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
                 style={{
                   borderColor: '#7AADFF',
-                  backgroundColor:
-                    theme.colors.isLight
-                      ? colors.background.primary
-                      : '#333333',
+                  backgroundColor: theme.colors.isLight
+                    ? colors.background.primary
+                    : '#333333',
                 }}>
                 <Text
                   className="text-lg font-rubik ml-6 py-3 flex-1"
@@ -545,10 +547,9 @@ function UserLogin() {
               <View
                 className="z-50 mt-2"
                 style={{
-                  backgroundColor:
-                    theme.colors.isLight
-                      ? colors.background.primary
-                      : '#333333',
+                  backgroundColor: theme.colors.isLight
+                    ? colors.background.primary
+                    : '#333333',
                   borderRadius: 25,
                   paddingHorizontal: 22,
                   zIndex: 3000,
@@ -582,10 +583,9 @@ function UserLogin() {
                   containerStyle={{
                     borderRadius: 20,
                     borderColor: 'gray',
-                    backgroundColor:
-                      theme.colors.isLight
-                        ? colors.background.primary
-                        : '#333333',
+                    backgroundColor: theme.colors.isLight
+                      ? colors.background.primary
+                      : '#333333',
                   }}
                   activeColor={colors.primary?.[100] ?? '#D6EFFF'}
                 />
@@ -595,8 +595,9 @@ function UserLogin() {
           <View
             className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
             style={{
-              backgroundColor:
-                theme.colors.isLight ? colors.background.primary : '#333333',
+              backgroundColor: theme.colors.isLight
+                ? colors.background.primary
+                : '#333333',
             }}>
             <TextInput
               placeholderTextColor={'gray'}
@@ -673,10 +674,9 @@ function UserLogin() {
                   onPress={handleLogin}
                   className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
                   style={{
-                    backgroundColor:
-                      theme.colors.isLight
-                        ? colors.background.primary
-                        : '#333333',
+                    backgroundColor: theme.colors.isLight
+                      ? colors.background.primary
+                      : '#333333',
                   }}>
                   <Text
                     className="text-xl font-rubik text-center py-1"
@@ -692,10 +692,9 @@ function UserLogin() {
                   }}
                   className="shadow-md shadow-zinc-350 rounded-full w-1/2 py-3 mt-3"
                   style={{
-                    backgroundColor:
-                      theme.colors.isLight
-                        ? colors.background.primary
-                        : '#333333',
+                    backgroundColor: theme.colors.isLight
+                      ? colors.background.primary
+                      : '#333333',
                   }}>
                   <Text
                     className="text-xl font-rubik text-center py-1"

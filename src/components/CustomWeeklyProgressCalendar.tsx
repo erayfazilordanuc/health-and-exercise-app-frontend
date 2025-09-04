@@ -185,7 +185,7 @@ const CustomWeeklyProgressCalendar = ({
                 </Text>
 
                 {/* İçerik */}
-                {isToday && isActive ? (
+                {isToday && isActive && percent !== 100 ? (
                   <View
                     className="flex flex-row items-center justify-center"
                     style={{

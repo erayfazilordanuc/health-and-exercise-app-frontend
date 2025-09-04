@@ -104,8 +104,14 @@ import exercise_screen from '../assets/icons/exercise_screen.png';
 import patient from '../assets/icons/patient.png';
 import system_default_theme from '../assets/icons/system_default_theme.png';
 import check from '../assets/icons/check.png';
-import play from '../assets/icons/play.png';
-import pause from '../assets/icons/pause.png';
+import play_blue from '../assets/icons/play_blue.png';
+import pause_blue from '../assets/icons/pause_blue.png';
+import play_purple from '../assets/icons/play_purple.png';
+import pause_purple from '../assets/icons/pause_purple.png';
+import play_green from '../assets/icons/play_green.png';
+import pause_green from '../assets/icons/pause_green.png';
+import play_red from '../assets/icons/play_red.png';
+import pause_red from '../assets/icons/pause_red.png';
 import rewind_5 from '../assets/icons/rewind_5.png';
 import forward_5 from '../assets/icons/forward_5.png';
 import health_sync from '../assets/icons/health_sync.png';
@@ -222,8 +228,14 @@ export default {
   patient,
   system_default_theme,
   check,
-  play,
-  pause,
+  play_blue,
+  pause_blue,
+  play_purple,
+  pause_purple,
+  play_green,
+  pause_green,
+  play_red,
+  pause_red,
   rewind_5,
   forward_5,
   health_sync,

@@ -701,7 +701,7 @@ const Home = () => {
                                     calcPercent(todayExerciseProgress) === 100
                                       ? colors.isLight
                                         ? '#ABF7CE'
-                                        : '#48785D'
+                                        : '#31473A'
                                       : todayExerciseProgress?.totalProgressDuration &&
                                         todayExerciseProgress.totalProgressDuration >
                                           0
@@ -721,7 +721,7 @@ const Home = () => {
                                     color:
                                       todayExerciseProgress?.totalProgressDuration &&
                                       calcPercent(todayExerciseProgress) === 100
-                                        ? '#55CC88'
+                                        ? '#0EB556'
                                         : todayExerciseProgress?.totalProgressDuration &&
                                           todayExerciseProgress.totalProgressDuration >
                                             0
@@ -745,7 +745,7 @@ const Home = () => {
                                   tintColor={
                                     todayExerciseProgress?.totalProgressDuration &&
                                     calcPercent(todayExerciseProgress) === 100
-                                      ? '#55CC88'
+                                      ? '#0EB556'
                                       : todayExerciseProgress?.totalProgressDuration &&
                                         todayExerciseProgress.totalProgressDuration >
                                           0

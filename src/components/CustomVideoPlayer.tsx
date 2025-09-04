@@ -177,7 +177,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
 
             <TouchableOpacity onPress={() => setPaused(p => !p)}>
               <Image
-                source={paused ? icons.play : icons.pause}
+                source={paused ? colors.playButton : colors.pauseButton}
                 style={{width: 65, height: 65}}
               />
             </TouchableOpacity>
@@ -292,7 +292,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
             }}>
             <TouchableOpacity onPress={() => setPaused(p => !p)}>
               <Image
-                source={paused ? icons.play : icons.pause}
+                source={paused ? colors.playButton : colors.pauseButton}
                 style={{width: 65, height: 65}}
               />
             </TouchableOpacity>
@@ -335,7 +335,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
               style={{
                 width: `${progress * 100}%`,
                 height: '100%',
-                backgroundColor: '#0A9FFF', // '#2CFF6B', // colors.primary[250],
+                backgroundColor: colors.primary[250], // '#2CFF6B', // colors.primary[250],
                 borderRadius: 10,
               }}
             />
@@ -377,7 +377,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
               <LinearGradient
                 colors={[colors.primary[300], colors.secondary[300]]} // ister temaya göre değiştir
                 start={{x: 0, y: 0}}
-                end={{x: 1, y: 1}}
+                end={{x: 1.1, y: 1}}
                 className="flex flex-row"
                 style={{
                   paddingHorizontal: 15,

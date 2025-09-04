@@ -68,6 +68,7 @@ import {
 } from '../../hooks/exerciseQueries';
 import {parseTheme} from '../../themes/themes';
 import ColorCircle from '../../components/ColorCircle';
+import {calcPercent} from '../../api/exercise/exerciseService';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -220,17 +221,6 @@ const Member = () => {
       fetchLastMessage();
     }, [member, admin]), // memberId, TO DO test et
   );
-
-  const calcPercent = (p?: ExerciseProgressDTO | null): number => {
-    if (!p || !p.exerciseDTO || !p.exerciseDTO.videos) return 0;
-    const total = p.exerciseDTO.videos.reduce(
-      (sum, v) => sum + (v.durationSeconds ?? 0),
-      0,
-    );
-    return total === 0
-      ? 0
-      : Math.round((p.totalProgressDuration / total) * 100);
-  };
 
   const calculateAge = () => {
     if (member && member.birthDate) {

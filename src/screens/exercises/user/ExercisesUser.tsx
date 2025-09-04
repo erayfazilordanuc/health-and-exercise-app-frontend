@@ -352,11 +352,7 @@ const ExercisesUser = () => {
                         </TouchableOpacity>
                       ) : todayExerciseProgress.exerciseDTO &&
                         todayExerciseProgress.exerciseDTO.videos &&
-                        todayExerciseProgress.totalProgressDuration ===
-                          todayExerciseProgress.exerciseDTO.videos.reduce(
-                            (sum, v) => sum + (v.durationSeconds ?? 0),
-                            0,
-                          ) ? (
+                        calcPercent(todayExerciseProgress) === 100 ? (
                         <TouchableOpacity
                           className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
                           style={{

@@ -692,6 +692,7 @@ const Profile = () => {
                             value={newStepGoalValue}
                             onChangeText={value => setNewStepGoalValue(value)}
                             placeholder="Örn: 15000 adım"
+                            placeholderTextColor={colors.text.third}
                             selectionColor={colors.primary[300]}
                             keyboardType="numeric"
                           />
@@ -1317,9 +1318,9 @@ const Profile = () => {
             open={showTimePicker}
             date={time}
             title="Uyku sürenizi seçiniz"
-            mode="time" // ✅ sadece saat seçimi
-            locale="tr" // ✅ Türkçe dil
-            is24hourSource="device" // ✅ 24 saat formatı
+            mode="time"
+            locale="tr-TR"
+            is24hourSource="locale"
             onConfirm={async selectedTime => {
               const totalMinutes =
                 selectedTime.getHours() * 60 + selectedTime.getMinutes();

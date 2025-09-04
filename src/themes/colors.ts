@@ -1,3 +1,5 @@
+import icons from '../constants/icons';
+
 export const colors = {
   primary: {
     100: '#0061FF0A',
@@ -51,6 +53,8 @@ export const colorScheme = {
   gradient: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: false,
+  playButton: icons.play_blue,
+  pauseButton: icons.pause_blue,
 };
 
 export const gradientLightColors = ['#E8FEFF', '#A3DDFF', '#A2FCE8'];

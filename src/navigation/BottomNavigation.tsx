@@ -452,6 +452,7 @@ function ExercisesStack() {
           name="Exercise"
           component={Exercise}
           options={{
+
             headerShown: false,
             header: () => (
               <CustomHeader
