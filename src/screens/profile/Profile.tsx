@@ -129,7 +129,11 @@ const Profile = () => {
   const completeMut = useCompleteStepGoal();
   const [newStepGoalValue, setNewStepGoalValue] = useState('');
   const [goaling, setGoaling] = useState(false);
-  const {data: weeklySteps = 0, isLoading, error} = useWeeklySteps();
+  const {
+    data: weeklySteps = 0,
+    isLoading,
+    refetch: refetchSteps,
+  } = useWeeklySteps();
 
   const saveSymptomsToday = useSaveSymptomsToday();
 
@@ -349,6 +353,7 @@ const Profile = () => {
     try {
       await checkEssentialAppsStatus();
       await symptomsQ.refetch();
+      await refetchSteps();
       if (isHealthConnectInstalled && isHealthConnectReady) {
         const hc = await getSymptoms();
         if (hc && symptoms) {

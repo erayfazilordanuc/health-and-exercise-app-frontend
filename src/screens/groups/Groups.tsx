@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   ToastAndroid,
   Dimensions,
+  Switch,
 } from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -44,6 +45,7 @@ const Groups = () => {
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isJoinModalVisible, setIsJoinModalVisible] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
+  const [exerciseEnabled, setExerciseEnabled] = useState(true);
   const [groupToJoin, setGroupToJoin] = useState<Group>();
   const [groupJoinRequest, setGroupJoinRequest] = useState<GroupRequestDTO>();
   const [requestedGroupAdmin, setRequestedGroupAdmin] = useState<User>();
@@ -56,6 +58,7 @@ const Groups = () => {
       const createGroupDTO: CreateGroupDTO = {
         name: newGroupName.trim(),
         adminId: user.id!,
+        exerciseEnabled: exerciseEnabled,
       };
 
       const response = await createGroup(createGroupDTO);
@@ -234,8 +237,7 @@ const Groups = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color:
-              theme.colors.isLight ? '#333333' : colors.background.primary,
+            color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
           Gruplar
@@ -506,6 +508,33 @@ const Groups = () => {
                   className="text-lg font-rubik ml-5 flex-1"
                   style={{color: colors.text.primary}}
                 />
+              </View>
+              <View className="flex flex-row items-center justify-start z-50 rounded-2xl mb-4">
+                <Text
+                  className="text-lg font-rubik"
+                  style={{color: colors.text.primary}}>
+                  Egzersiz Etkinliği
+                </Text>
+                <View
+                  className="ml-3"
+                  style={{
+                    borderRadius: 20,
+                    backgroundColor: exerciseEnabled
+                      ? colors.primary[300]
+                      : '#B5B5B5',
+                  }}>
+                  <Switch
+                    value={exerciseEnabled}
+                    onValueChange={async (value: boolean) => {
+                      setExerciseEnabled(value);
+                    }}
+                    thumbColor={colors.background.primary}
+                    trackColor={{
+                      false: '#B5B5B5',
+                      true: colors.primary[300],
+                    }}
+                  />
+                </View>
               </View>
               <View className="flex-row justify-between w-full">
                 {!loading ? (

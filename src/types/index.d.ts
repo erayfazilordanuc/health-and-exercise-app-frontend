@@ -185,6 +185,7 @@ type Group = {
 type CreateGroupDTO = {
   name: string;
   adminId: number;
+  exerciseEnabled: boolean;
 };
 
 type UpdateGroupDTO = {
