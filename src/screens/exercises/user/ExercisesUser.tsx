@@ -81,7 +81,16 @@ const ExercisesUser = () => {
   // } = useGroupById(user?.groupId!, {
   //   enabled: !!user?.groupId,
   // });
-  const {data: group, isLoading, error, refetch} = useGroupById(groupId, { enabled: Number.isFinite(groupId) && groupId > 0 });
+  const groupId: number = Number.isFinite(user?.groupId as number)
+    ? (user!.groupId as number)
+    : -1;
+
+  const {
+    data: group,
+    isLoading,
+    error,
+    refetch,
+  } = useGroupById(groupId, {enabled: Number.isFinite(groupId) && groupId > 0});
   const [showModal, setShowModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
@@ -553,7 +562,7 @@ const ExercisesUser = () => {
                 <Text
                   className="text-sm font-rubik"
                   style={{color: colors.text.secondary}}>
-                  Egzersiz Günleri
+                  Egzersiz Günleri Seç
                 </Text>
               </TouchableOpacity>
             </View>

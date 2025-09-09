@@ -106,7 +106,15 @@ const Home = () => {
   // } = useGroupById(user?.groupId!, {
   //   enabled: !!user?.groupId,
   // });
-  const {data: group, isLoading, error, refetch} = useGroupById(groupId, { enabled: Number.isFinite(groupId) && groupId > 0 });
+  const groupId: number = Number.isFinite(user?.groupId as number)
+    ? (user!.groupId as number)
+    : -1;
+  const {
+    data: group,
+    isLoading,
+    error,
+    refetch,
+  } = useGroupById(groupId, {enabled: Number.isFinite(groupId) && groupId > 0});
   const [lastMessage, setLastMessage] = useState<Message | null>();
 
   const [loading, setLoading] = useState(false);
