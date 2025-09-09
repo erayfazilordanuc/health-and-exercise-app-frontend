@@ -25,22 +25,28 @@ export const GROUP_KEYS = {
     [...GROUP_KEYS.root, 'admin', groupId] as const,
 };
 
-export const useGroupById = (id: number, options?: {enabled?: boolean}) => {
-  return useQuery<Group, Error>({
-    queryKey: ['group', id] as const,
+export const useGroupById = (
+  id?: number,
+  options?: Omit<
+    UseQueryOptions<Group, AxiosError, Group, ReturnType<typeof GROUP_KEYS.byId>>,
+    'queryKey' | 'queryFn' | 'enabled'
+  > & { enabled?: boolean }
+) =>
+  useQuery<Group, AxiosError, Group, ReturnType<typeof GROUP_KEYS.byId>>({
+    queryKey: GROUP_KEYS.byId(id ?? -1),
+    enabled: Number.isFinite(id) && (id as number) > 0 && (options?.enabled ?? true),
     queryFn: async () => {
-      const res = await getGroupById(id);
+      const res = await getGroupById(id as number);
       return res.data as Group;
     },
-    enabled: options?.enabled, // buraya bağladık
     networkMode: 'offlineFirst',
     staleTime: 5 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
     retry: 1,
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
+    ...options,
   });
-};
 
 /* --------------------------- GROUP USERS (User[]) --------------------------- */
 

@@ -99,13 +99,14 @@ const Home = () => {
   const {user} = useUser();
   const [admin, setAdmin] = useState<User>();
   const alertRef = useRef<CustomAlertSingletonHandle>(null);
-  const {
-    data: group,
-    isLoading,
-    error,
-  } = useGroupById(user?.groupId!, {
-    enabled: !!user?.groupId,
-  });
+  // const {
+  //   data: group,
+  //   isLoading,
+  //   error,
+  // } = useGroupById(user?.groupId!, {
+  //   enabled: !!user?.groupId,
+  // });
+  const {data: group, isLoading, error, refetch} = useGroupById(groupId, { enabled: Number.isFinite(groupId) && groupId > 0 });
   const [lastMessage, setLastMessage] = useState<Message | null>();
 
   const [loading, setLoading] = useState(false);

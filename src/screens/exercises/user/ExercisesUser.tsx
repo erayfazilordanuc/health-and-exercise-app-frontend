@@ -74,13 +74,14 @@ const ExercisesUser = () => {
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const {user} = useUser();
-  const {
-    data: group,
-    isLoading,
-    error,
-  } = useGroupById(user?.groupId!, {
-    enabled: !!user?.groupId,
-  });
+  // const {
+  //   data: group,
+  //   isLoading,
+  //   error,
+  // } = useGroupById(user?.groupId!, {
+  //   enabled: !!user?.groupId,
+  // });
+  const {data: group, isLoading, error, refetch} = useGroupById(groupId, { enabled: Number.isFinite(groupId) && groupId > 0 });
   const [showModal, setShowModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 

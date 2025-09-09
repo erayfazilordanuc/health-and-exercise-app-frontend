@@ -65,7 +65,13 @@ const Group = () => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const {user} = useUser();
-  const {data: group, isLoading, error} = useGroupById(groupId);
+  // const {data: group, isLoading, error} = useGroupById(groupId);
+  const {
+    data: group,
+    isLoading,
+    error,
+    refetch,
+  } = useGroupById(groupId, {enabled: Number.isFinite(groupId) && groupId > 0});
   const [exerciseEnabled, setExerciseEnabled] = useState(
     group?.exerciseEnabled,
   );
