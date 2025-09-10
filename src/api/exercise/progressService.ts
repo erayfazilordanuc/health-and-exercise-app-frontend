@@ -68,6 +68,7 @@ export const getTodaysProgress = async (force?: boolean) => {
   try {
     const key = `exerciseProgress_${new Date().toISOString().slice(0, 10)}`;
     const localJson = await AsyncStorage.getItem(key);
+    console.log('local progress', localJson);
     if (localJson && !force) {
       const local: ExerciseProgressDTO = JSON.parse(localJson);
       console.log('local daily progress', local);

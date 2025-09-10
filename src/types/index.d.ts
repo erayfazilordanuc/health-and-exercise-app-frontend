@@ -315,7 +315,7 @@ type ExerciseVideoProgressDTO = {
   exerciseId: number;
   userId: number;
   createdAt: Date;
-  updatedA?: Date | null;
+  updatedAt?: Date | null;
 };
 
 type ExerciseVideoProgressRequestDTO = {

@@ -6,11 +6,13 @@ import {
   CircularProgress,
 } from 'react-native-circular-progress';
 interface CustomWeeklyProgressCalendarProps {
+  todayPercent?: number;
   weeklyPercents: number[]; // aktif günlerin yüzdeleri (activeDays ile aynı sıra)
   activeDays: number[]; // 1=Mon ... 7=Sun (ör: [1,3,5])
 }
 
 const CustomWeeklyProgressCalendar = ({
+  todayPercent,
   weeklyPercents,
   activeDays,
 }: CustomWeeklyProgressCalendarProps) => {
@@ -144,7 +146,11 @@ const CustomWeeklyProgressCalendar = ({
             let bgColor = colors.background.secondary;
 
             const percent =
-              progressIndex != null ? weeklyPercents?.[progressIndex] ?? 0 : 0;
+              progressIndex != null
+                ? todayPercent
+                  ? todayPercent
+                  : weeklyPercents?.[progressIndex] ?? 0
+                : 0;
 
             if (isActive) {
               if (percent === 100) {

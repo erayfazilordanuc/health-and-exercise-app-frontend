@@ -140,6 +140,7 @@ const Home = () => {
     try {
       const todayExerciseProgress: ExerciseProgressDTO =
         await getTodaysProgress();
+      console.log('today exercise progress', todayExerciseProgress);
       setTodayExerciseProgress(todayExerciseProgress);
     } catch (error) {
       // ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);

@@ -75,6 +75,9 @@ async function upsertSchedule(activeDays: number[]): Promise<number[]> {
   return data;
 }
 
+export const scheduleQueryKey = (userId?: number) =>
+  ['exerciseScheduleAdmin', userId] as const;
+
 // --- Query Hook (uzun staleTime) ---
 export function useExerciseSchedule() {
   return useQuery({
@@ -100,9 +103,6 @@ export function useUpsertExerciseSchedule() {
     },
   });
 }
-
-export const scheduleQueryKey = (userId?: number) =>
-  ['exerciseScheduleAdmin', userId] as const;
 
 async function fetchExerciseScheduleForAdmin(
   userId: number,

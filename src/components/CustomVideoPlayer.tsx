@@ -116,12 +116,12 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
         return;
       } else {
         const net = await NetInfo.fetch();
-        const isOnline = !!net.isConnected;
-        if (!isOnline) {
+        if (!net.isConnected) {
           ToastAndroid.show(
             'İnternet bağlantınızı kontrol ediniz',
             ToastAndroid.LONG,
           );
+          return;
         }
       }
 

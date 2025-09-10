@@ -73,7 +73,7 @@ const ExerciseDetail = () => {
     console.log('progress', progress);
     for (let i = 0; i < progress.exerciseDTO.videos.length; i++) {
       const vp = progress.videoProgress[i];
-      if (!vp || (!vp.isCompeleted && vp.id)) {
+      if (!vp || !vp.isCompeleted) {
         setVideoIdxToShow(i);
         setStartAt(vp && vp.progressDuration ? vp.progressDuration : 0);
         break;

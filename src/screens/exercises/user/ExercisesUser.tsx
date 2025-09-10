@@ -619,6 +619,7 @@ const ExercisesUser = () => {
             </View>
             {weeklyExerciseProgress && (
               <CustomWeeklyProgressCalendar
+                todayPercent={calcPercent(todayExerciseProgress)}
                 weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
                 activeDays={updatedActiveDays ?? []}
               />

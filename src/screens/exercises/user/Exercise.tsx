@@ -225,72 +225,82 @@ const Exercise = () => {
       console.log('newTotal', newTotalProgressDuration);
       setTotalProgressDuration(newTotalProgressDuration);
 
+      let response = null;
+
+      const netInfo = await NetInfo.fetch();
+      if (netInfo.isConnected) {
+        response = await progressExerciseVideo(
+          exercise.id!,
+          exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id!,
+          time,
+        );
+      } else setTimeout(() => {}, 150);
+
       try {
-        const netInfo = await NetInfo.fetch();
-        console.log('time', time);
-        if (netInfo.isConnected) {
-          const response = await progressExerciseVideo(
-            exercise.id!,
-            exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id!,
-            time,
+        setUpdatedProgress(prev => {
+          const existingIndex = prev.videoProgress?.findIndex(
+            vp =>
+              vp.videoId ===
+              exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id,
           );
 
-          const key = `exerciseProgress_${new Date()
-            .toISOString()
-            .slice(0, 10)}`;
-          await AsyncStorage.setItem(
-            key,
-            JSON.stringify({
-              ...updatedProgress,
+          const newVideoProgressItem: ExerciseVideoProgressDTO = {
+            id: response ? response.id : null,
+            progressDuration: newTotalProgressDuration,
+            isCompeleted: !!isEnd,
+            videoId: exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id!,
+            exerciseId: exercise.id!,
+            userId: user!.id!,
+            createdAt: response?.createdAt ?? new Date(),
+            updatedAt: new Date(),
+          };
+
+          // const newVideoProgressItem: ExerciseVideoProgressDTO = {
+          //   ...response,
+          // };
+
+          if (existingIndex === -1 || existingIndex === undefined) {
+            return {
+              ...prev,
               totalProgressDuration: newTotalProgressDuration,
-              // local tarafta isEnd geldiyse force true yaz
-              videoProgress: updatedProgress.videoProgress.map(vp =>
-                vp.videoId ===
-                exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id
-                  ? {...vp, isCompeleted: vp.isCompeleted || !!isEnd}
-                  : vp,
-              ),
-            }),
-          );
-
-          setUpdatedProgress(prev => {
-            const existingIndex = prev.videoProgress?.findIndex(
-              vp =>
-                vp.videoId ===
-                exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id,
-            );
-
-            const newVideoProgressItem: ExerciseVideoProgressDTO = {
-              ...response,
+              videoProgress: [
+                ...(prev.videoProgress || []),
+                newVideoProgressItem,
+              ],
             };
+          } else {
+            // Varsa → güncelle
+            return {
+              ...prev,
+              totalProgressDuration: newTotalProgressDuration,
+              videoProgress: prev.videoProgress.map((item, idx) =>
+                idx === existingIndex
+                  ? {
+                      ...newVideoProgressItem,
+                      isCompeleted: item.isCompeleted || !!isEnd,
+                    }
+                  : item,
+              ),
+            };
+          }
+        });
 
-            if (existingIndex === -1 || existingIndex === undefined) {
-              // İlgili videoId yoksa → ekle
-              return {
-                ...prev,
-                totalProgressDuration: newTotalProgressDuration,
-                videoProgress: [
-                  ...(prev.videoProgress || []),
-                  newVideoProgressItem,
-                ],
-              };
-            } else {
-              // Varsa → güncelle
-              return {
-                ...prev,
-                totalProgressDuration: newTotalProgressDuration,
-                videoProgress: prev.videoProgress.map((item, idx) =>
-                  idx === existingIndex
-                    ? {
-                        ...newVideoProgressItem,
-                        isCompeleted: item.isCompeleted || !!isEnd,
-                      }
-                    : item,
-                ),
-              };
-            }
-          });
-        }
+        const key = `exerciseProgress_${new Date().toISOString().slice(0, 10)}`;
+        await AsyncStorage.setItem(
+          key,
+          JSON.stringify({
+            ...updatedProgress,
+            totalProgressDuration: newTotalProgressDuration,
+            // local tarafta isEnd geldiyse force true yaz
+            videoProgress: updatedProgress.videoProgress.map(vp =>
+              vp.videoId ===
+              exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id
+                ? {...vp, isCompeleted: vp.isCompeleted || !!isEnd}
+                : vp,
+            ),
+          }),
+        );
+        console.log('time', time);
 
         console.log('updatedProgress', updatedProgress);
         console.log(

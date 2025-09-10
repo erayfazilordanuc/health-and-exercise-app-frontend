@@ -311,6 +311,23 @@ const Member = () => {
     }
   };
 
+  const completedCount = () => {
+    if (!doneGoals) return 0;
+
+    const base = doneGoals.length;
+
+    if (
+      weeklySteps != null &&
+      weeklyGoal &&
+      weeklySteps > weeklyGoal.goal &&
+      !weeklyGoal.isDone
+    ) {
+      return base + 1;
+    }
+
+    return base;
+  };
+
   return (
     <View style={{paddingTop: insets.top * 1.3}} className="flex-1 px-3">
       <LinearGradient
@@ -883,7 +900,7 @@ const Member = () => {
                         !weeklyGoal.isDone
                         ? doneGoals?.length + 1
                         : doneGoals?.length
-                      : 1}
+                      : 0}
                   </Text>
                 </View>
               </View>
