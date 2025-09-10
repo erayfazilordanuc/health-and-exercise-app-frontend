@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
+import NetInfo from '@react-native-community/netinfo';
 
 export const saveMessage = async (message: Message) => {
   const response = await apiClient.put(`/messages`, message);
@@ -103,7 +104,9 @@ export const getLastMessageBySenderAndReceiver = async (
       const now = Date.now();
       const diffSec = (now - savedAt) / 1000;
 
-      if (diffSec <= 5) return normalize(local.message);
+      const net = await NetInfo.fetch();
+      const isOnline = !!net.isConnected;
+      if (diffSec <= 5 || !isOnline) return normalize(local.message);
     }
   }
   const res = await apiClient.get(`/messages/sender/${s}/receiver/${r}/last`);

@@ -452,7 +452,6 @@ function ExercisesStack() {
           name="Exercise"
           component={Exercise}
           options={{
-
             headerShown: false,
             header: () => (
               <CustomHeader
@@ -653,77 +652,111 @@ export function BottomNavigator() {
   return (
     <Tab.Navigator
       key={theme.name}
+      // screenOptions={{
+      //   tabBarShowLabel: false,
+      //   // // tabBarStyle: {
+      //   // //   backgroundColor: colors.background.primary,
+      //   // //   borderColor: colors.background.primary,
+      //   // //   position: 'absolute',
+      //   // //   minHeight: 60,
+      //   // //   borderTopWidth: 0,
+      //   // // },
+      //   // tabBarStyle: {
+      //   //   marginHorizontal: width / 24,
+      //   //   position: 'absolute',
+      //   //   bottom: 15,
+      //   //   left: 15,
+      //   //   right: 15,
+      //   //   // height: 56,
+      //   //   borderRadius: 40,
+      //   //   borderWidth: 1,
+      //   //   borderTopWidth: 0.9,
+      //   //   borderColor:
+      //   //     theme.colors.isLight
+      //   //       ? 'rgba(0,0,0,0.09)'
+      //   //       : 'rgba(150,150,150,0.09)',
+      //   //   backgroundColor:
+      //   //     theme.colors.isLight
+      //   //       ? 'rgba(255,255,255,0.95)'
+      //   //       : 'rgba(25,25,25,0.95)',
+      //   //   elevation: 0,
+      //   // },
+
+      //   // Tasarım korunuyor, sabit height yok, dinamik minHeight + padding var
+      //   tabBarStyle: {
+      //     minHeight: 50 + Math.max(insets.bottom, 0),
+      //     height: undefined,
+      //     paddingTop: 11,
+      //     paddingBottom: Math.max(insets.bottom, 11),
+
+      //     // mevcut görünümü koru
+      //     marginHorizontal: width / 24,
+      //     position: 'absolute',
+      //     bottom: 15,
+      //     left: 15,
+      //     right: 15,
+      //     borderRadius: 40,
+      //     borderWidth: 1,
+      //     borderTopWidth: 0.9,
+      //     borderColor:
+      //       theme.colors.isLight
+      //         ? 'rgba(0,0,0,0.09)'
+      //         : 'rgba(150,150,150,0.09)',
+      //     backgroundColor:
+      //       theme.colors.isLight
+      //         ? 'rgba(255,255,255,0.95)'
+      //         : 'rgba(25,25,25,0.95)',
+      //     elevation: 0,
+      //   },
+
+      //   // item yüksekliğini serbest bırak; margin yerine padding kullan
+      //   tabBarItemStyle: {
+      //     height: 'auto',
+      //     paddingVertical: 0,
+      //   },
+
+      //   // ÖNEMLİ: İkonları saran container ortalansın; margin hilesi yok
+      //   tabBarIconStyle: {
+      //     margin: 0,
+      //     padding: 0,
+      //   },
+      //   tabBarHideOnKeyboard: true,
+      //   tabBarButton: props => <CustomTabButton {...props} />,
+      //   // animation: 'shift', // (ISSUE) TO DO Shift animation causes freezing when switching to profile tab.
+      // }}
       screenOptions={{
         tabBarShowLabel: false,
-        // // tabBarStyle: {
-        // //   backgroundColor: colors.background.primary,
-        // //   borderColor: colors.background.primary,
-        // //   position: 'absolute',
-        // //   minHeight: 60,
-        // //   borderTopWidth: 0,
-        // // },
-        // tabBarStyle: {
-        //   marginHorizontal: width / 24,
-        //   position: 'absolute',
-        //   bottom: 15,
-        //   left: 15,
-        //   right: 15,
-        //   // height: 56,
-        //   borderRadius: 40,
-        //   borderWidth: 1,
-        //   borderTopWidth: 0.9,
-        //   borderColor:
-        //     theme.colors.isLight
-        //       ? 'rgba(0,0,0,0.09)'
-        //       : 'rgba(150,150,150,0.09)',
-        //   backgroundColor:
-        //     theme.colors.isLight
-        //       ? 'rgba(255,255,255,0.95)'
-        //       : 'rgba(25,25,25,0.95)',
-        //   elevation: 0,
-        // },
 
-        // Tasarım korunuyor, sabit height yok, dinamik minHeight + padding var
         tabBarStyle: {
-          minHeight: 50 + Math.max(insets.bottom, 0),
+          minHeight: 56,
           height: undefined,
           paddingTop: 11,
-          paddingBottom: Math.max(insets.bottom, 11),
-
-          // mevcut görünümü koru
+          paddingBottom: 11,
           marginHorizontal: width / 24,
           position: 'absolute',
-          bottom: 15,
+          bottom: 15 + Math.max(insets.bottom, 0), // ⬅️ sadece konumda kullan
           left: 15,
           right: 15,
+
           borderRadius: 40,
           borderWidth: 1,
           borderTopWidth: 0.9,
-          borderColor:
-            theme.colors.isLight
-              ? 'rgba(0,0,0,0.09)'
-              : 'rgba(150,150,150,0.09)',
-          backgroundColor:
-            theme.colors.isLight
-              ? 'rgba(255,255,255,0.95)'
-              : 'rgba(25,25,25,0.95)',
+          borderColor: theme.colors.isLight
+            ? 'rgba(0,0,0,0.09)'
+            : 'rgba(150,150,150,0.09)',
+          backgroundColor: theme.colors.isLight
+            ? 'rgba(255,255,255,0.95)'
+            : 'rgba(25,25,25,0.95)',
           elevation: 0,
         },
 
-        // item yüksekliğini serbest bırak; margin yerine padding kullan
         tabBarItemStyle: {
           height: 'auto',
           paddingVertical: 0,
         },
-
-        // ÖNEMLİ: İkonları saran container ortalansın; margin hilesi yok
-        tabBarIconStyle: {
-          margin: 0,
-          padding: 0,
-        },
+        tabBarIconStyle: {margin: 0, padding: 0},
         tabBarHideOnKeyboard: true,
         tabBarButton: props => <CustomTabButton {...props} />,
-        // animation: 'shift', // (ISSUE) TO DO Shift animation causes freezing when switching to profile tab.
       }}
       initialRouteName="Home">
       <Tab.Screen

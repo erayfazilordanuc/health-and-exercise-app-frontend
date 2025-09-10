@@ -5,7 +5,13 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
-import {View, BackHandler, StatusBar, Dimensions} from 'react-native';
+import {
+  View,
+  BackHandler,
+  StatusBar,
+  Dimensions,
+  ToastAndroid,
+} from 'react-native';
 import {
   RouteProp,
   useFocusEffect,
@@ -308,7 +314,7 @@ const Exercise = () => {
     [currentTime, doneVideosDuration],
   );
 
-  const handleDurationProgress = (time: number) => {
+  const handleDurationProgress = async (time: number) => {
     if (time > 0.5) {
       setCurrentTime(time);
       const now = Date.now();
@@ -319,6 +325,20 @@ const Exercise = () => {
       }
     }
   };
+
+  const checkConnection = async () => {
+    const netInfo = await NetInfo.fetch();
+    if (!netInfo.isConnected) {
+      ToastAndroid.show(
+        'İnternet bağlantısı yok. Video yüklenemiyor.',
+        ToastAndroid.LONG,
+      );
+    }
+  };
+
+  useEffect(() => {
+    checkConnection();
+  }, []);
 
   console.log('updated', updatedProgress);
 
