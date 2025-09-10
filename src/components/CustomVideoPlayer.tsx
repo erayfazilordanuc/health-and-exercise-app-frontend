@@ -121,6 +121,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
             'İnternet bağlantınızı kontrol ediniz',
             ToastAndroid.LONG,
           );
+          setPaused(true);
           return;
         }
       }

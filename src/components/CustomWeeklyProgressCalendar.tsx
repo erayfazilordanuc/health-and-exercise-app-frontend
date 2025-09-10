@@ -147,7 +147,7 @@ const CustomWeeklyProgressCalendar = ({
 
             const percent =
               progressIndex != null
-                ? todayPercent
+                ? isToday && todayPercent
                   ? todayPercent
                   : weeklyPercents?.[progressIndex] ?? 0
                 : 0;

@@ -246,7 +246,7 @@ const Exercise = () => {
 
           const newVideoProgressItem: ExerciseVideoProgressDTO = {
             id: response ? response.id : null,
-            progressDuration: newTotalProgressDuration,
+            progressDuration: time,
             isCompeleted: !!isEnd,
             videoId: exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id!,
             exerciseId: exercise.id!,

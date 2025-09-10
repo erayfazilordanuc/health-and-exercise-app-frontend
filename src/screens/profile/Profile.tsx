@@ -122,7 +122,7 @@ const Profile = () => {
   const [weeklyGoal, setWeeklyGoal] = useState(weekly);
   useEffect(() => {
     setWeeklyGoal(weekly);
-  }, [weekly]);
+  }, [weekly, user]);
 
   const {data: dones, isLoading: dLoading} = useDoneStepGoals();
   const createMut = useCreateStepGoal();
@@ -681,10 +681,10 @@ const Profile = () => {
                     disabled={goaling}>
                     <View className="flex-col items-center">
                       <Text
-                        className="font-rubik text-lg ml-1 mr-2"
+                        className="font-rubik text-lg ml-1 mr-1"
                         style={{color: colors.primary[200]}}>
-                        Bu Hafta İçin Hedef Ekle{' '}
-                        {!goaling && <Text>{'  '}+ </Text>}
+                        Bu Hafta İçin Hedef Ekle
+                        {!goaling && <Text>{'  '}+</Text>}
                       </Text>
                       {goaling && (
                         <>
@@ -1207,6 +1207,14 @@ const Profile = () => {
                       <TouchableOpacity
                         onPress={async () => {
                           if (addModalValue) {
+                            const net = await NetInfo.fetch();
+                            if (!net.isConnected) {
+                              ToastAndroid.show(
+                                'İnternet bağlantısı yok',
+                                ToastAndroid.SHORT,
+                              );
+                              return;
+                            }
                             setUpdateLoading(true);
                             const limits = bulguLimits.get(
                               addModalFunction?.setSymptom,

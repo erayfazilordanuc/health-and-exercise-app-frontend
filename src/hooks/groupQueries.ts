@@ -28,13 +28,19 @@ export const GROUP_KEYS = {
 export const useGroupById = (
   id?: number,
   options?: Omit<
-    UseQueryOptions<Group, AxiosError, Group, ReturnType<typeof GROUP_KEYS.byId>>,
+    UseQueryOptions<
+      Group,
+      AxiosError,
+      Group,
+      ReturnType<typeof GROUP_KEYS.byId>
+    >,
     'queryKey' | 'queryFn' | 'enabled'
-  > & { enabled?: boolean }
+  > & {enabled?: boolean},
 ) =>
   useQuery<Group, AxiosError, Group, ReturnType<typeof GROUP_KEYS.byId>>({
     queryKey: GROUP_KEYS.byId(id ?? -1),
-    enabled: Number.isFinite(id) && (id as number) > 0 && (options?.enabled ?? true),
+    enabled:
+      Number.isFinite(id) && (id as number) > 0 && (options?.enabled ?? true),
     queryFn: async () => {
       const res = await getGroupById(id as number);
       return res.data as Group;

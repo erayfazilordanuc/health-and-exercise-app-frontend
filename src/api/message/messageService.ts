@@ -105,8 +105,7 @@ export const getLastMessageBySenderAndReceiver = async (
       const diffSec = (now - savedAt) / 1000;
 
       const net = await NetInfo.fetch();
-      const isOnline = !!net.isConnected;
-      if (diffSec <= 5 || !isOnline) return normalize(local.message);
+      if (diffSec <= 5 || !net.isConnected) return normalize(local.message);
     }
   }
   const res = await apiClient.get(`/messages/sender/${s}/receiver/${r}/last`);
