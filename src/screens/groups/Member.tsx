@@ -69,6 +69,7 @@ import {
 import {parseTheme} from '../../themes/themes';
 import ColorCircle from '../../components/ColorCircle';
 import {calcPercent} from '../../api/exercise/exerciseService';
+import {useGroupById} from '../../hooks/groupQueries';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -80,6 +81,17 @@ const Member = () => {
   const [allLoading, setAllLoading] = useState(true);
   const {user: admin} = useUser();
   const {data: member, isLoading, error} = useUserById(memberId);
+  const {
+    data: group,
+    isLoading: isGroupLoading,
+    error: groupError,
+    refetch,
+  } = useGroupById(member?.groupId, {
+    enabled:
+      !!member?.groupId &&
+      Number.isFinite(member?.groupId) &&
+      member.groupId > 0,
+  });
   const qc = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const [lastMessage, setLastMessage] = useState<Message | null>();
@@ -604,93 +616,95 @@ const Member = () => {
             </View>
           ) : (
             <>
-              {weeklyExerciseProgress && activeDays && (
-                <View
-                  className="flex flex-col px-3 py-3 mb-3"
-                  style={{
-                    borderRadius: 17,
-                    backgroundColor: colors.background.primary,
-                  }}>
-                  <View className="flex flex-row items-center justify-between">
-                    <Text
-                      className="font-rubik mb-2 ml-2"
-                      style={{fontSize: 18, color: colors.text.primary}}>
-                      Egzersiz Takvimi
-                    </Text>
-                    <Text
-                      className="font-rubik mb-3 rounded-xl"
-                      style={{
-                        paddingVertical: 5,
-                        paddingHorizontal: 9,
-                        fontSize: 14,
-                        color: colors.text.primary,
-                        backgroundColor: colors.background.secondary,
-                      }}>
-                      {new Date().toLocaleDateString('tr-TR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </Text>
-                  </View>
-                  <CustomWeeklyProgressCalendar
-                    weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
-                    activeDays={activeDays}
-                  />
-                  <View className="flex flex-row items-center justify-start ml-2 mt-3 my-1">
-                    <View className="flex-col items-start space-x-2 mr-3">
-                      <View className="flex flex-row items-center space-x-2">
-                        <View
-                          className="p-2 rounded-full"
-                          style={{backgroundColor: '#14E077'}}
-                        />
-                        <Text
-                          className="text-xs font-rubik ml-1"
-                          style={{color: colors.text.primary}}>
-                          Tamamlandı
-                        </Text>
+              {group?.exerciseEnabled &&
+                weeklyExerciseProgress &&
+                activeDays && (
+                  <View
+                    className="flex flex-col px-3 py-3 mb-3"
+                    style={{
+                      borderRadius: 17,
+                      backgroundColor: colors.background.primary,
+                    }}>
+                    <View className="flex flex-row items-center justify-between">
+                      <Text
+                        className="font-rubik mb-2 ml-2"
+                        style={{fontSize: 18, color: colors.text.primary}}>
+                        Egzersiz Takvimi
+                      </Text>
+                      <Text
+                        className="font-rubik mb-3 rounded-xl"
+                        style={{
+                          paddingVertical: 5,
+                          paddingHorizontal: 9,
+                          fontSize: 14,
+                          color: colors.text.primary,
+                          backgroundColor: colors.background.secondary,
+                        }}>
+                        {new Date().toLocaleDateString('tr-TR', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </Text>
+                    </View>
+                    <CustomWeeklyProgressCalendar
+                      weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
+                      activeDays={activeDays}
+                    />
+                    <View className="flex flex-row items-center justify-start ml-2 mt-3 my-1">
+                      <View className="flex-col items-start space-x-2 mr-3">
+                        <View className="flex flex-row items-center space-x-2">
+                          <View
+                            className="p-2 rounded-full"
+                            style={{backgroundColor: '#14E077'}}
+                          />
+                          <Text
+                            className="text-xs font-rubik ml-1"
+                            style={{color: colors.text.primary}}>
+                            Tamamlandı
+                          </Text>
+                        </View>
+                        <View className="flex-row items-center space-x-2 mt-2">
+                          <View
+                            className="p-2 rounded-full"
+                            style={{backgroundColor: '#fd5353'}}
+                          />
+                          <Text
+                            className="text-xs font-rubik ml-1"
+                            style={{color: colors.text.primary}}>
+                            Tamamlanmadı
+                          </Text>
+                        </View>
                       </View>
-                      <View className="flex-row items-center space-x-2 mt-2">
-                        <View
-                          className="p-2 rounded-full"
-                          style={{backgroundColor: '#fd5353'}}
-                        />
-                        <Text
-                          className="text-xs font-rubik ml-1"
-                          style={{color: colors.text.primary}}>
-                          Tamamlanmadı
-                        </Text>
+                      <View className="flex-col items-start space-x-2">
+                        <View className="flex-row items-center space-x-2">
+                          <View
+                            className="p-2 rounded-full"
+                            style={{
+                              backgroundColor: '#4f9cff' /*'#4f9cff' */,
+                            }}
+                          />
+                          <Text
+                            className="text-xs font-rubik ml-1"
+                            style={{color: colors.text.primary}}>
+                            Yapılacak
+                          </Text>
+                        </View>
+                        <View className="flex-row items-center space-x-2 mt-2">
+                          <View
+                            className="p-2 rounded-full"
+                            style={{backgroundColor: '#B9E2FE'}}
+                          />
+                          <Text
+                            className="text-xs font-rubik ml-1"
+                            style={{color: colors.text.primary}}>
+                            Bugün
+                          </Text>
+                        </View>
                       </View>
                     </View>
-                    <View className="flex-col items-start space-x-2">
-                      <View className="flex-row items-center space-x-2">
-                        <View
-                          className="p-2 rounded-full"
-                          style={{
-                            backgroundColor: '#4f9cff' /*'#4f9cff' */,
-                          }}
-                        />
-                        <Text
-                          className="text-xs font-rubik ml-1"
-                          style={{color: colors.text.primary}}>
-                          Yapılacak
-                        </Text>
-                      </View>
-                      <View className="flex-row items-center space-x-2 mt-2">
-                        <View
-                          className="p-2 rounded-full"
-                          style={{backgroundColor: '#B9E2FE'}}
-                        />
-                        <Text
-                          className="text-xs font-rubik ml-1"
-                          style={{color: colors.text.primary}}>
-                          Bugün
-                        </Text>
-                      </View>
-                    </View>
                   </View>
-                </View>
-              )}
+                )}
 
               <View
                 onLayout={e => setSymptomsSectionY(e.nativeEvent.layout.y)}
