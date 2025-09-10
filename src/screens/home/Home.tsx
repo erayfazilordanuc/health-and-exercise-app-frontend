@@ -808,7 +808,7 @@ const Home = () => {
                           )}
                         </>
                       </>
-                    ) : (
+                    ) : activeDays ? (
                       <>
                         <Text
                           className="font-rubik text-center"
@@ -820,6 +820,36 @@ const Home = () => {
                           style={{fontSize: 17, color: colors.text.primary}}>
                           İyi dinlenmeler!
                         </Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text
+                          className="font-rubik text-center"
+                          style={{fontSize: 15, color: colors.text.primary}}>
+                          Egzersiz Günleri Seçilmedi
+                        </Text>
+                        <Text
+                          className="font-rubik mt-1 text-center"
+                          style={{fontSize: 17, color: colors.text.primary}}>
+                          Egzersizlerinize başlamak için lütfen egzersiz
+                          günlerinizi seçiniz
+                        </Text>
+                        <TouchableOpacity
+                          className="mt-2 mb-1 self-center flex flex-row justify-center items-center rounded-2xl py-2 px-4"
+                          style={{
+                            backgroundColor: colors.background.third,
+                          }}
+                          onPress={() =>
+                            navigation.navigate('Exercises', {
+                              screen: 'ExercisesUser',
+                            })
+                          }>
+                          <Text
+                            className="text-xl font-rubik"
+                            style={{color: colors.primary[200]}}>
+                            Egzersiz Günleri Seç
+                          </Text>
+                        </TouchableOpacity>
                       </>
                     )}
                   </View>

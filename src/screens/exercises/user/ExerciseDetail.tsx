@@ -35,6 +35,7 @@ import {useUser} from '../../../contexts/UserContext';
 import Orientation from 'react-native-orientation-locker';
 import {calcPercent} from '../../../api/exercise/exerciseService';
 import {Theme} from '../../../themes/themes';
+import NetInfo from '@react-native-community/netinfo';
 import {
   checkHealthConnectInstalled,
   checkSamsungHInstalled,
@@ -46,6 +47,7 @@ import {
   useSaveSymptomsToday,
   useSymptomsByDate,
 } from '../../../hooks/symptomsQueries';
+import {getCachedLocalUri} from '../../../utils/videoCache';
 
 type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'ExerciseDetail'>;
 const ExerciseDetail = () => {
@@ -111,14 +113,15 @@ const ExerciseDetail = () => {
     }, []),
   );
 
-  const isValidUrl = (url?: string): boolean => {
-    if (!url) return false;
-
+  const isValidSource = (src?: string): boolean => {
+    if (!src) return false;
+    // Lokal dosya
+    if (src.startsWith('file://')) return true;
+    // Uzak URL
     const pattern = /^(https?:\/\/)[\w\-]+(\.[\w\-]+)+[/#?]?.*$/;
-    if (!pattern.test(url)) return false;
-
-    const validExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm'];
-    const lower = url.toLowerCase();
+    if (!pattern.test(src)) return false;
+    const validExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v'];
+    const lower = src.toLowerCase();
     return validExtensions.some(ext => lower.includes(ext));
   };
 
@@ -136,26 +139,31 @@ const ExerciseDetail = () => {
         if (!isActive) break;
         if (thumbs[v.videoUrl]) continue;
 
-        console.log(v.videoUrl, isValidUrl(v.videoUrl));
-        if (!v.videoUrl || !isValidUrl(v.videoUrl)) {
-          console.warn(`[thumb] Geçersiz URL atlandı: ${v.videoUrl}`);
-          setThumbs(prev => ({
-            ...prev,
-            [v.videoUrl]: 'fallback_thumbnail_path',
-          }));
-          continue;
-        }
-
         try {
+          // 1) Lokal cache var mı?
+          const localUri = await getCachedLocalUri(String(v.id ?? v.videoUrl));
+          const net = await NetInfo.fetch();
+          const isOnline = !!net.isConnected;
+
+          const candidate = localUri ?? (isOnline ? v.videoUrl : null);
+
+          if (!candidate || !isValidSource(candidate)) {
+            console.warn(`[thumb] Kaynak bulunamadı: ${v.videoUrl}`);
+            setThumbs(prev => ({
+              ...prev,
+              [v.videoUrl]: 'fallback_thumbnail_path',
+            }));
+            continue;
+          }
+
           const {path} = await createThumbnail({
-            url: v.videoUrl,
+            url: candidate,
             timeStamp: 1000,
             format: 'jpeg',
             maxWidth: 512,
           });
 
           if (!isActive) break;
-
           setThumbs(prev => ({...prev, [v.videoUrl]: path}));
         } catch (err) {
           console.warn(
@@ -175,7 +183,7 @@ const ExerciseDetail = () => {
     return () => {
       isActive = false;
     };
-  }, [progress.exerciseDTO, progress.exerciseDTO.videos]);
+  }, [progress.exerciseDTO, progress.exerciseDTO.videos, thumbs]);
 
   useEffect(() => {
     setColor(getColor());

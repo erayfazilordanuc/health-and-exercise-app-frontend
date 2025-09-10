@@ -80,6 +80,7 @@ export function useExerciseSchedule() {
   return useQuery({
     queryKey: ['exerciseSchedule'],
     queryFn: fetchMyExerciseSchedule,
+    networkMode: 'offlineFirst',
     staleTime: 1000 * 60 * 5, // 12 saat
     gcTime: 1000 * 60 * 60 * 24, // 24 saat cache'te tut
     refetchOnWindowFocus: false,

@@ -106,6 +106,12 @@ const ExercisesUser = () => {
     }
   }, [activeDays]);
 
+  useEffect(() => {
+    if (user?.groupId && !activeDays) {
+      setShowScheduleModal(true);
+    }
+  }, [user, activeDays]);
+
   const upsertMutation = useUpsertExerciseSchedule();
 
   const [todayExerciseProgress, setTodayExerciseProgress] =
@@ -153,9 +159,127 @@ const ExercisesUser = () => {
   );
 
   const onStartExercise = async (position: ExercisePosition) => {
-    const todayExercise: ExerciseDTO = await getTodayExerciseByPosition(
-      position,
-    );
+    // const todayExercise: ExerciseDTO = await getTodayExerciseByPosition(
+    //   position,
+    // );
+    const todayExerciseStanding: ExerciseDTO = {
+      id: 47,
+      name: 'Ayakta Egzersiz',
+      description: 'Ayakta günlük egzersiz',
+      point: 47,
+      adminId: 18,
+      createdAt: new Date('2025-07-30T17:04:32.557+03:00'),
+      updatedAt: new Date('2025-08-13T11:05:28.058+03:00'),
+      videos: [
+        {
+          id: 34,
+          exerciseId: 47,
+          name: 'Isınma',
+          videoUrl:
+            'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/47_1000025365.mp4',
+          durationSeconds: 486,
+          createdAt: new Date('2025-08-13T11:52:09.406+03:00'),
+        },
+        {
+          id: 35,
+          exerciseId: 47,
+          name: 'Aerobik',
+          videoUrl:
+            'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/47_1000025366.mp4',
+          durationSeconds: 431,
+          createdAt: new Date('2025-08-13T12:42:16.648+03:00'),
+        },
+        {
+          id: 41,
+          exerciseId: 47,
+          name: 'Güçlendirme',
+          videoUrl:
+            'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/47_1000025367.mp4',
+          durationSeconds: 378,
+          createdAt: new Date('2025-08-25T07:27:17.960+03:00'),
+        },
+        {
+          id: 42,
+          exerciseId: 47,
+          name: 'Koordinasyon',
+          videoUrl:
+            'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/47_1000025370.mp4',
+          durationSeconds: 353,
+          createdAt: new Date('2025-08-25T07:31:12.591+03:00'),
+        },
+        {
+          id: 43,
+          exerciseId: 47,
+          name: 'Soğuma',
+          videoUrl:
+            'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/47_1000025368.mp4',
+          durationSeconds: 362,
+          createdAt: new Date('2025-08-25T07:33:18.919+03:00'),
+        },
+      ],
+    };
+    const todayExerciseSeated = {
+      id: 48,
+      name: 'Oturarak Egzersiz',
+      description: 'Oturarak günlük egzersiz',
+      point: 1,
+      adminId: 18,
+      createdAt: new Date('2025-07-30T17:21:23.303+03:00'),
+      updatedAt: new Date('2025-07-30T17:21:23.303+03:00'),
+      videos: [
+        {
+          id: 36,
+          exerciseId: 48,
+          name: 'Isınma',
+          videoUrl:
+            'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/48_1000025360.mp4',
+          durationSeconds: 359,
+          createdAt: new Date('2025-08-25T07:12:17.964+03:00'),
+        },
+        {
+          id: 37,
+          exerciseId: 48,
+          name: 'Aerobik',
+          videoUrl:
+            'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/48_1000025361.mp4',
+          durationSeconds: 428,
+          createdAt: new Date('2025-08-25T07:15:35.027+03:00'),
+        },
+        {
+          id: 38,
+          exerciseId: 48,
+          name: 'Güçlendirme',
+          videoUrl:
+            'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/48_1000025364.mp4',
+          durationSeconds: 218,
+          createdAt: new Date('2025-08-25T07:17:44.315+03:00'),
+        },
+        {
+          id: 39,
+          exerciseId: 48,
+          name: 'Koordinasyon',
+          videoUrl:
+            'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/48_1000025362.mp4',
+          durationSeconds: 277,
+          createdAt: new Date('2025-08-25T07:19:11.674+03:00'),
+        },
+        {
+          id: 40,
+          exerciseId: 48,
+          name: 'Soğuma',
+          videoUrl:
+            'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/48_1000025363.mp4',
+          durationSeconds: 354,
+          createdAt: new Date('2025-08-25T07:22:07.205+03:00'),
+        },
+      ],
+    };
+
+    const todayExercise =
+      position === ExercisePosition.STANDING
+        ? todayExerciseStanding
+        : todayExerciseSeated;
+
     let todayExerciseProgressNavPayload: ExerciseProgressDTO = {
       userId: user!.id!,
       exerciseDTO: todayExercise,
@@ -608,16 +732,23 @@ const ExercisesUser = () => {
               justifyContent: 'center',
             }}>
             <Text
-              className="font-rubik-semibold text-2xl mb-4 text-center"
-              style={{color: colors.text.secondary}}>
+              className="font-rubik-semibold text-2xl mb-3 text-center"
+              style={{color: colors.text.primary}}>
               Egzersiz Günleri
             </Text>
             {!isScheduleLoading && !activeDays && (
-              <Text
-                className="font-rubik-semibold text-lg mb-4 text-center"
-                style={{color: colors.text.primary}}>
-                Egzersiz yapmak istediğiniz 3 gün seçiniz
-              </Text>
+              <>
+                <Text
+                  className="font-rubik-semibold text-lg mb-2 text-center"
+                  style={{color: colors.text.third}}>
+                  3 gün seçiniz
+                </Text>
+                <Text
+                  className="font-rubik text-md mb-3 text-center"
+                  style={{color: colors.text.third}}>
+                  Egzersiz yapmak istediğiniz günlerin üzerine tıklayınız
+                </Text>
+              </>
             )}
             <View
               style={{

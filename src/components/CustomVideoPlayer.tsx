@@ -7,6 +7,7 @@ import {
   Image,
   Dimensions,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
 import Video, {VideoRef} from 'react-native-video';
 import icons from '../constants/icons';
@@ -17,6 +18,7 @@ import GradientText from './GradientText';
 import LinearGradient from 'react-native-linear-gradient';
 import {useIsFocused} from '@react-navigation/native';
 import {cacheVideoIfNeeded, getCachedLocalUri} from '../utils/videoCache';
+import NetInfo from '@react-native-community/netinfo';
 
 interface CustomVideoPlayerProps {
   videoDTO: ExerciseVideoDTO;
@@ -112,28 +114,17 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
       if (local) {
         setResolvedUri(local);
         return;
+      } else {
+        const net = await NetInfo.fetch();
+        const isOnline = !!net.isConnected;
+        if (!isOnline) {
+          ToastAndroid.show(
+            'İnternet bağlantınızı kontrol ediniz',
+            ToastAndroid.LONG,
+          );
+        }
       }
 
-      // 2) Strateji seçimi:
-      // A) "Önce indirme bitsin, sonra oynat" (tam offline odaklı)
-      //    -> resolvedUri'yi indirme bitince set ediyoruz.
-      // B) "Hemen stream et, arkada indir; bittiğinde sessizce lokale geç"
-      //    -> önce remote ile başla, cache bitince kaynağı değiştir.
-      // A ve B’den birini tercihinize göre kullanın.
-
-      // --- A) Tam offline odaklı (indirme bitmeden oynatma yok) ---
-      // try {
-      //   const fileUri = await cacheVideoIfNeeded(
-      //     String(videoDTO.id ?? videoDTO.videoUrl),
-      //     videoDTO.videoUrl,
-      //     setDownloadPct,
-      //   );
-      //   if (!cancelled) setResolvedUri(fileUri);
-      // } catch (e) {
-      //   if (!cancelled) setResolvedUri(videoDTO.videoUrl); // fallback: stream
-      // }
-
-      // --- B) Stream + arka planda indirme, bitince lokali kullan ---
       setResolvedUri(videoDTO.videoUrl); // stream başlasın
       try {
         const fileUri = await cacheVideoIfNeeded(

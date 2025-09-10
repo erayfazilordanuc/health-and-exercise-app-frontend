@@ -325,21 +325,6 @@ const Exercise = () => {
       }
     }
   };
-
-  const checkConnection = async () => {
-    const netInfo = await NetInfo.fetch();
-    if (!netInfo.isConnected) {
-      ToastAndroid.show(
-        'İnternet bağlantınızı kontrol ediniz',
-        ToastAndroid.LONG,
-      );
-    }
-  };
-
-  useEffect(() => {
-    checkConnection();
-  }, []);
-
   console.log('updated', updatedProgress);
 
   // useEffect(() => {
