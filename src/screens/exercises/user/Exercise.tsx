@@ -330,7 +330,7 @@ const Exercise = () => {
     const netInfo = await NetInfo.fetch();
     if (!netInfo.isConnected) {
       ToastAndroid.show(
-        'İnternet bağlantısı yok. Video yüklenemiyor.',
+        'İnternet bağlantınızı kontrol ediniz',
         ToastAndroid.LONG,
       );
     }

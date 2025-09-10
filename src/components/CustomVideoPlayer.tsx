@@ -16,6 +16,7 @@ import {clamp} from 'lodash';
 import GradientText from './GradientText';
 import LinearGradient from 'react-native-linear-gradient';
 import {useIsFocused} from '@react-navigation/native';
+import {cacheVideoIfNeeded, getCachedLocalUri} from '../utils/videoCache';
 
 interface CustomVideoPlayerProps {
   videoDTO: ExerciseVideoDTO;
@@ -92,6 +93,74 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
     setCurrentTime(0);
   }, [videoDTO.id]);
 
+  const [resolvedUri, setResolvedUri] = useState<string | null>(null);
+  const [downloadPct, setDownloadPct] = useState(0); // % indirme ilerleme
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      setResolvedUri(null);
+      setDownloadPct(0);
+
+      // 1) Lokalde var mı?
+      const local = await getCachedLocalUri(
+        String(videoDTO.id ?? videoDTO.videoUrl),
+      );
+      if (cancelled) return;
+
+      if (local) {
+        setResolvedUri(local);
+        return;
+      }
+
+      // 2) Strateji seçimi:
+      // A) "Önce indirme bitsin, sonra oynat" (tam offline odaklı)
+      //    -> resolvedUri'yi indirme bitince set ediyoruz.
+      // B) "Hemen stream et, arkada indir; bittiğinde sessizce lokale geç"
+      //    -> önce remote ile başla, cache bitince kaynağı değiştir.
+      // A ve B’den birini tercihinize göre kullanın.
+
+      // --- A) Tam offline odaklı (indirme bitmeden oynatma yok) ---
+      // try {
+      //   const fileUri = await cacheVideoIfNeeded(
+      //     String(videoDTO.id ?? videoDTO.videoUrl),
+      //     videoDTO.videoUrl,
+      //     setDownloadPct,
+      //   );
+      //   if (!cancelled) setResolvedUri(fileUri);
+      // } catch (e) {
+      //   if (!cancelled) setResolvedUri(videoDTO.videoUrl); // fallback: stream
+      // }
+
+      // --- B) Stream + arka planda indirme, bitince lokali kullan ---
+      setResolvedUri(videoDTO.videoUrl); // stream başlasın
+      try {
+        const fileUri = await cacheVideoIfNeeded(
+          String(videoDTO.id ?? videoDTO.videoUrl),
+          videoDTO.videoUrl,
+          setDownloadPct,
+        );
+        if (!cancelled) {
+          // “sessiz” kaynak değiştirme (seek’i korumak için mevcut zamanı tutup seek edebilirsiniz)
+          setResolvedUri(fileUri);
+        }
+      } catch {
+        // indirme patlarsa umursama → stream devam
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [videoDTO.id, videoDTO.videoUrl]);
+
+  const videoSource = React.useMemo(() => {
+    if (!resolvedUri) return undefined;
+    const isHLS = resolvedUri.endsWith('.m3u8');
+    return {uri: resolvedUri, type: isHLS ? 'm3u8' : undefined};
+  }, [resolvedUri]);
+
   return (
     <TouchableWithoutFeedback onPress={handleToggleControls}>
       <View style={{flex: 1, backgroundColor: '#171717'}}>
@@ -99,7 +168,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
           key={`${videoDTO.id}-${videoDTO.videoUrl}`}
           ref={playerRef}
           source={{
-            uri: videoDTO.videoUrl, // mp4 / m3u8 / mpd
+            uri: resolvedUri ?? videoDTO.videoUrl,
             type: videoDTO.videoUrl.endsWith('.m3u8') ? 'm3u8' : undefined, // HLS ise belirt
             headers: undefined, // gerekiyorsa
             minLoadRetryCount: 3, // ✅ yeni yer
