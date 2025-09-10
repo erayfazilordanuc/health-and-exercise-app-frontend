@@ -90,28 +90,47 @@ const normalize = (m: Message) => {
 export const getLastMessageBySenderAndReceiver = async (
   sender: string,
   receiver: string,
+  isMember?: boolean,
 ) => {
-  const s = encodeURIComponent(sender);
-  const r = encodeURIComponent(receiver);
   const localJson = await AsyncStorage.getItem(
     `lastMessage_${sender}_${receiver}`,
   );
-  if (localJson) {
-    const local: LocalMessage = JSON.parse(localJson);
+  if (isMember) {
+    let local, local2;
 
-    if (local.savedAt) {
-      const savedAt = new Date(local.savedAt).getTime();
-      const now = Date.now();
-      const diffSec = (now - savedAt) / 1000;
+    if (localJson) {
+      local = JSON.parse(localJson);
+    }
 
-      const net = await NetInfo.fetch();
-      if (diffSec <= 5 || !net.isConnected) return normalize(local.message);
+    const localJson2 = await AsyncStorage.getItem(
+      `lastMessage_${receiver}_${sender}`,
+    );
+    if (localJson2) {
+      local2 = JSON.parse(localJson2);
+    }
+
+    if (local && local2)
+      if (local2.savedAt > local.savedAt) return normalize(local2.message);
+
+    return normalize(local.message);
+  } else {
+    if (localJson) {
+      const local: LocalMessage = JSON.parse(localJson);
+
+      return normalize(local.message);
     }
   }
+
+  const net = await NetInfo.fetch();
+  if (!net.isConnected) return;
+
+  const s = encodeURIComponent(sender);
+  const r = encodeURIComponent(receiver);
   const res = await apiClient.get(`/messages/sender/${s}/receiver/${r}/last`);
   if (res.status < 200 || res.status >= 300) {
     throw new Error(`Unexpected status: ${res.status}`);
   }
+
   AsyncStorage.setItem(
     `lastMessage_${sender}_${receiver}`,
     JSON.stringify({

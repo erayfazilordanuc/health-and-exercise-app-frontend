@@ -160,6 +160,7 @@ const Home = () => {
     const lastMessageResponse = await getLastMessageBySenderAndReceiver(
       admin.username,
       user.username,
+      user.role !== 'ROLE_ADMIN',
     );
     if (lastMessageResponse && lastMessageResponse.message) {
       setLastMessage(lastMessageResponse);

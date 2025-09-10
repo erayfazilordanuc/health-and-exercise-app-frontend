@@ -111,8 +111,10 @@ const Chat = () => {
       createdAt: new Date(),
     };
 
+    console.log('saved key', `lastMessage_${sender}_${receiver.username}`);
+    //lastMessage_test54_ordanuc
     await AsyncStorage.setItem(
-      'lastMessage',
+      `lastMessage_${sender}_${receiver.username}`,
       JSON.stringify({
         message: newMessage,
         savedAt: new Date(),
@@ -171,6 +173,13 @@ const Chat = () => {
       setMessages(prev => [...prev, msg]);
       setTimeout(scrollToBottom, 0);
       setUserAmount(data.userAmount);
+      AsyncStorage.setItem(
+        `lastMessage_${receiver.username}_${sender}`,
+        JSON.stringify({
+          message: msg,
+          savedAt: new Date(),
+        } as LocalMessage),
+      );
     };
 
     const handleUserLogin = (data: any) => {
@@ -291,17 +300,17 @@ const Chat = () => {
           <Text
             className="font-rubik-semibold"
             style={{
-              color:
-                theme.colors.isLight ? '#2F2F30' : colors.background.primary,
+              color: theme.colors.isLight
+                ? '#2F2F30'
+                : colors.background.primary,
               fontSize: 24,
             }}>
             Sohbet:{' '}
             <Text
               style={{
-                color:
-                  theme.colors.isLight
-                    ? colors.primary[200]
-                    : colors.primary[300],
+                color: theme.colors.isLight
+                  ? colors.primary[200]
+                  : colors.primary[300],
               }}>
               {' ' + receiver.fullName}
             </Text>
@@ -395,10 +404,9 @@ const Chat = () => {
           style={{
             backgroundColor: colors.background.primary,
             borderWidth: 1,
-            borderColor:
-              theme.colors.isLight
-                ? 'rgba(150,150,150,0.09)'
-                : 'rgba(150,150,150,0.09)',
+            borderColor: theme.colors.isLight
+              ? 'rgba(150,150,150,0.09)'
+              : 'rgba(150,150,150,0.09)',
             marginBottom: keyboardHeight,
           }}>
           <TextInput
