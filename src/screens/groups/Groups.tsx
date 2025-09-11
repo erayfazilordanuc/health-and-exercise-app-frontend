@@ -26,20 +26,22 @@ import {
   getGroupRequestsByUserId,
   sendJoinGroupRequest,
 } from '../../api/group/groupService';
-import {getUser, updateUser} from '../../api/user/userService';
+import {getDbUser, getUser, updateUser} from '../../api/user/userService';
 import {color} from 'react-native-elements/dist/helpers';
 import {useUser} from '../../contexts/UserContext';
 import CustomAlertSingleton, {
   CustomAlertSingletonHandle,
 } from '../../components/CustomAlertSingleton';
 import LinearGradient from 'react-native-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
 
 const Groups = () => {
   const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const [loading, setLoading] = useState(true);
-  const {user} = useUser();
+  const {user, setUser} = useUser();
   const [groups, setGroups] = useState<Group[]>([]);
   const [myGroup, setMyGroup] = useState<Group | null>();
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -176,6 +178,52 @@ const Groups = () => {
     useCallback(() => {
       fetchRequestsAndGroups();
     }, [user]),
+  );
+
+  const triedOnThisFocusRef = useRef(false);
+
+  // getUser: user'a bağımlı OLMASIN; setUser/navigation yeterli
+  const getUser = useCallback(async () => {
+    const net = await NetInfo.fetch();
+    if (!net.isConnected) return;
+
+    const dbUser = await getDbUser();
+    if (!dbUser) return;
+
+    // sadece değişiklik varsa güncelle
+    if (
+      !user ||
+      user.id !== dbUser.id ||
+      user.groupId !== dbUser.groupId ||
+      user.role !== dbUser.role
+    ) {
+      setUser(dbUser); // doğrudan obje ver
+      if (dbUser.groupId)
+        navigation.replace('Group', {groupId: dbUser.groupId});
+    }
+
+    await AsyncStorage.setItem('user', JSON.stringify(dbUser));
+  }, [setUser, navigation, user]); // burada user kalabilir; istersen ref'le de okuyabilirsin
+
+  useFocusEffect(
+    useCallback(() => {
+      // her focus'ta sıfır başla
+      triedOnThisFocusRef.current = false;
+
+      if (!triedOnThisFocusRef.current) {
+        triedOnThisFocusRef.current = true;
+
+        // Koşullar uygunsa sadece 1 kez çalıştır
+        if (user && user.role === 'ROLE_USER' && !user.groupId) {
+          getUser();
+        }
+      }
+
+      // blur olduğunda reset; böylece sonraki focus'ta yine 1 kez çalışır
+      return () => {
+        triedOnThisFocusRef.current = false;
+      };
+    }, [getUser, user?.id, user?.role, user?.groupId]),
   );
 
   const filterGroupsByAdmin = (groups: Group[], adminId: number) => {

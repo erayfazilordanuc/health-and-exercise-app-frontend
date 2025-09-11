@@ -12,7 +12,7 @@ export const getLocalUser = async () => {
   }
 };
 
-export const getUser = async () => {
+export const getDbUser = async () => {
   const {isConnected} = await NetInfo.fetch();
   if (isConnected) {
     const response = await apiClient.get('/users/me');
@@ -23,6 +23,12 @@ export const getUser = async () => {
       return user;
     }
   }
+};
+
+export const getUser = async () => {
+  const dbUser = getDbUser();
+  if (dbUser) return dbUser;
+
   const userJson = await AsyncStorage.getItem('user');
   const user: User = JSON.parse(userJson!);
   return user;

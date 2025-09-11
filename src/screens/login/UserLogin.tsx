@@ -180,7 +180,13 @@ function UserLogin() {
         if (status === 502) message = 'Bir hata oluştu';
         ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
       } else if (error instanceof Error) {
-        console.log('Genel hata yakalandı:', error.message);
+        if (error.message === 'Network Error') {
+          ToastAndroid.show(
+            'İnternet bağlantınızı kontrol ediniz',
+            ToastAndroid.SHORT,
+          );
+          return;
+        }
 
         const maybeStatus = (error as any).status;
         if (maybeStatus === 403 || maybeStatus === 500) {
@@ -377,7 +383,14 @@ function UserLogin() {
         if (status === 502) message = 'Bir hata oluştu';
         ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
       } else if (error instanceof Error) {
-        console.log('Genel hata yakalandı:', error.message);
+        if (error.message === 'Network Error') {
+          ToastAndroid.show(
+            'İnternet bağlantınızı kontrol ediniz',
+            ToastAndroid.SHORT,
+          );
+          return;
+        }
+
         ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
         // ToastAndroid.show(error.message, ToastAndroid.SHORT);
       } else {

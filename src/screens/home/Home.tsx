@@ -23,7 +23,7 @@ import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
-import {getUser} from '../../api/user/userService';
+import {getDbUser, getUser} from '../../api/user/userService';
 import GradientText from '../../components/GradientText';
 import {
   getLastMessageBySenderAndReceiver,
@@ -97,7 +97,7 @@ const Home = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
-  const {user} = useUser();
+  const {user, setUser} = useUser();
   const [admin, setAdmin] = useState<User>();
   const alertRef = useRef<CustomAlertSingletonHandle>(null);
   // const {
@@ -152,9 +152,44 @@ const Home = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (user && user.role === 'ROLE_USER') fetchProgress();
-    }, []),
+      if (user && user.role === 'ROLE_USER' && user.groupId) fetchProgress();
+    }, [user]),
   );
+
+  const triedGetUserRef = useRef(false);
+  const navigatedRef = useRef(false);
+
+  const getUser = useCallback(async () => {
+    const net = await NetInfo.fetch();
+    if (!net.isConnected) return;
+
+    const dbUser = await getDbUser();
+    if (!dbUser) return;
+
+    // sadece değişiklik varsa güncelle
+    if (
+      !user ||
+      user.id !== dbUser.id ||
+      user.groupId !== dbUser.groupId ||
+      user.role !== dbUser.role
+    ) {
+      setUser(dbUser); // doğrudan obje ver
+    }
+
+    await AsyncStorage.setItem('user', JSON.stringify(dbUser));
+  }, [setUser, navigation]);
+
+  // 3) getUser'ı sadece BİR KEZ tetikle
+  useEffect(() => {
+    if (!user) return;
+    if (user.role !== 'ROLE_USER') return;
+    if (user.groupId) return;
+
+    if (!triedGetUserRef.current) {
+      triedGetUserRef.current = true; // bu satır önemli: tekrar tekrar çağrılmasını engeller
+      getUser();
+    }
+  }, [user?.id, user?.role, user?.groupId, getUser]);
 
   const fetchLastMessage = async () => {
     console.log('işte');

@@ -20,7 +20,7 @@ import {useNotificationNavigation} from '../../hooks/useNotificationNavigation';
 import {useUser} from '../../contexts/UserContext';
 import {BlurView} from '@react-native-community/blur';
 import NetInfo from '@react-native-community/netinfo';
-import {updateAvatarApi} from '../../api/user/userService';
+import {getDbUser, getUser, updateAvatarApi} from '../../api/user/userService';
 
 const {width, height} = Dimensions.get('window');
 
@@ -40,9 +40,20 @@ const Launch = () => {
 
   const checkToken = async () => {
     const userData = await AsyncStorage.getItem('user');
-    const user: User = JSON.parse(userData!);
+    let user: User = JSON.parse(userData!);
 
     if (user) {
+      const net = await NetInfo.fetch();
+      if (net.isConnected) {
+        if (user.role === 'ROLE_USER' && !user.groupId) {
+          const dbUser = await getDbUser();
+          if (dbUser) {
+            user = dbUser;
+            await AsyncStorage.setItem('user', JSON.stringify(user));
+          }
+        }
+        await updateAvatarApi(user.avatar);
+      }
       setUser(user);
       if (user.theme) {
         const {color, mode, themeObj} = parseTheme(user.theme);
@@ -54,8 +65,6 @@ const Launch = () => {
           }
         }
       }
-      const net = await NetInfo.fetch();
-      if (net.isConnected) updateAvatarApi(user.avatar);
     } else
       setTheme(colorScheme === 'light' ? themes.blue.light : themes.blue.dark);
 

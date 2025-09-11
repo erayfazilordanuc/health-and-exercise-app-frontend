@@ -18,6 +18,7 @@ import React, {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useRef,
   useState,
 } from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -62,6 +63,7 @@ import {
 import {useGroupById} from '../../../hooks/groupQueries';
 import {Dumbbell, Armchair} from 'lucide-react-native';
 import {isTodayExerciseDay} from '../../../utils/dates';
+import {getDbUser} from '../../../api/user/userService';
 
 const {height, width} = Dimensions.get('window');
 
@@ -73,7 +75,7 @@ const ExercisesUser = () => {
   const isFocused = useIsFocused();
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const {user} = useUser();
+  const {user, setUser} = useUser();
   // const {
   //   data: group,
   //   isLoading,
@@ -128,6 +130,50 @@ const ExercisesUser = () => {
       setTodayPercent(calcPercent(todayExerciseProgress));
   }, [todayExerciseProgress]);
 
+  const triedOnThisFocusRef = useRef(false);
+
+  // getUser: user'a bağımlı OLMASIN; setUser/navigation yeterli
+  const getUser = useCallback(async () => {
+    const net = await NetInfo.fetch();
+    if (!net.isConnected) return;
+
+    const dbUser = await getDbUser();
+    if (!dbUser) return;
+
+    // sadece değişiklik varsa güncelle
+    if (
+      !user ||
+      user.id !== dbUser.id ||
+      user.groupId !== dbUser.groupId ||
+      user.role !== dbUser.role
+    ) {
+      setUser(dbUser); // doğrudan obje ver
+    }
+
+    await AsyncStorage.setItem('user', JSON.stringify(dbUser));
+  }, [setUser, navigation, user]); // burada user kalabilir; istersen ref'le de okuyabilirsin
+
+  useFocusEffect(
+    useCallback(() => {
+      // her focus'ta sıfır başla
+      triedOnThisFocusRef.current = false;
+
+      if (!triedOnThisFocusRef.current) {
+        triedOnThisFocusRef.current = true;
+
+        // Koşullar uygunsa sadece 1 kez çalıştır
+        if (user && user.role === 'ROLE_USER' && !user.groupId) {
+          getUser();
+        }
+      }
+
+      // blur olduğunda reset; böylece sonraki focus'ta yine 1 kez çalışır
+      return () => {
+        triedOnThisFocusRef.current = false;
+      };
+    }, [getUser, user?.id, user?.role, user?.groupId]),
+  );
+
   const fetchProgress = async () => {
     setLoading(true);
     try {
@@ -154,7 +200,7 @@ const ExercisesUser = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchProgress();
+      if (user?.role === 'ROLE_USER' && user?.groupId) fetchProgress();
     }, [updatedActiveDays]),
   );
 

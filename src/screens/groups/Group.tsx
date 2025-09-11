@@ -23,7 +23,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import {useTheme} from '../../themes/ThemeProvider';
-import {getUser, updateUser} from '../../api/user/userService';
+import {getDbUser, getUser, updateUser} from '../../api/user/userService';
 import {
   getGroupById,
   getGroupRequestsByGroupId,
@@ -54,6 +54,7 @@ import CustomAlertSingleton, {
   CustomAlertSingletonHandle,
 } from '../../components/CustomAlertSingleton';
 import {AvatarKey, AVATARS} from '../../constants/avatars';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Group = () => {
   const insets = useSafeAreaInsets();
@@ -65,7 +66,7 @@ const Group = () => {
   const qc = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const {user} = useUser();
+  const {user, setUser} = useUser();
   // const {data: group, isLoading, error} = useGroupById(groupId);
   const {
     data: group,
@@ -152,6 +153,49 @@ const Group = () => {
     fetchMembers();
     setLoading(false);
   }, [members]);
+  const triedOnThisFocusRef = useRef(false);
+
+  // getUser: user'a bağımlı OLMASIN; setUser/navigation yeterli
+  const getUser = useCallback(async () => {
+    const net = await NetInfo.fetch();
+    if (!net.isConnected) return;
+
+    const dbUser = await getDbUser();
+    if (!dbUser) return;
+
+    // sadece değişiklik varsa güncelle
+    if (
+      !user ||
+      user.id !== dbUser.id ||
+      user.groupId !== dbUser.groupId ||
+      user.role !== dbUser.role
+    ) {
+      setUser(dbUser); // doğrudan obje ver
+    }
+
+    await AsyncStorage.setItem('user', JSON.stringify(dbUser));
+  }, [setUser, navigation, user]); // burada user kalabilir; istersen ref'le de okuyabilirsin
+
+  useFocusEffect(
+    useCallback(() => {
+      // her focus'ta sıfır başla
+      triedOnThisFocusRef.current = false;
+
+      if (!triedOnThisFocusRef.current) {
+        triedOnThisFocusRef.current = true;
+
+        // Koşullar uygunsa sadece 1 kez çalıştır
+        if (user && user.role === 'ROLE_USER' && !user.groupId) {
+          getUser();
+        }
+      }
+
+      // blur olduğunda reset; böylece sonraki focus'ta yine 1 kez çalışır
+      return () => {
+        triedOnThisFocusRef.current = false;
+      };
+    }, [getUser, user?.id, user?.role, user?.groupId]),
+  );
 
   const fetchRequests = async (user: User) => {
     const groupRequests = await getGroupRequestsByGroupId(groupId);
@@ -297,7 +341,7 @@ const Group = () => {
           backgroundColor: 'transparent', // colors.background.secondary,
           // paddingTop: insets.top / 2,
         }}
-        contentContainerClassName="pb-20"
+        contentContainerClassName="pb-24"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
