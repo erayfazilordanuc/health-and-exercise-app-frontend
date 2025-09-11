@@ -65,7 +65,7 @@ const Chat = () => {
   const [accessToken, setAccessToken] = useState('');
 
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(75);
+  const [keyboardHeight, setKeyboardHeight] = useState(85);
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -225,7 +225,7 @@ const Chat = () => {
       'keyboardDidHide',
       () => {
         setIsKeyboardVisible(false);
-        setKeyboardHeight(75);
+        setKeyboardHeight(85);
         console.log('Klavye kapandı 😴');
       },
     );
