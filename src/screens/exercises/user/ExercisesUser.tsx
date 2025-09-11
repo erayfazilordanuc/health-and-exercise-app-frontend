@@ -787,12 +787,16 @@ const ExercisesUser = () => {
               <>
                 <Text
                   className="font-rubik-semibold text-lg mb-2 text-center"
-                  style={{color: colors.text.third}}>
+                  style={{
+                    color: colors.isLight ? colors.text.third : '#C9C9C9',
+                  }}>
                   3 gün seçiniz
                 </Text>
                 <Text
                   className="font-rubik text-md mb-3 text-center"
-                  style={{color: colors.text.third}}>
+                  style={{
+                    color: colors.isLight ? colors.text.third : '#C9C9C9',
+                  }}>
                   Egzersiz yapmak istediğiniz günlerin üzerine tıklayınız
                 </Text>
               </>

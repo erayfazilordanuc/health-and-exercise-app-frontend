@@ -153,6 +153,7 @@ const Group = () => {
     fetchMembers();
     setLoading(false);
   }, [members]);
+  
   const triedOnThisFocusRef = useRef(false);
 
   // getUser: user'a bağımlı OLMASIN; setUser/navigation yeterli

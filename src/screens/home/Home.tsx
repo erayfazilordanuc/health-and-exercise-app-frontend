@@ -156,9 +156,9 @@ const Home = () => {
     }, [user]),
   );
 
-  const triedGetUserRef = useRef(false);
-  const navigatedRef = useRef(false);
+  const triedOnThisFocusRef = useRef(false);
 
+  // getUser: user'a bağımlı OLMASIN; setUser/navigation yeterli
   const getUser = useCallback(async () => {
     const net = await NetInfo.fetch();
     if (!net.isConnected) return;
@@ -177,19 +177,28 @@ const Home = () => {
     }
 
     await AsyncStorage.setItem('user', JSON.stringify(dbUser));
-  }, [setUser, navigation]);
+  }, [setUser, navigation, user]); // burada user kalabilir; istersen ref'le de okuyabilirsin
 
-  // 3) getUser'ı sadece BİR KEZ tetikle
-  useEffect(() => {
-    if (!user) return;
-    if (user.role !== 'ROLE_USER') return;
-    if (user.groupId) return;
+  useFocusEffect(
+    useCallback(() => {
+      // her focus'ta sıfır başla
+      triedOnThisFocusRef.current = false;
 
-    if (!triedGetUserRef.current) {
-      triedGetUserRef.current = true; // bu satır önemli: tekrar tekrar çağrılmasını engeller
-      getUser();
-    }
-  }, [user?.id, user?.role, user?.groupId, getUser]);
+      if (!triedOnThisFocusRef.current) {
+        triedOnThisFocusRef.current = true;
+
+        // Koşullar uygunsa sadece 1 kez çalıştır
+        if (user && user.role === 'ROLE_USER' && !user.groupId) {
+          getUser();
+        }
+      }
+
+      // blur olduğunda reset; böylece sonraki focus'ta yine 1 kez çalışır
+      return () => {
+        triedOnThisFocusRef.current = false;
+      };
+    }, [getUser, user?.id, user?.role, user?.groupId]),
+  );
 
   const fetchLastMessage = async () => {
     console.log('işte');
@@ -511,6 +520,14 @@ const Home = () => {
         };
 
         const saveResponse = await saveMessage(newMessage);
+
+        await AsyncStorage.setItem(
+          `lastMessage_${user.username}_${admin.username}`,
+          JSON.stringify({
+            message: newMessage,
+            savedAt: new Date(),
+          } as LocalMessage),
+        );
 
         const match = message.match(/dailyStatus(\d+)/);
         const score = parseInt(match![1], 10);

@@ -12,6 +12,7 @@ import {
   ToastAndroid,
   Dimensions,
   Switch,
+  ScrollView,
 } from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -216,7 +217,7 @@ const Groups = () => {
         // Koşullar uygunsa sadece 1 kez çalıştır
         if (user && user.role === 'ROLE_USER' && !user.groupId) {
           getUser();
-        }
+        } else if (user) navigation.replace('Group', {groupId: user.groupId});
       }
 
       // blur olduğunda reset; böylece sonraki focus'ta yine 1 kez çalışır
@@ -268,7 +269,7 @@ const Groups = () => {
   );
 
   return (
-    <>
+    <View className="flex-1">
       <LinearGradient
         colors={colors.gradient} // istediğin renkler
         start={{x: 0.1, y: 0}}
@@ -291,8 +292,8 @@ const Groups = () => {
           Gruplar
         </Text>
       </View>
-      <View
-        className="h-full pb-32 px-3 pt-3"
+      <ScrollView
+        className="h-full pb-30 px-3 pt-3"
         style={{
           backgroundColor: 'transparent', // colors.background.secondary,
           // paddingTop: insets.top / 2,
@@ -361,9 +362,9 @@ const Groups = () => {
           </View>
         )}
 
-        {user && user.role !== 'ROLE_ADMIN' && (
+        {user && user.role === 'ROLE_USER' && (
           <View
-            className="p-3 rounded-2xl"
+            className="p-3 rounded-2xl mb-32"
             style={{backgroundColor: colors.background.primary}}>
             <View className="flex flex-row justify-center items-center">
               <View
@@ -415,7 +416,7 @@ const Groups = () => {
             </View>
           ) : (
             <View
-              className="px-4 pb-4 pt-3 rounded-2xl"
+              className="px-4 pb-4 pt-3 rounded-2xl mb-32"
               style={{backgroundColor: colors.background.primary}}>
               {/* <View className="flex flex-row justify-center items-center">
               <View
@@ -655,8 +656,8 @@ const Groups = () => {
         )}
 
         {/* TO DO Buraya liste şeklinde Grup maplenmeli yoksa da no result component kullanılabilir */}
-      </View>
-    </>
+      </ScrollView>
+    </View>
   );
 };
 
