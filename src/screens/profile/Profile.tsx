@@ -1447,7 +1447,12 @@ const Profile = () => {
               data={Object.keys(AVATARS) as AvatarKey[]}
               numColumns={3} // 4 sütunluk grid
               keyExtractor={item => item}
-              contentContainerStyle={{marginTop: 20}}
+              contentContainerStyle={{
+                paddingVertical: 20,
+              }}
+              style={{
+                maxHeight: 300, // ✅ maksimum yükseklik
+              }}
               renderItem={({item}) => (
                 <TouchableOpacity
                   onPress={() => setAvatar(item)}
@@ -1479,8 +1484,8 @@ const Profile = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={async () => {
-                  await updateAvatar(avatar);
                   setShowAvatarModal(false);
+                  await updateAvatar(avatar);
                 }}
                 className="py-2 px-3 rounded-2xl items-center mx-2 mt-6"
                 style={{backgroundColor: '#16d750'}}>
