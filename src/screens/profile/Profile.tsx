@@ -14,6 +14,8 @@ import {
   ToastAndroid,
   Alert,
   Platform,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import React, {
   act,
@@ -51,7 +53,7 @@ import {Picker} from '@react-native-picker/picker';
 import ProgressBar from '../../components/ProgressBar';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
-import {getUser} from '../../api/user/userService';
+import {getUser, useUpdateAvatar} from '../../api/user/userService';
 import GradientText from '../../components/GradientText';
 import {
   getLocal,
@@ -83,6 +85,7 @@ import WeeklyStrip from '../../components/WeeklyStrip';
 import {isSameDay} from 'date-fns';
 import {atLocalMidnight, isTodayLocal, ymdLocal} from '../../utils/dates';
 import {extractAxiosMessage} from '../../api/axios/axios';
+import {AVATARS, type AvatarKey} from '../../constants/avatars';
 
 const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -91,9 +94,10 @@ const Profile = () => {
   const {user} = useUser();
   const {colors, theme} = useTheme();
   const qc = useQueryClient();
-
+  const {height} = Dimensions.get('screen');
   const [refreshing, setRefreshing] = useState(false);
 
+  const [avatar, setAvatar] = useState(user?.avatar ?? 'non');
   const [logs, setLogs] = useState('');
   const [initialized, setInitialized] = useState(false);
   const [healthScore, setHealthScore] = useState(0);
@@ -112,6 +116,8 @@ const Profile = () => {
     setSymptom?: React.Dispatch<React.SetStateAction<number>>;
   }>({});
   const [addModalValue, setAddModalValue] = useState<Float>();
+  const {updateAvatar} = useUpdateAvatar();
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [showHCAlert, setShowHCAlert] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -474,6 +480,10 @@ const Profile = () => {
     }, []),
   );
 
+  const isLongName = () => {
+    return user?.fullName.length && user?.fullName.length > 20;
+  };
+
   return (
     <>
       <LinearGradient
@@ -520,7 +530,7 @@ const Profile = () => {
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
-            paddingBottom: 170,
+            paddingBottom: height / 6,
             // paddingTop: insets.top / 2,
           }}
           showsVerticalScrollIndicator={false}
@@ -545,17 +555,40 @@ const Profile = () => {
               backgroundColor: colors.background.primary,
             }}>
             <View className="flex flex-col justify-center pl-5 pr-4 py-3">
-              <View className="flex flex-row justify-between">
-                <GradientText
-                  className="font-rubik-medium text-2xl"
-                  start={{x: 0, y: 0}}
-                  end={{x: 0.7, y: 0}}
-                  colors={[colors.primary[300], colors.secondary[300]]}>
-                  {user?.fullName}
-                </GradientText>
+              <View className="flex flex-row justify-between mt-1">
+                <View
+                  className={`flex ${
+                    isLongName()
+                      ? 'flex-col items-start'
+                      : 'flex-row items-center'
+                  } justify-start`}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowAvatarModal(true);
+                    }}>
+                    <Image
+                      source={AVATARS[avatar as AvatarKey]}
+                      className="size-16"
+                    />
+                    <Image
+                      source={icons.edit}
+                      className="absolute bottom-0 right-0 size-5"
+                    />
+                  </TouchableOpacity>
+                  <GradientText
+                    style={{
+                      marginTop: isLongName() ? 10 : 0,
+                    }}
+                    className="font-rubik-medium text-2xl ml-3"
+                    start={{x: 0, y: 0}}
+                    end={{x: 0.7, y: 0}}
+                    colors={[colors.primary[300], colors.secondary[300]]}>
+                    {user?.fullName}
+                  </GradientText>
+                </View>
                 <View className="flex flex-row items-center justify-end">
                   <TouchableOpacity
-                    className="py-2 px-3"
+                    className="py-3 px-3"
                     style={{
                       borderRadius: 13,
                       backgroundColor: colors.background.third,
@@ -563,11 +596,16 @@ const Profile = () => {
                     onPress={() => {
                       setShowDetail(!showDetail);
                     }}>
-                    <Text
+                    <Image
+                      source={showDetail ? icons.arrowDown : icons.arrow}
+                      className="size-4"
+                      tintColor={colors.primary[200]}
+                    />
+                    {/* <Text
                       className="text-md font-rubik"
                       style={{color: colors.primary[200]}}>
-                      {showDetail ? 'Detayları Gizle' : 'Detay'}
-                    </Text>
+                      {showDetail ? 'Detayları Gizle' : '>'}
+                    </Text> */}
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1369,6 +1407,93 @@ const Profile = () => {
       </View>
 
       <CustomAlertSingleton ref={alertRef} />
+
+      <Modal
+        transparent={true}
+        visible={showAvatarModal}
+        animationType="fade"
+        onRequestClose={() => setShowAvatarModal(false)}>
+        <View className="flex-1 justify-center items-center bg-black/40">
+          <View
+            className="w-11/12 rounded-3xl p-5 pt-6 pb-4 items-center"
+            style={{backgroundColor: colors.background.primary}}>
+            <Text
+              style={{
+                marginTop: -5,
+                fontSize: 20,
+                lineHeight: 26,
+                color: colors.text.primary,
+              }}
+              className="text-center font-rubik-medium">
+              Avatar Seçimi
+            </Text>
+            <View className="flex-row items-center justify-center mt-4">
+              <Text
+                style={{
+                  fontSize: 18,
+                  lineHeight: 26,
+                  color: colors.text.primary,
+                }}
+                className="text-center font-rubik">
+                Seçili Avatar
+              </Text>
+              <Image
+                source={AVATARS[avatar as AvatarKey]}
+                className="ml-3 size-12"
+              />
+            </View>
+
+            <FlatList
+              data={Object.keys(AVATARS) as AvatarKey[]}
+              numColumns={3} // 4 sütunluk grid
+              keyExtractor={item => item}
+              contentContainerStyle={{marginTop: 20}}
+              renderItem={({item}) => (
+                <TouchableOpacity
+                  onPress={() => setAvatar(item)}
+                  style={{margin: 8}}>
+                  <Image
+                    source={AVATARS[item]}
+                    className="size-20 rounded-full"
+                    style={{
+                      borderWidth: avatar === item ? 3 : 0,
+                      borderColor: avatar === item ? '#16d750' : 'transparent',
+                    }}
+                  />
+                </TouchableOpacity>
+              )}
+            />
+
+            <View className="flex-row items-center justify-center mt-3">
+              <TouchableOpacity
+                onPress={() => {
+                  setShowAvatarModal(false);
+                }}
+                className="py-2 px-3 rounded-2xl items-center mx-2 mt-6"
+                style={{backgroundColor: colors.background.secondary}}>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  Vazgeç
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={async () => {
+                  await updateAvatar(avatar);
+                  setShowAvatarModal(false);
+                }}
+                className="py-2 px-3 rounded-2xl items-center mx-2 mt-6"
+                style={{backgroundColor: '#16d750'}}>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.background.secondary}}>
+                  Kaydet
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         transparent={true}

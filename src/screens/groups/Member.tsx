@@ -70,6 +70,7 @@ import {parseTheme} from '../../themes/themes';
 import ColorCircle from '../../components/ColorCircle';
 import {calcPercent} from '../../api/exercise/exerciseService';
 import {useGroupById} from '../../hooks/groupQueries';
+import {AvatarKey, AVATARS} from '../../constants/avatars';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -376,7 +377,7 @@ const Member = () => {
 
       <ScrollView
         ref={scrollRef}
-        contentContainerClassName="pb-24"
+        contentContainerClassName="pb-28"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -398,6 +399,21 @@ const Member = () => {
             style={{fontSize: 18, color: colors.text.primary}}>
             Hasta Bilgileri
           </Text>
+          <View className="flex flex-row items-center mt-1 mb-1">
+            <Text
+              className="font-rubik-medium text-lg"
+              style={{color: colors.text.primary}}>
+              Avatar:{'  '}
+            </Text>
+            <Image
+              source={
+                member?.avatar
+                  ? AVATARS[member?.avatar as AvatarKey]
+                  : AVATARS.non
+              }
+              className="size-10 ml-1 mr-1"
+            />
+          </View>
           <View className="flex flex-row items-center mt-1 mb-1">
             <Text
               className="font-rubik-medium text-lg"
@@ -651,57 +667,77 @@ const Member = () => {
                       weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
                       activeDays={activeDays}
                     />
-                    <View className="flex flex-row items-center justify-start ml-2 mt-3 my-1">
-                      <View className="flex-col items-start space-x-2 mr-3">
-                        <View className="flex flex-row items-center space-x-2">
-                          <View
-                            className="p-2 rounded-full"
-                            style={{backgroundColor: '#14E077'}}
-                          />
-                          <Text
-                            className="text-xs font-rubik ml-1"
-                            style={{color: colors.text.primary}}>
-                            Tamamlandı
-                          </Text>
+                    <View className="flex flex-row items-center justify-between">
+                      <View className="flex flex-row items-center justify-start ml-2 mt-3 my-1">
+                        <View className="flex-col items-start space-x-2 mr-3">
+                          <View className="flex flex-row items-center space-x-2">
+                            <View
+                              className="p-2 rounded-full"
+                              style={{backgroundColor: '#14E077'}}
+                            />
+                            <Text
+                              className="text-xs font-rubik ml-1"
+                              style={{color: colors.text.primary}}>
+                              Tamamlandı
+                            </Text>
+                          </View>
+                          <View className="flex-row items-center space-x-2 mt-2">
+                            <View
+                              className="p-2 rounded-full"
+                              style={{backgroundColor: '#fd5353'}}
+                            />
+                            <Text
+                              className="text-xs font-rubik ml-1"
+                              style={{color: colors.text.primary}}>
+                              Tamamlanmadı
+                            </Text>
+                          </View>
                         </View>
-                        <View className="flex-row items-center space-x-2 mt-2">
-                          <View
-                            className="p-2 rounded-full"
-                            style={{backgroundColor: '#fd5353'}}
-                          />
-                          <Text
-                            className="text-xs font-rubik ml-1"
-                            style={{color: colors.text.primary}}>
-                            Tamamlanmadı
-                          </Text>
+                        <View className="flex-col items-start space-x-2">
+                          <View className="flex-row items-center space-x-2">
+                            <View
+                              className="p-2 rounded-full"
+                              style={{
+                                backgroundColor: '#4f9cff' /*'#4f9cff' */,
+                              }}
+                            />
+                            <Text
+                              className="text-xs font-rubik ml-1"
+                              style={{color: colors.text.primary}}>
+                              Yapılacak
+                            </Text>
+                          </View>
+                          <View className="flex-row items-center space-x-2 mt-2">
+                            <View
+                              className="p-2 rounded-full"
+                              style={{backgroundColor: '#B9E2FE'}}
+                            />
+                            <Text
+                              className="text-xs font-rubik ml-1"
+                              style={{color: colors.text.primary}}>
+                              Bugün
+                            </Text>
+                          </View>
                         </View>
                       </View>
-                      <View className="flex-col items-start space-x-2">
-                        <View className="flex-row items-center space-x-2">
-                          <View
-                            className="p-2 rounded-full"
-                            style={{
-                              backgroundColor: '#4f9cff' /*'#4f9cff' */,
-                            }}
-                          />
-                          <Text
-                            className="text-xs font-rubik ml-1"
-                            style={{color: colors.text.primary}}>
-                            Yapılacak
-                          </Text>
-                        </View>
-                        <View className="flex-row items-center space-x-2 mt-2">
-                          <View
-                            className="p-2 rounded-full"
-                            style={{backgroundColor: '#B9E2FE'}}
-                          />
-                          <Text
-                            className="text-xs font-rubik ml-1"
-                            style={{color: colors.text.primary}}>
-                            Bugün
-                          </Text>
-                        </View>
-                      </View>
+                      {member?.groupId &&
+                        [3, 6, 22, 27, 8].includes(member?.groupId) && (
+                          <TouchableOpacity
+                            className="px-3 py-2 rounded-xl mt-2"
+                            style={{backgroundColor: colors.background.third}}
+                            onPress={() => {
+                              navigation.navigate('ExerciseProgress', {
+                                member: member,
+                                weeklyProgress: weeklyExerciseProgress,
+                              });
+                            }}>
+                            <Text
+                              className="text-lg font-rubik"
+                              style={{color: colors.primary[200]}}>
+                              Detaylar
+                            </Text>
+                          </TouchableOpacity>
+                        )}
                     </View>
                   </View>
                 )}

@@ -120,6 +120,7 @@ import check_1 from '../assets/icons/check_1.png';
 import checkbox_empty from '../assets/icons/checkbox_empty.png';
 import checkbox_checked from '../assets/icons/checkbox_checked.png';
 import app_info from '../assets/icons/app_info.png';
+import edit_blue from '../assets/icons/edit_blue.png';
 
 export default {
   google,
@@ -244,4 +245,5 @@ export default {
   checkbox_empty,
   checkbox_checked,
   app_info,
+  edit_blue,
 };

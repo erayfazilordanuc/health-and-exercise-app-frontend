@@ -23,6 +23,7 @@ type User = {
   groupId?: number;
   achievements: AchievementDTO[];
   theme: ThemeOption;
+  avatar: string;
 };
 
 type SessionState = {

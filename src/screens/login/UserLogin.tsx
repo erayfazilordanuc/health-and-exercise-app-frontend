@@ -175,6 +175,7 @@ function UserLogin() {
         console.log('Status:', status);
         console.log('Message:', message);
 
+        if (status === 500) message = 'Bu kullanıcı adı bir hemşireye ait';
         if (status === 403) message = 'Kullanıcı adı veya şifre hatalı';
         if (status === 502) message = 'Bir hata oluştu';
         ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);

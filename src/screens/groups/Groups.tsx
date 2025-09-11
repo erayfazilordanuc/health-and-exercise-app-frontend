@@ -393,31 +393,37 @@ const Groups = () => {
                 style={{color: colors.text.primary}}>
                 Gruplarım
               </Text>
-              {filterGroupsByAdmin(groups, user.id!).map(
-                (group: Group, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    className="flex flex-row items-center justify-between mt-3"
-                    style={{
-                      padding: 15,
-                      borderRadius: 15,
-                      backgroundColor: colors.background.secondary,
-                    }}
-                    onPress={() =>
-                      navigation.navigate('Group', {groupId: group.id})
-                    }>
-                    <Text
-                      className="text-2xl font-rubik-medium"
-                      style={{color: colors.primary[200]}}>
-                      {group.name}
-                    </Text>
-                    <Image
-                      source={icons.arrow}
-                      className="size-5 mr-2"
-                      tintColor={colors.primary[200]}
-                    />
-                  </TouchableOpacity>
-                ),
+              {filterGroupsByAdmin(groups, user.id!).length > 0 ? (
+                filterGroupsByAdmin(groups, user.id!).map(
+                  (group: Group, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      className="flex flex-row items-center justify-between mt-3"
+                      style={{
+                        padding: 15,
+                        borderRadius: 15,
+                        backgroundColor: colors.background.secondary,
+                      }}
+                      onPress={() =>
+                        navigation.navigate('Group', {groupId: group.id})
+                      }>
+                      <Text
+                        className="text-2xl font-rubik-medium"
+                        style={{color: colors.primary[200]}}>
+                        {group.name}
+                      </Text>
+                      <Image
+                        source={icons.arrow}
+                        className="size-5 mr-2"
+                        tintColor={colors.primary[200]}
+                      />
+                    </TouchableOpacity>
+                  ),
+                )
+              ) : (
+                <Text className="text-lg font-rubik mt-3 ml-1">
+                  Henüz bir grubunuz bulunmamakta
+                </Text>
               )}
             </View>
           ))}

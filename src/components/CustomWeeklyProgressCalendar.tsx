@@ -5,6 +5,7 @@ import {
   AnimatedCircularProgress,
   CircularProgress,
 } from 'react-native-circular-progress';
+import {useUser} from '../contexts/UserContext';
 interface CustomWeeklyProgressCalendarProps {
   todayPercent?: number;
   weeklyPercents: number[]; // aktif günlerin yüzdeleri (activeDays ile aynı sıra)
@@ -21,6 +22,7 @@ const CustomWeeklyProgressCalendar = ({
   const isSameDay = (d1: Date, d2: Date) =>
     d1.toDateString() === d2.toDateString();
   const scrollRef = useRef<ScrollView>(null);
+  const {user} = useUser();
 
   // Pazartesiyi bul
   const getMonday = (d: Date) => {

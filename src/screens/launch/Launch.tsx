@@ -19,6 +19,8 @@ import {checkHealthConnectAvailable} from '../../lib/health/healthConnectService
 import {useNotificationNavigation} from '../../hooks/useNotificationNavigation';
 import {useUser} from '../../contexts/UserContext';
 import {BlurView} from '@react-native-community/blur';
+import NetInfo from '@react-native-community/netinfo';
+import {updateAvatarApi} from '../../api/user/userService';
 
 const {width, height} = Dimensions.get('window');
 
@@ -52,6 +54,8 @@ const Launch = () => {
           }
         }
       }
+      const net = await NetInfo.fetch();
+      if (net.isConnected) updateAvatarApi(user.avatar);
     } else
       setTheme(colorScheme === 'light' ? themes.blue.light : themes.blue.dark);
 
@@ -158,8 +162,9 @@ const Launch = () => {
       <TouchableOpacity
         className="px-6 py-3 rounded-2xl mb-2"
         style={{
-          backgroundColor:
-            theme.colors.isLight ? colors.background.primary : '#333333',
+          backgroundColor: theme.colors.isLight
+            ? colors.background.primary
+            : '#333333',
         }}
         onPress={() => {
           navigation.navigate('UserLogin');
@@ -175,8 +180,9 @@ const Launch = () => {
       <TouchableOpacity
         className="px-6 py-3 rounded-2xl"
         style={{
-          backgroundColor:
-            theme.colors.isLight ? colors.background.primary : '#333333',
+          backgroundColor: theme.colors.isLight
+            ? colors.background.primary
+            : '#333333',
         }}
         onPress={() => {
           navigation.navigate('AdminLogin');

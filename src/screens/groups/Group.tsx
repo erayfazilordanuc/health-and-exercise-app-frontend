@@ -53,6 +53,7 @@ import {getRoomIdByUsers, MSG_KEYS} from '../../hooks/messageQueries';
 import CustomAlertSingleton, {
   CustomAlertSingletonHandle,
 } from '../../components/CustomAlertSingleton';
+import {AvatarKey, AVATARS} from '../../constants/avatars';
 
 const Group = () => {
   const insets = useSafeAreaInsets();
@@ -329,11 +330,17 @@ const Group = () => {
             }}>
             {admin && (
               <>
-                <Text
-                  className="font-rubik-medium"
-                  style={{fontSize: 19, color: colors.text.primary}}>
-                  Hemşire Bilgileri
-                </Text>
+                <View className="flex-row items-center justify-between">
+                  <Text
+                    className="font-rubik-medium"
+                    style={{fontSize: 19, color: colors.text.primary}}>
+                    Hemşire Bilgileri
+                  </Text>
+                  <Image
+                    source={AVATARS[admin.avatar as AvatarKey]}
+                    className="mr-1 size-12"
+                  />
+                </View>
                 <View className="flex flex-row items-center mt-1 mb-1">
                   <Text
                     className="font-rubik-medium text-lg"

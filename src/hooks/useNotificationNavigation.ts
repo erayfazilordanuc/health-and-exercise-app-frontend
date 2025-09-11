@@ -46,6 +46,10 @@ export const useNotificationNavigation = () => {
               },
             });
           }
+        } else {
+          navigation.navigate('App', {
+            screen: 'Home',
+          });
         }
       },
     );

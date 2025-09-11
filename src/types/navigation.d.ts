@@ -56,7 +56,10 @@ type GroupsStackParamList = {
     navigatedInApp: boolean;
   };
   Achievements: {member: User};
-  Progress: {member: User};
+  ExerciseProgress: {
+    member: User;
+    weeklyProgress: ExerciseProgressDTO[];
+  };
 };
 
 type RootStackParamList = {

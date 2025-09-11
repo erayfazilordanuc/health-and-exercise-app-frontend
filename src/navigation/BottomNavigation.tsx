@@ -47,13 +47,14 @@ import ExercisesUser from '../screens/exercises/user/ExercisesUser';
 import ExercisesAdmin from '../screens/exercises/admin/ExercisesAdmin';
 import AllExercises from '../screens/exercises/user/AllExercises';
 import EditExercise from '../screens/exercises/admin/EditExercise';
-import Achievements from '../screens/groups/Progress';
+import Achievements from '../screens/groups/ExerciseProgress';
 import Workout from '../screens/exercises/user/Exercise';
 import ExerciseDetail from '../screens/exercises/user/ExerciseDetail';
 import Exercise from '../screens/exercises/user/Exercise';
 import DeviceInfo from 'react-native-device-info';
 import sessionManager from '../session/sessionManager';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import ExerciseProgress from '../screens/groups/ExerciseProgress';
 
 const Tab = createBottomTabNavigator();
 
@@ -362,6 +363,21 @@ function GroupsStack() {
             header: () => (
               <CustomHeader
                 title={'Sohbet'}
+                icon={icons.notes}
+                className="border-primary-300"
+                backArrowEnable={true}
+              />
+            ),
+          }}
+        />
+        <GroupsNativeStack.Screen
+          name="ExerciseProgress"
+          component={ExerciseProgress}
+          options={{
+            headerShown: false,
+            header: () => (
+              <CustomHeader
+                title={'Egzersiz İlerlemesi'}
                 icon={icons.notes}
                 className="border-primary-300"
                 backArrowEnable={true}

@@ -78,6 +78,7 @@ import {
   useSymptomsByDate,
 } from '../../hooks/symptomsQueries';
 import {calcPercent} from '../../api/exercise/exerciseService';
+import {AVATARS, type AvatarKey} from '../../constants/avatars';
 // import {
 //   isExerciseReminderScheduled,
 //   registerExerciseReminder,
@@ -583,13 +584,23 @@ const Home = () => {
               }}>
               {user?.username}
             </Text> */}
-            <GradientText
-              className="pl-2 text-2xl font-rubik-medium text-center mb-1"
-              start={{x: 0, y: 0}}
-              end={{x: 0.7, y: 0}}
-              colors={[colors.primary[300], colors.secondary[300]]}>
-              {user?.fullName}
-            </GradientText>
+            <View className="flex flex-row justify-between items-center">
+              <Image
+                source={
+                  user?.avatar
+                    ? AVATARS[user?.avatar as AvatarKey]
+                    : AVATARS.non
+                }
+                className="size-10 ml-1 mr-1"
+              />
+              <GradientText
+                className="pl-2 text-2xl font-rubik-medium text-center"
+                start={{x: 0, y: 0}}
+                end={{x: 0.7, y: 0}}
+                colors={[colors.primary[300], colors.secondary[300]]}>
+                {user?.fullName}
+              </GradientText>
+            </View>
             {!isAdmin ? (
               <View className="flex flex-row">
                 <Image

@@ -80,6 +80,15 @@ export const getTodayExerciseByGroup = async (position: ExercisePosition) => {
   }
 };
 
+export const getAverageExercisePulseByDate = async (
+  dateStr: string,
+): Promise<number | null> => {
+  const res = await apiClient.get(`/exercises/date/${dateStr}/pulse`);
+  const v = res.data;
+  if (v === null || v === undefined) return null;
+  return typeof v === 'number' ? v : Number(v);
+};
+
 export const createExercise = async (createExerciseDTO: CreateExerciseDTO) => {
   try {
     console.log('create DTO', createExerciseDTO);

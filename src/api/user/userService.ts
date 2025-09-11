@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 import NetInfo from '@react-native-community/netinfo';
+import {AvatarKey} from '../../constants/avatars';
+import {useUser} from '../../contexts/UserContext';
 
 export const getLocalUser = async () => {
   const userJson = await AsyncStorage.getItem('user');
@@ -46,4 +48,26 @@ export const updateUser = async (updateUserDTO: UpdateUserDTO) => {
   const response = await apiClient.put('/users/me', updateUserDTO);
   console.log('update user response', response);
   return response;
+};
+
+export const updateAvatarApi = async (key: string) => {
+  const response = await apiClient.put(`/users/me/avatar/${key}`);
+  console.log('update user avatar response', response);
+  return response;
+};
+
+export const useUpdateAvatar = () => {
+  const {setUser} = useUser();
+
+  const updateAvatar = async (key: string) => {
+    await updateAvatarApi(key);
+    let user = await getLocalUser();
+    if (user) {
+      user.avatar = key;
+      AsyncStorage.setItem('user', JSON.stringify(user));
+      setUser(user);
+    }
+  };
+
+  return {updateAvatar};
 };

@@ -8,6 +8,8 @@ import {
 import type {AxiosError} from 'axios';
 import apiClient from '../api/axios/axios';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {getAverageExercisePulseByDate} from '../api/exercise/exerciseService';
+import {ymdLocal} from '../utils/dates';
 
 export const createExercise = async (createExerciseDTO: CreateExerciseDTO) => {
   try {
@@ -144,5 +146,40 @@ export function useExerciseScheduleAdmin(
     refetchOnReconnect: false,
     retry: 1,
     ...options,
+  });
+}
+
+export const PULSE_KEYS = {
+  root: ['exercise', 'pulse'] as const,
+  byDate: (dateStr: string) =>
+    [...PULSE_KEYS.root, 'by-date', dateStr] as const,
+};
+
+// --- HOOK ---
+export function useAverageExercisePulseByDate(
+  date?: Date,
+  options?: {
+    enabled?: boolean;
+    staleTime?: number;
+    refetchInterval?: number | false;
+  },
+) {
+  const dateStr = date ? ymdLocal(date) : '';
+
+  return useQuery<number | null, AxiosError>({
+    queryKey: PULSE_KEYS.byDate(dateStr),
+    enabled: !!date && (options?.enabled ?? true),
+    queryFn: async () => {
+      if (!date) return null;
+      return await getAverageExercisePulseByDate(dateStr);
+    },
+    networkMode: 'offlineFirst',
+    staleTime: options?.staleTime ?? 5 * 60 * 1000, // 5 dk
+    gcTime: 15 * 60 * 1000,
+    refetchInterval: options?.refetchInterval ?? false,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    retry: 0,
+    placeholderData: keepPreviousData,
   });
 }
