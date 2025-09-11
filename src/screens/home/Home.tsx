@@ -156,6 +156,7 @@ const Home = () => {
   );
 
   const fetchLastMessage = async () => {
+    console.log('işte');
     if (!user || !admin) return;
     const lastMessageResponse = await getLastMessageBySenderAndReceiver(
       admin.username,

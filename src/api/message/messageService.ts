@@ -96,6 +96,11 @@ export const getLastMessageBySenderAndReceiver = async (
     `lastMessage_${sender}_${receiver}`,
   );
   if (isMember) {
+    console.log(
+      'burada1',
+      `lastMessage_${sender}_${receiver}`,
+      `lastMessage_${receiver}_${sender}`,
+    );
     let local, local2;
 
     if (localJson) {
@@ -108,11 +113,13 @@ export const getLastMessageBySenderAndReceiver = async (
     if (localJson2) {
       local2 = JSON.parse(localJson2);
     }
-
+    console.log('burada1');
     if (local && local2)
       if (local2.savedAt > local.savedAt) return normalize(local2.message);
+      else return normalize(local.message);
 
-    return normalize(local.message);
+    if (local) return normalize(local.message);
+    if (local2) return normalize(local2.message);
   } else {
     if (localJson) {
       const local: LocalMessage = JSON.parse(localJson);

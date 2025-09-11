@@ -112,7 +112,7 @@ const Chat = () => {
     };
 
     console.log('saved key', `lastMessage_${sender}_${receiver.username}`);
-    //lastMessage_test54_ordanuc
+    // lastMessage_kullanıcı85_ordanuc
     await AsyncStorage.setItem(
       `lastMessage_${sender}_${receiver.username}`,
       JSON.stringify({
