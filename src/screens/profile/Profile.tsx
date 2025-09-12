@@ -1448,10 +1448,11 @@ const Profile = () => {
               numColumns={3} // 4 sütunluk grid
               keyExtractor={item => item}
               contentContainerStyle={{
-                paddingVertical: 20,
+                paddingBottom: 0,
               }}
               style={{
-                maxHeight: 300, // ✅ maksimum yükseklik
+                marginTop: 20,
+                maxHeight: height / 2.5, // ✅ maksimum yükseklik
               }}
               renderItem={({item}) => (
                 <TouchableOpacity
@@ -1479,7 +1480,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik text-lg"
                   style={{color: colors.text.primary}}>
-                  Vazgeç
+                  İptal
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
