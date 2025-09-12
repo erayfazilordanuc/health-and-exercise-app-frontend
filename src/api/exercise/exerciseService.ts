@@ -276,9 +276,11 @@ export const calcPercent = (p?: ExerciseProgressDTO | null): number => {
   console.log('p.total', p.totalProgressDuration);
 
   let allDone = true;
-  for (const vp of p.videoProgress) {
-    if (!vp.isCompeleted) allDone = false;
-  }
+  if (p.exerciseDTO.videos.length !== p.videoProgress.length) allDone = false;
+  else
+    for (const vp of p.videoProgress) {
+      if (!vp.isCompeleted) allDone = false;
+    }
   if (allDone) return 100;
 
   const total = p.exerciseDTO.videos.reduce(
