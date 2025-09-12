@@ -12,6 +12,11 @@ import {ReactQueryProvider} from './lib/react-query/provider';
 import {focusManager} from '@tanstack/react-query';
 import {AppState, StatusBar} from 'react-native';
 
+import {useEffect} from 'react';
+import messaging from '@react-native-firebase/messaging';
+import notifee, {AndroidImportance} from '@notifee/react-native';
+import {PermissionsAndroid, Platform} from 'react-native';
+
 function GlobalStatusBar() {
   // ThemeProvider içindeyken çalışır
   const {theme} = useTheme();
@@ -26,6 +31,10 @@ function GlobalStatusBar() {
   );
 }
 
+function asString(v: unknown): string | undefined {
+  return typeof v === 'string' ? v : undefined;
+}
+
 export default function App() {
   focusManager.setEventListener(handleFocus => {
     const sub = AppState.addEventListener('change', state => {
@@ -33,6 +42,56 @@ export default function App() {
     });
     return () => sub.remove();
   });
+
+  useEffect(() => {
+    // 1) Android 13+ izin (gerekli)
+    (async () => {
+      if (Platform.OS === 'android' && Platform.Version >= 33) {
+        await PermissionsAndroid.request(
+          'android.permission.POST_NOTIFICATIONS',
+        );
+      }
+      // 2) Kanal (heads-up için HIGH)
+      await notifee.createChannel({
+        id: 'default',
+        name: 'Genel',
+        importance: AndroidImportance.HIGH,
+      });
+    })();
+
+    // 3) Uygulama ÖN PLANDA iken gelen FCM’i yakala ve yerel bildirim göster
+    const unsub = messaging().onMessage(async rm => {
+      const d = rm.data ?? {};
+      const title =
+        asString(d.title) ?? asString(rm.notification?.title) ?? 'Bildirim';
+      const body =
+        asString(d.body) ??
+        asString(rm.notification?.body) ??
+        'Yeni mesajın var';
+
+      await notifee.displayNotification({
+        title,
+        body,
+        data: Object.fromEntries(
+          Object.entries(d).map(([k, v]) => [k, String(v)]),
+        ),
+        android: {
+          channelId: 'default',
+          smallIcon: 'ic_notification',
+          pressAction: {id: 'default'},
+        },
+        ios: {
+          foregroundPresentationOptions: {
+            alert: true,
+            sound: true,
+            badge: true,
+          },
+        },
+      });
+    });
+
+    return () => unsub();
+  }, []);
 
   return (
     <ThemeProvider>
