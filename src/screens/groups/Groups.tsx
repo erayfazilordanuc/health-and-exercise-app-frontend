@@ -632,7 +632,7 @@ const Groups = () => {
       </ScrollView>
 
       {user && user.role === 'ROLE_ADMIN' && (
-        <View className="absolute bottom-28 right-3 items-center">
+        <View className="absolute bottom-24 right-3 items-center">
           {/* <Text
               className="mb-1 font-rubik text-base"
               style={{color: colors.text.primary}}>
