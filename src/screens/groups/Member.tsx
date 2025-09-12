@@ -394,12 +394,18 @@ const Member = () => {
             backgroundColor: colors.background.primary,
             borderColor: colors.primary[300],
           }}>
-          <Text
-            className="font-rubik-medium"
-            style={{fontSize: 18, color: colors.text.primary}}>
-            Hasta Bilgileri
-          </Text>
-          <View className="flex flex-row items-center mt-1 mb-1">
+          <View className="flex-row items-center justify-between">
+            <Text
+              className="font-rubik-medium"
+              style={{fontSize: 18, color: colors.text.primary}}>
+              Hasta Bilgileri
+            </Text>
+            <Image
+              source={AVATARS[member?.avatar as AvatarKey]}
+              className="mr-1 size-12"
+            />
+          </View>
+          {/* <View className="flex flex-row items-center mt-1 mb-1">
             <Text
               className="font-rubik-medium text-lg"
               style={{color: colors.text.primary}}>
@@ -413,7 +419,7 @@ const Member = () => {
               }
               className="size-10 ml-1 mr-1"
             />
-          </View>
+          </View> */}
           <View className="flex flex-row items-center mt-1 mb-1">
             <Text
               className="font-rubik-medium text-lg"

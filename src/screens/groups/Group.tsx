@@ -121,8 +121,14 @@ const Group = () => {
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
-        if (user && user.role === 'ROLE_ADMIN') navigation.navigate('Groups');
-        else navigation.navigate('Home');
+        console.log('1');
+        if (user && user.role === 'ROLE_ADMIN') {navigation.navigate('Groups');
+        console.log('1');}
+        else {navigation.navigate('Home');
+        console.log('1');
+
+        }
+        console.log('1');
         return true;
       };
 
@@ -153,7 +159,7 @@ const Group = () => {
     fetchMembers();
     setLoading(false);
   }, [members]);
-  
+
   const triedOnThisFocusRef = useRef(false);
 
   // getUser: user'a bağımlı OLMASIN; setUser/navigation yeterli
@@ -261,11 +267,17 @@ const Group = () => {
       onPress={() => {}}>
       {/* Basınca modal çıksın user bilgilerinin gösterildiği */}
       <View className="flex flex-row justify-between items-center">
-        <Text
-          className="text-lg font-rubik-medium dark:text-blue-300 ml-2"
-          style={{color: colors.primary[200]}}>
-          {item.fullName}
-        </Text>
+        <View className="flex flex-row justify-start items-center">
+          <Image
+            source={AVATARS[item.avatar as AvatarKey]}
+            className="mr-1 size-8"
+          />
+          <Text
+            className="text-lg font-rubik-medium dark:text-blue-300 ml-2"
+            style={{color: colors.primary[200]}}>
+            {item.fullName}
+          </Text>
+        </View>
         {user?.role === 'ROLE_USER' && item.role === 'ROLE_ADMIN' && (
           <Text
             className="text-lg font-rubik-medium dark:text-blue-300 mr-2"
@@ -282,8 +294,11 @@ const Group = () => {
         )}
         {item.role === 'ROLE_USER' && user && user.role === 'ROLE_ADMIN' && (
           <TouchableOpacity
-            className="p-1 px-4 rounded-3xl"
-            style={{backgroundColor: colors.background.primary}}
+            className="px-4 rounded-xl"
+            style={{
+              backgroundColor: colors.background.primary,
+              paddingVertical: 5,
+            }}
             onPress={() => {
               if (user && user.role === 'ROLE_ADMIN') {
                 navigation.navigate('Member', {memberId: item.id});

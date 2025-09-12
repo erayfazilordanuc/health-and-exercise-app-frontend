@@ -216,8 +216,9 @@ const Groups = () => {
 
         // Koşullar uygunsa sadece 1 kez çalıştır
         if (user && user.role === 'ROLE_USER' && !user.groupId) {
-          getUser();
-        } else if (user) navigation.replace('Group', {groupId: user.groupId});
+          if (!user.groupId) getUser();
+          else navigation.replace('Group', {groupId: user.groupId});
+        }
       }
 
       // blur olduğunda reset; böylece sonraki focus'ta yine 1 kez çalışır
@@ -627,36 +628,36 @@ const Groups = () => {
           </View>
         </Modal>
 
-        {user && user.role === 'ROLE_ADMIN' && (
-          <View className="absolute bottom-48 right-3 items-center">
-            {/* <Text
+        {/* TO DO Buraya liste şeklinde Grup maplenmeli yoksa da no result component kullanılabilir */}
+      </ScrollView>
+
+      {user && user.role === 'ROLE_ADMIN' && (
+        <View className="absolute bottom-28 right-3 items-center">
+          {/* <Text
               className="mb-1 font-rubik text-base"
               style={{color: colors.text.primary}}>
               Grup Oluştur
             </Text> */}
 
-            {/* Buton */}
-            <TouchableOpacity
-              className="w-44 flex items-center justify-center"
-              style={{
-                backgroundColor: colors.primary[200],
-                borderRadius: 17,
-                height: 50,
-              }}
-              onPress={() => {
-                setIsCreateModalVisible(true);
-              }}>
-              <Text
-                className="font-rubik text-lg"
-                style={{color: colors.background.secondary}}>
-                Yeni Grup Oluştur
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* TO DO Buraya liste şeklinde Grup maplenmeli yoksa da no result component kullanılabilir */}
-      </ScrollView>
+          {/* Buton */}
+          <TouchableOpacity
+            className="w-44 flex items-center justify-center"
+            style={{
+              backgroundColor: colors.primary[200],
+              borderRadius: 17,
+              height: 50,
+            }}
+            onPress={() => {
+              setIsCreateModalVisible(true);
+            }}>
+            <Text
+              className="font-rubik text-lg"
+              style={{color: colors.background.secondary}}>
+              Yeni Grup Oluştur
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
