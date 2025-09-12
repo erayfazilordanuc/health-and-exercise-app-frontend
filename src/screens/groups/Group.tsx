@@ -121,15 +121,10 @@ const Group = () => {
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
-        console.log('1');
-        if (user && user.role === 'ROLE_ADMIN') {navigation.navigate('Groups');
-        console.log('1');}
-        else {navigation.navigate('Home');
-        console.log('1');
-
+        if (user && user.role === 'ROLE_USER') {
+          navigation.navigate('Home');
+          return true;
         }
-        console.log('1');
-        return true;
       };
 
       const backHandler = BackHandler.addEventListener(
