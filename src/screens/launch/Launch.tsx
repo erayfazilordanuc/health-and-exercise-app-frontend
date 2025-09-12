@@ -25,7 +25,7 @@ import {getDbUser, getUser, updateAvatarApi} from '../../api/user/userService';
 const {width, height} = Dimensions.get('window');
 
 const Launch = () => {
-  useNotificationNavigation();
+  // useNotificationNavigation();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const colorScheme = useColorScheme();

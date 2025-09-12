@@ -644,6 +644,20 @@ export default function CustomTabButton({
   );
 }
 
+function getActiveChildRoute(
+  state: import('@react-navigation/native').NavigationState | undefined,
+) {
+  let s = state;
+  let r: any = null;
+  while (s && typeof s.index === 'number') {
+    r = s.routes[s.index] as any;
+    // nested state varsa aşağı in
+    s = r?.state as any;
+    if (!s) break;
+  }
+  return r; // { name, params, ... }
+}
+
 export function BottomNavigator() {
   const insets = useSafeAreaInsets();
   const {theme, colors, setTheme} = useTheme();
@@ -778,6 +792,86 @@ export function BottomNavigator() {
       <Tab.Screen
         name="Groups"
         component={GroupsStack}
+        listeners={({navigation}) => ({
+          tabPress: e => {
+            const state = navigation.getState();
+            const tabRoute = state.routes.find(r => r.name === 'Groups');
+            const stackState = tabRoute?.state as
+              | import('@react-navigation/native').NavigationState
+              | undefined;
+
+            let current: string | null = null;
+            let params: any = null;
+
+            if (stackState && typeof stackState.index === 'number') {
+              const activeRoute = stackState.routes[stackState.index];
+              current = activeRoute?.name ?? null;
+              params = activeRoute?.params ?? null;
+            }
+
+            console.log('current', current, 'params', params, 'user', user);
+
+            if (
+              (!current ||
+                current === 'Chat' ||
+                (user?.role === 'ROLE_ADMIN' && current === 'Member') ||
+                (user?.role === 'ROLE_ADMIN' && current === 'Group')) &&
+              (!params || params.fromNotification) // gariplikler !current ve !params
+            )
+              navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: 'Groups',
+                  },
+                ],
+              });
+          },
+        })}
+        // listeners={({navigation}) => ({
+        //   tabPress: e => {
+        //     const state = navigation.getState();
+        //     const tabRoute = state.routes.find(r => r.name === 'Groups');
+        //     const stackState = tabRoute?.state as
+        //       | import('@react-navigation/native').NavigationState
+        //       | undefined;
+
+        //     let current: string | null = null;
+        //     if (stackState && typeof stackState.index === 'number') {
+        //       current = stackState.routes[stackState.index]?.name ?? null;
+        //     }
+
+        //     if (!current) {
+        //       console.log('current yok, kök kabul ediyorum');
+        //       return;
+        //     }
+
+        //     console.log('current', current);
+        //     if (user?.role === 'ROLE_USER') {
+        //       if (current === 'Group') return; // zaten Group ekranındaysan
+        //     } else {
+        //       if (current === 'Groups') return; // zaten Groups ekranındaysan
+        //     }
+
+        //     e.preventDefault();
+        //     // navigation.navigate('Groups', {
+        //     //   screen: user?.role === 'ROLE_USER' ? 'Group' : 'Groups',
+        //     // });
+
+        //     navigation.reset({
+        //       index: 0,
+        //       routes: [
+        //         {
+        //           name:
+        //             (user && !user.groupId) ||
+        //             (user && user.role === 'ROLE_ADMIN')
+        //               ? 'Groups'
+        //               : 'Group', // veya user.role'a göre 'Group'
+        //         },
+        //       ],
+        //     });
+        //   },
+        // })}
         options={{
           headerShown: false,
           headerTitle: 'Grup',

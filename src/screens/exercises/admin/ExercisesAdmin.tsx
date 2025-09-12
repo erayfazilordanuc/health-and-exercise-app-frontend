@@ -8,6 +8,7 @@ import {
   Image,
   ScrollView,
   RefreshControl,
+  BackHandler,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useTheme} from '../../../themes/ThemeProvider';
@@ -41,6 +42,20 @@ const ExercisesAdmin = () => {
   //   }, []),
   // );
 
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        navigation.navigate('Home');
+        return true;
+      };
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+      return () => backHandler.remove();
+    }, []),
+  );
+
   const {
     data: exercises = [],
     isLoading,
@@ -67,10 +82,9 @@ const ExercisesAdmin = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color:
-              theme.colors.isLight
-                ? colors.text.primary
-                : colors.background.secondary,
+            color: theme.colors.isLight
+              ? colors.text.primary
+              : colors.background.secondary,
             fontSize: 24,
           }}>
           Egzersizler

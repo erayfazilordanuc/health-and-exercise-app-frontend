@@ -61,7 +61,7 @@ const Group = () => {
   const {colors, theme} = useTheme();
   type GroupRouteProp = RouteProp<GroupsStackParamList, 'Group'>;
   const {params} = useRoute<GroupRouteProp>();
-  const {groupId} = params;
+  const {groupId, fromNotification} = params;
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const qc = useQueryClient();
   const [loading, setLoading] = useState(false);
@@ -123,6 +123,9 @@ const Group = () => {
       const backAction = () => {
         if (user && user.role === 'ROLE_USER') {
           navigation.navigate('Home');
+          return true;
+        } else if (fromNotification) {
+          navigation.navigate('Groups');
           return true;
         }
       };
@@ -360,8 +363,13 @@ const Group = () => {
               setRefreshing(true);
               try {
                 if (groupId) {
-                  await qc.invalidateQueries({
-                    queryKey: ['groupUsers', groupId],
+                  // await qc.invalidateQueries({
+                  //   queryKey: ['groupUsers', groupId],
+                  // });
+                  await qc.refetchQueries({
+                    queryKey: GROUP_KEYS.usersByGroupId(groupId),
+                    exact: true,
+                    type: 'active', // sadece aktif (mounted) query’leri refetch et
                   });
                 }
               } catch (error) {

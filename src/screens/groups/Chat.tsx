@@ -41,7 +41,7 @@ const Chat = () => {
   const insets = useSafeAreaInsets();
   const {params} = useRoute<ChatRouteProp>();
   const {roomId, sender, receiver, fromNotification, navigatedInApp} = params;
-  const {user} = useUser();
+  const {user, setUser} = useUser();
   const {colors, theme} = useTheme();
 
   const navigation = useNavigation<GroupsScreenNavigationProp>();
@@ -239,35 +239,65 @@ const Chat = () => {
     useCallback(() => {
       const backAction = () => {
         if (!navigatedInApp && !fromNotification && navigation.canGoBack()) {
-          return false;
+          return false; // default back behavior
         }
-        if (!user) return true;
-        if (navigatedInApp) {
-          if (user.role === 'ROLE_USER') {
-            navigation.replace('Group');
+
+        // async işleri fire&forget olarak çalıştır
+        (async () => {
+          if (!user) {
+            const userJson = await AsyncStorage.getItem('user');
+            if (userJson) {
+              const localUser = JSON.parse(userJson);
+              setUser(localUser);
+            }
           }
-        }
-        if (fromNotification) {
-          if (user.role === 'ROLE_ADMIN') {
-            navigation.replace('Group');
-            navigation.replace('Member', {
-              memberId: receiver.id,
-              fromNotification,
-            });
-          } else {
-            navigation.replace('Group');
+
+          if (navigatedInApp) {
+            if (user?.role === 'ROLE_USER') {
+              navigation.replace('Group', {groupId: user?.groupId});
+            }
           }
-        }
-        socketService.emit('leave_room', {room: roomId, username: sender});
-        socketService.disconnect();
-        return true;
+
+          if (fromNotification) {
+            if (user?.role === 'ROLE_ADMIN') {
+              navigation.replace('Group', {
+                groupId: receiver?.groupId,
+                fromNotification,
+              });
+              navigation.replace('Member', {
+                memberId: receiver.id,
+                fromNotification,
+              });
+            } else {
+              navigation.replace('Group', {
+                groupId: user?.groupId,
+                fromNotification,
+              });
+            }
+          }
+
+          socketService.emit('leave_room', {room: roomId, username: sender});
+          socketService.disconnect();
+        })();
+
+        return true; // event'i biz handle ettik
       };
+
       const backHandler = BackHandler.addEventListener(
         'hardwareBackPress',
         backAction,
       );
+
       return () => backHandler.remove();
-    }, []),
+    }, [
+      navigation,
+      user,
+      navigatedInApp,
+      fromNotification,
+      receiver,
+      roomId,
+      sender,
+    ]),
   );
 
   return (

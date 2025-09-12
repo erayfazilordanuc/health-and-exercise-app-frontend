@@ -25,6 +25,7 @@ import Exercises from '../screens/exercises/user/ExercisesUser';
 import UserLogin from '../screens/login/UserLogin';
 import AdminLogin from '../screens/login/AdminLogin';
 import {useNotificationNavigation} from '../hooks/useNotificationNavigation';
+import {flushPendingNav, navigationRef} from './NavigationService';
 
 const RootNativeStack = createNativeStackNavigator<RootStackParamList>();
 const AppNativeStack = createNativeStackNavigator<AppStackParamList>(); // This one works
@@ -85,7 +86,10 @@ export default function AppNavigator() {
   };
 
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer
+      ref={navigationRef}
+      onReady={flushPendingNav}
+      theme={navTheme}>
       <StatusBar
         backgroundColor={colors.background.secondary}
         barStyle={theme.colors.isLight ? 'dark-content' : 'light-content'}
