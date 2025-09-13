@@ -208,7 +208,6 @@ const Member = () => {
   const fetchLastMessage = async () => {
     if (!member || !admin) return;
 
-    console.log('içerde');
     const lastMessage = await getLastMessageBySenderAndReceiver(
       admin.username,
       member.username,

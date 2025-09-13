@@ -75,6 +75,7 @@ const ExercisesUser = () => {
   const isFocused = useIsFocused();
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [todayInitialized, setTodayInitialized] = useState(false);
   const {user, setUser} = useUser();
   // const {
   //   data: group,
@@ -213,6 +214,7 @@ const ExercisesUser = () => {
         // if (!isEqual(todayExerciseProgressRes, todayExerciseProgress))
         setTodayExerciseProgress(todayExerciseProgressRes);
       }
+      if (!todayInitialized) setTodayInitialized(true);
 
       const weeklyExerciseProgressRes: ExerciseProgressDTO[] =
         await getWeeklyActiveDaysProgress();
@@ -533,7 +535,7 @@ const ExercisesUser = () => {
                     Bugünün Egzersizi
                   </Text>
 
-                  {initialized ? (
+                  {todayInitialized ? (
                     <View className="flex flex-row justify-center items-center mt-3 mb-3">
                       {!(
                         todayExerciseProgress &&
