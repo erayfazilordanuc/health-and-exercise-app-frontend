@@ -491,42 +491,67 @@ const Group = () => {
                   //     }
                   //   }
                   // }
+                  console.log('admin', admin, 'user', user);
                   if (!(admin && user)) return;
 
                   try {
-                    // 1) cache → yoksa fetch
-                    const roomId = await qc.ensureQueryData({
-                      queryKey: MSG_KEYS.roomIdByUsers(
+                    const key = MSG_KEYS.roomIdByUsers(
+                      user.username,
+                      admin.username,
+                    );
+                    let roomId = qc.getQueryData<number>(key);
+
+                    console.log('roomId1', roomId);
+
+                    if (roomId == null || roomId === 0) {
+                      roomId = await qc.fetchQuery({
+                        queryKey: key,
+                        queryFn: () =>
+                          getRoomIdByUsers(user.username, admin.username),
+                        staleTime: 5 * 60 * 1000,
+                        gcTime: 60 * 60 * 1000,
+                      });
+                      console.log('roomId2', roomId);
+                    }
+
+                    if (roomId === null || roomId === 0)
+                      roomId = await getRoomIdByUsers(
                         user.username,
                         admin.username,
-                      ),
-                      queryFn: () =>
-                        getRoomIdByUsers(user.username, admin.username),
-                    });
+                      );
 
-                    // 2) oda yoksa yeni id al
+                    console.log('roomId3', roomId);
+
                     let finalRoomId = roomId;
 
                     if (roomId === 0) {
+                      console.log(
+                        '🚧 Oda mevcut değil, yeni roomId alınıyor...',
+                      );
                       const {data: newId} = await getNextRoomId();
                       finalRoomId = newId;
+                      console.log('🆕 [New Room Created] newId:', newId);
 
-                      // ➤ Cache'i anında düzelt
-                      qc.setQueryData(
-                        MSG_KEYS.roomIdByUsers(user.username, admin.username),
-                        newId,
-                      );
+                      // Cache düzelt
+                      qc.setQueryData(key, newId);
+                      console.log('✅ Cache güncellendi:', key, '=>', newId);
                     }
+
+                    console.log('➡️ Navigating to Chat with params:', {
+                      roomId: finalRoomId,
+                      sender: user.username,
+                      receiver: admin,
+                      fromNotification: false,
+                    });
 
                     navigation.navigate('Chat', {
                       roomId: finalRoomId,
                       sender: user.username,
-                      receiver: admin, // senin mevcut tipin neyse aynı kalsın
+                      receiver: admin,
                       fromNotification: false,
                     });
-                  } catch (e) {
-                    // isteğe bağlı: toast vb.
-                    console.log(e);
+                  } catch (error) {
+                    console.error('❌ Hata oluştu [navigateToChat]:', error);
                   }
                 }}>
                 <Text

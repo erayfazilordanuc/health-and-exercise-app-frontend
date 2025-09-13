@@ -943,14 +943,44 @@ const Home = () => {
                         }}
                         onPress={async () => {
                           if (admin && user) {
-                            const roomId = await qc.ensureQueryData({
-                              queryKey: MSG_KEYS.roomIdByUsers(
+                            // const roomId = await qc.ensureQueryData({
+                            //   queryKey: MSG_KEYS.roomIdByUsers(
+                            //     user.username,
+                            //     admin.username,
+                            //   ),
+                            //   queryFn: () =>
+                            //     getRoomIdByUsers(user.username, admin.username),
+                            // });
+
+                            const key = MSG_KEYS.roomIdByUsers(
+                              user.username,
+                              admin.username,
+                            );
+                            let roomId = qc.getQueryData<number>(key);
+
+                            console.log('roomId1', roomId);
+
+                            if (roomId == null || roomId === 0) {
+                              roomId = await qc.fetchQuery({
+                                queryKey: key,
+                                queryFn: () =>
+                                  getRoomIdByUsers(
+                                    user.username,
+                                    admin.username,
+                                  ),
+                                staleTime: 5 * 60 * 1000,
+                                gcTime: 60 * 60 * 1000,
+                              });
+                              console.log('roomId2', roomId);
+                            }
+
+                            if (roomId === null || roomId === 0)
+                              roomId = await getRoomIdByUsers(
                                 user.username,
                                 admin.username,
-                              ),
-                              queryFn: () =>
-                                getRoomIdByUsers(user.username, admin.username),
-                            });
+                              );
+
+                            console.log('roomId3', roomId);
 
                             if (roomId !== 0) {
                               navigation.navigate('Groups', {
@@ -963,11 +993,13 @@ const Home = () => {
                                   navigatedInApp: true,
                                 },
                               });
+                              console.log('roomId', roomId);
                             } else {
                               const nextRoomId =
                                 roomId !== 0
                                   ? roomId
                                   : (await getNextRoomId()).data;
+                              console.log('roomId', roomId);
                               navigation.navigate('Groups', {
                                 screen: 'Chat',
                                 params: {
