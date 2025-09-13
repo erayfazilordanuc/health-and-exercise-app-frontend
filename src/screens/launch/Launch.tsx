@@ -39,10 +39,14 @@ const Launch = () => {
   // TO DO burada global user nesnesi alsın ona göre yönlendirsin
 
   const checkToken = async () => {
-    const userData = await AsyncStorage.getItem('user');
-    let user: User = JSON.parse(userData!);
+    const userJson = await AsyncStorage.getItem('user');
+    let user;
+    if (userJson) {
+      user = JSON.parse(userJson);
+      setUser(user);
+    }
 
-    if (user) {
+    if (!user || user.avatar === 'non') {
       const net = await NetInfo.fetch();
       if (net.isConnected) {
         if (user.role === 'ROLE_USER' && !user.groupId) {
@@ -50,19 +54,20 @@ const Launch = () => {
           if (dbUser) {
             user = dbUser;
             await AsyncStorage.setItem('user', JSON.stringify(user));
+            setUser(user);
           }
         }
         await updateAvatarApi(user.avatar);
       }
-      setUser(user);
-      if (user.theme) {
-        const {color, mode, themeObj} = parseTheme(user.theme);
-        if (color && themeObj) {
-          if (mode === 'system') {
-            setTheme(colorScheme === 'dark' ? themeObj.dark : themeObj.light);
-          } else {
-            setTheme(mode === 'dark' ? themeObj.dark : themeObj.light);
-          }
+    }
+
+    if (user && user.theme) {
+      const {color, mode, themeObj} = parseTheme(user.theme);
+      if (color && themeObj) {
+        if (mode === 'system') {
+          setTheme(colorScheme === 'dark' ? themeObj.dark : themeObj.light);
+        } else {
+          setTheme(mode === 'dark' ? themeObj.dark : themeObj.light);
         }
       }
     } else
