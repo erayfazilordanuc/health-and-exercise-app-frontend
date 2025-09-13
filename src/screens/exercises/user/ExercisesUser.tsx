@@ -480,6 +480,7 @@ const ExercisesUser = () => {
   );
 
   const isScheduleModalVisible = () => {
+    if (!initialized) return false;
     if (user && !user.groupId) return false;
     if (!activeDays && !isScheduleLoading) return true;
     if (activeDays && activeDays.length < 3) return true;
