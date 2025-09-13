@@ -125,7 +125,15 @@ const Group = () => {
           navigation.navigate('Home');
           return true;
         } else if (fromNotification) {
-          navigation.navigate('Groups');
+          // navigation.navigate('Groups');
+          navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: 'Groups',
+              },
+            ],
+          });
           return true;
         }
       };

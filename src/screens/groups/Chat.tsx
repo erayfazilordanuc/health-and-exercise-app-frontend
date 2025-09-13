@@ -242,7 +242,6 @@ const Chat = () => {
           return false; // default back behavior
         }
 
-        // async işleri fire&forget olarak çalıştır
         (async () => {
           if (!user) {
             const userJson = await AsyncStorage.getItem('user');
@@ -260,10 +259,7 @@ const Chat = () => {
 
           if (fromNotification) {
             if (user?.role === 'ROLE_ADMIN') {
-              navigation.replace('Group', {
-                groupId: receiver?.groupId,
-                fromNotification,
-              });
+              console.log('receiver', receiver);
               navigation.replace('Member', {
                 memberId: receiver.id,
                 fromNotification,

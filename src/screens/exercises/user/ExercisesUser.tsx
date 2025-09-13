@@ -135,7 +135,13 @@ const ExercisesUser = () => {
   // getUser: user'a bağımlı OLMASIN; setUser/navigation yeterli
   const getUser = useCallback(async () => {
     const net = await NetInfo.fetch();
-    if (!net.isConnected) return;
+    if (!net.isConnected || !user) {
+      const userJson = await AsyncStorage.getItem('user');
+      if (userJson) {
+        const user = JSON.parse(userJson);
+        setUser(user);
+      }
+    }
 
     const dbUser = await getDbUser();
     if (!dbUser) return;
@@ -174,6 +180,30 @@ const ExercisesUser = () => {
     }, [getUser, user?.id, user?.role, user?.groupId]),
   );
 
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        // 1) Localden oku
+        const cached = await AsyncStorage.getItem('user');
+        if (mounted && cached) setUser(JSON.parse(cached));
+
+        // 2) Online ise DB’den tazele
+        const net = await NetInfo.fetch();
+        if (net.isConnected) {
+          const dbUser = await getDbUser().catch(() => null);
+          if (mounted && dbUser) {
+            setUser(dbUser);
+            await AsyncStorage.setItem('user', JSON.stringify(dbUser));
+          }
+        }
+      } catch {}
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const fetchProgress = async () => {
     setLoading(true);
     try {
@@ -198,11 +228,11 @@ const ExercisesUser = () => {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      if (user?.role === 'ROLE_USER' && user?.groupId) fetchProgress();
-    }, [updatedActiveDays]),
-  );
+  useEffect(() => {
+    if (isFocused && user?.role === 'ROLE_USER' && user?.groupId) {
+      fetchProgress();
+    }
+  }, [isFocused, updatedActiveDays, user?.groupId, user?.role]);
 
   const onStartExercise = async (position: ExercisePosition) => {
     // const todayExercise: ExerciseDTO = await getTodayExerciseByPosition(

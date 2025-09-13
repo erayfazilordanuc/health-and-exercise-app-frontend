@@ -276,10 +276,9 @@ const Member = () => {
           return false;
         }
 
-        navigation.navigate('Group', {
-          groupId: member?.groupId,
-          fromNotification,
-        });
+        // if (!member) return true;
+
+        navigation.navigate('Group', {fromNotification});
         return true;
       };
 
