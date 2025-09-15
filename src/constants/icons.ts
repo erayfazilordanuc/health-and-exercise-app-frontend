@@ -37,6 +37,7 @@ import settings from '../assets/icons/settings.png';
 import dots from '../assets/icons/dots.png';
 import arrow from '../assets/icons/arrow.png';
 import arrowDown from '../assets/icons/arrowDown.png';
+import arrowUp from '../assets/icons/arrowUp.png';
 import show from '../assets/icons/show.png';
 import hide from '../assets/icons/hide.png';
 import checked from '../assets/icons/checked.png';
@@ -162,6 +163,7 @@ export default {
   dots,
   arrow,
   arrowDown,
+  arrowUp,
   show,
   hide,
   checked,

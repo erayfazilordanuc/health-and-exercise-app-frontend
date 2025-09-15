@@ -488,9 +488,10 @@ const Profile = () => {
     <>
       <LinearGradient
         colors={colors.gradient}
+        locations={[0.15, 0.25, 0.7, 1]}
         start={{x: 0.1, y: 0}}
-        end={{x: 0.9, y: 1}}
-        className="absolute inset-0"
+        end={{x: 0.8, y: 1}}
+        className="absolute top-0 left-0 right-0 bottom-0"
       />
       <View
         className="flex flex-row pt-14 pr-5"
@@ -597,7 +598,7 @@ const Profile = () => {
                       setShowDetail(!showDetail);
                     }}>
                     <Image
-                      source={showDetail ? icons.arrowDown : icons.arrow}
+                      source={showDetail ? icons.arrowUp : icons.arrowDown}
                       className="size-4"
                       tintColor={colors.primary[200]}
                     />

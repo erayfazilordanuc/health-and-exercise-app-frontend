@@ -492,10 +492,11 @@ const ExercisesUser = () => {
   return (
     <View className="flex-1">
       <LinearGradient
-        colors={colors.gradient} // istediğin renkler
+        colors={colors.gradient}
+        locations={[0.15, 0.25, 0.7, 1]}
         start={{x: 0.1, y: 0}}
-        end={{x: 0.9, y: 1}}
-        className="absolute inset-0"
+        end={{x: 0.8, y: 1}}
+        className="absolute top-0 left-0 right-0 bottom-0"
       />
       <View
         style={{
@@ -553,14 +554,14 @@ const ExercisesUser = () => {
                           <Text
                             className="text-xl font-rubik"
                             style={{
-                              color: colors.background.third,
+                              color: colors.background.primary
                             }}>
                             Egzersize başla
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
                             className="size-16"
-                            tintColor={colors.background.third}
+                            tintColor={colors.background.primary}
                           />
                         </TouchableOpacity>
                       ) : todayExerciseProgress.exerciseDTO &&
@@ -823,7 +824,7 @@ const ExercisesUser = () => {
                   style={{
                     color: colors.isLight ? colors.text.third : '#C9C9C9',
                   }}>
-                  3 gün seçiniz
+                  En az 3 gün seçiniz
                 </Text>
                 <Text
                   className="font-rubik text-md mb-3 text-center"
@@ -912,9 +913,9 @@ const ExercisesUser = () => {
                   borderColor: colors.primary[125],
                 }}
                 onPress={async () => {
-                  if (updatedActiveDays && updatedActiveDays.length !== 3)
+                  if (updatedActiveDays && updatedActiveDays.length < 3)
                     ToastAndroid.show(
-                      'Lütfen 3 gün seçiniz',
+                      'Lütfen en az 3 gün seçiniz',
                       ToastAndroid.SHORT,
                     );
                   else {

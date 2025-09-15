@@ -79,6 +79,7 @@ import {
 } from '../../hooks/symptomsQueries';
 import {calcPercent} from '../../api/exercise/exerciseService';
 import {AVATARS, type AvatarKey} from '../../constants/avatars';
+import {color} from 'react-native-elements/dist/helpers';
 // import {
 //   isExerciseReminderScheduled,
 //   registerExerciseReminder,
@@ -564,11 +565,18 @@ const Home = () => {
     <>
       <LinearGradient
         colors={colors.gradient}
-        locations={[0.15, 0.25, 0.7, 1]}
+        locations={[0.15, 0.25, 0.6, 1]}
         start={{x: 0.1, y: 0}}
         end={{x: 0.8, y: 1}}
         className="absolute top-0 left-0 right-0 bottom-0"
       />
+      {/* <LinearGradient
+        colors={['#3BC4C4', '#0C82C4', '#002530', '#01171F', '#013330']} //'#0091FF','#00334D',
+        locations={[0, 0.25, 0.45, 0.6, 1]}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.9, y: 1}}
+        className="absolute top-0 left-0 right-0 bottom-0"
+      /> */}
       {/* <LinearGradient
         colors={[
           '#CC5A27', // sıcak başlangıçFF4E00

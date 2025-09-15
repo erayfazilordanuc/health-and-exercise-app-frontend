@@ -41,7 +41,8 @@ const blueLightColors = {
     secondary: '#5d5d5d',
     third: '#666876',
   },
-  gradient: ['#C5F0F0', '#9DDCFA', '#CCFCF4', '#DFEFF2'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
+  // gradient: ['#C5F0F0', '#9DDCFA', '#CCFCF4', '#DFEFF2'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
+  gradient: ['#ABEBEB', '#78D0FF', '#C8FAF2', '#C2EBF2'],
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: true,
   playButton: icons.play_blue,
@@ -73,7 +74,8 @@ const blueDarkColors = {
     secondary: '#eef2f8',
     third: '#666876',
   }, // secondary: '#3a3a3a
-  gradient: ['#C5F0F0', '#9DDCFA', '#CCFCF4', '#DFEFF2'], // ['#9AAED6', '#C5D6D5', '#876073', '#A1815D'] // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
+  // gradient: ['#C5F0F0', '#9DDCFA', '#CCFCF4', '#DFEFF2'], // ['#9AAED6', '#C5D6D5', '#876073', '#A1815D'] // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
+  gradient: ['#3BC4C4', '#1785C2', '#1B1E24', '#1F2929'], // ['#3BC4C4', '#0C82C4', '#002530', '#01171F', '#013330']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: false,
   playButton: icons.play_blue,
@@ -105,7 +107,7 @@ const purpleLightColors = {
     secondary: '#5d5d5d',
     third: '#666876',
   },
-  gradient: ['#E8D3E5', '#DEC9F2', '#FCCCF1', '#E0D1EB'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
+  gradient: ['#E8D3E5', '#C398ED', '#FAE1F4', '#E0D1EB'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: true,
   playButton: icons.play_purple,
@@ -137,7 +139,8 @@ const purpleDarkColors = {
     secondary: '#eef2f8',
     third: '#666876',
   }, // secondary: '#3a3a3a
-  gradient: ['#E8D3E5', '#DEC9F2', '#FCCCF1', '#E0D1EB'], // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
+  // gradient: ['#E8D3E5', '#DEC9F2', '#FCCCF1', '#E0D1EB'], // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
+  gradient: ['#B56DA5', '#5B3587', '#201B24', '#271F29'], // ['#AB639A', '#5B3587', '#3F2E42', '#2D2C36']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: false,
   playButton: icons.play_purple,
@@ -151,7 +154,7 @@ const greenLightColors = {
     125: '#EBFFF2',
     150: '#5DFF90',
     175: '#26ED66',
-    200: '#2AD13B',
+    200: '#32D142',
     250: '#15D14A',
     300: '#15D443',
   },
@@ -161,7 +164,7 @@ const greenLightColors = {
   background: {
     primary: 'white',
     secondary: '#ecf1f3',
-    third: '#D4FFE5',
+    third: '#D2FCE3',
     fourth: '#d9e5f1',
   }, // #eaf0f3 #eaf0f3
   text: {
@@ -169,7 +172,7 @@ const greenLightColors = {
     secondary: '#5d5d5d',
     third: '#666876',
   },
-  gradient: ['#EBF2DA', '#AEF5C2', '#EDFCCC', '#D1EDDE'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
+  gradient: ['#E8FAC3', '#7AF09D', '#EDFCCC', '#D1EDDE'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: true,
   playButton: icons.play_green,
@@ -183,7 +186,7 @@ const greenDarkColors = {
     125: '#DFFFE9',
     150: '#5DFF90',
     175: '#26ED66',
-    200: '#35E543',
+    200: '#3DDB4A',
     250: '#0DD63B',
     300: '#00DB50',
   },
@@ -201,7 +204,8 @@ const greenDarkColors = {
     secondary: '#eef2f8',
     third: '#666876',
   }, // secondary: '#3a3a3a
-  gradient: ['#EBF2DA', '#AEF5C2', '#EDFCCC', '#D1EDDE'], // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
+  // gradient: ['#EBF2DA', '#AEF5C2', '#EDFCCC', '#D1EDDE'], // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
+  gradient: ['#A8BF6B', '#2A8743', '#181F1C', '#14261B'], // ['#A8BF6B', '#3FB05E', '#36473C', '#1A3B29']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: false,
   playButton: icons.play_green,
@@ -233,7 +237,7 @@ const redLightColors = {
     secondary: '#5d5d5d',
     third: '#666876',
   },
-  gradient: ['#F2E8DA', '#F5AEB3', '#FCE7CC', '#EDD1D5'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
+  gradient: ['#F5E0C6', '#F5989D', '#FCE7CC', '#EDD1D5'], // ['#E8FEFF', '#A3DDFF', '#B4FAEE', '#E8FEFF']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: true,
   playButton: icons.play_red,
@@ -265,7 +269,8 @@ const redDarkColors = {
     secondary: '#eef2f8',
     third: '#666876',
   }, // secondary: '#3a3a3a
-  gradient: ['#F2E8DA', '#F5AEB3', '#FCE7CC', '#EDD1D5'], // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
+  // gradient: ['#F2E8DA', '#F5AEB3', '#FCE7CC', '#EDD1D5'], // ['#C7FFF2', '#FBE8FF', '#FFD4A1'], ['#C5D6D5', '#876073', '#A1815D']
+  gradient: ['#CC7641', '#AD2A31', '#241B1B', '#241818'], // ['#CC7641', '#AD2A31', '#3D2E2E', '#362121']
   gradientSecondary: ['#E8FEFF', '#A3DDFF', '#A2FCE8'],
   isLight: false,
   playButton: icons.play_red,

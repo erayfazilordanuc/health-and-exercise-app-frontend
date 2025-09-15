@@ -26,7 +26,7 @@ function GlobalStatusBar() {
   const bar = theme.colors.isLight ? 'dark-content' : 'light-content';
   return (
     <StatusBar
-      translucent // içerik status bar altına girsin
+      // translucent // içerik status bar altına girsin
       backgroundColor="transparent"
       barStyle={bar}
       animated

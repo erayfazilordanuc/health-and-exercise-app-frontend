@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
+import NetInfo from '@react-native-community/netinfo';
 
 export const progressExerciseVideo = async (
   exerciseId: number,
@@ -28,12 +29,22 @@ export const progressExerciseVideo = async (
 
 export const getWeeklyActiveDaysProgress = async () => {
   try {
+    const net = await NetInfo.fetch();
+    if (!net.isConnected) {
+      const weeklyJson = await AsyncStorage.getItem('weeklyProgress');
+      if (weeklyJson) {
+        const weekly = JSON.parse(weeklyJson);
+        return weekly;
+      }
+    }
+
     const response = await apiClient.get(
       `/exercises/weekly-active-days/progress`,
     );
     console.log('weekly active days exercise progress', response);
 
     if (response.status >= 200 && response.status < 300) {
+      AsyncStorage.setItem('weeklyProgress', JSON.stringify(response.data));
       return response.data;
     } else {
       console.error('Unexpected status code:', response.status);

@@ -305,11 +305,12 @@ const Chat = () => {
     //   }>
     <View className="flex-1">
       <LinearGradient
-        colors={colors.gradient}
-        start={{x: 0.1, y: 0}}
-        end={{x: 0.9, y: 1}}
-        className="absolute inset-0"
-      />
+              colors={colors.gradient}
+              locations={[0.15, 0.25, 0.7, 1]}
+              start={{x: 0.1, y: 0}}
+              end={{x: 0.8, y: 1}}
+              className="absolute top-0 left-0 right-0 bottom-0"
+            />
       <View
         className="flex-1 px-5 pb-2"
         style={{
@@ -336,7 +337,7 @@ const Chat = () => {
               style={{
                 color: theme.colors.isLight
                   ? colors.primary[200]
-                  : colors.primary[300],
+                  : '#2F2F30',
               }}>
               {' ' + receiver.fullName}
             </Text>
