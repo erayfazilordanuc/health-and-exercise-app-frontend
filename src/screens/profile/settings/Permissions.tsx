@@ -29,11 +29,15 @@ import ConsentCard from '../../../components/ConsentCard';
 import {CustomModal} from '../../../components/CustomModal';
 import {useUser} from '../../../contexts/UserContext';
 import {ConsentModal} from '../../../components/ConsentModal';
+import NetInfo from '@react-native-community/netinfo';
+import LinearGradient from 'react-native-linear-gradient';
+import {Icon} from 'react-native-elements';
 
 const Permissions = () => {
   const insets = useSafeAreaInsets();
   const {colors, theme} = useTheme();
   const [loading, setLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState(true);
 
   const {user} = useUser();
 
@@ -57,44 +61,6 @@ const Permissions = () => {
   const [healthModalVisible, setHealthModalVisible] = useState(false);
   const [exerciseModalVisible, setExerciseModalVisible] = useState(false);
   const [studyModalVisible, setStudyModalVisible] = useState(false);
-
-  const upsertConsert = async () => {
-    const newKvkkConsent: UpsertConsentDTO = {
-      purpose: ConsentPurpose['KVKK_NOTICE_ACK'],
-      status: kvkkConsent?.status,
-      policyId: kvkkPolicy?.id!,
-      locale: 'tr-TR',
-      source: 'MOBILE',
-    };
-    const kvkkResponse = await giveConsent(newKvkkConsent);
-
-    const newHealthConsent: UpsertConsentDTO = {
-      purpose: ConsentPurpose['HEALTH_DATA_PROCESSING_ACK'],
-      status: healthConsent?.status,
-      policyId: healthPolicy?.id!,
-      locale: 'tr-TR',
-      source: 'MOBILE',
-    };
-    const healthDataResponse = await giveConsent(newHealthConsent);
-
-    const newExerciseConsent: UpsertConsentDTO = {
-      purpose: ConsentPurpose['EXERCISE_DATA_PROCESSING_ACK'],
-      status: exerciseConsent?.status,
-      policyId: exercisePolicy?.id!,
-      locale: 'tr-TR',
-      source: 'MOBILE',
-    };
-    const exerciseDataResponse = await giveConsent(newExerciseConsent);
-
-    const newStudyConsent: UpsertConsentDTO = {
-      purpose: ConsentPurpose['STUDY_CONSENT_ACK'],
-      status: studyConsent?.status,
-      policyId: studyPolicy?.id!,
-      locale: 'tr-TR',
-      source: 'MOBILE',
-    };
-    const studyResponse = await giveConsent(newStudyConsent);
-  };
 
   const approve = async (consentId: number) => {
     const data = await approveConsent(consentId);
@@ -158,7 +124,17 @@ const Permissions = () => {
   };
 
   useEffect(() => {
-    fetchConsents();
+    if (isOnline) fetchConsents();
+  }, [isOnline]);
+
+  useEffect(() => {
+    // ağ durumunu izle
+    const unsub = NetInfo.addEventListener(state => {
+      const connected =
+        !!state.isConnected && state.isInternetReachable !== false;
+      setIsOnline(connected);
+    });
+    return () => unsub();
   }, []);
 
   return (
@@ -232,45 +208,137 @@ const Permissions = () => {
               }}>
               Onaylar
             </Text>
-            <ConsentCard
-              title={'KVKK Metni'}
-              type="kvkk"
-              status={kvkkConsent?.status}
-              loading={loading}
-              onPress={() => {
-                setKvkkModalVisible(!kvkkModalVisible);
-              }}
-            />
 
-            <ConsentCard
-              title={'Sağlık Verisi Kullanım Rızası'}
-              type="health"
-              status={healthConsent?.status}
-              loading={loading}
-              onPress={() => {
-                setHealthModalVisible(!healthModalVisible);
-              }}
-            />
+            {isOnline ? (
+              <>
+                <ConsentCard
+                  title={'KVKK Metni'}
+                  type="kvkk"
+                  status={kvkkConsent?.status}
+                  loading={loading}
+                  onPress={() => {
+                    setKvkkModalVisible(!kvkkModalVisible);
+                  }}
+                />
 
-            <ConsentCard
-              title={'Egzersiz Verisi Kullanım Rızası'}
-              type="exercise"
-              status={exerciseConsent?.status}
-              loading={loading}
-              onPress={() => {
-                setExerciseModalVisible(!exerciseModalVisible);
-              }}
-            />
+                <ConsentCard
+                  title={'Sağlık Verisi Kullanım Rızası'}
+                  type="health"
+                  status={healthConsent?.status}
+                  loading={loading}
+                  onPress={() => {
+                    setHealthModalVisible(!healthModalVisible);
+                  }}
+                />
 
-            <ConsentCard
-              title={'Aydınlatılmış Onam Formu'}
-              type="study"
-              status={studyConsent?.status}
-              loading={loading}
-              onPress={() => {
-                setStudyModalVisible(!studyModalVisible);
-              }}
-            />
+                <ConsentCard
+                  title={'Egzersiz Verisi Kullanım Rızası'}
+                  type="exercise"
+                  status={exerciseConsent?.status}
+                  loading={loading}
+                  onPress={() => {
+                    setExerciseModalVisible(!exerciseModalVisible);
+                  }}
+                />
+
+                <ConsentCard
+                  title={'Aydınlatılmış Onam Formu'}
+                  type="study"
+                  status={studyConsent?.status}
+                  loading={loading}
+                  onPress={() => {
+                    setStudyModalVisible(!studyModalVisible);
+                  }}
+                />
+              </>
+            ) : (
+              <View
+                className="items-center px-5 pb-3 rounded-2xl"
+                style={{backgroundColor: colors.background.primary}}>
+                <LinearGradient
+                  colors={['rgba(0,145,255,0.16)', 'rgba(64,224,208,0.16)']}
+                  start={{x: 0, y: 0}}
+                  end={{x: 1, y: 1}}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 42, // boyut KORUNDU
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    // hafif glow (iOS shadow) + Android elevation
+                    shadowColor: '#0091FF',
+                    shadowOpacity: 0.18,
+                    shadowRadius: 6,
+                    shadowOffset: {width: 0, height: 2},
+                    elevation: 2,
+                  }}>
+                  {/* ultra-ince dış ring */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      borderRadius: 40,
+                      borderWidth: 1,
+                      borderColor: 'rgba(255,255,255,0.06)',
+                    }}
+                  />
+
+                  {/* İç rozet (35x35 KORUNDU) */}
+                  <View
+                    style={{
+                      width: 35,
+                      height: 35,
+                      borderRadius: 28, // boyut KORUNDU
+                      backgroundColor: colors.background.secondary,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderWidth: 1,
+                      borderColor: 'rgba(0,145,255,0.28)',
+                    }}>
+                    {/* İKON: PNG/SVG (mevcut sistemine uygun) */}
+                    <Image
+                      source={icons.offline} // wifi-off / cloud-off tarzı bir ikon önerilir
+                      style={{
+                        width: 18,
+                        height: 18,
+                        tintColor: colors.text.primary,
+                      }}
+                      resizeMode="contain"
+                    />
+                    {/* Vector icon tercih edersen:
+              <Feather name="wifi-off" size={18} color={colors.text.primary} />
+          */}
+                  </View>
+
+                  {/* Üst parlama (gloss) */}
+                  <LinearGradient
+                    colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0)']}
+                    start={{x: 0.2, y: 0}}
+                    end={{x: 0.8, y: 1}}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 25,
+                      borderTopLeftRadius: 42,
+                      borderTopRightRadius: 42,
+                    }}
+                    pointerEvents="none"
+                  />
+                </LinearGradient>
+                <Text
+                  className="font-rubik-medium mt-2 text-center"
+                  style={{color: colors.text.primary, fontSize: 18}}>
+                  Sözleşmeler yüklenemedi
+                </Text>
+                <Text
+                  className="font-rubik mt-2 text-center"
+                  style={{color: colors.text.primary, opacity: 0.7}}>
+                  İnternet bağlantısı yok
+                </Text>
+              </View>
+            )}
           </View>
         )}
         <ConsentModal

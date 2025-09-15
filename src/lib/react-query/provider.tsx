@@ -8,7 +8,7 @@ export const ReactQueryProvider = ({children}: PropsWithChildren) => {
   useEffect(() => {
     bindAppLifecycleToReactQuery();
     // persist istersen aç
-    // setupPersist();
+    setupPersist();
   }, []);
 
   return (

@@ -762,6 +762,15 @@ const Profile = () => {
                                     );
                                     return;
                                   }
+
+                                  const net = await NetInfo.fetch();
+                                  if (!net.isConnected) {
+                                    ToastAndroid.show(
+                                      'İnternet bağlantınızı kontrol ediniz',
+                                      ToastAndroid.SHORT,
+                                    );
+                                    return;
+                                  }
                                   try {
                                     const stepGoal =
                                       await createMut.mutateAsync(
