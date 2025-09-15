@@ -39,14 +39,22 @@ const Launch = () => {
   // TO DO burada global user nesnesi alsın ona göre yönlendirsin
 
   const checkToken = async () => {
+    console.log('1');
     const userJson = await AsyncStorage.getItem('user');
     let user;
     if (userJson) {
       user = JSON.parse(userJson);
       setUser(user);
     }
+    console.log('user', user);
 
-    if (!user || user.avatar === 'non') {
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
+
+    console.log(accessToken, refreshToken);
+
+    if ((!user && refreshToken) || (user && user.avatar === 'non')) {
+      console.log('neden');
       const net = await NetInfo.fetch();
       if (net.isConnected) {
         if (user.role === 'ROLE_USER' && !user.groupId) {
@@ -60,6 +68,7 @@ const Launch = () => {
         await updateAvatarApi(user.avatar);
       }
     }
+    console.log('user', user);
 
     if (user && user.theme) {
       const {color, mode, themeObj} = parseTheme(user.theme);
@@ -70,8 +79,11 @@ const Launch = () => {
           setTheme(mode === 'dark' ? themeObj.dark : themeObj.light);
         }
       }
+      console.log('user.theme', user.theme);
     } else
       setTheme(colorScheme === 'light' ? themes.blue.light : themes.blue.dark);
+
+    console.log('aaaaay', user);
 
     // if (user) {
     //   const userThemeJson = await AsyncStorage.getItem(
@@ -100,9 +112,6 @@ const Launch = () => {
     //     );
     //   }
     // }
-
-    const accessToken = await AsyncStorage.getItem('accessToken');
-    const refreshToken = await AsyncStorage.getItem('refreshToken');
 
     if (accessToken || refreshToken || user) {
       // if (user.role === 'ROLE_USER') {

@@ -122,6 +122,8 @@ export function useLogout() {
       }
     }
 
+    await AsyncStorage.removeItem('user');
+
     await queryClient.cancelQueries();
     queryClient.removeQueries(); // v4/v5 için güvenli
     queryClient.getMutationCache()?.clear?.();
