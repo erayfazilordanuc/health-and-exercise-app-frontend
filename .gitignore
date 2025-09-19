@@ -83,7 +83,6 @@ google-services.json
 .settings.json
 
 # Android / Gradle cache
-/android/
 .gradle/
 
 # Eclipse / IDE settings
