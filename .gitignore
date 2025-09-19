@@ -81,3 +81,13 @@ google-services.json
 /.vscode
 
 .settings.json
+
+# Android / Gradle cache
+/ios/
+/android/
+.gradle/
+
+
+# Eclipse / IDE settings
+.settings/
+*.prefs
