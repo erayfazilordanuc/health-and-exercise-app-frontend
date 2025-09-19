@@ -7,6 +7,12 @@ export const ymdLocal = (d: Date) => {
   return `${y}-${m}-${day}`;
 };
 
+export const parseYMDLocal = (s: string) => {
+  // "YYYY-MM-DD" → yerel saatle Date
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1);
+};
+
 export const atLocalMidnight = (d: Date) =>
   new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
 

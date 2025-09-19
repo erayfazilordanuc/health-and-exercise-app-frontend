@@ -58,6 +58,7 @@ import GradientText from '../../components/GradientText';
 import {
   getLocal,
   getLatestSymptomsByDate,
+  syncMonthlySymptoms,
 } from '../../api/symptoms/symptomsService';
 import {Float} from 'react-native/Libraries/Types/CodegenTypes';
 import {Linking} from 'react-native';
@@ -317,6 +318,26 @@ const Profile = () => {
         hcStateLoading,
         syncInFlightRef.current,
       );
+
+      // Monthly syncronizing symptoms
+      // const {synced, skipped, monthly, errors} = await syncMonthlySymptoms();
+      // console.log('synced', synced);
+      // console.log('skipped', skipped);
+      // console.log('monthly', monthly);
+      // console.log('errors', errors);
+
+      // const {
+      //   synced: synced2,
+      //   skipped: skipped2,
+      //   monthly: monthly2,
+      //   errors: errors2,
+      // } = await syncMonthlySymptoms(
+      //   new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1),
+      // );
+      // console.log('synced2', synced2);
+      // console.log('skipped2', skipped2);
+      // console.log('monthly2', monthly2);
+      // console.log('errors2', errors2);
     } finally {
       syncInFlightRef.current = false;
     }

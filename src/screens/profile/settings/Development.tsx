@@ -30,6 +30,7 @@ import {
   getAllSymptoms,
   getLatestSymptomsByDate,
   getSymptomsById,
+  syncMonthlySymptoms,
 } from '../../../api/symptoms/symptomsService';
 import {useFocusEffect} from '@react-navigation/native';
 import {
@@ -118,8 +119,8 @@ const Development = () => {
   const {data, isLoading, error, refetch} = useSymptomsByDate(today);
 
   const fetchUser = async () => {
-    const user: User = await getUser();
-    setUser(user);
+    const user: User | undefined = await getUser();
+    if (user) setUser(user);
   };
 
   const fetchTokens = async () => {
@@ -425,6 +426,27 @@ const Development = () => {
   //   await registerTestReminder();
   //   setLoading(false);
   // };
+
+  const testSyncMonthlySymptoms = async () => {
+    const {synced, skipped, monthly, errors} = await syncMonthlySymptoms();
+    console.log('synced', synced);
+    console.log('skipped', skipped);
+    console.log('monthly', monthly);
+    console.log('errors', errors);
+
+    const {
+      synced: synced2,
+      skipped: skipped2,
+      monthly: monthly2,
+      errors: errors2,
+    } = await syncMonthlySymptoms(
+      new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1),
+    );
+    console.log('synced2', synced2);
+    console.log('skipped2', skipped2);
+    console.log('monthly2', monthly2);
+    console.log('errors2', errors2);
+  };
 
   return (
     <View
@@ -993,6 +1015,26 @@ const Development = () => {
               </Text>
             )}
           </View>
+        </View>
+        <View
+          className="p-3 mb-1 rounded-2xl"
+          style={{
+            backgroundColor: colors.background.primary,
+          }}>
+          <TouchableOpacity
+            className="p-2 rounded-2xl "
+            style={{
+              backgroundColor: colors.background.secondary,
+            }}
+            onPress={testSyncMonthlySymptoms}>
+            <GradientText
+              className="text-lg font-rubik-medium ml-2"
+              start={{x: 0, y: 0}}
+              end={{x: 0.3, y: 0}}
+              colors={[colors.primary[300], '#40E0D0']}>
+              Sync Monthly Symptoms Test
+            </GradientText>
+          </TouchableOpacity>
         </View>
         {/* <View
           className="p-3 mt-1 mb-4 rounded-2xl"

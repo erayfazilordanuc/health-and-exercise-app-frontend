@@ -46,6 +46,12 @@ export const getAllGroups = async () => {
   return response;
 };
 
+export const getGroupsByAdmin = async (id: number) => {
+  const response = await apiClient.get(`/groups/admin/${id}`);
+  console.log('All groups', response);
+  return response;
+};
+
 export const getGroupById = async (id: number) => {
   const response = await apiClient.get(`/groups/id/${id}`);
   console.log('Get group by id', response);

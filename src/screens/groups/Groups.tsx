@@ -25,6 +25,7 @@ import {
   getAllGroups,
   getGroupAdmin,
   getGroupRequestsByUserId,
+  getGroupsByAdmin,
   sendJoinGroupRequest,
 } from '../../api/group/groupService';
 import {getDbUser, getUser, updateUser} from '../../api/user/userService';
@@ -44,7 +45,6 @@ const Groups = () => {
   const [loading, setLoading] = useState(true);
   const {user, setUser} = useUser();
   const [groups, setGroups] = useState<Group[]>([]);
-  const [myGroup, setMyGroup] = useState<Group | null>();
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isJoinModalVisible, setIsJoinModalVisible] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
@@ -158,15 +158,25 @@ const Groups = () => {
     try {
       if (user.role === 'ROLE_USER') {
         fetchRequest(user.id!);
-      }
-
-      const response = await getAllGroups();
-      if (response) {
-        setGroups(response.data);
-        if (user) {
-          const myGroup =
-            (response.data as Group[]).find(g => g.id === user.groupId) || null;
-          if (myGroup) setMyGroup(myGroup);
+        const response = await getAllGroups();
+        if (response) {
+          setGroups(response.data);
+          // if (user) {
+          //   const myGroup =
+          //     (response.data as Group[]).find(g => g.id === user.groupId) || null;
+          // }
+        }
+      } else if (user.id) {
+        const response =
+          user.username === 'ordanuc'
+            ? await getAllGroups()
+            : await getGroupsByAdmin(user.id);
+        if (response) {
+          setGroups(response.data);
+          // if (user) {
+          //   const myGroup =
+          //     (response.data as Group[]).find(g => g.id === user.groupId) || null;
+          // }
         }
       }
     } catch (e) {

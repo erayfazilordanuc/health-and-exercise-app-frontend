@@ -2,7 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 import {getUser} from '../user/userService';
 import NetInfo from '@react-native-community/netinfo';
-import {ymdLocal} from '../../utils/dates';
+import {parseYMDLocal, ymdLocal} from '../../utils/dates';
+import {getMontlySymptoms} from '../../lib/health/healthConnectService';
 
 const keyPrefix = 'symptoms_';
 const todayStr = () => ymdLocal(new Date());
@@ -82,6 +83,160 @@ export const upsertSymptomsByDate = async (date: Date, symptoms: Symptoms) => {
   );
   console.log('Upsert response', response);
   return response;
+};
+
+const LATE_HOUR = 23;
+
+const numberDiffers = (
+  a?: number | null,
+  b?: number | null,
+  tol: number = 0,
+) => {
+  // Biri var diğeri yoksa → farklı
+  if ((a == null) !== (b == null)) return true;
+  if (a == null && b == null) return false;
+  return Math.abs((a as number) - (b as number)) >= tol;
+};
+
+const hasMeaningfulDifference = (server: Symptoms, client: Symptoms) => {
+  // eşik değerleri: istersen ayarlayalım
+  const pulseDiff = numberDiffers(server.pulse, client.pulse, 5); // ±5 bpm
+  const stepsDiff = numberDiffers(server.steps, client.steps, 300); // ±300 adım
+  const totalCalDiff = numberDiffers(
+    server.totalCaloriesBurned ?? null,
+    client.totalCaloriesBurned ?? null,
+    150, // ±150 kcal
+  );
+  const activeCalDiff = numberDiffers(
+    server.activeCaloriesBurned ?? null,
+    client.activeCaloriesBurned ?? null,
+    100, // ±100 kcal
+  );
+  const sleepDiff = numberDiffers(server.sleepMinutes, client.sleepMinutes, 30); // ±30 dk
+
+  // total yoksa active'e bakılır; biri olsun yeter
+  const calDiff =
+    totalCalDiff || (server.totalCaloriesBurned == null && activeCalDiff);
+
+  return pulseDiff || stepsDiff || calDiff || sleepDiff;
+};
+
+const markLocalSynced = async (dateStr: string, symptoms: Symptoms) => {
+  const key = `${keyPrefix}${dateStr}`;
+  const prev = await AsyncStorage.getItem(key);
+  const payload: LocalSymptoms = prev
+    ? {...(JSON.parse(prev) as LocalSymptoms), isSynced: true, symptoms}
+    : {isSynced: true, symptoms};
+  await AsyncStorage.setItem(key, JSON.stringify(payload));
+};
+
+// ------------------------------------------------------------
+// Asıl senkronizasyon
+// ------------------------------------------------------------
+export const syncMonthlySymptoms = async (ref: Date = new Date()) => {
+  // 1) Online mı?
+  const net = await NetInfo.fetch();
+  if (!net.isConnected) {
+    console.log('[syncMonthlySymptoms] offline, çıkıyorum.');
+    return {
+      synced: 0,
+      skipped: 0,
+      errors: [] as Array<{date: string; error: any}>,
+    };
+  }
+
+  // 2) Aylık verileri Health Connect’ten çek
+  const monthly = await getMontlySymptoms(ref); // Array<{date: string} & Symptoms>
+  const todayStrVal = ymdLocal(new Date());
+  const nowHour = new Date().getHours();
+
+  let synced = 0;
+  let skipped = 0;
+  const errors: Array<{date: string; error: any}> = [];
+
+  for (const dayItem of monthly) {
+    const dateStr = dayItem.date;
+    const dateObj = parseYMDLocal(dateStr);
+    const isPast = dateStr < todayStrVal;
+    const isToday = dateStr === todayStrVal;
+
+    // 2.1) Yerelde unsynced veri varsa onu tercih et
+    let candidate = dayItem as Symptoms;
+    try {
+      const local = await getLocal(dateStr);
+      if (local) {
+        candidate = {
+          ...candidate,
+          ...local, // local’de varsa üstüne yazsın
+        };
+      }
+    } catch (e) {
+      // local yoksa sorun değil
+    }
+
+    // 2.2) Boş günleri atla (hiç metrik yok)
+    const hasAny =
+      candidate.pulse != null ||
+      candidate.steps != null ||
+      candidate.totalCaloriesBurned != null ||
+      candidate.activeCaloriesBurned != null ||
+      candidate.sleepMinutes != null;
+
+    if (!hasAny) {
+      skipped++;
+      continue;
+    }
+
+    // 2.3) Sunucudan en güncel kayıt
+    let server: Symptoms | null | undefined = null;
+    try {
+      server = await getLatestSymptomsByDate(dateStr);
+    } catch (err) {
+      // API hatasını topla ve devam et
+      errors.push({date: dateStr, error: err});
+      continue;
+    }
+
+    // 2.4) Karar:
+    // - Sunucuda yoksa: hemen upsert et
+    // - Sunucuda varsa ve anlamlı fark var ise:
+    //      * Geçmiş gün → upsert
+    //      * Bugün → saat >= LATE_HOUR ise upsert; değilse atla
+    let shouldUpsert = false;
+
+    if (!server) {
+      shouldUpsert = true;
+    } else if (hasMeaningfulDifference(server, candidate)) {
+      shouldUpsert = isPast || (isToday && nowHour >= LATE_HOUR);
+    }
+
+    if (!shouldUpsert) {
+      skipped++;
+      continue;
+    }
+
+    // 2.5) Upsert et
+    try {
+      await upsertSymptomsByDate(dateObj, {
+        pulse: candidate.pulse,
+        steps: candidate.steps,
+        totalCaloriesBurned: candidate.totalCaloriesBurned ?? null,
+        activeCaloriesBurned: candidate.activeCaloriesBurned ?? null,
+        sleepMinutes: candidate.sleepMinutes ?? null,
+      });
+      await markLocalSynced(dateStr, candidate);
+      synced++;
+    } catch (err) {
+      errors.push({date: dateStr, error: err});
+    }
+  }
+
+  console.log('[syncMonthlySymptoms] done →', {
+    synced,
+    skipped,
+    errorsCount: errors.length,
+  });
+  return {synced, skipped, monthly, errors};
 };
 
 export const adminGetSymptomsById = async (id: number) => {
