@@ -123,7 +123,9 @@ const Launch = () => {
       // await SessionManager.init(user.id, DeviceInfo.getVersion(), DeviceInfo.getModel());
       // await SessionManager.stopSession('logout');
       navigation.navigate('App');
-    } else {
+    } 
+    // TO DO TEST else yi kaldırıp deneyebilirsin
+    else {
       setLoading(false);
     }
   };
