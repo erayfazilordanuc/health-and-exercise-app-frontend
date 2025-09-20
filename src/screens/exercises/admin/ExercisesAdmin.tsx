@@ -67,12 +67,12 @@ const ExercisesAdmin = () => {
   return (
     <>
       <LinearGradient
-              colors={colors.gradient}
-              locations={[0.15, 0.25, 0.7, 1]}
-              start={{x: 0.1, y: 0}}
-              end={{x: 0.8, y: 1}}
-              className="absolute top-0 left-0 right-0 bottom-0"
-            />
+        colors={colors.gradient}
+        locations={[0.15, 0.25, 0.7, 1]}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.8, y: 1}}
+        className="absolute top-0 left-0 right-0 bottom-0"
+      />
       <View
         style={{
           backgroundColor: 'transparent', // colors.background.secondary,
@@ -179,11 +179,18 @@ const ExercisesAdmin = () => {
           <ActivityIndicator size="large" color={colors.primary[200]} />
         </View>
       )}
-      <View className="absolute bottom-24 right-3 items-center">
+      <View
+        className="absolute right-3 items-center" // bottom-24
+        style={{bottom: insets.bottom + 96}}>
         <TouchableOpacity
           className="w-36 h-16 rounded-3xl flex items-center justify-center"
           style={{
             backgroundColor: colors.primary[200],
+            shadowColor: '#444',
+            shadowOpacity: 0.15,
+            shadowOffset: {width: 0, height: 2},
+            shadowRadius: 4,
+            elevation: 4,
           }}
           onPress={() => {
             navigation.navigate('EditExercise', {exercise: null});

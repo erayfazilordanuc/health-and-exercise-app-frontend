@@ -404,40 +404,41 @@ const ExerciseDetail = () => {
                         />
                       </View>
                     ) : (
-                      // TO DO TEST progress.videoProgress[index] &&
-                      <View className="flex flex-coljustify-between items-center">
-                        <Text
-                          className="font-rubik text-center text-lg"
-                          style={{color: getColor()}}>
-                          İlerleme %
-                          {Math.round(
-                            (progress.videoProgress[index].progressDuration /
-                              video.durationSeconds) *
-                              100,
-                          )}
-                        </Text>
-                        <TouchableOpacity
-                          className="mt-3 mb-1"
-                          onPress={() =>
-                            navigation.navigate('Exercise', {
-                              exercise: progress.exerciseDTO,
-                              progress: progress,
-                              videoIdx: videoIdxToShow,
-                              startSec: startAt,
-                            })
-                          }>
+                      progress.videoProgress[index] && (
+                        <View className="flex flex-coljustify-between items-center">
                           <Text
-                            className=" font-rubik text-xl px-3" // bg-blue-500 '#55CC88' '#FFAA33'
-                            style={{
-                              borderRadius: 14,
-                              paddingVertical: 10,
-                              backgroundColor: color,
-                              color: colors.background.primary,
-                            }}>
-                            Devam et
+                            className="font-rubik text-center text-lg"
+                            style={{color: getColor()}}>
+                            İlerleme %
+                            {Math.round(
+                              (progress.videoProgress[index].progressDuration /
+                                video.durationSeconds) *
+                                100,
+                            )}
                           </Text>
-                        </TouchableOpacity>
-                      </View>
+                          <TouchableOpacity
+                            className="mt-3 mb-1"
+                            onPress={() =>
+                              navigation.navigate('Exercise', {
+                                exercise: progress.exerciseDTO,
+                                progress: progress,
+                                videoIdx: videoIdxToShow,
+                                startSec: startAt,
+                              })
+                            }>
+                            <Text
+                              className=" font-rubik text-xl px-3" // bg-blue-500 '#55CC88' '#FFAA33'
+                              style={{
+                                borderRadius: 14,
+                                paddingVertical: 10,
+                                backgroundColor: color,
+                                color: colors.background.primary,
+                              }}>
+                              Devam et
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      )
                     )
                   ) : (
                     index === 0 && (

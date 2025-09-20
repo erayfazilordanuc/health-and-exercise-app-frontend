@@ -363,7 +363,8 @@ const Group = () => {
           backgroundColor: 'transparent', // colors.background.secondary,
           // paddingTop: insets.top / 2,
         }}
-        contentContainerClassName="pb-24"
+        // contentContainerClassName="pb-24"
+        contentContainerStyle={{paddingBottom: insets.bottom + 90}}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

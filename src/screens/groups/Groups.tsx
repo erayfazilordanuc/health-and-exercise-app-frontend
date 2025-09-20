@@ -305,8 +305,9 @@ const Groups = () => {
         </Text>
       </View>
       <ScrollView
-        className="h-full pb-30 px-3 pt-3"
+        className="h-full px-3 pt-3"
         style={{
+          paddingBottom: insets.bottom + 120,
           backgroundColor: 'transparent', // colors.background.secondary,
           // paddingTop: insets.top / 2,
         }}>
@@ -643,7 +644,9 @@ const Groups = () => {
       </ScrollView>
 
       {user && user.role === 'ROLE_ADMIN' && (
-        <View className="absolute bottom-24 right-3 items-center">
+        <View
+          className="absolute right-3 items-center" // bottom-24
+          style={{bottom: insets.bottom + 96}}>
           {/* <Text
               className="mb-1 font-rubik text-base"
               style={{color: colors.text.primary}}>
@@ -657,6 +660,11 @@ const Groups = () => {
               backgroundColor: colors.primary[200],
               borderRadius: 17,
               height: 50,
+              shadowColor: '#444',
+              shadowOpacity: 0.15,
+              shadowOffset: {width: 0, height: 2},
+              shadowRadius: 4,
+              elevation: 4,
             }}
             onPress={() => {
               setIsCreateModalVisible(true);

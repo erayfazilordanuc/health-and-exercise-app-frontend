@@ -552,7 +552,8 @@ const Profile = () => {
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
-            paddingBottom: height / 4.5,
+            // paddingBottom: height / 4.5,
+            paddingBottom: insets.bottom + height / 4.5,
             // paddingTop: insets.top / 2,
           }}
           showsVerticalScrollIndicator={false}
