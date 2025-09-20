@@ -28,6 +28,7 @@ const Launch = () => {
   // useNotificationNavigation();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const colorScheme = useColorScheme();
   const {theme, colors, setTheme} = useTheme();
   const styles = stylesWithColor(colors);
@@ -39,101 +40,58 @@ const Launch = () => {
   // TO DO burada global user nesnesi alsın ona göre yönlendirsin
 
   const checkToken = async () => {
-    console.log('1');
-    const userJson = await AsyncStorage.getItem('user');
-    let user;
-    if (userJson) {
-      user = JSON.parse(userJson);
-      setUser(user);
-    }
-    console.log('user', user);
+    try {
+      console.log('1');
+      const userJson = await AsyncStorage.getItem('user');
+      let user;
+      if (userJson) {
+        user = JSON.parse(userJson);
+        setUser(user);
+      }
 
-    const accessToken = await AsyncStorage.getItem('accessToken');
-    const refreshToken = await AsyncStorage.getItem('refreshToken');
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      const refreshToken = await AsyncStorage.getItem('refreshToken');
 
-    console.log(accessToken, refreshToken);
+      if ((!user && refreshToken) || (user && user.avatar === 'non')) {
+        const net = await NetInfo.fetch();
+        if (net.isConnected) {
+          if (user?.role === 'ROLE_USER' && !user.groupId) {
+            const dbUser = await getDbUser();
+            if (dbUser) {
+              user = dbUser;
+              await AsyncStorage.setItem('user', JSON.stringify(user));
+              setUser(user);
+            }
+          }
+          await updateAvatarApi(user?.avatar);
+        }
+      }
 
-    if ((!user && refreshToken) || (user && user.avatar === 'non')) {
-      console.log('neden');
-      const net = await NetInfo.fetch();
-      if (net.isConnected) {
-        if (user.role === 'ROLE_USER' && !user.groupId) {
-          const dbUser = await getDbUser();
-          if (dbUser) {
-            user = dbUser;
-            await AsyncStorage.setItem('user', JSON.stringify(user));
-            setUser(user);
+      if (user?.theme) {
+        const {color, mode, themeObj} = parseTheme(user.theme);
+        if (color && themeObj) {
+          if (mode === 'system') {
+            setTheme(colorScheme === 'dark' ? themeObj.dark : themeObj.light);
+          } else {
+            setTheme(mode === 'dark' ? themeObj.dark : themeObj.light);
           }
         }
-        await updateAvatarApi(user.avatar);
+      } else {
+        setTheme(
+          colorScheme === 'light' ? themes.blue.light : themes.blue.dark,
+        );
       }
-    }
-    console.log('user', user);
 
-    if (user && user.theme) {
-      const {color, mode, themeObj} = parseTheme(user.theme);
-      if (color && themeObj) {
-        if (mode === 'system') {
-          setTheme(colorScheme === 'dark' ? themeObj.dark : themeObj.light);
-        } else {
-          setTheme(mode === 'dark' ? themeObj.dark : themeObj.light);
-        }
+      if (accessToken || refreshToken || user) {
+        navigation.navigate('App');
       }
-      console.log('user.theme', user.theme);
-    } else
-      setTheme(colorScheme === 'light' ? themes.blue.light : themes.blue.dark);
-
-    console.log('aaaaay', user);
-
-    // if (user) {
-    //   const userThemeJson = await AsyncStorage.getItem(
-    //     `${user.username}-main-theme`,
-    //   );
-    //   setUser(user);
-    //   if (userThemeJson) {
-    //     const userTheme: UserTheme = userThemeJson
-    //       ? JSON.parse(userThemeJson)
-    //       : null;
-    //     if (theme) {
-    //       setTheme(userTheme.theme);
-    //     }
-    //   } else {
-    //     const newUserTheme: UserTheme = {
-    //       theme:
-    //         colorScheme === 'dark' ? themes.blue.dark : themes.blue.light,
-    //       isDefault: true,
-    //     };
-    //     setTheme(
-    //       colorScheme === 'dark' ? themes.blue.dark : themes.blue.light,
-    //     );
-    //     await AsyncStorage.setItem(
-    //       `${user!.username}-main-theme`,
-    //       JSON.stringify(newUserTheme),
-    //     );
-    //   }
-    // }
-
-    if (accessToken || refreshToken || user) {
-      // if (user.role === 'ROLE_USER') {
-      //   console.log('bura59');
-      //   const isHealthConnectInstalled = await checkHealthConnectAvailable();
-      //   // if (isHealthConnectInstalled) await saveSymptoms();
-      //   console.log('bura62');
-      // }
-      // await SessionManager.init(user.id, DeviceInfo.getVersion(), DeviceInfo.getModel());
-      // await SessionManager.stopSession('logout');
-      navigation.navigate('App');
-    } 
-    // TO DO TEST else yi kaldırıp deneyebilirsin
-    else {
+    } catch (e: any) {
+      console.error('checkToken error:', e);
+      setError('Beklenmedik bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
       setLoading(false);
     }
   };
-
-  // useEffect(() => {
-  //   if (colorScheme == 'light') setTheme(themes.blue.light);
-  //   else setTheme(themes.blue.dark);
-  // }, [colorScheme]);
 
   useEffect(() => {
     checkToken();
@@ -150,8 +108,19 @@ const Launch = () => {
     );
   }
 
+  if (error) {
+    return (
+      <SafeAreaView style={[styles.container, styles.center]}>
+        <Text style={{color: 'red'}}>{error}</Text>
+        <TouchableOpacity onPress={checkToken}>
+          <Text style={{color: colors.primary[300]}}>Tekrar dene</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container}> 
       <ImageBackground
         source={require('../../assets/images/bubbles_blue_low_launch.png')}
         resizeMode="cover"
