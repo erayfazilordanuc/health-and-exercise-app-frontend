@@ -50,7 +50,7 @@
     "react-native-gesture-handler": "^2.26.0",
     "react-native-get-app-list": "^0.1.4",
     "react-native-get-random-values": "^1.11.0",
-    "react-native-health-connect": "^3.3.2",
+    "react-native-health-connect": "^3.4.0",
     "react-native-image-picker": "^8.2.1",
     "react-native-keep-awake": "^4.0.0",
     "react-native-lan-port-scanner": "^1.4.2",
