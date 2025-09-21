@@ -57,6 +57,16 @@ const Groups = () => {
   const {height} = Dimensions.get('screen');
   const onCreateGroup = async () => {
     setLoading(true);
+
+    const net = await NetInfo.fetch();
+    if (!net.isConnected) {
+      ToastAndroid.show(
+        'Grup oluşturulamıyor. İnternet bağlantınızı kontrol ediniz',
+        ToastAndroid.LONG,
+      );
+      return;
+    }
+
     if (user) {
       const createGroupDTO: CreateGroupDTO = {
         name: newGroupName.trim(),
