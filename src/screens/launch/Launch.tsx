@@ -100,7 +100,11 @@ const Launch = () => {
       <SafeAreaView style={[styles.container, styles.center]}>
         <ActivityIndicator
           size="large"
-          color={colors.primary[300] ?? colors.primary}
+          color={
+            colors.text.primary ?? colorScheme === 'dark'
+              ? '#eef2f8'
+              : '#5d5d5d'
+          }
         />
       </SafeAreaView>
     );
@@ -110,7 +114,7 @@ const Launch = () => {
       <SafeAreaView style={[styles.container, styles.center]}>
         <Text style={{color: 'red'}}>{error}</Text>
         <TouchableOpacity onPress={checkToken}>
-          <Text style={{color: colors.primary[300]}}>Tekrar dene</Text>
+          <Text style={{color: colors.text.primary}}>Tekrar dene</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
