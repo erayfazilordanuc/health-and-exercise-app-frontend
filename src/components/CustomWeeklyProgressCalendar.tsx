@@ -41,13 +41,13 @@ const CustomWeeklyProgressCalendar = ({
 
   // Haftanın tüm günleri (label + dayNum=1..7 + aktiflik + progressIndex eşleme)
   const baseWeek = [
-    {label: 'Pazartesi', dayNum: 1, offset: 0},
-    {label: 'Salı', dayNum: 2, offset: 1},
-    {label: 'Çarşamba', dayNum: 3, offset: 2},
-    {label: 'Perşembe', dayNum: 4, offset: 3},
-    {label: 'Cuma', dayNum: 5, offset: 4},
-    {label: 'Cumartesi', dayNum: 6, offset: 5},
-    {label: 'Pazar', dayNum: 7, offset: 6},
+    {label: 'Monday', dayNum: 1, offset: 0},
+    {label: 'Tuesday', dayNum: 2, offset: 1},
+    {label: 'Wednesday', dayNum: 3, offset: 2},
+    {label: 'Thursday', dayNum: 4, offset: 3},
+    {label: 'Friday', dayNum: 5, offset: 4},
+    {label: 'Saturday', dayNum: 6, offset: 5},
+    {label: 'Sunday', dayNum: 7, offset: 6},
   ] as const;
 
   type WeekItem = {

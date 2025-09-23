@@ -140,7 +140,7 @@ const EditExercise = () => {
       !editedExercise.description ||
       !editedExercise.point
     ) {
-      ToastAndroid.show('Lütfen tüm boşlukları doldurun', ToastAndroid.LONG);
+      ToastAndroid.show('Please fill in all fields', ToastAndroid.LONG);
       return;
     }
 
@@ -166,7 +166,7 @@ const EditExercise = () => {
         }
       } catch (error) {
         setLoading(false);
-        ToastAndroid.show('Bir hata oluştu', ToastAndroid.LONG);
+        ToastAndroid.show('An error occurred', ToastAndroid.LONG);
       }
     } else {
       if (JSON.stringify(exercise) !== JSON.stringify(editedExercise)) {
@@ -174,7 +174,7 @@ const EditExercise = () => {
           if (video.name?.length === 0) {
             setLoading(false);
             ToastAndroid.show(
-              'Lütfen her videoya bir isim ekleyiniz',
+              'Please add a name for each video',
               ToastAndroid.LONG,
             );
             return;
@@ -211,7 +211,7 @@ const EditExercise = () => {
           }
         } catch (error) {
           setLoading(false);
-          ToastAndroid.show('Bir hata oluştu', ToastAndroid.LONG);
+          ToastAndroid.show('An error occurred', ToastAndroid.LONG);
         }
       }
     }
@@ -219,7 +219,7 @@ const EditExercise = () => {
     if (pendingVideos.length) {
       if (pendingVideos.length !== newVideos.length) {
         ToastAndroid.show(
-          'Lütfen her videoya bir isim ekleyiniz',
+          'Please add a name for each video',
           ToastAndroid.SHORT,
         );
         setLoading(false);
@@ -262,7 +262,7 @@ const EditExercise = () => {
             prev.filter(v => v.fileName !== video.fileName),
           );
           console.log('video upload error', e);
-          ToastAndroid.show('Video yüklenemedi', ToastAndroid.LONG);
+          ToastAndroid.show('Video could not be uploaded', ToastAndroid.LONG);
           setLoading(false);
         } finally {
           const localPath = await resolveVideoPath(video);
@@ -277,7 +277,7 @@ const EditExercise = () => {
       setVideoUploadPercent(0);
     }
 
-    ToastAndroid.show('Egzersiz başarıyla kaydedildi', ToastAndroid.LONG);
+    ToastAndroid.show('Exercise saved successfully', ToastAndroid.LONG);
     setLoading(false);
   };
 
@@ -293,10 +293,10 @@ const EditExercise = () => {
     if (alreadyGranted) return true;
 
     const granted = await PermissionsAndroid.request(perm, {
-      title: 'Video Erişimi',
-      message: 'Uygulamanın galerinizdeki videolara erişmesine izin verin.',
-      buttonPositive: 'İzin ver',
-      buttonNegative: 'İptal',
+      title: 'Video Access',
+      message: 'Allow the app to access videos in your gallery.',
+      buttonPositive: 'Allow',
+      buttonNegative: 'Cancel',
     });
 
     return granted === PermissionsAndroid.RESULTS.GRANTED;
@@ -340,7 +340,7 @@ const EditExercise = () => {
       };
       setNewVideos(prev => [...prev, exerciseVideoDTO]);
     } catch (e) {
-      console.warn('Video seçilemedi', e);
+      console.warn('Video could not be selected', e);
     } finally {
       setVideoLoading(false);
     }
@@ -350,7 +350,7 @@ const EditExercise = () => {
     try {
       const ok = await requestVideoPerm();
       if (!ok) {
-        ToastAndroid.show('Videolara erişim reddedildi', ToastAndroid.LONG);
+        ToastAndroid.show('Video access denied', ToastAndroid.LONG);
         return;
       }
 
@@ -359,14 +359,14 @@ const EditExercise = () => {
       if (!picked) return;
 
       if (isDuplicateVideo(picked)) {
-        console.error('⚠️ Bu video zaten listede:', picked.fileName);
-        ToastAndroid.show('Bu video zaten ekli', ToastAndroid.LONG);
+        console.error('⚠️ This video is already in the list:', picked.fileName);
+        ToastAndroid.show('This video is already added', ToastAndroid.LONG);
         throw new Error('Duplicate video');
       }
 
       setPendingVideos(prev => [...prev, picked]);
     } catch (e) {
-      console.warn('Video seçilemedi', e);
+      console.warn('Video could not be selected', e);
     } finally {
       setVideoLoading(false);
     }
@@ -375,7 +375,7 @@ const EditExercise = () => {
   const onDeletePendingVideo = async (idx: number) => {
     setPendingVideos(prev => prev.filter((_, i) => i !== idx));
     setNewVideos(prev => prev.filter((_, i) => i !== idx));
-    console.log('silindi');
+    console.log('deleted');
     console.log(pendingVideos);
   };
 
@@ -390,7 +390,7 @@ const EditExercise = () => {
         }));
       }
     } catch (e) {
-      console.warn('Video silinemedi', e);
+      console.warn('Video could not be deleted', e);
     }
   };
 
@@ -403,7 +403,7 @@ const EditExercise = () => {
         }
       }
     } catch (e) {
-      console.warn('Video silinemedi', e);
+      console.warn('Exercise could not be deleted', e);
     }
   };
 
@@ -453,7 +453,7 @@ const EditExercise = () => {
         // ✅ URL geçerli mi kontrol et
         console.log(v.videoUrl, isValidUrl(v.videoUrl));
         if (!v.videoUrl || !isValidUrl(v.videoUrl)) {
-          console.warn(`[thumb] Geçersiz URL atlandı: ${v.videoUrl}`);
+          console.warn(`[thumb] Invalid URL skipped: ${v.videoUrl}`);
           setThumbs(prev => ({
             ...prev,
             [v.videoUrl]: 'fallback_thumbnail_path',
@@ -474,7 +474,7 @@ const EditExercise = () => {
           setThumbs(prev => ({...prev, [v.videoUrl]: path}));
         } catch (err) {
           console.warn(
-            `[thumb] Thumbnail oluşturulamadı: ${v.videoUrl}`,
+            `[thumb] Thumbnail could not be created: ${v.videoUrl}`,
             (err as Error).message,
           );
           // ✅ hata olsa bile fallback ata, crash olmaz
@@ -502,7 +502,7 @@ const EditExercise = () => {
           if (!isActive) return;
           setPendingThumbs(prev => ({...prev, [uri]: path}));
         } catch (err) {
-          console.warn('[thumb‑pending] failed', (err as Error).message);
+          console.warn('[thumb-pending] failed', (err as Error).message);
         }
       }
     };
@@ -520,12 +520,12 @@ const EditExercise = () => {
   return (
     <>
       <LinearGradient
-              colors={colors.gradient}
-              locations={[0.15, 0.25, 0.7, 1]}
-              start={{x: 0.1, y: 0}}
-              end={{x: 0.8, y: 1}}
-              className="absolute top-0 left-0 right-0 bottom-0"
-            />
+        colors={colors.gradient}
+        locations={[0.15, 0.25, 0.7, 1]}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.8, y: 1}}
+        className="absolute top-0 left-0 right-0 bottom-0"
+      />
       <View
         className="flex flex-row"
         style={{
@@ -537,13 +537,12 @@ const EditExercise = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color:
-              theme.colors.isLight
-                ? colors.text.primary
-                : colors.background.secondary,
+            color: theme.colors.isLight
+              ? colors.text.primary
+              : colors.background.secondary,
             fontSize: 24,
           }}>
-          Egzersiz Düzenle
+          Edit Exercise
         </Text>
         {!loading ? (
           <TouchableOpacity
@@ -553,7 +552,7 @@ const EditExercise = () => {
             <Text
               className="text-lg font-rubik"
               style={{color: colors.background.secondary}}>
-              Kaydet
+              Save
             </Text>
           </TouchableOpacity>
         ) : (
@@ -573,7 +572,7 @@ const EditExercise = () => {
         className="px-3 mt-3"
         style={{backgroundColor: 'transparent' /*colors.background.secondary*/}}
         contentContainerStyle={{
-          paddingBottom: keyboardHeight ? 120 : 60,
+          paddingBottom: keyboardHeight ? 120 : 80,
           flexGrow: 1,
         }}
         keyboardShouldPersistTaps="handled">
@@ -583,7 +582,7 @@ const EditExercise = () => {
           <Text
             className="font-rubik text-2xl mb-3"
             style={{color: colors.text.primary}}>
-            Egzersiz İsmi
+            Exercise Name
           </Text>
           <View
             className="flex flex-row justify-between mb-1 rounded-2xl pl-3"
@@ -592,7 +591,7 @@ const EditExercise = () => {
             }}>
             <TextInput
               value={editedExercise.name ? editedExercise.name : ''}
-              placeholder="İsim girin"
+              placeholder="Enter a name"
               placeholderTextColor="gray"
               onChangeText={text =>
                 setEditedExercise(prev => ({...prev!, name: text}))
@@ -607,13 +606,13 @@ const EditExercise = () => {
           </View>
         </View>
 
-        <View
+        {/* <View
           className="px-5 py-3 rounded-2xl mb-3"
           style={{backgroundColor: colors.background.primary}}>
           <Text
             className="font-rubik text-2xl mb-3"
             style={{color: colors.text.primary}}>
-            Egzersiz Açıklaması
+            Exercise Description
           </Text>
           <View
             className="flex flex-row justify-between mb-1 rounded-2xl pl-3"
@@ -625,7 +624,7 @@ const EditExercise = () => {
                 editedExercise.description ? editedExercise.description : ''
               }
               multiline
-              placeholder="Açıklama girin"
+              placeholder="Enter a description"
               placeholderTextColor="gray"
               onChangeText={text =>
                 setEditedExercise(prev => ({...prev!, description: text}))
@@ -647,13 +646,13 @@ const EditExercise = () => {
             <Text
               className="font-rubik text-2xl mr-6"
               style={{color: colors.text.primary}}>
-              Egzersiz Puanı
+              Exercise Score
             </Text>
             <TextInput
               value={
                 editedExercise.point ? editedExercise.point.toString() : ''
               }
-              placeholder="Puan giriniz"
+              placeholder="Enter points"
               placeholderTextColor="gray"
               onChangeText={text =>
                 setEditedExercise(prev => ({...prev!, point: parseInt(text)}))
@@ -667,7 +666,7 @@ const EditExercise = () => {
               keyboardType="numeric"
             />
           </View>
-        </View>
+        </View> */}
 
         <View
           className="px-5 pt-3 rounded-2xl mb-3"
@@ -675,7 +674,7 @@ const EditExercise = () => {
           <Text
             className="font-rubik text-2xl mb-4"
             style={{color: colors.text.primary}}>
-            Egzersiz Videoları
+            Exercise Videos
           </Text>
 
           {editedExercise?.videos &&
@@ -688,11 +687,11 @@ const EditExercise = () => {
                 <Text
                   className="font-rubik text-xl ml-2 mb-2 mr-5"
                   style={{color: colors.text.primary}}>
-                  Video ismi
+                  Video name
                 </Text>
                 <TextInput
                   value={editedExercise.videos[index].name}
-                  placeholder="İsim girin"
+                  placeholder="Enter a name"
                   placeholderTextColor="gray"
                   onChangeText={text =>
                     setEditedExercise(prev => ({
@@ -760,17 +759,17 @@ const EditExercise = () => {
                       <Text
                         className="font-rubik text-center text-md"
                         style={{color: colors.background.secondary}}>
-                        Sil
+                        Delete
                       </Text>
                     </TouchableOpacity>
                   </View>
                   <CustomAlert
-                    message={'Videoyu silmek istediğinize emin misiniz?'}
+                    message={'Are you sure you want to delete the video?'}
                     visible={isDeleteVideoModalVisible}
                     onYes={() => {
                       onDeleteVideoFromExercise(video.id!);
                       setIsDeleteVideoModalVisible(false);
-                      ToastAndroid.show('Video silindi', ToastAndroid.SHORT);
+                      ToastAndroid.show('Video deleted', ToastAndroid.SHORT);
                     }}
                     onCancel={() => {
                       setIsDeleteVideoModalVisible(false);
@@ -790,11 +789,11 @@ const EditExercise = () => {
               <Text
                 className="font-rubik text-xl ml-2 mb-2 mr-5"
                 style={{color: colors.text.primary}}>
-                Video ismi
+                Video name
               </Text>
               <TextInput
                 value={newVideos[index].name ? newVideos[index].name : ''}
-                placeholder="İsim girin"
+                placeholder="Enter a name"
                 placeholderTextColor="gray"
                 onChangeText={text =>
                   setNewVideos(prev =>
@@ -827,22 +826,7 @@ const EditExercise = () => {
                     //     : icons.exercise_screen
                     // }
                     thumbnail={icons.exercise_screen}
-                    // customStyles={{
-                    //   videoWrapper: {borderRadius: 10},
-                    //   controlButton: {opacity: 0.9},
-                    //   thumbnail: {
-                    //     borderRadius: 15,
-                    //     width: 80,
-                    //     height: 80,
-                    //     alignSelf: 'center',
-                    //     justifyContent: 'center',
-                    //   },
-                    //   thumbnailImage: {
-                    //     width: '100%',
-                    //     height: '100%',
-                    //     resizeMode: 'cover',
-                    //   },
-                    // }}
+                    // customStyles={...}
                     customStyles={{
                       videoWrapper: {borderRadius: 10},
                       controlButton: {opacity: 0.9},
@@ -865,7 +849,7 @@ const EditExercise = () => {
                     <Text
                       className="font-rubik text-center text-md"
                       style={{color: colors.text.primary}}>
-                      Yeni Video
+                      New Video
                     </Text>
                     <TouchableOpacity
                       className="px-4 py-1 rounded-xl"
@@ -876,7 +860,7 @@ const EditExercise = () => {
                       <Text
                         className="font-rubik text-center text-md"
                         style={{color: colors.background.secondary}}>
-                        Sil
+                        Delete
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -903,7 +887,7 @@ const EditExercise = () => {
                         style={{
                           color: colors.text.primary,
                         }}>
-                        Video yükle
+                        Upload video
                       </Text>
                       <Image
                         source={icons.plus_sign}
@@ -921,7 +905,7 @@ const EditExercise = () => {
                     <Text
                       className="font-rubik text-center text-md"
                       style={{color: colors.background.secondary}}>
-                      Sil
+                      Delete
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -936,7 +920,7 @@ const EditExercise = () => {
             <Text
               className="font-rubik text-md pl-1"
               style={{color: colors.text.primary}}>
-              Video ekle
+              Add video
             </Text>
             <Image
               source={icons.plus_sign}
@@ -952,7 +936,7 @@ const EditExercise = () => {
           <Text
             className="font-rubik text-md pl-1"
             style={{color: colors.background.secondary}}>
-            Egzersizi Sil
+            Delete Exercise
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -979,7 +963,7 @@ const EditExercise = () => {
               <Text
                 className="font-rubik-semibold text-2xl mb-4 text-center"
                 style={{color: colors.primary[200]}}>
-                Videolar Kaydediliyor
+                Saving Videos
               </Text>
 
               <Text
@@ -1007,14 +991,14 @@ const EditExercise = () => {
               <Text
                 className="font-rubik text-sm text-center"
                 style={{color: colors.text.third}}>
-                Lütfen ekrandan ayrılmayınız
+                Please stay on this screen
               </Text>
             </View>
           </View>
         </BlurView>
       </Modal>
       <CustomAlert
-        message={'Egzersizi silmek istediğinize emin misiniz?'}
+        message={'Are you sure you want to delete the exercise?'}
         visible={isDeleteExerciseModalVisible}
         onYes={() => {
           onDeleteExercise();

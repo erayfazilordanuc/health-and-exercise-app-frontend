@@ -17,12 +17,14 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {getAllExercises} from '../../../api/exercise/exerciseService';
 import LinearGradient from 'react-native-linear-gradient';
 import {useAllExercises} from '../../../hooks/exerciseQueries';
+import {useUser} from '../../../contexts/UserContext';
 
 const ExercisesAdmin = () => {
   const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const [refreshing, setRefreshing] = useState(false);
+  const {user} = useUser();
   // const [exercises, setExercises] = useState<ExerciseDTO[]>([]);
 
   // const fetchAllExercises = async () => {
@@ -111,18 +113,20 @@ const ExercisesAdmin = () => {
             />
           }>
           {exercises && exercises.length > 0 ? (
-            exercises.map(exercise => (
-              <TouchableOpacity
-                key={exercise.id}
-                className="flex flex-column rounded-2xl mb-3 px-4 py-3"
-                style={{
-                  backgroundColor: colors.background.primary,
-                }}
-                onPress={() => {
-                  navigation.navigate('EditExercise', {exercise});
-                }}>
-                {/* Kapak görseli */}
-                {/* {exercise.videos && exercise.videos.length > 0 && (
+            exercises
+              .filter(exercise => exercise.name === 'Exercise 1')
+              .map(exercise => (
+                <TouchableOpacity
+                  key={exercise.id}
+                  className="flex flex-column rounded-2xl mb-3 px-4 py-3"
+                  style={{
+                    backgroundColor: colors.background.primary,
+                  }}
+                  onPress={() => {
+                    navigation.navigate('EditExercise', {exercise});
+                  }}>
+                  {/* Kapak görseli */}
+                  {/* {exercise.videos && exercise.videos.length > 0 && (
                 <Image
                   source={{uri: exercise.videos[0].videoUrl}}
                   style={{
@@ -135,23 +139,23 @@ const ExercisesAdmin = () => {
                 />
               )} */}
 
-                {/* Başlık */}
-                <Text
-                  className="font-rubik text-xl mb-2"
-                  style={{color: colors.primary[200]}}>
-                  {exercise.name}
-                </Text>
+                  {/* Başlık */}
+                  <Text
+                    className="font-rubik text-xl mb-2"
+                    style={{color: colors.primary[200]}}>
+                    {exercise.name}
+                  </Text>
 
-                {/* Açıklama */}
-                <Text
-                  className="font-rubik text-md"
-                  style={{color: colors.text.secondary}}>
-                  {exercise.description!.length > 75
-                    ? `${exercise.description!.substring(0, 75)}...`
-                    : exercise.description}
-                </Text>
-              </TouchableOpacity>
-            ))
+                  {/* Açıklama */}
+                  <Text
+                    className="font-rubik text-md"
+                    style={{color: colors.text.secondary}}>
+                    {exercise.description!.length > 75
+                      ? `${exercise.description!.substring(0, 75)}...`
+                      : exercise.description}
+                  </Text>
+                </TouchableOpacity>
+              ))
           ) : (
             <View
               className="flex-1 items-center justify-center rounded-2xl mb-36 py-5"
@@ -198,7 +202,7 @@ const ExercisesAdmin = () => {
           <Text
             className="font-rubik text-lg"
             style={{color: colors.background.secondary}}>
-            Egzersiz Ekle
+            Add Exercise
           </Text>
         </TouchableOpacity>
       </View>

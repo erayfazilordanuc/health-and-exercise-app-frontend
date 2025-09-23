@@ -44,8 +44,8 @@ const isBeforeDay = (a: Date, b: Date) =>
   atMidnight(a).getTime() < atMidnight(b).getTime();
 /** ------------------------------------------------------ **/
 
-const trShortDays = ['Pzt', 'Sal', 'Çrş', 'Per', 'Cum', 'Cmt', 'Paz'];
-const sunStartShortDays = ['Paz', 'Pzt', 'Sal', 'Çrş', 'Per', 'Cum', 'Cmt'];
+const trShortDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const sunStartShortDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const WeeklyStrip: React.FC<WeeklyStripProps> = ({
   selectedDate,
@@ -87,8 +87,8 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
 
   const monthLabel = React.useMemo(() => {
     const mid = addDays(weekStart, 3);
-    return mid.toLocaleDateString(locale, {month: 'long', year: 'numeric'});
-  }, [weekStart, locale]);
+    return mid.toLocaleDateString('en-US', {month: 'long', year: 'numeric'});
+  }, [weekStart]);
 
   const canGoPrevWeek = React.useMemo(() => {
     if (!minDate) return true;

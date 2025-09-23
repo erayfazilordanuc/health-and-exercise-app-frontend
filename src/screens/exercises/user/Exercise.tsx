@@ -66,56 +66,6 @@ const Exercise = () => {
   const [portraitInsets, setPortraitInsets] = useState(insets);
   const [portraitWidth, setPortraitWidth] = useState(width);
 
-  // const makeTabBarStyle = (theme: Theme, width: number) => ({
-  //   // marginHorizontal: width / 24,
-  //   // position: 'absolute',
-  //   // bottom: 15,
-  //   // left: 15,
-  //   // right: 15,
-  //   // height: 56,
-  //   // borderRadius: 40,
-  //   // borderWidth: 1,
-  //   // borderTopWidth: 0.9,
-  //   // borderColor:
-  //   //   theme.colors.isLight ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
-  //   // backgroundColor:
-  //   //   theme.colors.isLight ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
-  //   // elevation: 0,
-  //   // display: 'flex',
-  //   minHeight: 56 + Math.max(insets.bottom, 0),
-  //   height: undefined,
-  //   paddingTop: 6,
-  //   paddingBottom: Math.max(insets.bottom, 8),
-
-  //   // mevcut görünümü koru
-  //   marginHorizontal: width / 24,
-  //   position: 'absolute',
-  //   bottom: 15,
-  //   left: 15,
-  //   right: 15,
-  //   borderRadius: 40,
-  //   borderWidth: 1,
-  //   borderTopWidth: 0.9,
-  //   borderColor:
-  //     theme.colors.isLight ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
-  //   backgroundColor:
-  //     theme.colors.isLight ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
-  //   elevation: 0,
-  // });
-
-  // useLayoutEffect(() => {
-  //   const parentNav = navigation.getParent();
-
-  //   parentNav?.setOptions({
-  //     tabBarStyle: {...makeTabBarStyle(theme, width), display: 'none'},
-  //   });
-
-  //   return () =>
-  //     parentNav?.setOptions({
-  //       tabBarStyle: makeTabBarStyle(theme, width),
-  //     });
-  // }, [navigation]);
-
   const makeTabBarStyle = (
     theme: Theme,
     width: number,
@@ -126,7 +76,6 @@ const Exercise = () => {
     paddingTop: 11,
     paddingBottom: Math.max(insetsBottom, 11),
 
-    // mevcut görünümü koru
     marginHorizontal: width / 24,
     position: 'absolute',
     bottom: 15,
@@ -149,24 +98,21 @@ const Exercise = () => {
   useFocusEffect(
     useCallback(() => {
       const parent = navigation.getParent();
-      // Snapshot'ı sadece girişte al (portrait 'window' ölçüleri ve o anki insets)
       const base = makeTabBarStyle(theme, portraitWidth, portraitInsets.bottom);
       baseTabBarStyleRef.current = base;
 
-      // Görünmez yap ama base stilin ÜZERİNE
       parent?.setOptions({
         tabBarStyle: {...base, display: 'none'},
       });
 
       return () => {
-        // 4) Çıkarken snapshot'ı AYNI HALİYLE geri yaz
         parent?.setOptions({
           tabBarStyle:
             baseTabBarStyleRef.current ??
             makeTabBarStyle(theme, portraitWidth, portraitInsets.bottom),
         });
       };
-    }, [navigation, theme.name]), // dikkat: width/insets'i BAĞIMLILIĞA KOYMA!
+    }, [navigation, theme.name]),
   );
 
   useFocusEffect(
@@ -185,7 +131,6 @@ const Exercise = () => {
 
   useFocusEffect(
     useCallback(() => {
-      // ekrana girince
       StatusBar.setHidden(true, 'fade');
       const {height, width} = Dimensions.get('window');
       const isPortrait = height >= width;
@@ -200,7 +145,6 @@ const Exercise = () => {
       Orientation.unlockAllOrientations();
 
       return () => {
-        // ekrandan çıkarken (blur) her zaman geri aç
         Orientation.lockToPortrait();
         StatusBar.setHidden(false, 'fade');
       };
@@ -255,10 +199,6 @@ const Exercise = () => {
             updatedAt: new Date(),
           };
 
-          // const newVideoProgressItem: ExerciseVideoProgressDTO = {
-          //   ...response,
-          // };
-
           if (existingIndex === -1 || existingIndex === undefined) {
             return {
               ...prev,
@@ -269,7 +209,6 @@ const Exercise = () => {
               ],
             };
           } else {
-            // Varsa → güncelle
             return {
               ...prev,
               totalProgressDuration: newTotalProgressDuration,
@@ -291,7 +230,6 @@ const Exercise = () => {
           JSON.stringify({
             ...updatedProgress,
             totalProgressDuration: newTotalProgressDuration,
-            // local tarafta isEnd geldiyse force true yaz
             videoProgress: updatedProgress.videoProgress.map(vp =>
               vp.videoId ===
               exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id
@@ -308,7 +246,6 @@ const Exercise = () => {
           JSON.stringify({
             ...updatedProgress,
             totalProgressDuration: newTotalProgressDuration,
-            // local tarafta isEnd geldiyse force true yaz
             videoProgress: updatedProgress.videoProgress.map(vp =>
               vp.videoId ===
               exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id
@@ -329,18 +266,12 @@ const Exercise = () => {
       setCurrentTime(time);
       const now = Date.now();
       if (!isBuffering && now - lastSyncRef.current >= 3000) {
-        // 🤚 buffering iken sync yapma
         lastSyncRef.current = now;
         syncExerciseProgress(time);
       }
     }
   };
   console.log('updated', updatedProgress);
-
-  // useEffect(() => {
-  //   const interval = setInterval(syncExerciseProgress, 5000);
-  //   return () => clearInterval(interval);
-  // }, [syncExerciseProgress]);
 
   return (
     <View
@@ -372,10 +303,6 @@ const Exercise = () => {
             setDoneVideosDuration(
               prev => prev + exercise.videos[videoIdxToShow].durationSeconds,
             );
-            // const parentNav = navigation.getParent();
-            // parentNav?.setOptions({
-            //   tabBarStyle: makeTabBarStyle(theme, width),
-            // });
             setTimeout(() => {
               navigation.navigate('ExercisesUser');
             }, 250);
@@ -384,43 +311,11 @@ const Exercise = () => {
         onExit={() => setIsBackActionAlertVisible(true)}
       />
 
-      {/* <CustomAlert
-        message="Tebrikler! Egzersizi Tamamladınız"
-        // message="Egzersizi sonlandırmak istediğinizden emin misiniz?"
-        // secondMessage="Merak etmeyin, şu ana kadarki ilerlemeniz otomatik olarak kaydedilecek."
-        visible={isFinishModalVisbible}
-        onYes={() => {
-          const parentNav = navigation.getParent();
-          parentNav?.setOptions({
-            tabBarStyle: defaultTabBarStyle,
-          });
-
-          setPaused(true);
-
-          navigation.navigate('ExerciseDetail', {
-            progress: updatedProgress,
-            totalDurationSec: exercise.videos.reduce(
-              (sum, v) => sum + (v.durationSeconds ?? 0),
-              0,
-            ),
-          });
-          setIsBackActionAlertVisible(false);
-        }}
-        onCancel={() => setIsBackActionAlertVisible(false)}
-      /> */}
-
       <CustomAlert
-        message="Egzersizi terk etmek istediğinize emin misiniz?"
-        // message="Egzersizi sonlandırmak istediğinizden emin misiniz?"
-        // secondMessage="Merak etmeyin, şu ana kadarki ilerlemeniz otomatik olarak kaydedilecek."
-        secondMessage="İlerlemeniz kaydedilecektir"
+        message="Are you sure you want to quit the exercise?"
+        secondMessage="Your progress will be saved"
         visible={isBackActionAlertVisible}
         onYes={() => {
-          // const parentNav = navigation.getParent();
-          // parentNav?.setOptions({
-          //   tabBarStyle: makeTabBarStyle(theme, width),
-          // });
-
           setPaused(true);
 
           navigation.replace('ExerciseDetail', {

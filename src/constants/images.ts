@@ -12,6 +12,8 @@ import particles_blue from '../assets/images/particles_blue.png';
 import bubbles_blue_low from '../assets/images/bubbles_blue_low.png';
 import bubbles_blue_low_launch from '../assets/images/bubbles_blue_low_launch.png';
 import orange_pink_background from '../assets/images/orange_pink_background.png';
+import aerobic from '../assets/images/aerobic.png';
+import warming from '../assets/images/warming.png';
 
 export default {
   map,
@@ -28,4 +30,6 @@ export default {
   bubbles_blue_low,
   bubbles_blue_low_launch,
   orange_pink_background,
+  aerobic,
+  warming,
 };

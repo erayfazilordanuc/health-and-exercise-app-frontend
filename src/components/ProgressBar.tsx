@@ -85,11 +85,11 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 
   const getDisplayText = (): string => {
     if (value == null || value == 0) return ''; // 'Veri yok';
-    if (iconSource === icons.man_walking) return `${value} adım`;
+    if (iconSource === icons.man_walking) return `${value} steps`;
     if (iconSource === icons.sleep) {
       const hours = Math.floor(value / 60); // toplam dakikadan saat çıkar
       const minutes = Math.round(value % 60); // kalan dakikayı al
-      return `${hours} saat ${minutes} dk`;
+      return `${hours} hours ${minutes} m`;
     }
     if (iconSource === icons.pulse) return `${value} bpm`;
     if (iconSource === icons.kcal) return `${value} kcal`;

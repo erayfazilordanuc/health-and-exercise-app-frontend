@@ -103,7 +103,7 @@ function SettingsStack() {
         options={{
           header: () => (
             <CustomHeader
-              title={'Ayarlar'}
+              title={'Settings'}
               icon={icons.settings}
               className="border-primary-300"
               backArrowEnable={true}
@@ -885,8 +885,8 @@ export function BottomNavigator() {
               icon={icons.peopleV3}
               title={
                 (user && !user.groupId) || (user && user.role === 'ROLE_ADMIN')
-                  ? 'Gruplar'
-                  : 'Grup'
+                  ? 'Groups'
+                  : 'Group'
               }
             />
           ),
@@ -917,7 +917,7 @@ export function BottomNavigator() {
               focused={focused}
               icon={icons.gym}
               title={
-                user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler'
+                user && user.role === 'ROLE_USER' ? 'Exercise' : 'Exercises'
               }
             />
           ),
@@ -935,7 +935,7 @@ export function BottomNavigator() {
             fontSize: 24,
           },
           tabBarIcon: ({focused}) => (
-            <TabIcon focused={focused} icon={icons.home} title="Ana Ekran" />
+            <TabIcon focused={focused} icon={icons.home} title="Home" />
           ),
         }}
       />
@@ -954,7 +954,7 @@ export function BottomNavigator() {
             fontSize: 24,
           },
           tabBarIcon: ({focused}) => (
-            <TabIcon focused={focused} icon={icons.person} title="Profil" />
+            <TabIcon focused={focused} icon={icons.person} title="Profile" />
           ),
         }}
       />

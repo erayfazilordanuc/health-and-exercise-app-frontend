@@ -44,7 +44,6 @@ export function useUserSessions(
         `${from!}T00:00:00Z`,
         `${to!}T23:59:59.999Z`,
       ),
-    // lezzet ayarları: istersen özelleştir
     staleTime: options?.staleTime ?? 2 * 60 * 1000, // 2 dk
     gcTime: options?.gcTime ?? 5 * 60 * 1000,
     refetchOnWindowFocus: options?.refetchOnWindowFocus ?? true,

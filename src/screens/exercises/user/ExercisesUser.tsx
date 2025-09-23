@@ -224,7 +224,7 @@ const ExercisesUser = () => {
       if (!initialized) setInitialized(true);
     } catch (error) {
       console.log(error);
-      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
+      ToastAndroid.show('An error occurred', ToastAndroid.SHORT);
     } finally {
       setLoading(false);
     }
@@ -419,7 +419,7 @@ const ExercisesUser = () => {
   //   height: undefined,
   //   paddingTop: 6,
   //   paddingBottom: Math.max(insets.bottom, 8),
-
+  //
   //   // mevcut görünümü koru
   //   marginHorizontal: width / 24,
   //   position: 'absolute',
@@ -437,13 +437,13 @@ const ExercisesUser = () => {
   // });
 
   const WEEK = [
-    {num: 1, label: 'Pzt'},
-    {num: 2, label: 'Sal'},
-    {num: 3, label: 'Çar'},
-    {num: 4, label: 'Per'},
-    {num: 5, label: 'Cum'},
-    {num: 6, label: 'Cmt'},
-    {num: 7, label: 'Paz'},
+    {num: 1, label: 'Mon'},
+    {num: 2, label: 'Tue'},
+    {num: 3, label: 'Wed'},
+    {num: 4, label: 'Thu'},
+    {num: 5, label: 'Fri'},
+    {num: 6, label: 'Sat'},
+    {num: 7, label: 'Sun'},
   ];
 
   const ACTIVE_COLOR = '#0091ff';
@@ -511,7 +511,7 @@ const ExercisesUser = () => {
             color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
-          {user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler'}
+          {user && user.role === 'ROLE_USER' ? 'Exercise' : 'Exercises'}
         </Text>
       </View>
       {user && user.groupId && group && group.exerciseEnabled ? (
@@ -533,7 +533,7 @@ const ExercisesUser = () => {
                   <Text
                     className="font-rubik text-center"
                     style={{fontSize: 17, color: colors.text.primary}}>
-                    Bugünün Egzersizi
+                    Today&apos;s Exercise
                   </Text>
 
                   {todayInitialized ? (
@@ -554,9 +554,9 @@ const ExercisesUser = () => {
                           <Text
                             className="text-xl font-rubik"
                             style={{
-                              color: colors.background.primary
+                              color: colors.background.primary,
                             }}>
-                            Egzersize başla
+                            Start exercise
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
@@ -566,7 +566,7 @@ const ExercisesUser = () => {
                         </TouchableOpacity>
                       ) : todayExerciseProgress.exerciseDTO &&
                         todayExerciseProgress.exerciseDTO.videos &&
-                        calcPercent(todayExerciseProgress) === 100 ? (
+                        calcPercent(todayExerciseProgress) === 7 ? (
                         <TouchableOpacity
                           className="flex flex-row justify-center items-center ml-1 py-3 pl-3"
                           style={{
@@ -579,7 +579,7 @@ const ExercisesUser = () => {
                             style={{
                               color: colors.background.third,
                             }}>
-                            Tamamlandı!{'\n'}Egzersizi gör
+                            Completed!{'\n'}View exercise
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
@@ -602,7 +602,7 @@ const ExercisesUser = () => {
                             style={{
                               color: colors.isLight ? '#FFECD1' : '#473E31',
                             }}>
-                            Egzersize{'\n'}devam et
+                            Continue{'\n'}exercise
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
@@ -621,7 +621,7 @@ const ExercisesUser = () => {
                               width={6}
                               rotation={0}
                               lineCap="round"
-                              fill={todayPercent}
+                              fill={100}
                               tintColor={colors.primary[300]}
                               onAnimationComplete={() =>
                                 console.log('onAnimationComplete')
@@ -634,7 +634,7 @@ const ExercisesUser = () => {
                                     fontSize: 22,
                                     color: colors.text.primary,
                                   }}>
-                                  %{todayPercent}
+                                  %{100}
                                 </Text>
                               )}
                             </AnimatedCircularProgress>
@@ -658,12 +658,12 @@ const ExercisesUser = () => {
                 <Text
                   className="font-rubik text-center"
                   style={{fontSize: 16, color: colors.text.primary}}>
-                  Bugün için planlanan egzersiziniz yok.
+                  No exercise scheduled for today.
                 </Text>
                 <Text
                   className="font-rubik mt-1 mb-2 text-center"
                   style={{fontSize: 18, color: colors.text.primary}}>
-                  İyi dinlenmeler!
+                  Enjoy your rest!
                 </Text>
               </>
             )}
@@ -679,7 +679,7 @@ const ExercisesUser = () => {
               <Text
                 className="font-rubik mb-2 ml-2"
                 style={{fontSize: 19, color: colors.text.primary}}>
-                Egzersiz Takvimi
+                Exercise Calendar
               </Text>
               <Text
                 className="font-rubik mb-1 mr-1 rounded-xl"
@@ -690,7 +690,7 @@ const ExercisesUser = () => {
                   color: colors.text.primary,
                   backgroundColor: colors.background.secondary,
                 }}>
-                {new Date().toLocaleDateString('tr-TR', {
+                {new Date().toLocaleDateString('en-US', {
                   day: 'numeric',
                   month: 'long',
                   year: 'numeric',
@@ -715,7 +715,7 @@ const ExercisesUser = () => {
                     <Text
                       className="text-xs font-rubik ml-1"
                       style={{color: colors.text.primary}}>
-                      Tamamlandı
+                      Completed
                     </Text>
                   </View>
                   <View className="flex-row items-center space-x-2 mt-2">
@@ -726,7 +726,7 @@ const ExercisesUser = () => {
                     <Text
                       className="text-xs font-rubik ml-1"
                       style={{color: colors.text.primary}}>
-                      Tamamlanmadı
+                      Not completed
                     </Text>
                   </View>
                 </View>
@@ -741,7 +741,7 @@ const ExercisesUser = () => {
                     <Text
                       className="text-xs font-rubik ml-1"
                       style={{color: colors.text.primary}}>
-                      Yapılacak
+                      To do
                     </Text>
                   </View>
                   <View className="flex-row items-center space-x-2 mt-2">
@@ -752,7 +752,7 @@ const ExercisesUser = () => {
                     <Text
                       className="text-xs font-rubik ml-1"
                       style={{color: colors.text.primary}}>
-                      Bugün
+                      Today
                     </Text>
                   </View>
                 </View>
@@ -767,7 +767,7 @@ const ExercisesUser = () => {
                 <Text
                   className="text-sm font-rubik"
                   style={{color: colors.text.secondary}}>
-                  Egzersiz Günleri Seç
+                  Select Exercise Days
                 </Text>
               </TouchableOpacity>
             </View>
@@ -780,12 +780,12 @@ const ExercisesUser = () => {
           <Text
             className="font-rubik text-center"
             style={{fontSize: 18, color: colors.text.primary}}>
-            Egzersiz özelliği etkin değil.
+            Exercise feature is not enabled.
           </Text>
           <Text
             className="font-rubik mt-1 mb-2 text-center"
             style={{fontSize: 14, color: colors.text.primary}}>
-            Egzersiz yapabilmek için uygun bir gruba dahil olmanız gerekiyor.
+            You need to join a suitable group to perform exercises.
           </Text>
         </View>
       )}
@@ -815,7 +815,7 @@ const ExercisesUser = () => {
             <Text
               className="font-rubik-semibold text-2xl mb-3 text-center"
               style={{color: colors.text.primary}}>
-              Egzersiz Günleri
+              Exercise Days
             </Text>
             {!isScheduleLoading && !activeDays && (
               <>
@@ -824,14 +824,14 @@ const ExercisesUser = () => {
                   style={{
                     color: colors.isLight ? colors.text.third : '#C9C9C9',
                   }}>
-                  En az 3 gün seçiniz
+                  Select at least 3 days
                 </Text>
                 <Text
                   className="font-rubik text-md mb-3 text-center"
                   style={{
                     color: colors.isLight ? colors.text.third : '#C9C9C9',
                   }}>
-                  Egzersiz yapmak istediğiniz günlerin üzerine tıklayınız
+                  Tap the days you want to exercise
                 </Text>
               </>
             )}
@@ -891,7 +891,7 @@ const ExercisesUser = () => {
                 onPress={async () => {
                   if (!activeDays && !isScheduleLoading) {
                     ToastAndroid.show(
-                      'Lütfen bir egzersiz düzeni seçiniz',
+                      'Please select an exercise routine',
                       ToastAndroid.SHORT,
                     );
                     return;
@@ -902,7 +902,7 @@ const ExercisesUser = () => {
                 <Text
                   className="font-rubik text-md text-center"
                   style={{color: colors.text.secondary}}>
-                  İptal
+                  Cancel
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -915,7 +915,7 @@ const ExercisesUser = () => {
                 onPress={async () => {
                   if (updatedActiveDays && updatedActiveDays.length < 3)
                     ToastAndroid.show(
-                      'Lütfen en az 3 gün seçiniz',
+                      'Please select at least 3 days',
                       ToastAndroid.SHORT,
                     );
                   else {
@@ -929,12 +929,12 @@ const ExercisesUser = () => {
                         return;
                       } else
                         ToastAndroid.show(
-                          'Bir hata oluştu, internet bağlantınızı kontrol edin',
+                          'An error occurred, please check your internet connection',
                           ToastAndroid.SHORT,
                         );
                     } else
                       ToastAndroid.show(
-                        'Lütfen bekleyip tekrar deneyiniz',
+                        'Please wait and try again',
                         ToastAndroid.SHORT,
                       );
                     setUpdatedActiveDays(backupActiveDays);
@@ -943,7 +943,7 @@ const ExercisesUser = () => {
                 <Text
                   className="font-rubik text-md text-center"
                   style={{color: colors.text.secondary}}>
-                  Kaydet
+                  Save
                 </Text>
               </TouchableOpacity>
             </View>
@@ -969,14 +969,14 @@ const ExercisesUser = () => {
             <Text
               className="text-xl font-rubik-medium mb-3"
               style={{color: colors.text.primary}}>
-              Egzersiz Türü Seçimi
+              Exercise type selection
             </Text>
             <Text
               className={`font-rubik text-center ${
                 theme.colors.isLight ? 'text-gray-500' : 'text-gray-400'
               } mb-6`}>
-              Bugünkü egzersizinizi ayakta mı yoksa oturarak mı yapmak
-              istediğinizi seçiniz.
+              Choose whether you want to do today&apos;s exercise standing or
+              sitting.
             </Text>
 
             <View className="flex-row justify-between w-full">
@@ -992,7 +992,7 @@ const ExercisesUser = () => {
                   className="mt-3 font-rubik-semibold text-lg"
                   style={{color: colors.primary[200]}}>
                   {/*text-blue-600 */}
-                  Ayakta
+                  Standing
                 </Text>
               </TouchableOpacity>
 
@@ -1008,7 +1008,7 @@ const ExercisesUser = () => {
                   className="mt-3 font-rubik-semibold text-lg"
                   style={{color: colors.primary[200]}}>
                   {/*text-blue-600 */}
-                  Oturarak
+                  Seated
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1025,7 +1025,7 @@ const ExercisesUser = () => {
                 className={`${
                   theme.colors.isLight ? 'text-gray-600' : 'text-gray-400'
                 } font-rubik`}>
-                Geri Dön
+                Back
               </Text>
             </TouchableOpacity>
           </View>

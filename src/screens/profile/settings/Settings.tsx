@@ -124,7 +124,7 @@ const Settings = () => {
             }}>
             <SettingsItem
               icon={icons.preferences}
-              title={'Tercihler'}
+              title={'Preferences'}
               onPress={() => {
                 navigation.navigate('Preferences');
               }}
@@ -140,8 +140,8 @@ const Settings = () => {
               icon={icons.permission}
               title={
                 user && user.role === 'ROLE_ADMIN'
-                  ? 'İzinler'
-                  : 'İzinler ve Onaylar'
+                  ? 'Permissions'
+                  : 'Permissions and Approvals'
               }
               onPress={() => {
                 navigation.navigate('Permissions');
@@ -155,7 +155,7 @@ const Settings = () => {
             />
             <SettingsItem
               icon={icons.app_info}
-              title={'Uygulama Bilgileri'}
+              title={'App Information'}
               onPress={() => {
                 if (Platform.OS === 'ios') {
                   Linking.openURL('app-settings:');
@@ -174,7 +174,7 @@ const Settings = () => {
             {tapCount > 6 && (
               <SettingsItem
                 icon={icons.development}
-                title={'Geliştirme'}
+                title={'Development'}
                 onPress={() => {
                   navigation.navigate('Development');
                 }}
@@ -192,7 +192,7 @@ const Settings = () => {
         <View className="mt-3 px-3" style={{borderRadius: 17}}>
           <SettingsItem
             icon={icons.logout}
-            title="Çıkış Yap"
+            title="Log out"
             textColor="#fd5353"
             showArrow={false}
             onPress={async () => {

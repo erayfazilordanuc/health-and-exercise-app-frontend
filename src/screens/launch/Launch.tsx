@@ -123,7 +123,7 @@ const Launch = () => {
       // await SessionManager.init(user.id, DeviceInfo.getVersion(), DeviceInfo.getModel());
       // await SessionManager.stopSession('logout');
       navigation.navigate('App');
-    } 
+    }
     // TO DO TEST else yi kaldırıp deneyebilirsin
     else {
       setLoading(false);
@@ -181,8 +181,8 @@ const Launch = () => {
       <Text
         className="font-rubik-semibold text-xl text-center mt-4"
         style={[styles.titleBlack, {color: '#404040'}]}>
-        HopeMove ile hemşire rehberliğinde aktivitenizi izler, iyileşme
-        sürecinizi umutla destekleriz.
+        With HomeMove, we monitor your activity under the guidance of a nurse
+        and support your recovery process with hope.
       </Text>
       <TouchableOpacity
         className="px-6 py-3 rounded-2xl mb-2"
@@ -199,7 +199,7 @@ const Launch = () => {
           style={{
             color: colors.text.primary,
           }}>
-          Kullanıcı Girişi
+          User Login
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -217,13 +217,13 @@ const Launch = () => {
           style={{
             color: colors.text.primary,
           }}>
-          Hemşire Girişi
+          Nurse Login
         </Text>
       </TouchableOpacity>
       {/* Alt sol mavi dekor */}
       <View style={styles.bottomLeftShape} />
       <View style={styles.bottomRightShape} />
-      <Text style={styles.footerText}>Egzersiz takip ve sağlık uygulaması</Text>
+      <Text style={styles.footerText}>Exercise tracking and health app</Text>
     </SafeAreaView>
   );
 };

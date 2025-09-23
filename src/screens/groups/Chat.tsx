@@ -305,12 +305,12 @@ const Chat = () => {
     //   }>
     <View className="flex-1">
       <LinearGradient
-              colors={colors.gradient}
-              locations={[0.15, 0.25, 0.7, 1]}
-              start={{x: 0.1, y: 0}}
-              end={{x: 0.8, y: 1}}
-              className="absolute top-0 left-0 right-0 bottom-0"
-            />
+        colors={colors.gradient}
+        locations={[0.15, 0.25, 0.7, 1]}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.8, y: 1}}
+        className="absolute top-0 left-0 right-0 bottom-0"
+      />
       <View
         className="flex-1 px-5 pb-2"
         style={{
@@ -332,12 +332,10 @@ const Chat = () => {
                 : colors.background.primary,
               fontSize: 24,
             }}>
-            Sohbet:{' '}
+            Chat:{' '}
             <Text
               style={{
-                color: theme.colors.isLight
-                  ? colors.primary[200]
-                  : '#2F2F30',
+                color: theme.colors.isLight ? colors.primary[200] : '#2F2F30',
               }}>
               {' ' + receiver.fullName}
             </Text>
@@ -415,7 +413,7 @@ const Chat = () => {
                             ? new Date(msg.createdAt).toLocaleDateString() +
                               '\n'
                             : ''
-                        }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`; // Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.`;
+                        }I rate my mood today as ${score}/9.`; // Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.`;
                       })()}
                     </Text>
                   )}
@@ -438,7 +436,7 @@ const Chat = () => {
           }}>
           <TextInput
             value={message}
-            placeholder="Mesajınızı yazın"
+            placeholder="Write"
             placeholderTextColor="gray"
             onChangeText={setMessage}
             onSubmitEditing={() => {

@@ -82,7 +82,7 @@ const normalize = (m: Message) => {
     m.message =
       '\n' +
       new Date().toLocaleDateString() +
-      `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+      `\nI rate my mood today as ${score}/9.`;
   }
   return m;
 };

@@ -455,7 +455,7 @@ function UserLogin() {
           <Text
             className="text-3xl font-rubik-semibold text-center mt-6 mb-4"
             style={{color: '#404040'}}>
-            Kullanıcı Girişi
+            User Login
           </Text>
           {/* <Text
             className={`text-3xl font-rubik-medium text-center mb-2 mt-8`}
@@ -478,7 +478,7 @@ function UserLogin() {
                 onChangeText={(value: string) => {
                   setFullName(value);
                 }}
-                placeholder="Ad Soyad"
+                placeholder="Name Surname"
                 className="text-lg font-rubik ml-5 flex-1"
                 style={{color: colors.text.primary}}
               />
@@ -499,7 +499,7 @@ function UserLogin() {
               onChangeText={(value: string) => {
                 setUsername(value);
               }}
-              placeholder="Kullanıcı adı"
+              placeholder="Username"
               className="text-lg font-rubik ml-5 flex-1"
               style={{color: colors.text.primary}}
             />
@@ -523,7 +523,7 @@ function UserLogin() {
                         month: 'long',
                         year: 'numeric',
                       })
-                    : 'Doğum Tarihi'}
+                    : 'Birth Date'}
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
@@ -575,7 +575,7 @@ function UserLogin() {
                   ]}
                   labelField="label"
                   valueField="value"
-                  placeholder="Cinsiyet"
+                  placeholder="Gender"
                   value={gender}
                   onChange={item => setGender(item.value)}
                   style={{
@@ -620,7 +620,7 @@ function UserLogin() {
               onChangeText={(value: string) => {
                 setPassword(value);
               }}
-              placeholder="Şifre"
+              placeholder="Password"
               className="text-lg font-rubik ml-6 flex-1"
               style={{color: colors.text.primary}}
               secureTextEntry={!showPassword}
@@ -644,9 +644,9 @@ function UserLogin() {
                 style={{backgroundColor: colors.background.primary}}
                 onPress={() => setConsentModalVisible(true)}>
                 <Text
-                  className="ml-2 font-rubik text-md mr-3"
+                  className="ml-2 font-rubik text-sm mr-3"
                   style={{color: colors.text.primary}}>
-                  KVKK Metni ve Açık Rıza Beyanı
+                  KVKK Text and Explicit Consent Declaration
                 </Text>
                 <Image
                   source={
@@ -667,7 +667,7 @@ function UserLogin() {
                 <Text
                   className="ml-2 font-rubik text-md mr-3"
                   style={{color: colors.text.primary}}>
-                  Aydınlatılmış Onam Formu
+                  Informed Consent Form
                 </Text>
                 <Image
                   source={
@@ -695,7 +695,7 @@ function UserLogin() {
                   <Text
                     className="text-xl font-rubik text-center py-1"
                     style={{color: colors.text.primary}}>
-                    Giriş Yap
+                    Login
                   </Text>
                 </TouchableOpacity>
               )}
@@ -713,7 +713,7 @@ function UserLogin() {
                   <Text
                     className="text-xl font-rubik text-center py-1"
                     style={{color: colors.text.primary}}>
-                    Hesap Oluştur
+                    Create Account
                   </Text>
                 </TouchableOpacity>
               )}
@@ -729,7 +729,7 @@ function UserLogin() {
             <Text
               className="text-lg font-rubik text-center mt-4"
               style={{color: colors.text.third}}>
-              eğer hesabın varsa {'\n'}
+              if you have an account {'\n'}
               <TouchableOpacity
                 onPress={() => {
                   clearInputs();
@@ -738,7 +738,7 @@ function UserLogin() {
                 <Text
                   className="text-xl font-rubik text-center"
                   style={{color: '#0091ff', textDecorationLine: 'underline'}}>
-                  Giriş Yap
+                  Login
                 </Text>
               </TouchableOpacity>
             </Text>
@@ -747,7 +747,7 @@ function UserLogin() {
             <Text
               className="text-lg font-rubik text-center mt-4"
               style={{color: colors.text.third}}>
-              eğer hesabın yoksa{'\n'}
+              if you don't have an account{'\n'}
               <TouchableOpacity
                 onPress={() => {
                   clearInputs();
@@ -756,7 +756,7 @@ function UserLogin() {
                 <Text
                   className="text-xl font-rubik text-center"
                   style={{color: '#0091ff', textDecorationLine: 'underline'}}>
-                  Hesap Oluştur
+                  Create Account
                 </Text>
               </TouchableOpacity>
             </Text>

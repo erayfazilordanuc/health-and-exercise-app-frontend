@@ -527,7 +527,7 @@ const Profile = () => {
             color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
-          Profil {user?.role === 'ROLE_ADMIN' ? ' (Hemşire)' : ''}
+          Profile {user?.role === 'ROLE_ADMIN' ? ' (Nurse)' : ''}
         </Text>
         <TouchableOpacity
           className="mr-1"
@@ -636,7 +636,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik-medium text-xl"
                   style={{color: colors.text.primary}}>
-                  Kullanıcı Adı:{'  '}
+                  Username:{'  '}
                 </Text>
                 <Text
                   className="font-rubik text-xl"
@@ -644,11 +644,25 @@ const Profile = () => {
                   {user?.username}
                 </Text>
               </View>
+              {user?.role === 'ROLE_ADMIN' && (
+                <View className="flex flex-row items-center mt-3 mb-1">
+                  <Text
+                    className="font-rubik-medium text-xl"
+                    style={{color: colors.text.primary}}>
+                    Email:{'  '}
+                  </Text>
+                  <Text
+                    className="font-rubik text-xl"
+                    style={{color: colors.text.primary}}>
+                    {user?.email}
+                  </Text>
+                </View>
+              )}
               <View className="flex flex-row items-center mt-1 mb-1">
                 <Text
                   className="font-rubik-medium text-lg"
                   style={{color: colors.text.primary}}>
-                  Yaş:{'  '}
+                  Age:{'  '}
                 </Text>
                 <Text
                   className="font-rubik text-lg"
@@ -662,12 +676,12 @@ const Profile = () => {
                     <Text
                       className="font-rubik-medium text-lg"
                       style={{color: colors.text.primary}}>
-                      Doğum Tarihi:{'  '}
+                      Birth Date:{'  '}
                     </Text>
                     <Text
                       className="font-rubik text-lg"
                       style={{color: colors.text.primary}}>
-                      {new Date(user?.birthDate!).toLocaleDateString('tr-TR', {
+                      {new Date(user?.birthDate!).toLocaleDateString('en-EU', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric',
@@ -678,12 +692,12 @@ const Profile = () => {
                     <Text
                       className="font-rubik-medium text-lg"
                       style={{color: colors.text.primary}}>
-                      Cinsiyet:{'  '}
+                      Gender:{'  '}
                     </Text>
                     <Text
                       className="font-rubik text-lg"
                       style={{color: colors.text.primary}}>
-                      {user?.gender === 'male' ? 'Erkek' : 'Kadın'}
+                      {user?.gender === 'male' ? 'Male' : 'Female'}
                     </Text>
                   </View>
                 </>
@@ -701,7 +715,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik text-xl ml-1 mb-3"
                   style={{color: colors.text.primary}}>
-                  Haftalık Adım Hedefi
+                  Weekly Step Goal
                 </Text>
                 {weeklyGoal ? (
                   <View
@@ -712,7 +726,7 @@ const Profile = () => {
                         <Text
                           className="font-rubik text-lg ml-2"
                           style={{color: '#16d750'}}>
-                          Başarıyla tamamlandı!
+                          Completed successfully!
                         </Text>
                         <Image
                           source={icons.check}
@@ -724,12 +738,12 @@ const Profile = () => {
                     <Text
                       className="font-rubik text-lg ml-2 mb-2"
                       style={{color: colors.text.primary}}>
-                      Hedef: {' ' + weekly?.goal} adım
+                      Goal: {' ' + weekly?.goal} adım
                     </Text>
                     <Text
                       className="font-rubik text-lg ml-2"
                       style={{color: colors.text.primary}}>
-                      İlerleme: {' ' + weeklySteps} adım
+                      Progress: {' ' + weeklySteps} adım
                     </Text>
                   </View>
                 ) : (
@@ -744,7 +758,7 @@ const Profile = () => {
                       <Text
                         className="font-rubik text-lg ml-1 mr-1"
                         style={{color: colors.primary[200]}}>
-                        Bu Hafta İçin Hedef Ekle
+                        Add Goal For This Weekend
                         {!goaling && <Text>{'  '}+</Text>}
                       </Text>
                       {goaling && (
@@ -757,7 +771,7 @@ const Profile = () => {
                             }}
                             value={newStepGoalValue}
                             onChangeText={value => setNewStepGoalValue(value)}
-                            placeholder="Örn: 15000 adım"
+                            placeholder="Ex: 15000 steps"
                             placeholderTextColor={colors.text.third}
                             selectionColor={colors.primary[300]}
                             keyboardType="numeric"
@@ -770,7 +784,7 @@ const Profile = () => {
                                 setGoaling(false);
                                 setNewStepGoalValue('');
                               }}>
-                              <Text style={{color: 'white'}}>İptal</Text>
+                              <Text style={{color: 'white'}}>Cancel</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                               className="py-2 px-3 rounded-2xl mb-1 ml-1"
@@ -840,7 +854,7 @@ const Profile = () => {
                   <Text
                     className="font-rubik text-lg ml-3 mr-1"
                     style={{color: colors.text.primary}}>
-                    Hedef Başarım Rozetleri:{' '}
+                    Goal Achievement Badges:{' '}
                   </Text>
                   <Image source={icons.badge1_colorful} className="size-7" />
                   <Text
@@ -860,7 +874,7 @@ const Profile = () => {
                   <Text
                     className="font-rubik"
                     style={{fontSize: 20, color: colors.text.primary}}>
-                    Bulgular
+                    Symptoms
                   </Text>
 
                   {isHealthConnectInstalled &&
@@ -872,7 +886,7 @@ const Profile = () => {
                         borderRadius: 17,
                         backgroundColor: colors.background.primary,
                       }}>
-                      <Text style={{color: '#16d750'}}>Senkronize</Text>
+                      <Text style={{color: '#16d750'}}>Syncronizedd</Text>
                       <Image
                         source={icons.health_sync}
                         className="ml-2 size-6"
@@ -925,7 +939,7 @@ const Profile = () => {
                         }
                       }}>
                       <Text style={{color: colors.text.primary}}>
-                        Senkronize et
+                        Syncronize
                       </Text>
                       <Image
                         source={icons.health_sync}
@@ -958,7 +972,7 @@ const Profile = () => {
                 {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
                 <ProgressBar
                   value={heartRate}
-                  label="Nabız"
+                  label="Pulse"
                   iconSource={icons.pulse}
                   color="#FF3F3F"
                   setAddModalFunction={setAddModalFunction}
@@ -999,7 +1013,7 @@ const Profile = () => {
                 {totalCaloriesBurned > 0 ? (
                   <ProgressBar
                     value={totalCaloriesBurned}
-                    label="Yakılan Kalori"
+                    label="Calories Burned"
                     iconSource={icons.kcal}
                     color="#FF9900"
                     setAddModalFunction={setAddModalFunction}
@@ -1017,7 +1031,7 @@ const Profile = () => {
                   activeCaloriesBurned > 0 && (
                     <ProgressBar
                       value={activeCaloriesBurned}
-                      label="Yakılan Kalori"
+                      label="Calories Burned"
                       iconSource={icons.kcal}
                       color="#FF9900"
                       setAddModalFunction={setAddModalFunction}
@@ -1035,7 +1049,7 @@ const Profile = () => {
                 )}
                 <ProgressBar
                   value={steps}
-                  label="Adım"
+                  label="Steps"
                   iconSource={icons.man_walking}
                   color="#2CA4FF"
                   setAddModalFunction={setAddModalFunction}
@@ -1051,7 +1065,7 @@ const Profile = () => {
                 />
                 <ProgressBar
                   value={totalSleepMinutes}
-                  label="Uyku"
+                  label="Sleep"
                   iconSource={icons.sleep}
                   color="#FDEF22"
                   setAddModalFunction={setAddModalFunction}
@@ -1457,7 +1471,7 @@ const Profile = () => {
                 color: colors.text.primary,
               }}
               className="text-center font-rubik-medium">
-              Avatar Seçimi
+              Avatar Selection
             </Text>
             <View className="flex-row items-center justify-center mt-4">
               <Text
@@ -1467,7 +1481,7 @@ const Profile = () => {
                   color: colors.text.primary,
                 }}
                 className="text-center font-rubik">
-                Seçili Avatar
+                Chosen Avatar
               </Text>
               <Image
                 source={AVATARS[avatar as AvatarKey]}
@@ -1512,7 +1526,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik text-lg"
                   style={{color: colors.text.primary}}>
-                  İptal
+                  Cancel
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -1525,7 +1539,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik text-lg"
                   style={{color: colors.background.secondary}}>
-                  Kaydet
+                  Save
                 </Text>
               </TouchableOpacity>
             </View>

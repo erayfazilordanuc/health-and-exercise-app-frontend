@@ -233,25 +233,10 @@ const Group = () => {
 
   const onLeaveGroup = async () => {
     ToastAndroid.show(
-      'Gruptan ayrılma isteğiniz hemşireye iletildi.',
+      'Your request to leave the group has been sent to the nurse.',
       ToastAndroid.SHORT,
     );
     setIsLeaveAlertVisible(false);
-
-    // if (user) {
-    //   const updateUserDTO: UpdateUserDTO = {
-    //     id: user.id!,
-    //     username: user.username,
-    //     email: user.email,
-    //     fullName: user.fullName,
-    //     groupId: null,
-    //   };
-    //   const response = await updateUser(updateUserDTO);
-    //   if (response.status === 200) {
-    //     ToastAndroid.show('Gruptan ayrılma isteğiniz hemşireye iletildi', ToastAndroid.SHORT);
-    //     navigation.navigate('Groups');
-    //   }
-    // }
   };
 
   const respondToRequest = async (joinRequestId: number, approved: boolean) => {
@@ -287,14 +272,14 @@ const Group = () => {
           <Text
             className="text-lg font-rubik-medium dark:text-blue-300 mr-2"
             style={{color: colors.text.primary}}>
-            Hemşire
+            Nurse
           </Text>
         )}
         {user && item.username === user.username && (
           <Text
             className="text-lg font-rubik-medium dark:text-blue-300 mr-2"
             style={{color: colors.text.primary}}>
-            Siz
+            You
           </Text>
         )}
         {item.role === 'ROLE_USER' && user && user.role === 'ROLE_ADMIN' && (
@@ -313,7 +298,7 @@ const Group = () => {
             <Text
               className="text-lg font-rubik-medium dark:text-blue-300"
               style={{color: colors.text.primary}}>
-              Detay
+              Detail
             </Text>
           </TouchableOpacity>
         )}
@@ -348,7 +333,7 @@ const Group = () => {
             color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
-          Grup:{'  '}
+          Group:{'  '}
           <Text
             style={{
               color: theme.colors.isLight ? colors.primary[200] : '#2F2F30',
@@ -406,7 +391,7 @@ const Group = () => {
                   <Text
                     className="font-rubik-medium"
                     style={{fontSize: 19, color: colors.text.primary}}>
-                    Hemşire Bilgileri
+                    Nurse Information
                   </Text>
                   <Image
                     source={AVATARS[admin.avatar as AvatarKey]}
@@ -417,7 +402,7 @@ const Group = () => {
                   <Text
                     className="font-rubik-medium text-lg"
                     style={{color: colors.text.primary}}>
-                    Adı Soyadı:{'  '}
+                    Full Name:{'  '}
                   </Text>
                   <Text
                     className="font-rubik text-lg"
@@ -429,7 +414,7 @@ const Group = () => {
                   <Text
                     className="font-rubik-medium text-lg"
                     style={{color: colors.text.primary}}>
-                    E-posta:{'  '}
+                    Email:{'  '}
                   </Text>
                   <Text
                     className="font-rubik text-lg"
@@ -454,7 +439,7 @@ const Group = () => {
                 <Text
                   className="font-rubik mt-1"
                   style={{fontSize: 20, color: colors.primary[200]}}>
-                  En Son Mesaj
+                  Latest Message
                 </Text>
               )}
               <TouchableOpacity
@@ -464,34 +449,6 @@ const Group = () => {
                   borderRadius: 13,
                 }}
                 onPress={async () => {
-                  // if (admin && user) {
-                  //   const response = await isRoomExistBySenderAndReceiver(
-                  //     admin.username,
-                  //     user.username,
-                  //   );
-                  //   if (response && response.status === 200) {
-                  //     const roomId = response;
-                  //     if (roomId !== 0) {
-                  //       navigation.navigate('Chat', {
-                  //         roomId: roomId,
-                  //         sender: user.username,
-                  //         receiver: admin,
-                  //         fromNotification: false,
-                  //       });
-                  //     } else {
-                  //       const nextRoomResponse = await getNextRoomId();
-                  //       if (nextRoomResponse.status === 200) {
-                  //         const nextRoomId = nextRoomResponse.data;
-                  //         navigation.navigate('Chat', {
-                  //           roomId: nextRoomId,
-                  //           sender: user.username,
-                  //           receiver: admin,
-                  //           fromNotification: false,
-                  //         });
-                  //       }
-                  //     }
-                  //   }
-                  // }
                   console.log('admin', admin, 'user', user);
                   if (!(admin && user)) return;
 
@@ -558,7 +515,7 @@ const Group = () => {
                 <Text
                   className="font-rubik text-md"
                   style={{color: colors.primary[200], marginTop: 1}}>
-                  Sohbete Git
+                  Go to Chat
                 </Text>
               </TouchableOpacity>
             </View>
@@ -568,7 +525,7 @@ const Group = () => {
                 style={{color: colors.text.primary}}>
                 {lastMessage.receiver === user?.username
                   ? admin?.fullName + ' : ' + lastMessage.message
-                  : 'Siz : ' + lastMessage.message}
+                  : 'You : ' + lastMessage.message}
               </Text>
             )}
           </View>
@@ -585,7 +542,7 @@ const Group = () => {
             <Text
               className="font-rubik ml-1"
               style={{fontSize: 20, color: colors.text.primary}}>
-              Grup Ayarları
+              Group Settings
             </Text>
 
             <View
@@ -596,7 +553,7 @@ const Group = () => {
               <Text
                 className="font-rubik ml-1"
                 style={{fontSize: 16, color: colors.text.primary}}>
-                Egzersiz Etkinliği
+                Exercise Enabled
               </Text>
 
               <View
@@ -613,14 +570,14 @@ const Group = () => {
                     setExerciseEnabled(value);
                     alertRef.current?.show({
                       message: value
-                        ? 'Grup için egzersiz yapma özelliğini etkinleştirmek istediğinize emin misiniz?'
-                        : 'Grup için egzersiz yapma özelliğini devre dışı bırakmak istediğinize emin misiniz?',
+                        ? 'Are you sure you want to enable exercise for the group?'
+                        : 'Are you sure you want to disable exercise for the group?',
                       secondMessage: value
                         ? undefined
-                        : 'Bu işlem egzersiz yapan kullanıcıların verilerinin kaydedilmemesine sebep olacaktır.',
+                        : 'This will prevent recording exercise data for users in the group.',
                       isPositive: value ? true : false,
-                      onYesText: 'Evet',
-                      onCancelText: 'İptal',
+                      onYesText: 'Yes',
+                      onCancelText: 'Cancel',
                       onYes: async () => {
                         if (group && group.id) {
                           const updateDTO: UpdateGroupDTO = {
@@ -667,7 +624,7 @@ const Group = () => {
               <Text
                 className="font-rubik ml-1"
                 style={{fontSize: 20, color: colors.text.primary}}>
-                Gruba katılma istekleri
+                Join Requests
               </Text>
               {joinRequests.map(jr => (
                 <View
@@ -681,7 +638,7 @@ const Group = () => {
                     <Text
                       className="font-rubik-medium text-lg ml-1"
                       style={{color: colors.text.primary}}>
-                      Adı Soyadı:{' '}
+                      Full Name:{' '}
                     </Text>
                     <Text
                       className="font-rubik text-lg ml-1"
@@ -693,7 +650,7 @@ const Group = () => {
                     <Text
                       className="font-rubik-medium text-lg ml-1"
                       style={{color: colors.text.primary}}>
-                      Kullanıcı Adı:{' '}
+                      Username:{' '}
                     </Text>
                     <Text
                       className="font-rubik text-lg ml-1"
@@ -712,7 +669,7 @@ const Group = () => {
                       <Text
                         className="font-rubik text-md"
                         style={{color: colors.background.primary}}>
-                        Onayla
+                        Approve
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -724,7 +681,7 @@ const Group = () => {
                       <Text
                         className="font-rubik text-md"
                         style={{color: colors.background.primary}}>
-                        Reddet
+                        Reject
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -744,7 +701,7 @@ const Group = () => {
             <Text
               className="font-rubik ml-1"
               style={{fontSize: 20, color: colors.text.primary}}>
-              Üyeler
+              Members
             </Text>
             <Text
               className="font-rubik text-2xl mr-3"
@@ -760,86 +717,22 @@ const Group = () => {
                   {renderItem({item: user})}
                 </View>
               ))}
-            {/* <FlatList
-              data={members}
-              keyExtractor={item => (item.id ? item.id.toString() : '')}
-              renderItem={renderItem}
-              // ListEmptyComponent={
-              //   <Text className="text-center text-zinc-400">
-              //     Henüz bir grup yok
-              //   </Text>
-              // }
-            /> */}
           </View>
         </View>
         <View className="mt-4 w-1/2">
           <CustomAlert
-            message={'Gruptan ayrılmak istediğinize emin misiniz?'}
+            message={'Are you sure you want to leave the group?'}
             visible={isLeaveAlertVisible}
             onYes={onLeaveGroup}
             onCancel={() => {
               setIsLeaveAlertVisible(false);
             }}
           />
-
-          {/* {!loading && user && user.role === 'ROLE_USER' && (
-            <TouchableOpacity
-              style={{backgroundColor: colors.background.primary}}
-              onPress={() => {
-                setIsLeaveAlertVisible(true);
-              }}
-              className="flex flex-row items-center justify-between py-4 px-5 rounded-3xl">
-              <View className="flex flex-row items-center gap-3">
-                <Image
-                  source={icons.logout}
-                  className="size-7"
-                  tintColor={'#fd5353'}
-                />
-                <Text
-                  style={{color: '#fd5353'}}
-                  className={`font-rubik text-xl`}>
-                  Gruptan Ayrıl
-                </Text>
-              </View>
-            </TouchableOpacity>
-          )} */}
-
-          {/* {!loading &&
-            members &&
-            members.length === 0 &&
-            user &&
-            user.role === 'ROLE_ADMIN' && (
-              <TouchableOpacity
-                style={{backgroundColor: colors.background.primary}}
-                onPress={() => {
-                  setIsLeaveAlertVisible(true);
-                }}
-                className="flex flex-row items-center justify-between py-4 px-5 rounded-3xl">
-                <View className="flex flex-row items-center gap-3">
-                  <Image
-                    source={icons.logout}
-                    className="size-7"
-                    tintColor={'#fd5353'}
-                  />
-                  <Text
-                    style={{color: '#fd5353'}}
-                    className={`font-rubik text-xl`}>
-                    Grubu Sil
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            )} */}
         </View>
       </ScrollView>
       {user && user.role === 'ROLE_USER' && (
         <View className="absolute bottom-20 right-3 items-center">
-          {/* <Text
-                    className="mb-1 font-rubik text-base"
-                    style={{color: colors.text.primary}}>
-                    Grup Oluştur
-                  </Text> */}
-
-          {/* Buton */}
+          {/* Button */}
         </View>
       )}
 

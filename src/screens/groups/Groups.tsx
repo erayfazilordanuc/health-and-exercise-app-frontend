@@ -301,7 +301,7 @@ const Groups = () => {
             color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
-          Gruplar
+          Groups
         </Text>
       </View>
       <ScrollView
@@ -453,7 +453,7 @@ const Groups = () => {
               <Text
                 className="text-2xl font-rubik mb-1 ml-1"
                 style={{color: colors.text.primary}}>
-                Gruplarım
+                My Groups
               </Text>
               {filterGroupsByAdmin(groups, user.id!).length > 0 ? (
                 filterGroupsByAdmin(groups, user.id!).map(
@@ -672,7 +672,7 @@ const Groups = () => {
             <Text
               className="font-rubik text-lg"
               style={{color: colors.background.secondary}}>
-              Yeni Grup Oluştur
+              Create New Group
             </Text>
           </TouchableOpacity>
         </View>
