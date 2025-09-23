@@ -738,12 +738,12 @@ const Profile = () => {
                     <Text
                       className="font-rubik text-lg ml-2 mb-2"
                       style={{color: colors.text.primary}}>
-                      Goal: {' ' + weekly?.goal} adım
+                      Goal: {' ' + weekly?.goal} steps
                     </Text>
                     <Text
                       className="font-rubik text-lg ml-2"
                       style={{color: colors.text.primary}}>
-                      Progress: {' ' + weeklySteps} adım
+                      Progress: {' ' + weeklySteps} steps
                     </Text>
                   </View>
                 ) : (

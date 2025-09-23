@@ -181,7 +181,7 @@ const Launch = () => {
       <Text
         className="font-rubik-semibold text-xl text-center mt-4"
         style={[styles.titleBlack, {color: '#404040'}]}>
-        With HomeMove, we monitor your activity under the guidance of a nurse
+        With HopeMove, we monitor your activity under the guidance of a nurse
         and support your recovery process with hope.
       </Text>
       <TouchableOpacity
