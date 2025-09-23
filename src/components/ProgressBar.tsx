@@ -139,7 +139,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
               setAddModalFunction({setSymptom});
               onAdd(true);
             }}>
-            <GradientText text="Güncelle" />
+            <GradientText text="Update" />
           </TouchableOpacity>
         )}
       </View>

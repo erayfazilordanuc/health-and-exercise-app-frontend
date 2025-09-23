@@ -886,7 +886,7 @@ const Profile = () => {
                         borderRadius: 17,
                         backgroundColor: colors.background.primary,
                       }}>
-                      <Text style={{color: '#16d750'}}>Syncronizedd</Text>
+                      <Text style={{color: '#16d750'}}>Syncronized</Text>
                       <Image
                         source={icons.health_sync}
                         className="ml-2 size-6"
