@@ -97,11 +97,6 @@ const Groups = () => {
         fetchRequest(user.id!);
         setIsJoinModalVisible(false);
         setLoading(false);
-        // setTimeout(() => {
-        //   navigation.replace('Group', {groupId: response.data.groupId});
-        //   setIsJoinModalVisible(false);
-        //   setLoading(false);
-        // }, 750);
       }
     }
   };

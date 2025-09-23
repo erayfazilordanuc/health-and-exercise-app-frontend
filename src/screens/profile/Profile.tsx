@@ -644,6 +644,20 @@ const Profile = () => {
                   {user?.username}
                 </Text>
               </View>
+              {user?.role === 'ROLE_ADMIN' && (
+                <View className="flex flex-row items-center mt-3 mb-1">
+                  <Text
+                    className="font-rubik-medium text-xl"
+                    style={{color: colors.text.primary}}>
+                    E-posta{'  '}
+                  </Text>
+                  <Text
+                    className="font-rubik text-xl"
+                    style={{color: colors.text.primary}}>
+                    {user?.email}
+                  </Text>
+                </View>
+              )}
               <View className="flex flex-row items-center mt-1 mb-1">
                 <Text
                   className="font-rubik-medium text-lg"
