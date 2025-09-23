@@ -1380,7 +1380,7 @@ const Profile = () => {
                         className="flex-1 p-2 rounded-2xl items-center mx-1"
                         style={{backgroundColor: '#0EC946'}}>
                         <Text className="font-rubik text-lg text-white">
-                          Güncelle
+                          Update
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
