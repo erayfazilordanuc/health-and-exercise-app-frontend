@@ -252,7 +252,7 @@ const ExercisesUser = () => {
         {
           id: 34,
           exerciseId: 47,
-          name: 'Isınma',
+          name: 'Warming',
           videoUrl:
             'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/47_1000025365.mp4',
           durationSeconds: 486,
@@ -308,7 +308,7 @@ const ExercisesUser = () => {
         {
           id: 36,
           exerciseId: 48,
-          name: 'Isınma',
+          name: 'Warming',
           videoUrl:
             'https://exercise-health-application.s3.eu-central-1.amazonaws.com/videos/48_1000025360.mp4',
           durationSeconds: 359,
