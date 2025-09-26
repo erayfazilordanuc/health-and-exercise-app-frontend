@@ -88,3 +88,5 @@ google-services.json
 # Eclipse / IDE settings
 .settings/
 *.prefs
+
+gradle.properties
