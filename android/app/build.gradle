@@ -83,7 +83,7 @@ android {
         applicationId "com.health_connect_test"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 2
         versionName "0.2"
     }
     signingConfigs {
