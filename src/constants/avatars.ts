@@ -56,6 +56,9 @@ import owl_2 from '../assets/avatars/owl_2.png';
 import deer_2 from '../assets/avatars/deer_2.png';
 import chipmunk from '../assets/avatars/chipmunk.png';
 import fish from '../assets/avatars/fish.png';
+import butterfly from '../assets/avatars/butterfly.png';
+import butterfly_2 from '../assets/avatars/butterfly_2.png';
+import butterflies_2 from '../assets/avatars/butterflies_2.png';
 
 export const AVATARS = {
   apteryx,
@@ -65,7 +68,10 @@ export const AVATARS = {
   bee,
   bird,
   blackbird,
+  butterfly,
+  butterfly_2,
   butterflies,
+  butterflies_2,
   cat,
   cat_2,
   chicken,

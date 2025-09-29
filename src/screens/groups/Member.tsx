@@ -355,7 +355,7 @@ const Member = () => {
       <View
         className="pb-3"
         style={{
-          backgroundColor: 'transparent', // colors.background.secondary, 
+          backgroundColor: 'transparent', // colors.background.secondary,
           justifyContent: 'center',
           alignItems: 'flex-start',
         }}>

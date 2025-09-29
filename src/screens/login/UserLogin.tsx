@@ -47,6 +47,7 @@ import {
 } from '../../types/enums';
 import {ConsentModal} from '../../components/ConsentModal';
 import {parseTheme} from '../../themes/themes';
+import NetInfo from '@react-native-community/netinfo';
 
 function UserLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
@@ -419,8 +420,20 @@ function UserLogin() {
   };
 
   useEffect(() => {
-    console.log('eeee');
-    fetchConsentPolicies();
+    const unsubscribe = NetInfo.addEventListener(state => {
+      if (state.isConnected) {
+        if (loginMethod === LoginMethod.registration) fetchConsentPolicies();
+      } else {
+        ToastAndroid.show(
+          'İnternet bağlantısı yok, sözleşmeler yüklenemedi',
+          ToastAndroid.LONG,
+        );
+      }
+    });
+
+    return () => {
+      unsubscribe(); // cleanup
+    };
   }, []);
 
   return (

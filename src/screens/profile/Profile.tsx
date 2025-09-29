@@ -53,7 +53,7 @@ import {Picker} from '@react-native-picker/picker';
 import ProgressBar from '../../components/ProgressBar';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
-import {getUser, useUpdateAvatar} from '../../api/user/userService';
+import {getDbUser, getUser, useUpdateAvatar} from '../../api/user/userService';
 import GradientText from '../../components/GradientText';
 import {
   getLocal,
@@ -92,7 +92,7 @@ const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const insets = useSafeAreaInsets();
   // const [user, setUser] = useState<User | null>(null);
-  const {user} = useUser();
+  const {user, setUser} = useUser();
   const {colors, theme} = useTheme();
   const qc = useQueryClient();
   const {height} = Dimensions.get('screen');
@@ -377,7 +377,18 @@ const Profile = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    const net = await NetInfo.fetch();
+    if (!net.isConnected) {
+      ToastAndroid.show(
+        'İnternet bağlantısı yok, sayfa yenilenemedi',
+        ToastAndroid.LONG,
+      );
+      return;
+    }
     try {
+      const dbUser = await getDbUser();
+      if (dbUser) setUser(dbUser);
+      if (user?.role === 'ROLE_ADMIN') return;
       await checkEssentialAppsStatus();
       await symptomsQ.refetch();
       await refetchSteps();

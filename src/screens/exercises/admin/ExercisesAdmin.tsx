@@ -64,6 +64,8 @@ const ExercisesAdmin = () => {
     refetch,
   } = useAllExercises();
 
+  // TO DO burada egzersizler admin idye göre gelebilir
+
   return (
     <>
       <LinearGradient
