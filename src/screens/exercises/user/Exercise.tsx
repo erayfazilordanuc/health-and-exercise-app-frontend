@@ -28,6 +28,7 @@ import {useTheme} from '../../../themes/ThemeProvider';
 import {useUser} from '../../../contexts/UserContext';
 import {progressExerciseVideo} from '../../../api/exercise/progressService';
 import {Theme} from '../../../themes/themes';
+import {Cake} from 'lucide-react-native';
 
 type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'Exercise'>;
 
@@ -207,121 +208,116 @@ const Exercise = () => {
     }, []),
   );
 
+  const updatedProgressRef = useRef(updatedProgress);
+  useEffect(() => {
+    updatedProgressRef.current = updatedProgress;
+  }, [updatedProgress]);
   const syncExerciseProgress = useCallback(
-    async (time: number, videoIdx?: number, isEnd?: boolean) => {
-      if (
-        paused ||
-        (progress.videoProgress[videoIdxToShow] &&
-          time < progress.videoProgress[videoIdxToShow].progressDuration)
-      )
-        return;
+    async (time: number, finishedVideoIdx?: number, isEnd?: boolean) => {
+      // 1) Hangi video hesapta? Sadece guard ve isCompleted için lazım
+      const idx = finishedVideoIdx ?? videoIdxToShow;
+      const relatedVideo = exercise.videos[idx];
+      const vid = relatedVideo.id!;
 
-      const done = videoIdx
-        ? exercise.videos[videoIdxToShow].durationSeconds + doneVideosDuration
-        : doneVideosDuration;
-      if (videoIdx) setDoneVideosDuration(done);
+      const prevVP = updatedProgressRef.current.videoProgress.find(
+        vp => vp.videoId === vid,
+      );
 
-      const newTotalProgressDuration = done + time;
-      console.log('newTotal', newTotalProgressDuration);
+      // Zaman toleransı (float sapmalarına karşı)
+      const EPS = 0.25;
+      let isCompleted = time >= (relatedVideo.durationSeconds ?? 0) - EPS;
+
+      // Paused ise veya geriye/aynı süre yazılıyorsa çık (tamamlandı anı hariç)
+      if (!isCompleted) {
+        if (paused || (prevVP && time <= prevVP.progressDuration)) return;
+      }
+
+      // 2) Toplam süre hesabı (mevcut videonun full süresini SADECE bitişte ekle)
+      const completedBonus =
+        finishedVideoIdx != null
+          ? exercise.videos[finishedVideoIdx].durationSeconds ?? 0
+          : 0;
+
+      const newTotalProgressDuration =
+        doneVideosDuration +
+        completedBonus +
+        (finishedVideoIdx == null ? time : 0);
       setTotalProgressDuration(newTotalProgressDuration);
 
-      let response = null;
+      // 3) Online ise API
+      let response: any = null;
+      try {
+        const netInfo = await NetInfo.fetch();
+        if (netInfo.isConnected) {
+          response = await progressExerciseVideo(
+            exercise.id!,
+            vid,
+            Math.min(time, relatedVideo.durationSeconds ?? time),
+          );
+        }
+      } catch (e) {
+        console.warn('progressExerciseVideo failed:', e);
+      }
 
-      const netInfo = await NetInfo.fetch();
-      if (netInfo.isConnected) {
-        response = await progressExerciseVideo(
-          exercise.id!,
-          exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id!,
-          time,
-        );
-      } else setTimeout(() => {}, 150);
-
+      // 4) State & AsyncStorage
       try {
         setUpdatedProgress(prev => {
-          const existingIndex = prev.videoProgress?.findIndex(
-            vp =>
-              vp.videoId ===
-              exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id,
+          const existingIndex = prev.videoProgress.findIndex(
+            vp => vp.videoId === vid,
           );
+          const base =
+            existingIndex === -1
+              ? undefined
+              : prev.videoProgress[existingIndex];
+
+          // Bir kez true olduysa hep true kalsın
+          isCompleted = isCompleted || base?.isCompeleted || !!isEnd;
 
           const newVideoProgressItem: ExerciseVideoProgressDTO = {
-            id: response ? response.id : null,
-            progressDuration: time,
-            isCompeleted: !!isEnd,
-            videoId: exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id!,
+            id: response?.id ?? base?.id,
+            progressDuration: Math.min(
+              time,
+              relatedVideo.durationSeconds ?? time,
+            ),
+            isCompeleted: isCompleted,
+            videoId: vid,
             exerciseId: exercise.id!,
             userId: user!.id!,
-            createdAt: response?.createdAt ?? new Date(),
+            createdAt: response?.createdAt ?? base?.createdAt ?? new Date(),
             updatedAt: new Date(),
           };
 
-          // const newVideoProgressItem: ExerciseVideoProgressDTO = {
-          //   ...response,
-          // };
+          const newVideoProgress =
+            existingIndex === -1
+              ? [...prev.videoProgress, newVideoProgressItem]
+              : prev.videoProgress.map((it, i) =>
+                  i === existingIndex ? newVideoProgressItem : it,
+                );
 
-          if (existingIndex === -1 || existingIndex === undefined) {
-            return {
-              ...prev,
-              totalProgressDuration: newTotalProgressDuration,
-              videoProgress: [
-                ...(prev.videoProgress || []),
-                newVideoProgressItem,
-              ],
-            };
-          } else {
-            // Varsa → güncelle
-            return {
-              ...prev,
-              totalProgressDuration: newTotalProgressDuration,
-              videoProgress: prev.videoProgress.map((item, idx) =>
-                idx === existingIndex
-                  ? {
-                      ...newVideoProgressItem,
-                      isCompeleted: item.isCompeleted || !!isEnd,
-                    }
-                  : item,
-              ),
-            };
-          }
+          const next = {
+            ...prev,
+            totalProgressDuration: newTotalProgressDuration,
+            videoProgress: newVideoProgress,
+          };
+
+          const key = `exerciseProgress_${new Date()
+            .toISOString()
+            .slice(0, 10)}`;
+          AsyncStorage.setItem(key, JSON.stringify(next)).catch(() => {});
+          return next;
         });
-
-        const key = `exerciseProgress_${new Date().toISOString().slice(0, 10)}`;
-        await AsyncStorage.setItem(
-          key,
-          JSON.stringify({
-            ...updatedProgress,
-            totalProgressDuration: newTotalProgressDuration,
-            // local tarafta isEnd geldiyse force true yaz
-            videoProgress: updatedProgress.videoProgress.map(vp =>
-              vp.videoId ===
-              exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id
-                ? {...vp, isCompeleted: vp.isCompeleted || !!isEnd}
-                : vp,
-            ),
-          }),
-        );
-        console.log('time', time);
-
-        console.log('updatedProgress', updatedProgress);
-        console.log(
-          'saved local today progress',
-          JSON.stringify({
-            ...updatedProgress,
-            totalProgressDuration: newTotalProgressDuration,
-            // local tarafta isEnd geldiyse force true yaz
-            videoProgress: updatedProgress.videoProgress.map(vp =>
-              vp.videoId ===
-              exercise.videos[videoIdx ? videoIdx : videoIdxToShow].id
-                ? {...vp, isCompeleted: vp.isCompeleted || !!isEnd}
-                : vp,
-            ),
-          }),
-        );
       } catch (error) {
         console.error('❌ Sync error:', error);
       }
     },
-    [currentTime, doneVideosDuration],
+    [
+      paused,
+      videoIdxToShow,
+      doneVideosDuration,
+      exercise.id,
+      exercise.videos,
+      user?.id,
+    ],
   );
 
   const handleDurationProgress = async (time: number) => {
@@ -335,12 +331,6 @@ const Exercise = () => {
       }
     }
   };
-  console.log('updated', updatedProgress);
-
-  // useEffect(() => {
-  //   const interval = setInterval(syncExerciseProgress, 5000);
-  //   return () => clearInterval(interval);
-  // }, [syncExerciseProgress]);
 
   return (
     <View
@@ -353,61 +343,85 @@ const Exercise = () => {
         pausedParent={paused}
         onBufferChange={setIsBuffering}
         onDurationProgress={handleDurationProgress}
-        onVideoEnd={() => {
-          console.log('eeeeend');
-          syncExerciseProgress(
-            exercise.videos[videoIdxToShow].durationSeconds,
-            undefined,
-            true,
-          );
-          console.log(videoIdxToShow, exercise.videos.length);
-          if (videoIdxToShow + 1 < exercise.videos.length) {
-            syncExerciseProgress(1, videoIdxToShow + 1, true);
+        // onVideoEnd={() => {
+        //   console.log('eeeeend');
+        //   syncExerciseProgress(
+        //     exercise.videos[videoIdxToShow].durationSeconds,
+        //     undefined,
+        //     true,
+        //   );
+        //   console.log(videoIdxToShow, exercise.videos.length);
+        //   if (videoIdxToShow + 1 < exercise.videos.length) {
+        //     // syncExerciseProgress(1, videoIdxToShow + 1, true);
+        //     setStartSecSync(0);
+        //     setDoneVideosDuration(
+        //       prev => prev + exercise.videos[videoIdxToShow].durationSeconds,
+        //     );
+        //     setVideoIdxToShow(prev => prev + 1);
+        //   } else {
+        //     setDoneVideosDuration(
+        //       prev => prev + exercise.videos[videoIdxToShow].durationSeconds,
+        //     );
+        //     // const parentNav = navigation.getParent();
+        //     // parentNav?.setOptions({
+        //     //   tabBarStyle: makeTabBarStyle(theme, width),
+        //     // });
+        //     setTimeout(() => {
+        //       navigation.navigate('ExercisesUser');
+        //     }, 250);
+        //   }
+        // }}
+        onVideoEnd={async () => {
+          // 1) O an biten videonun index’ini sabitle
+          const finishedIdx = videoIdxToShow;
+          const finishedDur = exercise.videos[finishedIdx].durationSeconds;
+
+          // 2) Önce biten video için kesin olarak tamamlandı yaz (o index’i geçir!)
+          console.log('burada', finishedIdx, finishedDur);
+          await syncExerciseProgress(finishedDur, finishedIdx, true);
+
+          // 3) Sonraki videoya geç
+          if (finishedIdx + 1 < exercise.videos.length) {
             setStartSecSync(0);
-            setDoneVideosDuration(
-              prev => prev + exercise.videos[videoIdxToShow].durationSeconds,
-            );
-            setVideoIdxToShow(prev => prev + 1);
+            setDoneVideosDuration(prev => prev + finishedDur);
+            setVideoIdxToShow(finishedIdx + 1);
           } else {
-            setDoneVideosDuration(
-              prev => prev + exercise.videos[videoIdxToShow].durationSeconds,
-            );
-            // const parentNav = navigation.getParent();
-            // parentNav?.setOptions({
-            //   tabBarStyle: makeTabBarStyle(theme, width),
-            // });
+            setDoneVideosDuration(prev => prev + finishedDur);
             setTimeout(() => {
               navigation.navigate('ExercisesUser');
             }, 250);
           }
         }}
+        // onVideoEnd={() => {
+        //   console.log('eeeeend');
+        //   syncExerciseProgress(
+        //     exercise.videos[videoIdxToShow].durationSeconds,
+        //     undefined,
+        //     true,
+        //   );
+        //   console.log(videoIdxToShow, exercise.videos.length);
+        //   if (videoIdxToShow + 1 < exercise.videos.length) {
+        //     // syncExerciseProgress(1, videoIdxToShow + 1, true);
+        //     setStartSecSync(0);
+        //     setDoneVideosDuration(
+        //       prev => prev + exercise.videos[videoIdxToShow].durationSeconds,
+        //     );
+        //     setVideoIdxToShow(prev => prev + 1);
+        //   } else {
+        //     setDoneVideosDuration(
+        //       prev => prev + exercise.videos[videoIdxToShow].durationSeconds,
+        //     );
+        //     // const parentNav = navigation.getParent();
+        //     // parentNav?.setOptions({
+        //     //   tabBarStyle: makeTabBarStyle(theme, width),
+        //     // });
+        //     setTimeout(() => {
+        //       navigation.navigate('ExercisesUser');
+        //     }, 250);
+        //   }
+        // }}
         onExit={() => setIsBackActionAlertVisible(true)}
       />
-
-      {/* <CustomAlert
-        message="Tebrikler! Egzersizi Tamamladınız"
-        // message="Egzersizi sonlandırmak istediğinizden emin misiniz?"
-        // secondMessage="Merak etmeyin, şu ana kadarki ilerlemeniz otomatik olarak kaydedilecek."
-        visible={isFinishModalVisbible}
-        onYes={() => {
-          const parentNav = navigation.getParent();
-          parentNav?.setOptions({
-            tabBarStyle: defaultTabBarStyle,
-          });
-
-          setPaused(true);
-
-          navigation.navigate('ExerciseDetail', {
-            progress: updatedProgress,
-            totalDurationSec: exercise.videos.reduce(
-              (sum, v) => sum + (v.durationSeconds ?? 0),
-              0,
-            ),
-          });
-          setIsBackActionAlertVisible(false);
-        }}
-        onCancel={() => setIsBackActionAlertVisible(false)}
-      /> */}
 
       <CustomAlert
         message="Egzersizi terk etmek istediğinize emin misiniz?"
@@ -416,11 +430,6 @@ const Exercise = () => {
         secondMessage="İlerlemeniz kaydedilecektir"
         visible={isBackActionAlertVisible}
         onYes={() => {
-          // const parentNav = navigation.getParent();
-          // parentNav?.setOptions({
-          //   tabBarStyle: makeTabBarStyle(theme, width),
-          // });
-
           setPaused(true);
 
           navigation.replace('ExerciseDetail', {

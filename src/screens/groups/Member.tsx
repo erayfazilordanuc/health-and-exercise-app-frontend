@@ -345,17 +345,17 @@ const Member = () => {
   return (
     <View style={{paddingTop: insets.top * 1.3}} className="flex-1 px-3">
       <LinearGradient
-              colors={colors.gradient}
-              locations={[0.15, 0.25, 0.7, 1]}
-              start={{x: 0.1, y: 0}}
-              end={{x: 0.8, y: 1}}
-              className="absolute top-0 left-0 right-0 bottom-0"
-            />
+        colors={colors.gradient}
+        locations={[0.15, 0.25, 0.7, 1]}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.8, y: 1}}
+        className="absolute top-0 left-0 right-0 bottom-0"
+      />
 
       <View
         className="pb-3"
         style={{
-          backgroundColor: 'transparent', // colors.background.secondary,
+          backgroundColor: 'transparent', // colors.background.secondary, 
           justifyContent: 'center',
           alignItems: 'flex-start',
         }}>
@@ -368,9 +368,7 @@ const Member = () => {
           Hasta:{'  '}
           <Text
             style={{
-              color: theme.colors.isLight
-                ? colors.primary[200]
-                : colors.primary[300],
+              color: theme.colors.isLight ? colors.primary[200] : '#2F2F30',
             }}>
             {member && member.fullName ? member.fullName : ''}
           </Text>

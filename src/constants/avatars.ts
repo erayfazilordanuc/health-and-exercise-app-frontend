@@ -31,40 +31,90 @@ import walrus from '../assets/avatars/walrus.png';
 import wolf from '../assets/avatars/wolf.png';
 import wolf_2 from '../assets/avatars/wolf_2.png';
 import lion from '../assets/avatars/lion.png';
+import sloth from '../assets/avatars/sloth.png';
+import squirrel from '../assets/avatars/squirrel.png';
+import chicken from '../assets/avatars/chicken.png';
+import jaguar from '../assets/avatars/jaguar.png';
+import penguin_3 from '../assets/avatars/penguin_3.png';
+import clownfish from '../assets/avatars/clownfish.png';
+import tiger from '../assets/avatars/tiger.png';
+import tiger_2 from '../assets/avatars/tiger_2.png';
+import shark from '../assets/avatars/shark.png';
+import blackbird from '../assets/avatars/blackbird.png';
+import apteryx from '../assets/avatars/apteryx.png';
+import koi from '../assets/avatars/koi.png';
+import giraffe from '../assets/avatars/giraffe.png';
+import hamster from '../assets/avatars/hamster.png';
+import raccoon from '../assets/avatars/raccoon.png';
+import moose from '../assets/avatars/moose.png';
+import ferret from '../assets/avatars/ferret.png';
+import bear_2 from '../assets/avatars/bear_2.png';
+import bird from '../assets/avatars/bird.png';
+import sloth_2 from '../assets/avatars/sloth_2.png';
+import fox_2 from '../assets/avatars/fox_2.png';
+import owl_2 from '../assets/avatars/owl_2.png';
+import deer_2 from '../assets/avatars/deer_2.png';
+import chipmunk from '../assets/avatars/chipmunk.png';
+import fish from '../assets/avatars/fish.png';
 
 export const AVATARS = {
+  apteryx,
   bat,
   bear,
+  bear_2,
   bee,
+  bird,
+  blackbird,
   butterflies,
   cat,
   cat_2,
+  chicken,
+  chipmunk,
+  clownfish,
   deer,
+  deer_2,
   dog,
+  ferret,
+  fish,
   fox,
+  fox_2,
+  giraffe,
+  hamster,
+  jaguar,
   jacutinga,
   jellyfish,
+  koi,
+  lion,
   llama,
   macaw,
   meerkat,
+  moose,
   mouse,
   owl,
+  owl_2,
   panda,
   panda_1,
   panda_bear,
   penguin,
   penguin_2,
+  penguin_3,
   polar_bear,
   rabbit,
   rabbit_2,
   rabbit_3,
+  raccoon,
   sea_lion,
+  shark,
+  sloth,
+  sloth_2,
   snowy_owl,
+  squirrel,
+  tiger,
+  tiger_2,
   turtle,
   walrus,
   wolf,
   wolf_2,
-  lion,
   non,
 } as const;
 

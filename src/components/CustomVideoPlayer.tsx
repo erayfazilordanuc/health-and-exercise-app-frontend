@@ -98,6 +98,70 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
   const [resolvedUri, setResolvedUri] = useState<string | null>(null);
   const [downloadPct, setDownloadPct] = useState(0); // % indirme ilerleme
 
+  // useEffect(() => {
+  //   let cancelled = false;
+
+  //   (async () => {
+  //     setResolvedUri(null);
+  //     setDownloadPct(0);
+
+  //     // 1) Lokalde var mı?
+  //     const local = await getCachedLocalUri(
+  //       String(videoDTO.id ?? videoDTO.videoUrl),
+  //     );
+  //     if (cancelled) return;
+
+  //     if (local) {
+  //       setResolvedUri(local);
+  //       return;
+  //     } else {
+  //       const net = await NetInfo.fetch();
+  //       if (!net.isConnected) {
+  //         ToastAndroid.show(
+  //           'İnternet bağlantınızı kontrol ediniz',
+  //           ToastAndroid.LONG,
+  //         );
+  //         setPaused(true);
+  //         return;
+  //       }
+  //     }
+
+  //     setResolvedUri(videoDTO.videoUrl); // stream başlasın
+  //     try {
+  //       const fileUri = await cacheVideoIfNeeded(
+  //         String(videoDTO.id ?? videoDTO.videoUrl),
+  //         videoDTO.videoUrl,
+  //         setDownloadPct,
+  //       );
+  //       if (!cancelled) {
+  //         // “sessiz” kaynak değiştirme (seek’i korumak için mevcut zamanı tutup seek edebilirsiniz)
+  //         setResolvedUri(fileUri);
+  //       }
+  //     } catch {
+  //       // indirme patlarsa umursama → stream devam
+  //     }
+  //   })();
+
+  //   return () => {
+  //     cancelled = true;
+  //   };
+  // }, [videoDTO.id, videoDTO.videoUrl]);
+
+  const videoSource = React.useMemo(() => {
+    if (!resolvedUri) return undefined;
+    const isHLS = resolvedUri.endsWith('.m3u8');
+    return {uri: resolvedUri, type: isHLS ? 'm3u8' : undefined};
+  }, [resolvedUri]);
+
+  const currentTimeRef = useRef(0);
+  const pendingSwapSeekRef = useRef<number | null>(null);
+  const didSwapRef = useRef(false);
+
+  useEffect(() => {
+    currentTimeRef.current = currentTime; // progress geldikçe güncel kalsın
+  }, [currentTime]);
+
+  // ✅ TEK ve DOĞRU effect (ilkini sil, sadece bunu tut)
   useEffect(() => {
     let cancelled = false;
 
@@ -105,14 +169,14 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
       setResolvedUri(null);
       setDownloadPct(0);
 
-      // 1) Lokalde var mı?
+      // 1) Lokal var mı?
       const local = await getCachedLocalUri(
         String(videoDTO.id ?? videoDTO.videoUrl),
       );
       if (cancelled) return;
 
       if (local) {
-        setResolvedUri(local);
+        setResolvedUri(local); // direkt local’den başla → swap yok
         return;
       } else {
         const net = await NetInfo.fetch();
@@ -126,7 +190,10 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
         }
       }
 
-      setResolvedUri(videoDTO.videoUrl); // stream başlasın
+      // 2) Önce stream’den başlat
+      setResolvedUri(videoDTO.videoUrl);
+
+      // 3) Arkada indir; bitince kaldığın yerden local’e geç
       try {
         const fileUri = await cacheVideoIfNeeded(
           String(videoDTO.id ?? videoDTO.videoUrl),
@@ -134,11 +201,13 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
           setDownloadPct,
         );
         if (!cancelled) {
-          // “sessiz” kaynak değiştirme (seek’i korumak için mevcut zamanı tutup seek edebilirsiniz)
-          setResolvedUri(fileUri);
+          // swap öncesi süreyi kaydet → onLoad’da buraya seek edilecek
+          pendingSwapSeekRef.current = currentTimeRef.current;
+          didSwapRef.current = true;
+          setResolvedUri(fileUri); // source değişir → Video yeniden onLoad olur
         }
       } catch {
-        // indirme patlarsa umursama → stream devam
+        // indirme başarısızsa stream’e devam
       }
     })();
 
@@ -147,17 +216,12 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
     };
   }, [videoDTO.id, videoDTO.videoUrl]);
 
-  const videoSource = React.useMemo(() => {
-    if (!resolvedUri) return undefined;
-    const isHLS = resolvedUri.endsWith('.m3u8');
-    return {uri: resolvedUri, type: isHLS ? 'm3u8' : undefined};
-  }, [resolvedUri]);
-
   return (
     <TouchableWithoutFeedback onPress={handleToggleControls}>
       <View style={{flex: 1, backgroundColor: '#171717'}}>
         <Video
-          key={`${videoDTO.id}-${videoDTO.videoUrl}`}
+          // key={`${videoDTO.id}-${videoDTO.videoUrl}`}
+          key={String(videoDTO.id)}
           ref={playerRef}
           source={{
             uri: resolvedUri ?? videoDTO.videoUrl,
@@ -190,6 +254,13 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
             if (!hasSeeked && startAt > 0) {
               playerRef.current?.seek(startAt);
               setHasSeeked(true);
+            }
+
+            if (didSwapRef.current && pendingSwapSeekRef.current != null) {
+              const t = Math.min(pendingSwapSeekRef.current, duration - 0.5);
+              playerRef.current?.seek(Math.max(0, t));
+              pendingSwapSeekRef.current = null;
+              didSwapRef.current = false;
             }
           }}
           onProgress={({currentTime}) => {

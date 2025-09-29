@@ -7,6 +7,7 @@ import {
   Alert,
   Platform,
   Linking,
+  ToastAndroid,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -24,6 +25,7 @@ import CustomAlert from '../../../components/CustomAlert';
 import {useLogout} from '../../../api/auth/authService';
 import NotificationSetting from 'react-native-open-notification';
 import {useUser} from '../../../contexts/UserContext';
+import {deleteUser} from '../../../api/user/userService';
 
 interface SettingsItemProps {
   icon: ImageSourcePropType;
@@ -78,7 +80,8 @@ const Settings = () => {
 
   const {user} = useUser();
   const logout = useLogout();
-  const [isAlertVisible, setIsAlertVisible] = useState(false);
+  const [isLogoutAlertVisible, setIsLogoutAlertVisible] = useState(false);
+  const [isDeleteAlertVisible, setIsDeleteAlertVisible] = useState(false);
 
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState<number>(0);
@@ -92,6 +95,24 @@ const Settings = () => {
         routes: [{name: 'Launch'}],
       }),
     );
+  };
+
+  const handleDelete = async () => {
+    const isUserDeleted = await deleteUser();
+    if (isUserDeleted) {
+      await logout();
+      appNavigation.navigate('Launch');
+      appNavigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{name: 'Launch'}],
+        }),
+      );
+    } else
+      ToastAndroid.show(
+        'Hesap silme işlemi başarısız oldu.',
+        ToastAndroid.LONG,
+      );
   };
 
   const handleSecretTap = () => {
@@ -189,14 +210,25 @@ const Settings = () => {
           /> */}
           </View>
         </View>
-        <View className="mt-3 px-3" style={{borderRadius: 17}}>
+        <View
+          className="mt-3 px-3 flex-row items-center justify-between"
+          style={{borderRadius: 17}}>
           <SettingsItem
             icon={icons.logout}
             title="Çıkış Yap"
             textColor="#fd5353"
             showArrow={false}
             onPress={async () => {
-              setIsAlertVisible(true);
+              setIsLogoutAlertVisible(true);
+            }}
+          />
+          <SettingsItem
+            icon={icons.delete_user}
+            title="Hesabımı Sil"
+            textColor="#fd5353"
+            showArrow={false}
+            onPress={async () => {
+              setIsDeleteAlertVisible(true);
             }}
           />
         </View>
@@ -211,10 +243,18 @@ const Settings = () => {
       </View>
       <CustomAlert
         message={'Çıkmak istediğinize emin misiniz?'}
-        visible={isAlertVisible}
+        visible={isLogoutAlertVisible}
         onYes={handleLogout}
         onCancel={() => {
-          setIsAlertVisible(false);
+          setIsLogoutAlertVisible(false);
+        }}
+      />
+      <CustomAlert
+        message={'Hesabınızı silmek istediğinizden emin misiniz?'}
+        visible={isDeleteAlertVisible}
+        onYes={handleDelete}
+        onCancel={() => {
+          setIsDeleteAlertVisible(false);
         }}
       />
     </>

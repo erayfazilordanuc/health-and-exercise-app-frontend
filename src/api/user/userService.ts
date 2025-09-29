@@ -77,3 +77,19 @@ export const useUpdateAvatar = () => {
 
   return {updateAvatar};
 };
+
+export const deleteUser = async (): Promise<boolean> => {
+  try {
+    const response = await apiClient.delete('/users/me');
+    console.log('delete user response', response);
+
+    if (response.status === 200 || response.status === 204) {
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error('delete user error', error);
+    return false;
+  }
+};

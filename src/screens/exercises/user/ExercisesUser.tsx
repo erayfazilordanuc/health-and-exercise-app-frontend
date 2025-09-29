@@ -85,7 +85,7 @@ const ExercisesUser = () => {
   //   enabled: !!user?.groupId,
   // });
   const groupId: number = Number.isFinite(user?.groupId as number)
-    ? (user!.groupId as number)
+    ? (user?.groupId as number)
     : -1;
 
   const {
@@ -96,7 +96,13 @@ const ExercisesUser = () => {
   } = useGroupById(groupId, {enabled: Number.isFinite(groupId) && groupId > 0});
   const [showModal, setShowModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-
+  console.log(
+    user && user.groupId && group && group.exerciseEnabled,
+    user,
+    user?.groupId,
+    group,
+    group?.exerciseEnabled,
+  );
   const {data: activeDays, isLoading: isScheduleLoading} =
     useExerciseSchedule();
   const [updatedActiveDays, setUpdatedActiveDays] = useState(activeDays);
@@ -554,7 +560,7 @@ const ExercisesUser = () => {
                           <Text
                             className="text-xl font-rubik"
                             style={{
-                              color: colors.background.primary
+                              color: colors.background.primary,
                             }}>
                             Egzersize başla
                           </Text>

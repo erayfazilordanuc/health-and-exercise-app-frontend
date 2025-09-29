@@ -123,6 +123,7 @@ import checkbox_checked from '../assets/icons/checkbox_checked.png';
 import app_info from '../assets/icons/app_info.png';
 import edit_blue from '../assets/icons/edit_blue.png';
 import offline from '../assets/icons/offline.png';
+import delete_user from '../assets/icons/delete_user.png';
 
 export default {
   google,
@@ -250,4 +251,5 @@ export default {
   app_info,
   edit_blue,
   offline,
+  delete_user,
 };

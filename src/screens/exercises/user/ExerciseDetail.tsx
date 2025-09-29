@@ -68,19 +68,19 @@ const ExerciseDetail = () => {
 
   useEffect(() => {}, []);
 
-  const calculateNavPayloads = () => {
-    setLoading(true);
-    console.log('progress', progress);
-    for (let i = 0; i < progress.exerciseDTO.videos.length; i++) {
-      const vp = progress.videoProgress[i];
-      if (!vp || !vp.isCompeleted) {
-        setVideoIdxToShow(i);
-        setStartAt(vp && vp.progressDuration ? vp.progressDuration : 0);
-        break;
-      }
-    }
-    setLoading(false);
-  };
+  // const calculateNavPayloads = () => {
+  //   setLoading(true);
+  //   console.log('progress', progress);
+  //   for (let i = 0; i < progress.exerciseDTO.videos.length; i++) {
+  //     const vp = progress.videoProgress[i];
+  //     if (!vp || !vp.isCompeleted) {
+  //       setVideoIdxToShow(i);
+  //       setStartAt(vp && vp.progressDuration ? vp.progressDuration : 0);
+  //       break;
+  //     }
+  //   }
+  //   setLoading(false);
+  // };
 
   const getColor = () =>
     calcPercent(progress) === 100
@@ -202,6 +202,51 @@ const ExerciseDetail = () => {
     };
   }, []);
 
+  const vpById = React.useMemo(
+    () => new Map(progress.videoProgress.map(vp => [vp.videoId, vp])),
+    [progress.videoProgress],
+  );
+
+  const calculateNavPayloads = () => {
+    setLoading(true);
+
+    // videoProgress’i id → kayıt olarak kullan
+    const byId = new Map(progress.videoProgress.map(vp => [vp.videoId, vp]));
+
+    let found = false;
+    for (let i = 0; i < progress.exerciseDTO.videos.length; i++) {
+      const v = progress.exerciseDTO.videos[i];
+      const vp = byId.get(v.id!);
+
+      if (!vp || !vp.isCompeleted) {
+        setVideoIdxToShow(i);
+        setStartAt(vp?.progressDuration ?? 0);
+        found = true;
+        break;
+      }
+    }
+
+    // Her şey tamamlanmışsa (olasılık) güvenli varsayılan
+    if (!found) {
+      setVideoIdxToShow(0);
+      setStartAt(0);
+    }
+
+    setLoading(false);
+  };
+
+  const prevCompleted = (idx: number) => {
+    if (idx === 0) return false;
+    const prevVideo = progress.exerciseDTO.videos[idx - 1];
+    const prevVp =
+      (prevVideo?.id != null
+        ? vpById.get(prevVideo.id)
+        : progress.videoProgress.find(
+            (p: any) => p?.videoUrl && p.videoUrl === prevVideo.videoUrl,
+          )) || undefined;
+    return !!prevVp?.isCompeleted;
+  };
+
   // const makeTabBarStyle = (theme: Theme, width: number) => ({
   //   // marginHorizontal: width / 24,
   //   // position: 'absolute',
@@ -308,11 +353,34 @@ const ExerciseDetail = () => {
             style={{color: colors.text.primary}}>
             Videolar
           </Text>
-          {progress.exerciseDTO?.videos &&
-            progress.exerciseDTO.videos.length > 0 &&
-            progress.exerciseDTO.videos.map((video, index) => (
+          {progress.exerciseDTO.videos.map((video, index) => {
+            // 🔑 Bu videonun progress kaydını bul (id yoksa videoUrl ile)
+            console.log(
+              'video',
+              video,
+              vpById,
+              progress.videoProgress,
+              videoIdxToShow,
+            );
+            const vp =
+              (video.id != null
+                ? vpById.get(video.id)
+                : progress.videoProgress.find(
+                    (p: any) => p?.videoUrl && p.videoUrl === video.videoUrl,
+                  )) || undefined;
+
+            const completed = !!vp?.isCompeleted;
+            const ratio = vp
+              ? Math.round((vp.progressDuration / video.durationSeconds) * 100)
+              : 0;
+
+            const isFirstUnstarted = index === videoIdxToShow; // calculateNavPayloads ile belirleniyor
+            const canContinue =
+              isFirstUnstarted && (index === 0 || prevCompleted(index));
+
+            return (
               <View
-                key={index}
+                key={index} // ⚠️ UI değişmesin diye index bırakıyorum
                 className="w-full rounded-2xl p-3 mb-3"
                 style={{backgroundColor: colors.background.secondary}}>
                 {!isDone ? (
@@ -321,14 +389,14 @@ const ExerciseDetail = () => {
                       source={
                         thumbs[video.videoUrl]
                           ? {uri: thumbs[video.videoUrl]}
-                          : undefined // fallback
+                          : undefined
                       }
                       style={{
                         width: '85%',
                         aspectRatio: 16 / 9,
                         borderRadius: 10,
                         resizeMode: 'cover',
-                        backgroundColor: '#000', // thumb yüklenirken boşluk siyah kalsın
+                        backgroundColor: '#000',
                       }}
                     />
                   </View>
@@ -346,18 +414,6 @@ const ExerciseDetail = () => {
                         ? {uri: thumbs[video.videoUrl]}
                         : icons.exercise_screen
                     }
-                    // paused={isDone}
-                    // disableSeek={isDone}
-                    // hideControlsOnStart={isDone}
-                    // onPlayPress={() => {
-                    //   if (isDone) {
-                    //     ToastAndroid.show(
-                    //       'Önce "Başla / Devam et" butonuna basmalısın 🚀',
-                    //       ToastAndroid.SHORT,
-                    //     );
-                    //     return;
-                    //   }
-                    // }}
                     customStyles={{
                       videoWrapper: {borderRadius: 10},
                       controlButton: {opacity: 0.9},
@@ -387,10 +443,10 @@ const ExerciseDetail = () => {
                       '\nSüre: ' +
                       ToMinuteSeconds(video.durationSeconds)}
                   </Text>
+
                   {progress.videoProgress.length > 0 ? (
-                    progress.videoProgress.some(
-                      item => video.id === item.videoId && item.isCompeleted,
-                    ) ? (
+                    completed ? (
+                      // ✅ Tamamlandı görünümü
                       <View className="flex flex-row items-center justify-center">
                         <Text
                           className="font-rubik text-lg mr-2"
@@ -403,44 +459,64 @@ const ExerciseDetail = () => {
                           tintColor={'#3BC476'}
                         />
                       </View>
-                    ) : (
-                      progress.videoProgress[index] && (
-                        <View className="flex flex-coljustify-between items-center">
+                    ) : vp || canContinue ? (
+                      // ✅ Bu videoya başlanmış ama bitmemiş → Devam et
+                      <View className="flex flex-coljustify-between items-center">
+                        <Text
+                          className="font-rubik text-center text-lg"
+                          style={{color: getColor()}}>
+                          İlerleme %{ratio}
+                        </Text>
+                        <TouchableOpacity
+                          className="mt-3 mb-1"
+                          onPress={() =>
+                            navigation.navigate('Exercise', {
+                              exercise: progress.exerciseDTO,
+                              progress: progress,
+                              videoIdx: index, // bu videonun index’i
+                              startSec: vp?.progressDuration ?? 0, // kaldığı yer
+                            })
+                          }>
                           <Text
-                            className="font-rubik text-center text-lg"
-                            style={{color: getColor()}}>
-                            İlerleme %
-                            {Math.round(
-                              (progress.videoProgress[index].progressDuration /
-                                video.durationSeconds) *
-                                100,
-                            )}
+                            className=" font-rubik text-xl px-3"
+                            style={{
+                              borderRadius: 14,
+                              paddingVertical: 10,
+                              backgroundColor: color,
+                              color: colors.background.primary,
+                            }}>
+                            Devam et
                           </Text>
-                          <TouchableOpacity
-                            className="mt-3 mb-1"
-                            onPress={() =>
-                              navigation.navigate('Exercise', {
-                                exercise: progress.exerciseDTO,
-                                progress: progress,
-                                videoIdx: videoIdxToShow,
-                                startSec: startAt,
-                              })
-                            }>
-                            <Text
-                              className=" font-rubik text-xl px-3" // bg-blue-500 '#55CC88' '#FFAA33'
-                              style={{
-                                borderRadius: 14,
-                                paddingVertical: 10,
-                                backgroundColor: color,
-                                color: colors.background.primary,
-                              }}>
-                              Devam et
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      // ✅ Bu videoya hiç başlanmamış → sadece ilk video için Başla
+                      index === 0 && (
+                        <TouchableOpacity
+                          className="mt-3 mb-1"
+                          onPress={() =>
+                            navigation.navigate('Exercise', {
+                              exercise: progress.exerciseDTO,
+                              progress: progress,
+                              videoIdx: 0,
+                              startSec: 0,
+                            })
+                          }>
+                          <Text
+                            className=" font-rubik text-xl px-3"
+                            style={{
+                              borderRadius: 14,
+                              paddingVertical: 10,
+                              backgroundColor: color,
+                              color: colors.background.primary,
+                            }}>
+                            Başla
+                          </Text>
+                        </TouchableOpacity>
                       )
                     )
                   ) : (
+                    // ✅ Hiç progress yoksa (gün ilk defa başlıyor) → ilk karta Başla
                     index === 0 && (
                       <TouchableOpacity
                         className="mt-3 mb-1"
@@ -453,7 +529,7 @@ const ExerciseDetail = () => {
                           })
                         }>
                         <Text
-                          className=" font-rubik text-xl px-3" // bg-blue-500 '#55CC88' '#FFAA33'
+                          className=" font-rubik text-xl px-3"
                           style={{
                             borderRadius: 14,
                             paddingVertical: 10,
@@ -465,12 +541,10 @@ const ExerciseDetail = () => {
                       </TouchableOpacity>
                     )
                   )}
-                  {/*Tamamlandı yazabilir */}
-                  {/* Eğer progress ratio şuana kadar olan video indexlerindeki videoların uzunluğunun toplamı 
-                  video uzunluğuna olan oranından büyük ise video tamamlandı anlamına gelen tik iconu konsun */}
                 </View>
               </View>
-            ))}
+            );
+          })}
         </View>
       </ScrollView>
 
