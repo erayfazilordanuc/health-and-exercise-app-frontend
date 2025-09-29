@@ -59,6 +59,8 @@ import fish from '../assets/avatars/fish.png';
 import butterfly from '../assets/avatars/butterfly.png';
 import butterfly_2 from '../assets/avatars/butterfly_2.png';
 import butterflies_2 from '../assets/avatars/butterflies_2.png';
+import insect_cathcing from '../assets/avatars/insect_catching.png';
+import butterfly_3 from '../assets/avatars/butterfly_3.png';
 
 export const AVATARS = {
   apteryx,
@@ -70,6 +72,7 @@ export const AVATARS = {
   blackbird,
   butterfly,
   butterfly_2,
+  butterfly_3,
   butterflies,
   butterflies_2,
   cat,
@@ -86,6 +89,7 @@ export const AVATARS = {
   fox_2,
   giraffe,
   hamster,
+  insect_cathcing,
   jaguar,
   jacutinga,
   jellyfish,
