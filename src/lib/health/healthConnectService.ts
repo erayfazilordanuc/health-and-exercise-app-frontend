@@ -12,15 +12,16 @@ import NetInfo from '@react-native-community/netinfo';
 import {Alert, Linking, Platform, ToastAndroid} from 'react-native';
 import Toast from 'react-native-toast-message';
 import DeviceInfo from 'react-native-device-info';
-import {getInstalledApps} from 'react-native-get-app-list';
 import {ymdLocal} from '../../utils/dates';
+import {isInstalled} from '../../native/AppInstallChecker';
+import {has} from 'lodash';
 
 // ---- App/HC presence helpers ----
 export const checkSamsungHInstalled = async (): Promise<boolean> => {
   if (Platform.OS !== 'android') return false;
   try {
-    const apps = await getInstalledApps();
-    return apps.some(app => app.packageName === 'com.sec.android.app.shealth');
+    const hasSH = await isInstalled('com.samsung.android.app.shealth');
+    return hasSH;
   } catch (err) {
     console.log('[GF] check failed', err);
     return false;
@@ -30,10 +31,8 @@ export const checkSamsungHInstalled = async (): Promise<boolean> => {
 export const checkHealthConnectInstalled = async (): Promise<boolean> => {
   if (Platform.OS !== 'android') return false;
   try {
-    const apps = await getInstalledApps();
-    return apps.some(
-      app => app.packageName === 'com.google.android.apps.healthdata',
-    );
+    const hasHC = await isInstalled('com.google.android.apps.healthdata');
+    return hasHC;
   } catch (err) {
     console.log('[HC] check failed', err);
     return false;
