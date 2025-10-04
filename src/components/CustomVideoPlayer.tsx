@@ -19,6 +19,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {useIsFocused} from '@react-navigation/native';
 import {cacheVideoIfNeeded, getCachedLocalUri} from '../utils/videoCache';
 import NetInfo from '@react-native-community/netinfo';
+import {useTranslation} from 'react-i18next';
 
 interface CustomVideoPlayerProps {
   videoDTO: ExerciseVideoDTO;
@@ -42,6 +43,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
   onExit,
 }) => {
   const {colors} = useTheme();
+  const {t} = useTranslation(['exercise', 'common']);
   const playerRef = useRef<VideoRef>(null);
 
   const [loading, setLoading] = useState(true);
@@ -182,7 +184,7 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
         const net = await NetInfo.fetch();
         if (!net.isConnected) {
           ToastAndroid.show(
-            'İnternet bağlantınızı kontrol ediniz',
+            t('exercise:videoPlayer.toast.noInternet'),
             ToastAndroid.LONG,
           );
           setPaused(true);
@@ -491,8 +493,8 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
                   textAlign: 'center',
                 }}>
                 {isLast
-                  ? 'Tebrikler!\nTüm videoları bitirerek egzersizi başarıyla tamamladınız'
-                  : 'Videoyu bitirdiniz!'}
+                  ? t('exercise:videoPlayer.overlay.finishedAll')
+                  : t('exercise:videoPlayer.overlay.finishedOne')}
               </Text>
             </GradientText>
 

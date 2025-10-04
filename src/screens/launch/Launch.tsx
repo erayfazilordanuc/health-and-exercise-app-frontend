@@ -154,7 +154,7 @@ const Launch = () => {
         <Text
           className="font-rubik-semibold text-xl text-center mt-4"
           style={[styles.titleBlack, {color: '#404040'}]}>
-          {t('subtitle', {appName: t('common:app.name')})}
+          {t('launch:subtitle', {appName: t('common:app.name')})}
         </Text>
         <TouchableOpacity
           className="px-6 py-3 rounded-2xl mb-2"
@@ -171,7 +171,7 @@ const Launch = () => {
             style={{
               color: colors.text.primary,
             }}>
-            {t('buttons.signIn', {role: t('common:roles.user')})}
+            {t('launch:buttons.signIn', {role: t('common:roles.user')})}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -189,7 +189,7 @@ const Launch = () => {
             style={{
               color: colors.text.primary,
             }}>
-            {t('buttons.signIn', {role: t('common:roles.admin')})}
+            {t('launch:buttons.signIn', {role: t('common:roles.admin')})}
           </Text>
         </TouchableOpacity>
         {/* Alt sol mavi dekor */}
@@ -280,8 +280,8 @@ export default Launch;
 //   const {theme, colors, setTheme} = useTheme();
 //   const styles = stylesWithColor(colors);
 //   const navigation = useNavigation<RootScreenNavigationProp>();
-//   const height = Dimensions.get('window').height;
-//   const width = Dimensions.get('window').width;
+//   const height = Dimensions.get('launch:window').height;
+//   const width = Dimensions.get('launch:window').width;
 //   const {setUser} = useUser();
 
 //   const checkToken = async () => {

@@ -7,13 +7,49 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import en_common from './locales/en/common.json';
 import en_launch from './locales/en/launch.json';
 import en_login from './locales/en/login.json';
+import en_nav from './locales/en/nav.json';
+import en_settings from './locales/en/settings.json';
+import en_home from './locales/en/home.json';
+import en_profile from './locales/en/profile.json';
+import en_exercise from './locales/en/exercise.json';
+import en_groups from './locales/en/groups.json';
+import en_chat from './locales/en/chat.json';
 import tr_common from './locales/tr/common.json';
 import tr_launch from './locales/tr/launch.json';
 import tr_login from './locales/tr/login.json';
+import tr_nav from './locales/tr/nav.json';
+import tr_settings from './locales/tr/settings.json';
+import tr_home from './locales/tr/home.json';
+import tr_profile from './locales/tr/profile.json';
+import tr_exercise from './locales/tr/exercise.json';
+import tr_groups from './locales/tr/groups.json';
+import tr_chat from './locales/tr/chat.json';
 
 const resources = {
-  en: {common: en_common, launch: en_launch, login: en_login},
-  tr: {common: tr_common, launch: tr_launch, login: tr_login},
+  en: {
+    common: en_common,
+    launch: en_launch,
+    login: en_login,
+    nav: en_nav,
+    settings: en_settings,
+    home: en_home,
+    profile: en_profile,
+    exercise: en_exercise,
+    groups: en_groups,
+    chat: en_chat,
+  },
+  tr: {
+    common: tr_common,
+    launch: tr_launch,
+    login: tr_login,
+    nav: tr_nav,
+    settings: tr_settings,
+    home: tr_home,
+    profile: tr_profile,
+    exercise: tr_exercise,
+    groups: tr_groups,
+    chat: tr_chat,
+  },
 } as const;
 
 declare module 'i18next' {
@@ -47,7 +83,18 @@ export async function initI18n() {
     resources: resources as unknown as Resource,
     lng,
     fallbackLng: 'en',
-    ns: ['common', 'launch', 'login'],
+    ns: [
+      'common',
+      'launch',
+      'login',
+      'nav',
+      'settings',
+      'home',
+      'profile',
+      'exercise',
+      'groups',
+      'chat',
+    ],
     interpolation: {escapeValue: false},
     returnObjects: false,
     defaultNS: 'common',

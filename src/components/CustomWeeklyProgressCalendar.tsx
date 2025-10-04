@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useTransition} from 'react';
 import {View, Text, ScrollView} from 'react-native';
 import {useTheme} from '../themes/ThemeProvider';
 import {
@@ -6,6 +6,7 @@ import {
   CircularProgress,
 } from 'react-native-circular-progress';
 import {useUser} from '../contexts/UserContext';
+import {useTranslation} from 'react-i18next';
 interface CustomWeeklyProgressCalendarProps {
   todayPercent?: number;
   weeklyPercents: number[]; // aktif günlerin yüzdeleri (activeDays ile aynı sıra)
@@ -18,6 +19,7 @@ const CustomWeeklyProgressCalendar = ({
   activeDays,
 }: CustomWeeklyProgressCalendarProps) => {
   const {colors, theme} = useTheme();
+  const {t} = useTranslation(['exercise', 'common']);
   const today = new Date();
   const isSameDay = (d1: Date, d2: Date) =>
     d1.toDateString() === d2.toDateString();
@@ -41,13 +43,13 @@ const CustomWeeklyProgressCalendar = ({
 
   // Haftanın tüm günleri (label + dayNum=1..7 + aktiflik + progressIndex eşleme)
   const baseWeek = [
-    {label: 'Pazartesi', dayNum: 1, offset: 0},
-    {label: 'Salı', dayNum: 2, offset: 1},
-    {label: 'Çarşamba', dayNum: 3, offset: 2},
-    {label: 'Perşembe', dayNum: 4, offset: 3},
-    {label: 'Cuma', dayNum: 5, offset: 4},
-    {label: 'Cumartesi', dayNum: 6, offset: 5},
-    {label: 'Pazar', dayNum: 7, offset: 6},
+    {label: t('exercise:calendar.weekdays.1'), dayNum: 1, offset: 0},
+    {label: t('exercise:calendar.weekdays.2'), dayNum: 2, offset: 1},
+    {label: t('exercise:calendar.weekdays.3'), dayNum: 3, offset: 2},
+    {label: t('exercise:calendar.weekdays.4'), dayNum: 4, offset: 3},
+    {label: t('exercise:calendar.weekdays.5'), dayNum: 5, offset: 4},
+    {label: t('exercise:calendar.weekdays.6'), dayNum: 6, offset: 5},
+    {label: t('exercise:calendar.weekdays.7'), dayNum: 7, offset: 6},
   ] as const;
 
   type WeekItem = {
@@ -217,7 +219,9 @@ const CustomWeeklyProgressCalendar = ({
                         <Text
                           className="text-xs font-rubik"
                           style={{color: colors.text.primary}}>
-                          %{percent}
+                          {t('common:locale') === 'tr-TR'
+                            ? `%${percent}`
+                            : `${percent}%`}
                         </Text>
                       )}
                     </CircularProgress>
@@ -245,7 +249,9 @@ const CustomWeeklyProgressCalendar = ({
                       {() => (
                         <Text
                           style={{color: colors.text.primary, fontSize: 11}}>
-                          %{percent}
+                          {t('common:locale') === 'tr-TR'
+                            ? `%${percent}`
+                            : `${percent}%`}
                         </Text>
                       )}
                     </CircularProgress>

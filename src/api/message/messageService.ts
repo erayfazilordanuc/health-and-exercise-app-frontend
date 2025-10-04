@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 import NetInfo from '@react-native-community/netinfo';
+import i18n from '../../i18n';
 
 export const saveMessage = async (message: Message) => {
   const response = await apiClient.put(`/messages`, message);
@@ -81,8 +82,10 @@ const normalize = (m: Message) => {
 
     m.message =
       '\n' +
-      new Date().toLocaleDateString() +
-      `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+      i18n.t('chat:dailyStatusText', {
+        date: new Date().toLocaleDateString(),
+        score,
+      });
   }
   return m;
 };

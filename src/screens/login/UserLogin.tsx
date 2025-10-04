@@ -100,7 +100,7 @@ function UserLogin() {
   }
 
   // FOOTER metnini i18n'den alıyoruz ki stripFooter aynı şekilde çalışsın
-  const FOOTER = t('consents.footer');
+  const FOOTER = t('login:consents.footer');
 
   function stripFooter(text?: string) {
     if (!text) return '';
@@ -131,7 +131,7 @@ function UserLogin() {
 
       if (!(username && password)) {
         // Alert
-        ToastAndroid.show(t('toasts.fillAllFields'), ToastAndroid.SHORT);
+        ToastAndroid.show(t('login:toasts.fillAllFields'), ToastAndroid.SHORT);
         return;
       }
 
@@ -170,27 +170,36 @@ function UserLogin() {
         const status = error.response?.status;
         let message = error.response?.data?.message || error.message;
 
-        if (status === 500) message = t('toasts.loginNurseUsername'); // "Bu kullanıcı adı bir hemşireye ait"
-        if (status === 403) message = t('toasts.wrongCredentials');
-        if (status === 502) message = t('toasts.serverError');
+        if (status === 500) message = t('login:toasts.loginNurseUsername'); // "Bu kullanıcı adı bir hemşireye ait"
+        if (status === 403) message = t('login:toasts.wrongCredentials');
+        if (status === 502) message = t('login:toasts.serverError');
         ToastAndroid.show(
-          message || t('toasts.serverError'),
+          message || t('login:toasts.serverError'),
           ToastAndroid.SHORT,
         );
       } else if (error instanceof Error) {
         if (error.message === 'Network Error') {
-          ToastAndroid.show(t('toasts.networkError'), ToastAndroid.SHORT);
+          ToastAndroid.show(t('login:toasts.networkError'), ToastAndroid.SHORT);
           return;
         }
 
         const maybeStatus = (error as any).status;
         if (maybeStatus === 403 || maybeStatus === 500) {
-          ToastAndroid.show(t('toasts.wrongCredentials'), ToastAndroid.SHORT);
+          ToastAndroid.show(
+            t('login:toasts.wrongCredentials'),
+            ToastAndroid.SHORT,
+          );
           return;
         }
-        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
+        ToastAndroid.show(
+          t('login:toasts.unexpectedError'),
+          ToastAndroid.SHORT,
+        );
       } else {
-        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
+        ToastAndroid.show(
+          t('login:toasts.unexpectedError'),
+          ToastAndroid.SHORT,
+        );
       }
     } finally {
       setLoading(false);
@@ -204,37 +213,40 @@ function UserLogin() {
       if (
         !(fullName && username && fullName && password && gender && birthDate)
       ) {
-        ToastAndroid.show(t('toasts.fillAllFields'), ToastAndroid.SHORT);
+        ToastAndroid.show(t('login:toasts.fillAllFields'), ToastAndroid.SHORT);
         return;
       }
 
       // if (!usernameRegex.test(username)) {
-      //   ToastAndroid.show(t('toasts.invalidUsernameFormat'), ToastAndroid.SHORT);
+      //   ToastAndroid.show(t('login:toasts.invalidUsernameFormat'), ToastAndroid.SHORT);
       //   return;
       // }
 
-      if (fullName.split(' ').length < 2) {
-        ToastAndroid.show(t('toasts.invalidFullName'), ToastAndroid.LONG);
+      if (fullName.split('login: ').length < 2) {
+        ToastAndroid.show(t('login:toasts.invalidFullName'), ToastAndroid.LONG);
         return;
       }
 
       if (username.length < 4) {
-        ToastAndroid.show(t('toasts.usernameMin'), ToastAndroid.SHORT);
+        ToastAndroid.show(t('login:toasts.usernameMin'), ToastAndroid.SHORT);
         return;
       }
 
       if (username.length > 25) {
-        ToastAndroid.show(t('toasts.usernameMax'), ToastAndroid.SHORT);
+        ToastAndroid.show(t('login:toasts.usernameMax'), ToastAndroid.SHORT);
         return;
       }
 
       if (password.length < 8) {
-        ToastAndroid.show(t('toasts.passwordMin'), ToastAndroid.SHORT);
+        ToastAndroid.show(t('login:toasts.passwordMin'), ToastAndroid.SHORT);
         return;
       }
 
       if (date > fiveYearsAgo) {
-        ToastAndroid.show(t('toasts.invalidBirthDate'), ToastAndroid.SHORT);
+        ToastAndroid.show(
+          t('login:toasts.invalidBirthDate'),
+          ToastAndroid.SHORT,
+        );
         return;
       }
 
@@ -244,7 +256,10 @@ function UserLogin() {
         !exerciseDataApproved ||
         !studyApproved
       ) {
-        ToastAndroid.show(t('toasts.consentsRequired'), ToastAndroid.LONG);
+        ToastAndroid.show(
+          t('login:toasts.consentsRequired'),
+          ToastAndroid.LONG,
+        );
         return;
       }
 
@@ -326,21 +341,27 @@ function UserLogin() {
         const status = error.response?.status;
         let message = error.response?.data?.message || error.message;
 
-        if (status === 500) message = t('toasts.usernameTaken');
-        if (status === 502) message = t('toasts.serverError');
+        if (status === 500) message = t('login:toasts.usernameTaken');
+        if (status === 502) message = t('login:toasts.serverError');
         ToastAndroid.show(
-          message || t('toasts.serverError'),
+          message || t('login:toasts.serverError'),
           ToastAndroid.SHORT,
         );
       } else if (error instanceof Error) {
         if (error.message === 'Network Error') {
-          ToastAndroid.show(t('toasts.networkError'), ToastAndroid.SHORT);
+          ToastAndroid.show(t('login:toasts.networkError'), ToastAndroid.SHORT);
           return;
         }
 
-        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
+        ToastAndroid.show(
+          t('login:toasts.unexpectedError'),
+          ToastAndroid.SHORT,
+        );
       } else {
-        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
+        ToastAndroid.show(
+          t('login:toasts.unexpectedError'),
+          ToastAndroid.SHORT,
+        );
       }
     } finally {
       setLoading(false);
@@ -379,7 +400,10 @@ function UserLogin() {
       if (state.isConnected) {
         if (loginMethod === LoginMethod.registration) fetchConsentPolicies();
       } else {
-        ToastAndroid.show(t('toasts.noInternetForPolicies'), ToastAndroid.LONG);
+        ToastAndroid.show(
+          t('login:toasts.noInternetForPolicies'),
+          ToastAndroid.LONG,
+        );
       }
     });
 
@@ -407,12 +431,14 @@ function UserLogin() {
           <Text
             className="text-center font-rubik-bold mt-8 mb-8"
             style={{color: '#404040', fontSize: 40}}>
-            {t('app.name', {ns: 'common'})}
+            {t('common:app.name')}
           </Text>
           <Text
             className="text-3xl font-rubik-semibold text-center mt-6 mb-4"
             style={{color: '#404040'}}>
-            {t('title', {ns: 'login', role: t('roles.admin', {ns: 'common'})})}
+            {t('login:title', {
+              role: t('common:roles.admin'),
+            })}
           </Text>
 
           {loginMethod === LoginMethod.registration && (
@@ -430,7 +456,7 @@ function UserLogin() {
                 onChangeText={(value: string) => {
                   setFullName(value);
                 }}
-                placeholder={t('form.fullName')}
+                placeholder={t('login:form.fullName')}
                 className="text-lg font-rubik ml-5 flex-1"
                 style={{color: colors.text.primary}}
               />
@@ -451,7 +477,7 @@ function UserLogin() {
               onChangeText={(value: string) => {
                 setUsername(value);
               }}
-              placeholder={t('form.username')}
+              placeholder={t('login:form.username')}
               className="text-lg font-rubik ml-5 flex-1"
               style={{color: colors.text.primary}}
             />
@@ -475,7 +501,7 @@ function UserLogin() {
                         month: 'long',
                         year: 'numeric',
                       })
-                    : t('form.birthDate')}
+                    : t('login:form.birthDate')}
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
@@ -493,11 +519,11 @@ function UserLogin() {
               {showDatePicker && (
                 <DatePicker
                   modal
-                  locale={t('datepicker.locale')}
+                  locale={t('login:datepicker.locale')}
                   mode="date"
-                  title={t('datepicker.title')}
-                  confirmText={t('datepicker.confirm')}
-                  cancelText={t('datepicker.cancel')}
+                  title={t('login:datepicker.title')}
+                  confirmText={t('login:datepicker.confirm')}
+                  cancelText={t('login:datepicker.cancel')}
                   open={showDatePicker}
                   date={date}
                   maximumDate={fiveYearsAgo} // 5 yıldan küçük seçilemez
@@ -522,12 +548,15 @@ function UserLogin() {
                 }}>
                 <Dropdown
                   data={[
-                    {label: t('form.genderOptions.female'), value: 'female'},
-                    {label: t('form.genderOptions.male'), value: 'male'},
+                    {
+                      label: t('login:form.genderOptions.female'),
+                      value: 'female',
+                    },
+                    {label: t('login:form.genderOptions.male'), value: 'male'},
                   ]}
                   labelField="label"
                   valueField="value"
-                  placeholder={t('form.gender')}
+                  placeholder={t('login:form.gender')}
                   value={gender}
                   onChange={item => setGender(item.value)}
                   style={{
@@ -572,7 +601,7 @@ function UserLogin() {
               onChangeText={(value: string) => {
                 setPassword(value);
               }}
-              placeholder={t('form.password')}
+              placeholder={t('login:form.password')}
               className="text-lg font-rubik ml-6 flex-1"
               style={{color: colors.text.primary}}
               secureTextEntry={!showPassword}
@@ -597,7 +626,7 @@ function UserLogin() {
                 <Text
                   className="ml-2 font-rubik text-md mr-3"
                   style={{color: colors.text.primary}}>
-                  {t('consents.kvkkAndExplicit')}
+                  {t('login:consents.kvkkAndExplicit')}
                 </Text>
                 <Image
                   source={
@@ -618,7 +647,7 @@ function UserLogin() {
                 <Text
                   className="ml-2 font-rubik text-md mr-3"
                   style={{color: colors.text.primary}}>
-                  {t('consents.studyConsent')}
+                  {t('login:consents.studyConsent')}
                 </Text>
                 <Image
                   source={
@@ -646,7 +675,7 @@ function UserLogin() {
                   <Text
                     className="text-xl font-rubik text-center py-1"
                     style={{color: colors.text.primary}}>
-                    {t('buttons.signIn')}
+                    {t('login:buttons.signIn')}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -664,7 +693,7 @@ function UserLogin() {
                   <Text
                     className="text-xl font-rubik text-center py-1"
                     style={{color: colors.text.primary}}>
-                    {t('buttons.createAccount')}
+                    {t('login:buttons.createAccount')}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -680,7 +709,7 @@ function UserLogin() {
             <Text
               className="text-lg font-rubik text-center mt-4"
               style={{color: colors.text.third}}>
-              {t('links.haveAccount')} {'\n'}
+              {t('login:links.haveAccount')} {'\n'}
               <TouchableOpacity
                 onPress={() => {
                   clearInputs();
@@ -689,7 +718,7 @@ function UserLogin() {
                 <Text
                   className="text-xl font-rubik text-center"
                   style={{color: '#0091ff', textDecorationLine: 'underline'}}>
-                  {t('buttons.signIn')}
+                  {t('login:buttons.signIn')}
                 </Text>
               </TouchableOpacity>
             </Text>
@@ -698,7 +727,7 @@ function UserLogin() {
             <Text
               className="text-lg font-rubik text-center mt-4"
               style={{color: colors.text.third}}>
-              {t('links.noAccount')}
+              {t('login:links.noAccount')}
               {'\n'}
               <TouchableOpacity
                 onPress={() => {
@@ -708,7 +737,7 @@ function UserLogin() {
                 <Text
                   className="text-xl font-rubik text-center"
                   style={{color: '#0091ff', textDecorationLine: 'underline'}}>
-                  {t('buttons.createAccount')}
+                  {t('login:buttons.createAccount')}
                 </Text>
               </TouchableOpacity>
             </Text>
@@ -720,7 +749,7 @@ function UserLogin() {
       <ConsentModal
         visible={consentModalVisible}
         requireScrollToEnd
-        approveHint={t('consents.approveHint')}
+        approveHint={t('login:consents.approveHint')}
         onApprove={() => {
           setKvkkAcknowledged(true);
           setHealthDataApproved(true);
@@ -733,8 +762,8 @@ function UserLogin() {
           setExerciseDataApproved(false);
           setConsentModalVisible(false);
         }}
-        onApproveText={t('consents.approve')}
-        onRejectText={t('consents.reject')}
+        onApproveText={t('login:consents.approve')}
+        onRejectText={t('login:consents.reject')}
         body={
           <>
             <Text
@@ -754,7 +783,7 @@ function UserLogin() {
       <ConsentModal
         visible={studyModalVisible}
         requireScrollToEnd
-        approveHint={t('consents.approveHint')}
+        approveHint={t('login:consents.approveHint')}
         onApprove={() => {
           setStudyApproved(true);
           setStudyModalVisible(false);
@@ -763,8 +792,8 @@ function UserLogin() {
           setStudyApproved(false);
           setStudyModalVisible(false);
         }}
-        onApproveText={t('consents.approve')}
-        onRejectText={t('consents.reject')}
+        onApproveText={t('login:consents.approve')}
+        onRejectText={t('login:consents.reject')}
         body={
           <Text
             className="font-rubik text-md"

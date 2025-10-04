@@ -92,12 +92,12 @@ function AdminLogin() {
       setLoading(true);
 
       if (!(username && password)) {
-        ToastAndroid.show(t('toasts.fillAllFields'), ToastAndroid.SHORT);
+        ToastAndroid.show(t('login:toasts.fillAllFields'), ToastAndroid.SHORT);
         return;
       }
 
       if (isCodeStep && !code) {
-        ToastAndroid.show(t('toasts.codeRequired'), ToastAndroid.SHORT);
+        ToastAndroid.show(t('login:toasts.codeRequired'), ToastAndroid.SHORT);
         return;
       }
 
@@ -117,7 +117,7 @@ function AdminLogin() {
       if (loginResponse && loginResponse.status === 200) {
         if (!loginResponse.data) {
           setIsCodeStep(true);
-          ToastAndroid.show(t('toasts.emailSent'), ToastAndroid.SHORT);
+          ToastAndroid.show(t('login:toasts.emailSent'), ToastAndroid.SHORT);
         } else {
           const user = loginResponse.data.userDTO as User;
           setUser(user);
@@ -137,21 +137,27 @@ function AdminLogin() {
         let message = error.response?.data?.message || error.message;
 
         if (status === 403 || status === 500)
-          message = t('toasts.wrongCredentials');
-        if (status === 502) message = t('toasts.serverError');
+          message = t('login:toasts.wrongCredentials');
+        if (status === 502) message = t('login:toasts.serverError');
         ToastAndroid.show(
-          message || t('toasts.serverError'),
+          message || t('login:toasts.serverError'),
           ToastAndroid.SHORT,
         );
       } else if (error instanceof Error) {
         const maybeStatus = (error as any).status;
         if (maybeStatus === 403 || maybeStatus === 500) {
-          ToastAndroid.show(t('toasts.wrongCredentials'), ToastAndroid.SHORT);
+          ToastAndroid.show(
+            t('login:toasts.wrongCredentials'),
+            ToastAndroid.SHORT,
+          );
           return;
         }
-        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.LONG);
+        ToastAndroid.show(t('login:toasts.unexpectedError'), ToastAndroid.LONG);
       } else {
-        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
+        ToastAndroid.show(
+          t('login:toasts.unexpectedError'),
+          ToastAndroid.SHORT,
+        );
       }
     } finally {
       setLoading(false);
@@ -163,22 +169,22 @@ function AdminLogin() {
       setLoading(true);
 
       if (!(username && email && fullName && password)) {
-        ToastAndroid.show(t('toasts.fillAllFields'), ToastAndroid.SHORT);
+        ToastAndroid.show(t('login:toasts.fillAllFields'), ToastAndroid.SHORT);
         return;
       }
 
       if (!emailRegex.test(email.trim())) {
-        ToastAndroid.show(t('toasts.invalidEmail'), ToastAndroid.SHORT);
+        ToastAndroid.show(t('login:toasts.invalidEmail'), ToastAndroid.SHORT);
         return;
       }
 
       if (password.length < 8) {
-        ToastAndroid.show(t('toasts.passwordMin'), ToastAndroid.SHORT);
+        ToastAndroid.show(t('login:toasts.passwordMin'), ToastAndroid.SHORT);
         return;
       }
 
       if (isCodeStep && !code) {
-        ToastAndroid.show(t('toasts.codeRequired'), ToastAndroid.SHORT);
+        ToastAndroid.show(t('login:toasts.codeRequired'), ToastAndroid.SHORT);
         return;
       }
 
@@ -203,7 +209,7 @@ function AdminLogin() {
       if (registerResponse && registerResponse.status === 200) {
         if (!registerResponse.data) {
           setIsCodeStep(true);
-          ToastAndroid.show(t('toasts.emailSent'), ToastAndroid.SHORT);
+          ToastAndroid.show(t('login:toasts.emailSent'), ToastAndroid.SHORT);
         } else {
           const user = registerResponse.data.userDTO as User;
           setUser(user);
@@ -222,18 +228,24 @@ function AdminLogin() {
         const status = error.response?.status;
         let message = error.response?.data?.message || error.message;
 
-        if (status === 500) message = t('toasts.usernameTaken');
-        if (status === 502) message = t('toasts.serverError');
+        if (status === 500) message = t('login:toasts.usernameTaken');
+        if (status === 502) message = t('login:toasts.serverError');
         if (status?.toString().startsWith('4'))
-          message = t('toasts.nurseNotFound');
+          message = t('login:toasts.nurseNotFound');
         ToastAndroid.show(
-          message || t('toasts.serverError'),
+          message || t('login:toasts.serverError'),
           ToastAndroid.SHORT,
         );
       } else if (error instanceof Error) {
-        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
+        ToastAndroid.show(
+          t('login:toasts.unexpectedError'),
+          ToastAndroid.SHORT,
+        );
       } else {
-        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
+        ToastAndroid.show(
+          t('login:toasts.unexpectedError'),
+          ToastAndroid.SHORT,
+        );
       }
     } finally {
       setLoading(false);
@@ -272,7 +284,8 @@ function AdminLogin() {
         <Text
           className="text-3xl font-rubik-semibold text-center mt-6 mb-4"
           style={{color: '#404040'}}>
-          {t('title', {role: t('common:roles.admin')})} {/* "Hemşire Girişi" */}
+          {t('login:title', {role: t('common:roles.admin')})}{' '}
+          {/* "Hemşire Girişi" */}
         </Text>
 
         {loginMethod === LoginMethod.registration && (
