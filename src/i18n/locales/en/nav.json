@@ -1,0 +1,55 @@
+{
+  "tabs": {
+    "home": "Home",
+    "profile": "Profile",
+    "exercises": {
+      "user": "Exercise",
+      "admin": "Exercises"
+    },
+    "groups": {
+      "user": "Group",
+      "admin": "Groups"
+    }
+  },
+  "stacks": {
+    "settings": {
+      "root": "Settings",
+      "preferences": "Preferences",
+      "notifications": "Notifications",
+      "permissions": {
+        "user": "Permissions and Consents",
+        "admin": "Permissions"
+      },
+      "security": "Security",
+      "development": "Development",
+      "language": "Language"
+    },
+    "profile": {
+      "root": "Profile",
+      "settings": "Settings"
+    },
+    "groups": {
+      "root": "Groups",
+      "group": "Group",
+      "member": "Member",
+      "chat": "Chat",
+      "exerciseProgress": "Exercise Progress",
+      "achievements": "Achievements"
+    },
+    "exercises": {
+      "userRoot": "Exercises (Patient)",
+      "adminRoot": "Exercises (Nurse)",
+      "all": "All Exercises",
+      "detail": "Exercise Detail",
+      "exercise": "Exercise",
+      "edit": "Edit Exercise"
+    },
+    "home": {
+      "root": "Home"
+    }
+  },
+  "labels": {
+    "patient": "Patient",
+    "nurse": "Nurse"
+  }
+}

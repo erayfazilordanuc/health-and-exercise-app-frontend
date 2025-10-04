@@ -1,0 +1,55 @@
+{
+  "title": "Home",
+  "header": {
+    "screenTitle": "Home"
+  },
+  "cards": {
+    "profile": {
+      "you": "You",
+      "nurse": "Nurse",
+      "patient": "Patient"
+    },
+    "exercise": {
+      "todayTitle": "Today's Exercise",
+      "goToExercise": "Go to Exercise",
+      "completed": "Completed",
+      "noExerciseTodayTitle": "No exercise planned for today.",
+      "noExerciseTodaySubtitle": "Have a nice rest!",
+      "noScheduleTitle": "Exercise Days Not Selected",
+      "noScheduleSubtitle": "Please select your exercise days to get started.",
+      "selectDays": "Select Exercise Days",
+      "progressPercent": "{{percent}}%"
+    },
+    "chat": {
+      "lastMessage": "Last Message",
+      "goToChat": "Go to Chat",
+      "youPrefix": "You: ",
+      "userPrefix": "{{username}}: "
+    }
+  },
+  "dailyStatusModal": {
+    "title": "How do you feel today?",
+    "save": "Save",
+    "saving": "Saving..."
+  },
+  "notifications": {
+    "permissionDeniedTitle": "Notifications are disabled.",
+    "permissionDeniedUser": "To receive exercise reminders and message notifications, you need to enable notification permissions.",
+    "permissionDeniedNurse": "To receive message notifications, you need to enable notification permissions.",
+    "allow": "Allow",
+    "close": "Close"
+  },
+  "backHandler": {
+    "pressAgainToExit": "Press again to exit"
+  },
+  "toasts": {
+    "genericError": "An error occurred",
+    "networkError": "Please check your internet connection",
+    "saved": "Saved",
+    "dailyStatusRequired": "Please select a value before saving"
+  },
+  "labels": {
+    "patientRole": "Patient",
+    "adminRole": "Nurse"
+  }
+}

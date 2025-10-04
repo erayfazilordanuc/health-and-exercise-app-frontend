@@ -1,0 +1,107 @@
+{
+  "headers": {
+    "mainUser": "Egzersiz",
+    "mainAdmin": "Egzersizler",
+    "detail": "Egzersiz Detayı"
+  },
+  "today": {
+    "title": "Bugünün Egzersizi",
+    "noPlan": "Bugün için planlanan egzersiziniz yok.",
+    "restWell": "İyi dinlenmeler!",
+    "start": "Egzersize başla",
+    "continue": "Egzersize\ndevam et",
+    "completed": "Tamamlandı!\nEgzersizi gör"
+  },
+  "detail": {
+    "totalProgress": "Toplam İlerleme",
+    "exerciseCompleted": "Egzersiz Tamamlandı",
+    "videos": "Videolar",
+    "videoName": "Video ismi",
+    "duration": "Süre",
+    "progressPct": "İlerleme %{{ratio}}",
+    "start": "Başla",
+    "continue": "Devam et",
+    "completed": "Tamamlandı"
+  },
+  "player": {
+    "confirmExit": {
+      "message": "Egzersizi terk etmek istediğinize emin misiniz?",
+      "subtitle": "İlerlemeniz kaydedilecektir."
+    }
+  },
+  "videoPlayer": {
+    "toast": {
+      "noInternet": "İnternet bağlantınızı kontrol ediniz"
+    },
+    "overlay": {
+      "finishedOne": "Videoyu bitirdiniz!",
+      "finishedAll": "Tebrikler!\nTüm videoları bitirerek egzersizi başarıyla tamamladınız"
+    },
+    "buttons": {
+      "next": "Sonraki videoya geç  ",
+      "finish": "Bitir  "
+    }
+  },
+  "calendar": {
+    "weekdays": {
+      "1": "Pazartesi",
+      "2": "Salı",
+      "3": "Çarşamba",
+      "4": "Perşembe",
+      "5": "Cuma",
+      "6": "Cumartesi",
+      "7": "Pazar",
+      "short": {
+        "1": "Pzt",
+        "2": "Sal",
+        "3": "Çar",
+        "4": "Per",
+        "5": "Cum",
+        "6": "Cmt",
+        "7": "Paz"
+      }
+    },
+    "title": "Egzersiz Takvimi",
+    "legend": {
+      "completed": "Tamamlandı",
+      "notCompleted": "Tamamlanmadı",
+      "scheduled": "Yapılacak",
+      "today": "Bugün"
+    },
+    "selectDaysButton": "Egzersiz Günleri Seç"
+  },
+  "scheduleModal": {
+    "title": "Egzersiz Günleri",
+    "subtitleMin": "En az 3 gün seçiniz",
+    "subtitleHint": "Egzersiz yapmak istediğiniz günlerin üzerine tıklayınız",
+    "weekShort": {
+      "mon": "Pzt",
+      "tue": "Sal",
+      "wed": "Çar",
+      "thu": "Per",
+      "fri": "Cum",
+      "sat": "Cmt",
+      "sun": "Paz"
+    },
+    "cancel": "İptal",
+    "save": "Kaydet"
+  },
+  "featureDisabled": {
+    "title": "Egzersiz özelliği etkin değil.",
+    "subtitle": "Egzersiz yapabilmek için uygun bir gruba dahil olmanız gerekiyor."
+  },
+  "typeModal": {
+    "title": "Egzersiz Türü Seçimi",
+    "description": "Bugünkü egzersizinizi ayakta mı yoksa oturarak mı yapmak istediğinizi seçiniz.",
+    "standing": "Ayakta",
+    "seated": "Oturarak",
+    "back": "Geri Dön"
+  },
+  "toasts": {
+    "progressFetch": "Egzersiz ilerlemeleri yüklenirken bir hata oluştu",
+    "pickScheduleFirst": "Lütfen bir egzersiz düzeni seçiniz",
+    "networkError": "Bir hata oluştu, internet bağlantınızı kontrol edin",
+    "minThreeDays": "Lütfen en az 3 gün seçiniz",
+    "tryAgainLater": "Lütfen bekleyip tekrar deneyiniz"
+  }
+}

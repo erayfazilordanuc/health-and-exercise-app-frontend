@@ -1,0 +1,107 @@
+{
+  "headers": {
+    "mainUser": "Exercise",
+    "mainAdmin": "Exercises",
+    "detail": "Exercise Detail"
+  },
+  "today": {
+    "title": "Today's Exercise",
+    "noPlan": "You have no scheduled exercise for today.",
+    "restWell": "Have a good rest!",
+    "start": "Start Exercise",
+    "continue": "Continue\nExercise",
+    "completed": "Completed!\nView Exercise"
+  },
+  "detail": {
+    "totalProgress": "Total Progress",
+    "exerciseCompleted": "Exercise Completed",
+    "videos": "Videos",
+    "videoName": "Video name",
+    "duration": "Duration",
+    "progressPct": "Progress {{ratio}}%",
+    "start": "Start",
+    "continue": "Continue",
+    "completed": "Completed"
+  },
+  "player": {
+    "confirmExit": {
+      "message": "Are you sure you want to leave the exercise?",
+      "subtitle": "Your progress will be saved."
+    }
+  },
+  "videoPlayer": {
+    "toast": {
+      "noInternet": "Please check your internet connection"
+    },
+    "overlay": {
+      "finishedOne": "You finished the video!",
+      "finishedAll": "Congrats!\nYou have completed all videos and finished the exercise"
+    },
+    "buttons": {
+      "next": "Go to next video  ",
+      "finish": "Finish  "
+    }
+  },
+  "calendar": {
+    "weekdays": {
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday",
+      "7": "Sunday",
+      "short": {
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat",
+        "7": "Sun"
+      }
+    },
+    "title": "Exercise Calendar",
+    "legend": {
+      "completed": "Completed",
+      "notCompleted": "Not completed",
+      "scheduled": "Scheduled",
+      "today": "Today"
+    },
+    "selectDaysButton": "Select Exercise Days"
+  },
+  "scheduleModal": {
+    "title": "Exercise Days",
+    "subtitleMin": "Please select at least 3 days",
+    "subtitleHint": "Tap the days you want to exercise",
+    "weekShort": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "featureDisabled": {
+    "title": "The exercise feature is not enabled.",
+    "subtitle": "You need to join an eligible group to do exercises."
+  },
+  "typeModal": {
+    "title": "Choose Exercise Type",
+    "description": "Please choose whether you want to do today's exercise standing or seated.",
+    "standing": "Standing",
+    "seated": "Seated",
+    "back": "Go Back"
+  },
+  "toasts": {
+    "progressFetch": "An error occurred while loading workout progress",
+    "pickScheduleFirst": "Please select an exercise schedule",
+    "networkError": "An error occurred, please check your internet connection",
+    "minThreeDays": "Please select at least 3 days",
+    "tryAgainLater": "Please wait and try again"
+  }
+}

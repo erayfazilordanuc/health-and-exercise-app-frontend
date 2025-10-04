@@ -1,0 +1,53 @@
+{
+  "title": "Ana Ekran",
+  "header": {
+    "screenTitle": "Ana Ekran"
+  },
+  "cards": {
+    "profile": {
+      "you": "Siz",
+      "nurse": "Hemşire",
+      "patient": "Hasta"
+    },
+    "exercise": {
+      "todayTitle": "Bugünün Egzersizi",
+      "goToExercise": "Egzersize Git",
+      "completed": "Tamamlandı",
+      "noExerciseTodayTitle": "Bugün için planlanan egzersiziniz yok.",
+      "noExerciseTodaySubtitle": "İyi dinlenmeler!",
+      "noScheduleTitle": "Egzersiz Günleri Seçilmedi",
+      "noScheduleSubtitle": "Egzersizlerinize başlamak için lütfen egzersiz günlerinizi seçiniz.",
+      "selectDays": "Egzersiz Günleri Seç",
+      "progressPercent": "%{{percent}}"
+    },
+    "chat": {
+      "lastMessage": "En Son Mesaj",
+      "goToChat": "Sohbete Git",
+      "youPrefix": "Siz: "
+    }
+  },
+  "dailyStatusModal": {
+    "title": "Bugün kendinizi nasıl hissediyorsunuz?",
+    "save": "Kaydet"
+  },
+  "notifications": {
+    "permissionDeniedTitle": "Bildirimlere izin vermediniz.",
+    "permissionDeniedUser": "Egzersiz hatırlatmaları ve mesaj bildirimleri almak için bildirim izinlerini etkinleştirmeniz gerekmektedir.",
+    "permissionDeniedNurse": "Mesaj bildirimleri almak için bildirim izinlerini etkinleştirmeniz gerekmektedir.",
+    "allow": "İzin ver",
+    "close": "Kapat"
+  },
+  "backHandler": {
+    "pressAgainToExit": "Çıkmak için tekrar ediniz"
+  },
+  "toasts": {
+    "genericError": "Bir hata oluştu",
+    "networkError": "Lütfen internet bağlantınızı kontrol edin",
+    "saved": "Kaydedildi",
+    "dailyStatusRequired": "Kaydetmeden önce bir değer seçiniz"
+  },
+  "labels": {
+    "patientRole": "Hasta",
+    "adminRole": "Hemşire"
+  }
+}

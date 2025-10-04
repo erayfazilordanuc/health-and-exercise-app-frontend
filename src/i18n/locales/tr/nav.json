@@ -1,0 +1,55 @@
+{
+  "tabs": {
+    "home": "Ana Ekran",
+    "profile": "Profil",
+    "exercises": {
+      "user": "Egzersiz",
+      "admin": "Egzersizler"
+    },
+    "groups": {
+      "user": "Grup",
+      "admin": "Gruplar"
+    }
+  },
+  "stacks": {
+    "settings": {
+      "root": "Ayarlar",
+      "preferences": "Tercihler",
+      "notifications": "Bildirimler",
+      "permissions": {
+        "user": "İzinler ve Onaylar",
+        "admin": "İzinler"
+      },
+      "security": "Güvenlik",
+      "development": "Geliştirme",
+      "language": "Dil"
+    },
+    "profile": {
+      "root": "Profil",
+      "settings": "Ayarlar"
+    },
+    "groups": {
+      "root": "Gruplar",
+      "group": "Grup",
+      "member": "Üye",
+      "chat": "Sohbet",
+      "exerciseProgress": "Egzersiz İlerlemesi",
+      "achievements": "Başarılar"
+    },
+    "exercises": {
+      "userRoot": "Egzersizler (Hasta)",
+      "adminRoot": "Egzersizler (Hemşire)",
+      "all": "Tüm Egzersizler",
+      "detail": "Egzersiz Detay",
+      "exercise": "Egzersiz",
+      "edit": "Egzersiz Düzenle"
+    },
+    "home": {
+      "root": "Ana Ekran"
+    }
+  },
+  "labels": {
+    "patient": "Hasta",
+    "nurse": "Hemşire"
+  }
+}
