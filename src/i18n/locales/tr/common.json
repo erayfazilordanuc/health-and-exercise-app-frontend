@@ -1,0 +1,10 @@
+{
+  "app": {
+    "name": "HopeMove",
+    "tagline": "Egzersiz takip ve sağlık uygulaması"
+  },
+  "roles": {
+    "user": "Kullanıcı",
+    "admin": "Hemşire"
+  },"locale": "tr-TR"
+}

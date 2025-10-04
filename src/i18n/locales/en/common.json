@@ -1,0 +1,11 @@
+{
+  "app": {
+    "name": "HopeMove",
+    "tagline": "Exercise tracking and health app"
+  },
+  "roles": {
+    "user": "User",
+    "admin": "Nurse"
+  },
+  "locale": "en-US"
+}

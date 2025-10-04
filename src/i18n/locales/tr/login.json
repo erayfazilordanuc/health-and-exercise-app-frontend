@@ -1,0 +1,65 @@
+{
+  "title": "{{role}} Girişi",
+  "subtitle": "Hesabınıza giriş yapın veya yeni bir hesap oluşturun.",
+  "form": {
+    "fullName": "Ad Soyad",
+    "username": "Kullanıcı adı",
+    "email": "E-posta",
+    "password": "Şifre",
+    "birthDate": "Doğum Tarihi",
+    "gender": "Cinsiyet",
+    "genderOptions": {
+      "female": "Kadın",
+      "male": "Erkek"
+    },
+    "code": "Doğrulama Kodu"
+  },
+  "datepicker": {
+    "locale": "tr",
+    "title": "Tarih Seçin",
+    "confirm": "Tamam",
+    "cancel": "İptal"
+  },
+  "buttons": {
+    "signIn": "Giriş Yap",
+    "createAccount": "Hesap Oluştur",
+    "toggleToSignIn": "Giriş Yap",
+    "toggleToRegister": "Hesap Oluştur"
+  },
+  "links": {
+    "haveAccount": "eğer hesabınız varsa",
+    "noAccount": "eğer hesabınız yoksa"
+  },
+  "consents": {
+    "kvkkAndExplicit": "KVKK Metni ve Açık Rıza Beyanı",
+    "studyConsent": "Aydınlatılmış Onam Formu",
+    "approvehint": "Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın.",
+    "approve": "Onaylıyorum",
+    "reject": "Onaylamıyorum",
+    "footer": "Rızamı dilediğim an, Profil > Ayarlar > İzinler ve Onaylar alanından geri çekebileceğimi biliyorum."
+  },
+  "toasts": {
+    "fillAllFields": "Lütfen tüm alanları doldurunuz",
+    "invalidFullName": "Lütfen ad ve soyadınızı, arada boşluk olacak şekilde yazınız",
+    "loginNurseUsername": "Bu kullanıcı adı bir hemşireye ait",
+    "usernameMin": "Kullanıcı adı en az 4 karakter olmalı",
+    "usernameMax": "Kullanıcı adı en fazla 25 karakter olabilir",
+    "invalidEmail": "Lütfen e-postanızı uygun formatta giriniz",
+    "passwordMin": "Lütfen en az 8 karakter içeren bir şifre giriniz",
+    "invalidBirthDate": "Lütfen geçerli bir tarih giriniz",
+    "noInternetForPolicies": "Sözleşmeler yüklenemedi, lütfen internet bağlantınızı kontrol ediniz",
+    "consentsRequired": "Hesap oluşturabilmek için gerekli onayları vermeniz gerekmektedir",
+    "codeRequired": "Lütfen doğrulama kodunu giriniz",
+    "networkError": "İnternet bağlantınızı kontrol ediniz",
+    "serverError": "Bir hata oluştu",
+    "unexpectedError": "Beklenmeyen bir hata oluştu",
+    "wrongCredentials": "Kullanıcı adı veya şifre hatalı",
+    "usernameTaken": "Bu kullanıcı adı zaten alınmış",
+    "nurseNotFound": "Girilen bilgilere ait bir hemşire yetkinliği bulunamadı",
+    "emailSent": "E-postanıza doğrulama kodu gönderildi"
+  },
+  "footer": {
+    "nurseApplication": "Hemşire hesabı başvurusu için iletişime geçebilirsiniz",
+    "contactEmail": "egzersiz.saglik.uygulaması@gmail.com"
+  }
+}

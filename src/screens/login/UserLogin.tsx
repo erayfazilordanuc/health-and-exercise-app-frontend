@@ -48,6 +48,7 @@ import {
 import {ConsentModal} from '../../components/ConsentModal';
 import {parseTheme} from '../../themes/themes';
 import NetInfo from '@react-native-community/netinfo';
+import {useTranslation} from 'react-i18next'; // <-- i18n eklendi
 
 function UserLogin() {
   const navigation = useNavigation<RootScreenNavigationProp>();
@@ -59,7 +60,7 @@ function UserLogin() {
   const [loginMethod, setLoginMethod] = useState<LoginMethod>(
     LoginMethod.default,
   );
-
+  const {t} = useTranslation(['login', 'common']); // <-- i18n namespace'leri
   const {setUser} = useUser();
 
   const [username, setUsername] = useState('');
@@ -98,8 +99,8 @@ function UserLogin() {
     if (isEnd) setScrolledToEnd(true);
   }
 
-  const FOOTER =
-    'Rızamı dilediğim an, Profil > Ayarlar > İzinler ve Onaylar alanından geri çekebileceğimi biliyorum.';
+  // FOOTER metnini i18n'den alıyoruz ki stripFooter aynı şekilde çalışsın
+  const FOOTER = t('consents.footer');
 
   function stripFooter(text?: string) {
     if (!text) return '';
@@ -130,7 +131,7 @@ function UserLogin() {
 
       if (!(username && password)) {
         // Alert
-        ToastAndroid.show('Lütfen tüm alanları doldurunuz', ToastAndroid.SHORT);
+        ToastAndroid.show(t('toasts.fillAllFields'), ToastAndroid.SHORT);
         return;
       }
 
@@ -140,7 +141,6 @@ function UserLogin() {
       };
 
       const loginResponse = await login(loginPayload);
-      // TO DO burada hata kodlarına göre hata mesajları eklenbilir
       setLoading(false);
 
       if (loginResponse && loginResponse.status === 200 && loginResponse.data) {
@@ -163,47 +163,34 @@ function UserLogin() {
             routes: [{name: 'App'}],
           }),
         );
-        // TO DO burada App e user bilgileri AsyncStorage üzerinden taşınabilir
       }
     } catch (error) {
       setLoading(false);
       if (axios.isAxiosError(error)) {
-        console.log('Axios hatası yakalandı');
-
         const status = error.response?.status;
         let message = error.response?.data?.message || error.message;
 
-        console.log('Status:', status);
-        console.log('Message:', message);
-
-        if (status === 500) message = 'Bu kullanıcı adı bir hemşireye ait';
-        if (status === 403) message = 'Kullanıcı adı veya şifre hatalı';
-        if (status === 502) message = 'Bir hata oluştu';
-        ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
+        if (status === 500) message = t('toasts.loginNurseUsername'); // "Bu kullanıcı adı bir hemşireye ait"
+        if (status === 403) message = t('toasts.wrongCredentials');
+        if (status === 502) message = t('toasts.serverError');
+        ToastAndroid.show(
+          message || t('toasts.serverError'),
+          ToastAndroid.SHORT,
+        );
       } else if (error instanceof Error) {
         if (error.message === 'Network Error') {
-          ToastAndroid.show(
-            'İnternet bağlantınızı kontrol ediniz',
-            ToastAndroid.SHORT,
-          );
+          ToastAndroid.show(t('toasts.networkError'), ToastAndroid.SHORT);
           return;
         }
 
         const maybeStatus = (error as any).status;
         if (maybeStatus === 403 || maybeStatus === 500) {
-          ToastAndroid.show(
-            'Kullanıcı adı veya şifre hatalı',
-            ToastAndroid.SHORT,
-          );
+          ToastAndroid.show(t('toasts.wrongCredentials'), ToastAndroid.SHORT);
           return;
         }
-        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
-
-        // ToastAndroid.show(error.message, ToastAndroid.SHORT);
+        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
       } else {
-        console.log('Bilinmeyen hata:', error);
-
-        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
+        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
       }
     } finally {
       setLoading(false);
@@ -217,57 +204,37 @@ function UserLogin() {
       if (
         !(fullName && username && fullName && password && gender && birthDate)
       ) {
-        ToastAndroid.show('Lütfen tüm alanları doldurunuz', ToastAndroid.SHORT);
+        ToastAndroid.show(t('toasts.fillAllFields'), ToastAndroid.SHORT);
         return;
       }
 
       // if (!usernameRegex.test(username)) {
-      //   ToastAndroid.show(
-      //     'Lütfen kullanıcı adını uygun formatta giriniz',
-      //     ToastAndroid.SHORT,
-      //   );
+      //   ToastAndroid.show(t('toasts.invalidUsernameFormat'), ToastAndroid.SHORT);
       //   return;
       // }
 
-      console.log(username);
-
       if (fullName.split(' ').length < 2) {
-        ToastAndroid.show(
-          'Lütfen ad ve soyadınızı, arada boşluk olacak şekilde yazınız',
-          ToastAndroid.LONG,
-        );
+        ToastAndroid.show(t('toasts.invalidFullName'), ToastAndroid.LONG);
         return;
       }
 
       if (username.length < 4) {
-        ToastAndroid.show(
-          'Kullanıcı adı en az 4 karakter olmalı',
-          ToastAndroid.SHORT,
-        );
+        ToastAndroid.show(t('toasts.usernameMin'), ToastAndroid.SHORT);
         return;
       }
 
       if (username.length > 25) {
-        ToastAndroid.show(
-          'Kullanıcı adı en fazla 25 karakter olabilir',
-          ToastAndroid.SHORT,
-        );
+        ToastAndroid.show(t('toasts.usernameMax'), ToastAndroid.SHORT);
         return;
       }
 
       if (password.length < 8) {
-        ToastAndroid.show(
-          'Lütfen en az 8 karakter içeren bir şifre giriniz',
-          ToastAndroid.SHORT,
-        );
+        ToastAndroid.show(t('toasts.passwordMin'), ToastAndroid.SHORT);
         return;
       }
 
       if (date > fiveYearsAgo) {
-        ToastAndroid.show(
-          'Lütfen geçerli bir tarih giriniz',
-          ToastAndroid.SHORT,
-        );
+        ToastAndroid.show(t('toasts.invalidBirthDate'), ToastAndroid.SHORT);
         return;
       }
 
@@ -277,11 +244,7 @@ function UserLogin() {
         !exerciseDataApproved ||
         !studyApproved
       ) {
-        // if (!kvkkApproved || !healthDataApproved) {
-        ToastAndroid.show(
-          'Hesap oluşturabilmek için gerekli onayları vermeniz gerekmektedir.',
-          ToastAndroid.LONG,
-        );
+        ToastAndroid.show(t('toasts.consentsRequired'), ToastAndroid.LONG);
         return;
       }
 
@@ -295,8 +258,6 @@ function UserLogin() {
         theme: 'blueSystem',
       };
       const registerResponse = await register(registerPayload);
-
-      // TO DO burada hata kodlarına göre hata mesajları eklenbilir
 
       if (
         registerResponse &&
@@ -350,15 +311,6 @@ function UserLogin() {
 
         setUser(user);
 
-        // if (
-        //   kvkkResponse &&
-        //   kvkkResponse.status === 200 &&
-        //   kvkkResponse.data &&
-        //   healthDataResponse &&
-        //   healthDataResponse.status === 200 &&
-        //   healthDataResponse.data
-        // ) {}
-
         setLoading(false);
         navigation.navigate('App');
         navigation.dispatch(
@@ -367,37 +319,28 @@ function UserLogin() {
             routes: [{name: 'App'}],
           }),
         );
-        // TO DO burada App e user bilgileri AsyncStorage üzerinden taşınabilir
       }
     } catch (error) {
       setLoading(false);
       if (axios.isAxiosError(error)) {
-        console.log('Axios hatası yakalandı');
-
         const status = error.response?.status;
         let message = error.response?.data?.message || error.message;
 
-        console.log('Status:', status);
-        console.log('Message:', message);
-
-        if (status === 500) message = 'Bu kullanıcı adı zaten alınmış';
-        if (status === 502) message = 'Bir hata oluştu';
-        ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
+        if (status === 500) message = t('toasts.usernameTaken');
+        if (status === 502) message = t('toasts.serverError');
+        ToastAndroid.show(
+          message || t('toasts.serverError'),
+          ToastAndroid.SHORT,
+        );
       } else if (error instanceof Error) {
         if (error.message === 'Network Error') {
-          ToastAndroid.show(
-            'İnternet bağlantınızı kontrol ediniz',
-            ToastAndroid.SHORT,
-          );
+          ToastAndroid.show(t('toasts.networkError'), ToastAndroid.SHORT);
           return;
         }
 
-        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
-        // ToastAndroid.show(error.message, ToastAndroid.SHORT);
+        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
       } else {
-        console.log('Bilinmeyen hata:', error);
-
-        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
+        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
       }
     } finally {
       setLoading(false);
@@ -405,36 +348,45 @@ function UserLogin() {
   };
 
   const fetchConsentPolicies = async () => {
-    const kvkk = await getLatestPolicy(ConsentPolicyPurpose['KVKK_NOTICE']);
+    const kvkk = await getLatestPolicy(
+      ConsentPolicyPurpose['KVKK_NOTICE'],
+      t('common:locale'),
+    );
     setKvkkPolicy(kvkk);
+
     const health = await getLatestPolicy(
       ConsentPolicyPurpose['HEALTH_DATA_PROCESSING'],
+      t('common:locale'),
     );
     setHealthPolicy(health);
+
     const exercise = await getLatestPolicy(
       ConsentPolicyPurpose['EXERCISE_DATA_PROCESSING'],
+      t('common:locale'),
     );
     setExercisePolicy(exercise);
-    const study = await getLatestPolicy(ConsentPolicyPurpose['STUDY_CONSENT']);
+
+    const study = await getLatestPolicy(
+      ConsentPolicyPurpose['STUDY_CONSENT'],
+      t('common:locale'),
+    );
     setStudyPolicy(study);
   };
 
   useEffect(() => {
+    console.log('burada');
     const unsubscribe = NetInfo.addEventListener(state => {
       if (state.isConnected) {
         if (loginMethod === LoginMethod.registration) fetchConsentPolicies();
       } else {
-        ToastAndroid.show(
-          'İnternet bağlantısı yok, sözleşmeler yüklenemedi',
-          ToastAndroid.LONG,
-        );
+        ToastAndroid.show(t('toasts.noInternetForPolicies'), ToastAndroid.LONG);
       }
     });
 
     return () => {
       unsubscribe(); // cleanup
     };
-  }, []);
+  }, [loginMethod]);
 
   return (
     <SafeAreaView
@@ -452,30 +404,17 @@ function UserLogin() {
         }`}
         keyboardShouldPersistTaps>
         <View className={`px-10`}>
-          {/* <Text
-            className="text-3xl text-center uppercase font-rubik-bold mt-8 mb-4"
-            style={{color: '#0091ff'}}>
-            EGZERSİZ TAKİP{'\n'}VE{'\n'}SAĞLIK{'\n'}
-            <Text className="text-center" style={{color: colors.text.primary}}>
-              Uygulaması
-            </Text>
-          </Text> */}
           <Text
             className="text-center font-rubik-bold mt-8 mb-8"
             style={{color: '#404040', fontSize: 40}}>
-            HopeMove
+            {t('app.name', {ns: 'common'})}
           </Text>
           <Text
             className="text-3xl font-rubik-semibold text-center mt-6 mb-4"
             style={{color: '#404040'}}>
-            Kullanıcı Girişi
+            {t('title', {ns: 'login', role: t('roles.admin', {ns: 'common'})})}
           </Text>
-          {/* <Text
-            className={`text-3xl font-rubik-medium text-center mb-2 mt-8`}
-            style={{color: colors.text.primary}}>
-            {loginMethod === LoginMethod.default && 'Giriş'}
-            {loginMethod === LoginMethod.registration && 'Hesap Oluştur'}
-          </Text> */}
+
           {loginMethod === LoginMethod.registration && (
             <View
               className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
@@ -491,7 +430,7 @@ function UserLogin() {
                 onChangeText={(value: string) => {
                   setFullName(value);
                 }}
-                placeholder="Ad Soyad"
+                placeholder={t('form.fullName')}
                 className="text-lg font-rubik ml-5 flex-1"
                 style={{color: colors.text.primary}}
               />
@@ -512,7 +451,7 @@ function UserLogin() {
               onChangeText={(value: string) => {
                 setUsername(value);
               }}
-              placeholder="Kullanıcı adı"
+              placeholder={t('form.username')}
               className="text-lg font-rubik ml-5 flex-1"
               style={{color: colors.text.primary}}
             />
@@ -536,7 +475,7 @@ function UserLogin() {
                         month: 'long',
                         year: 'numeric',
                       })
-                    : 'Doğum Tarihi'}
+                    : t('form.birthDate')}
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
@@ -554,11 +493,11 @@ function UserLogin() {
               {showDatePicker && (
                 <DatePicker
                   modal
-                  locale="tr"
+                  locale={t('datepicker.locale')}
                   mode="date"
-                  title="Tarih Seçin"
-                  confirmText="Tamam"
-                  cancelText="İptal"
+                  title={t('datepicker.title')}
+                  confirmText={t('datepicker.confirm')}
+                  cancelText={t('datepicker.cancel')}
                   open={showDatePicker}
                   date={date}
                   maximumDate={fiveYearsAgo} // 5 yıldan küçük seçilemez
@@ -583,16 +522,16 @@ function UserLogin() {
                 }}>
                 <Dropdown
                   data={[
-                    {label: 'Kadın', value: 'female'},
-                    {label: 'Erkek', value: 'male'},
+                    {label: t('form.genderOptions.female'), value: 'female'},
+                    {label: t('form.genderOptions.male'), value: 'male'},
                   ]}
                   labelField="label"
                   valueField="value"
-                  placeholder="Cinsiyet"
+                  placeholder={t('form.gender')}
                   value={gender}
                   onChange={item => setGender(item.value)}
                   style={{
-                    backgroundColor: 'transparent', // dış View zaten arka planı taşıyor
+                    backgroundColor: 'transparent',
                     height: 52,
                   }}
                   placeholderStyle={{
@@ -633,7 +572,7 @@ function UserLogin() {
               onChangeText={(value: string) => {
                 setPassword(value);
               }}
-              placeholder="Şifre"
+              placeholder={t('form.password')}
               className="text-lg font-rubik ml-6 flex-1"
               style={{color: colors.text.primary}}
               secureTextEntry={!showPassword}
@@ -642,7 +581,6 @@ function UserLogin() {
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
               className="absolute right-5">
-              {/* TO DO icon can be changed */}
               <Image
                 source={showPassword ? icons.show : icons.hide}
                 className="size-6 mr-2"
@@ -659,7 +597,7 @@ function UserLogin() {
                 <Text
                   className="ml-2 font-rubik text-md mr-3"
                   style={{color: colors.text.primary}}>
-                  KVKK Metni ve Açık Rıza Beyanı
+                  {t('consents.kvkkAndExplicit')}
                 </Text>
                 <Image
                   source={
@@ -680,7 +618,7 @@ function UserLogin() {
                 <Text
                   className="ml-2 font-rubik text-md mr-3"
                   style={{color: colors.text.primary}}>
-                  Aydınlatılmış Onam Formu
+                  {t('consents.studyConsent')}
                 </Text>
                 <Image
                   source={
@@ -708,7 +646,7 @@ function UserLogin() {
                   <Text
                     className="text-xl font-rubik text-center py-1"
                     style={{color: colors.text.primary}}>
-                    Giriş Yap
+                    {t('buttons.signIn')}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -726,7 +664,7 @@ function UserLogin() {
                   <Text
                     className="text-xl font-rubik text-center py-1"
                     style={{color: colors.text.primary}}>
-                    Hesap Oluştur
+                    {t('buttons.createAccount')}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -742,7 +680,7 @@ function UserLogin() {
             <Text
               className="text-lg font-rubik text-center mt-4"
               style={{color: colors.text.third}}>
-              eğer hesabın varsa {'\n'}
+              {t('links.haveAccount')} {'\n'}
               <TouchableOpacity
                 onPress={() => {
                   clearInputs();
@@ -751,7 +689,7 @@ function UserLogin() {
                 <Text
                   className="text-xl font-rubik text-center"
                   style={{color: '#0091ff', textDecorationLine: 'underline'}}>
-                  Giriş Yap
+                  {t('buttons.signIn')}
                 </Text>
               </TouchableOpacity>
             </Text>
@@ -760,7 +698,8 @@ function UserLogin() {
             <Text
               className="text-lg font-rubik text-center mt-4"
               style={{color: colors.text.third}}>
-              eğer hesabın yoksa{'\n'}
+              {t('links.noAccount')}
+              {'\n'}
               <TouchableOpacity
                 onPress={() => {
                   clearInputs();
@@ -769,95 +708,19 @@ function UserLogin() {
                 <Text
                   className="text-xl font-rubik text-center"
                   style={{color: '#0091ff', textDecorationLine: 'underline'}}>
-                  Hesap Oluştur
+                  {t('buttons.createAccount')}
                 </Text>
               </TouchableOpacity>
             </Text>
           )}
-          {/* <View className="flex flex-row justify-center">
-            <TouchableOpacity
-              onPress={handleGoogleLogin}
-              className="shadow-md shadow-zinc-350 rounded-full w-5/6 py-4 mt-2"
-              style={{backgroundColor: theme.name === "Light" ? colors.background.primary:"#333333"}}>
-              <View className="flex flex-row items-center justify-center">
-                <Image
-                  source={icons.google}
-                  className="w-5 h-5"
-                  resizeMode="contain"
-                />
-                <Text
-                  className="text-lg font-rubik-medium ml-3"
-                  style={{color: colors.text.primary}}>
-                  Google ile devam et
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View> */}
+          {/* Google ile devam et örneği i18n'e taşınabilir */}
         </View>
       </ScrollView>
 
-      {/* <CustomModal
-        visible={consentModalVisible}
-        onApprove={() => {
-          setKvkkAcknowledged(true);
-          setHealthDataApproved(true);
-          setExerciseDataApproved(true);
-          setConsentModalVisible(false);
-        }}
-        onReject={() => {
-          setKvkkAcknowledged(false);
-          setHealthDataApproved(false);
-          setExerciseDataApproved(false);
-          setConsentModalVisible(false);
-        }}
-        onApproveText={`Onaylıyorum`}
-        onRejectText="Onaylamıyorum"
-        body={
-          <>
-            <Text
-              className="font-rubik text-md"
-              style={{color: colors.text.primary}}>
-              {stripFooter(kvkkPolicy?.content)}
-              {'\n'}
-              {'\n'}
-              {stripFooter(healthPolicy?.content)}
-              {'\n'}
-              {'\n'}
-              {stripFooter(exercisePolicy?.content)}
-              {'\n'}
-              {'\n'}
-              {'\n'}
-              {FOOTER}
-            </Text>
-          </>
-        }
-      /> */}
-      {/* <CustomModal
-        visible={studyModalVisible}
-        onApprove={() => {
-          setStudyApproved(true);
-          setStudyModalVisible(false);
-        }}
-        onReject={() => {
-          setStudyApproved(false);
-          setStudyModalVisible(false);
-        }}
-        onApproveText="Onaylıyorum"
-        onRejectText="Onaylamıyorum"
-        body={
-          <>
-            <Text
-              className="font-rubik text-md"
-              style={{color: colors.text.primary}}>
-              {studyPolicy?.content}
-            </Text>
-          </>
-        }
-      /> */}
       <ConsentModal
         visible={consentModalVisible}
         requireScrollToEnd
-        approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
+        approveHint={t('consents.approveHint')}
         onApprove={() => {
           setKvkkAcknowledged(true);
           setHealthDataApproved(true);
@@ -870,8 +733,8 @@ function UserLogin() {
           setExerciseDataApproved(false);
           setConsentModalVisible(false);
         }}
-        onApproveText="Onaylıyorum"
-        onRejectText="Onaylamıyorum"
+        onApproveText={t('consents.approve')}
+        onRejectText={t('consents.reject')}
         body={
           <>
             <Text
@@ -891,7 +754,7 @@ function UserLogin() {
       <ConsentModal
         visible={studyModalVisible}
         requireScrollToEnd
-        approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
+        approveHint={t('consents.approveHint')}
         onApprove={() => {
           setStudyApproved(true);
           setStudyModalVisible(false);
@@ -900,8 +763,8 @@ function UserLogin() {
           setStudyApproved(false);
           setStudyModalVisible(false);
         }}
-        onApproveText="Onaylıyorum"
-        onRejectText="Onaylamıyorum"
+        onApproveText={t('consents.approve')}
+        onRejectText={t('consents.reject')}
         body={
           <Text
             className="font-rubik text-md"

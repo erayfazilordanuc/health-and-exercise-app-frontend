@@ -1,0 +1,7 @@
+{
+  "title": "{{appName}}",
+  "subtitle": "With {{appName}}, you track your activity under nurse guidance and we support your recovery with hope.",
+  "buttons": {
+    "signIn": "{{role}} Sign In"
+  }
+}

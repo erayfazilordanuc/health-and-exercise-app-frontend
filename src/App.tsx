@@ -12,13 +12,14 @@ import {ReactQueryProvider} from './lib/react-query/provider';
 import {focusManager} from '@tanstack/react-query';
 import {AppState, StatusBar} from 'react-native';
 
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
 import notifee, {AndroidImportance} from '@notifee/react-native';
 import {PermissionsAndroid, Platform} from 'react-native';
 import NotificationHandler from './navigation/NotificationHandler';
+import {initI18n} from './i18n';
 
 function GlobalStatusBar() {
   // ThemeProvider içindeyken çalışır
@@ -146,6 +147,14 @@ export default function App() {
 
     return () => unsub();
   }, []);
+
+  const [i18nReady, setI18nReady] = useState(false);
+
+  useEffect(() => {
+    initI18n().then(() => setI18nReady(true));
+  }, []);
+
+  if (!i18nReady) return null;
 
   return (
     <ThemeProvider>

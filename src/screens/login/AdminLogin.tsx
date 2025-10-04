@@ -38,8 +38,11 @@ import {Dropdown} from 'react-native-element-dropdown';
 import {BlurView} from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
 import {LoginMethod} from '../../types/enums';
+import {useTranslation} from 'react-i18next';
 
 function AdminLogin() {
+  const {t} = useTranslation(['login', 'common']);
+
   const navigation = useNavigation<RootScreenNavigationProp>();
   const {theme, colors, setTheme} = useTheme();
   const {height} = Dimensions.get('screen');
@@ -89,15 +92,12 @@ function AdminLogin() {
       setLoading(true);
 
       if (!(username && password)) {
-        ToastAndroid.show('Lütfen tüm alanları doldurunuz', ToastAndroid.SHORT);
+        ToastAndroid.show(t('toasts.fillAllFields'), ToastAndroid.SHORT);
         return;
       }
 
       if (isCodeStep && !code) {
-        ToastAndroid.show(
-          'Lütfen doğrulama kodunu giriniz',
-          ToastAndroid.SHORT,
-        );
+        ToastAndroid.show(t('toasts.codeRequired'), ToastAndroid.SHORT);
         return;
       }
 
@@ -112,16 +112,12 @@ function AdminLogin() {
       };
 
       const loginResponse = await loginAdmin(requestPayload);
-      // TO DO burada hata kodlarına göre hata mesajları eklenbilir
       setLoading(false);
 
       if (loginResponse && loginResponse.status === 200) {
         if (!loginResponse.data) {
           setIsCodeStep(true);
-          ToastAndroid.show(
-            'E-postanıza doğrulama kodu gönderildi',
-            ToastAndroid.SHORT,
-          );
+          ToastAndroid.show(t('toasts.emailSent'), ToastAndroid.SHORT);
         } else {
           const user = loginResponse.data.userDTO as User;
           setUser(user);
@@ -137,37 +133,25 @@ function AdminLogin() {
     } catch (error) {
       setLoading(false);
       if (axios.isAxiosError(error)) {
-        console.log('Axios hatası yakalandı');
-
         const status = error.response?.status;
         let message = error.response?.data?.message || error.message;
 
-        console.log('Status:', status);
-        console.log('Message:', message);
-
         if (status === 403 || status === 500)
-          message = 'Kullanıcı adı veya şifre hatalı';
-        if (status === 502) message = 'Bir hata oluştu';
-        ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
+          message = t('toasts.wrongCredentials');
+        if (status === 502) message = t('toasts.serverError');
+        ToastAndroid.show(
+          message || t('toasts.serverError'),
+          ToastAndroid.SHORT,
+        );
       } else if (error instanceof Error) {
-        console.log('Genel hata yakalandı:', error.message);
-
         const maybeStatus = (error as any).status;
         if (maybeStatus === 403 || maybeStatus === 500) {
-          ToastAndroid.show(
-            'Kullanıcı adı veya şifre hatalı',
-            ToastAndroid.SHORT,
-          );
+          ToastAndroid.show(t('toasts.wrongCredentials'), ToastAndroid.SHORT);
           return;
         }
-        ToastAndroid.show(
-          'Bir hata oluştu, kullanıcı adı ve şifrenizi kontrol ediniz',
-          ToastAndroid.LONG,
-        );
+        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.LONG);
       } else {
-        console.log('Bilinmeyen hata:', error);
-
-        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
+        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
       }
     } finally {
       setLoading(false);
@@ -179,39 +163,22 @@ function AdminLogin() {
       setLoading(true);
 
       if (!(username && email && fullName && password)) {
-        ToastAndroid.show('Lütfen tüm alanları doldurunuz', ToastAndroid.SHORT);
+        ToastAndroid.show(t('toasts.fillAllFields'), ToastAndroid.SHORT);
         return;
       }
 
-      // if (!usernameRegex.test(username.trim())) {
-      //   ToastAndroid.show(
-      //     'Lütfen kullanıcı adını uygun formatta giriniz',
-      //     ToastAndroid.SHORT,
-      //   );
-      //   return;
-      // }
-
       if (!emailRegex.test(email.trim())) {
-        ToastAndroid.show(
-          'Lütfen e-postanızı uygun formatta giriniz',
-          ToastAndroid.SHORT,
-        );
+        ToastAndroid.show(t('toasts.invalidEmail'), ToastAndroid.SHORT);
         return;
       }
 
       if (password.length < 8) {
-        ToastAndroid.show(
-          'Lütfen en az 8 karakter içeren bir şifre giriniz',
-          ToastAndroid.SHORT,
-        );
+        ToastAndroid.show(t('toasts.passwordMin'), ToastAndroid.SHORT);
         return;
       }
 
       if (isCodeStep && !code) {
-        ToastAndroid.show(
-          'Lütfen doğrulama kodunu giriniz',
-          ToastAndroid.SHORT,
-        );
+        ToastAndroid.show(t('toasts.codeRequired'), ToastAndroid.SHORT);
         return;
       }
 
@@ -231,16 +198,12 @@ function AdminLogin() {
       };
 
       const registerResponse = await registerAdmin(requestPayload);
-      // TO DO burada hata kodlarına göre hata mesajları eklenbilir
       setLoading(false);
 
       if (registerResponse && registerResponse.status === 200) {
         if (!registerResponse.data) {
           setIsCodeStep(true);
-          ToastAndroid.show(
-            'E-postanıza doğrulama kodu gönderildi',
-            ToastAndroid.SHORT,
-          );
+          ToastAndroid.show(t('toasts.emailSent'), ToastAndroid.SHORT);
         } else {
           const user = registerResponse.data.userDTO as User;
           setUser(user);
@@ -256,27 +219,21 @@ function AdminLogin() {
     } catch (error) {
       setLoading(false);
       if (axios.isAxiosError(error)) {
-        console.log('Axios hatası yakalandı');
-
         const status = error.response?.status;
         let message = error.response?.data?.message || error.message;
 
-        console.log('Status:', status);
-        console.log('Message:', message);
-
-        if (status === 500) message = 'Bu kullanıcı adı zaten alınmış';
-        if (status === 502) message = 'Bir hata oluştu';
+        if (status === 500) message = t('toasts.usernameTaken');
+        if (status === 502) message = t('toasts.serverError');
         if (status?.toString().startsWith('4'))
-          message = 'Girilen bilgilere ait bir hemşire yetkinliği bulunamadı';
-        ToastAndroid.show(message || 'Bir hata oluştu', ToastAndroid.SHORT);
+          message = t('toasts.nurseNotFound');
+        ToastAndroid.show(
+          message || t('toasts.serverError'),
+          ToastAndroid.SHORT,
+        );
       } else if (error instanceof Error) {
-        console.log('Genel hata yakalandı:', error.message);
-        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
-        // ToastAndroid.show(error.message, ToastAndroid.SHORT);
+        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
       } else {
-        console.log('Bilinmeyen hata:', error);
-
-        ToastAndroid.show('Beklenmeyen bir hata oluştu', ToastAndroid.SHORT);
+        ToastAndroid.show(t('toasts.unexpectedError'), ToastAndroid.SHORT);
       }
     } finally {
       setLoading(false);
@@ -304,33 +261,19 @@ function AdminLogin() {
               : 96,
         }}
         keyboardShouldPersistTaps>
-        {/* <Text
-          className="text-3xl text-center uppercase font-rubik-bold mt-6 mb-4"
-          style={{color: '#0091ff'}}>
-          EGZERSİZ TAKİP{'\n'}VE{'\n'}SAĞLIK{'\n'}
-          <Text className="text-center" style={{color: colors.text.primary}}>
-            Uygulaması
-          </Text>
-        </Text> */}
         <Text
           className="text-center font-rubik-bold mt-8 mb-8"
           style={{
-            color: '#404040' /*color: '#0091ff',*/,
+            color: '#404040',
             fontSize: 40,
           }}>
-          HopeMove
+          {t('app.name', {ns: 'common'})} {/* "HopeMove" */}
         </Text>
         <Text
           className="text-3xl font-rubik-semibold text-center mt-6 mb-4"
           style={{color: '#404040'}}>
-          Hemşire Girişi
+          {t('title', {role: t('common:roles.admin')})} {/* "Hemşire Girişi" */}
         </Text>
-        {/* <Text
-            className={`text-3xl font-rubik-medium text-center mb-2 mt-4`}
-            style={{color: colors.text.primary}}>
-            {loginMethod === LoginMethod.default && 'Giriş'}
-            {loginMethod === LoginMethod.registration && 'Hesap Oluştur'}
-          </Text> */}
 
         {loginMethod === LoginMethod.registration && (
           <View
@@ -347,7 +290,7 @@ function AdminLogin() {
               onChangeText={(value: string) => {
                 setFullName(value);
               }}
-              placeholder="Ad Soyad"
+              placeholder={t('form.fullName')} // "Ad Soyad"
               className="text-lg font-rubik ml-5 flex-1"
               style={{color: colors.text.primary}}
             />
@@ -368,7 +311,7 @@ function AdminLogin() {
             onChangeText={(value: string) => {
               setUsername(value);
             }}
-            placeholder="Kullanıcı adı"
+            placeholder={t('form.username')} // "Kullanıcı adı"
             className="text-lg font-rubik ml-5 flex-1"
             style={{color: colors.text.primary}}
           />
@@ -390,7 +333,7 @@ function AdminLogin() {
                 onChangeText={(value: string) => {
                   setEmail(value);
                 }}
-                placeholder="E-posta"
+                placeholder={t('form.email')} // "E-posta"
                 className="text-lg font-rubik ml-5 flex-1"
                 style={{color: colors.text.primary}}
               />
@@ -406,13 +349,15 @@ function AdminLogin() {
               <Text
                 className="text-lg font-rubik ml-6 py-3 flex-1"
                 style={{color: birthDate ? colors.text.primary : 'gray'}}>
-                {birthDate
-                  ? new Date(birthDate).toLocaleDateString('tr-TR', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })
-                  : 'Doğum Tarihi'}
+                {
+                  birthDate
+                    ? new Date(birthDate).toLocaleDateString('tr-TR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    : t('form.birthDate') /* "Doğum Tarihi" */
+                }
               </Text>
               <TouchableOpacity
                 onPress={() => {
@@ -430,11 +375,11 @@ function AdminLogin() {
             {showDatePicker && (
               <DatePicker
                 modal
-                locale="tr"
+                locale={t('datepicker.locale')}
                 mode="date"
-                title="Tarih Seçin"
-                confirmText="Tamam"
-                cancelText="İptal"
+                title={t('datepicker.title')} // "Tarih Seçin"
+                confirmText={t('datepicker.confirm')} // "Tamam"
+                cancelText={t('datepicker.cancel')} // "İptal"
                 open={showDatePicker}
                 date={date}
                 maximumDate={fiveYearsAgo} // 5 yıldan küçük seçilemez
@@ -459,16 +404,22 @@ function AdminLogin() {
               }}>
               <Dropdown
                 data={[
-                  {label: 'Kadın', value: 'female'},
-                  {label: 'Erkek', value: 'male'},
+                  {
+                    label: t('form.genderOptions.female'),
+                    value: 'female',
+                  },
+                  {
+                    label: t('form.genderOptions.male'),
+                    value: 'male',
+                  },
                 ]}
                 labelField="label"
                 valueField="value"
-                placeholder="Cinsiyet"
+                placeholder={t('form.gender')} // "Cinsiyet"
                 value={gender}
                 onChange={item => setGender(item.value)}
                 style={{
-                  backgroundColor: 'transparent', // dış View zaten arka planı taşıyor
+                  backgroundColor: 'transparent',
                   height: 52,
                 }}
                 placeholderStyle={{
@@ -509,7 +460,7 @@ function AdminLogin() {
             onChangeText={(value: string) => {
               setPassword(value);
             }}
-            placeholder="Şifre"
+            placeholder={t('form.password')} // "Şifre"
             className="text-lg font-rubik ml-5 flex-1"
             style={{color: colors.text.primary}}
             secureTextEntry={!showPassword}
@@ -518,7 +469,6 @@ function AdminLogin() {
           <TouchableOpacity
             onPress={() => setShowPassword(!showPassword)}
             className="absolute right-5">
-            {/* TO DO icon can be changed */}
             <Image
               source={showPassword ? icons.show : icons.hide}
               className="size-6 mr-2"
@@ -542,7 +492,7 @@ function AdminLogin() {
               onChangeText={(value: string) => {
                 setCode(value);
               }}
-              placeholder="Doğrulama Kodu"
+              placeholder={t('form.code')} // "Doğrulama Kodu"
               className="text-lg font-rubik ml-5 flex-1"
               style={{color: colors.text.primary}}
             />
@@ -563,7 +513,7 @@ function AdminLogin() {
                 <Text
                   className="text-xl font-rubik text-center py-1"
                   style={{color: colors.text.primary}}>
-                  Giriş Yap
+                  {t('buttons.signIn')} {/* "Giriş Yap" */}
                 </Text>
               </TouchableOpacity>
             )}
@@ -581,7 +531,7 @@ function AdminLogin() {
                 <Text
                   className="text-xl font-rubik text-center py-1"
                   style={{color: colors.text.primary}}>
-                  Hesap Oluştur
+                  {t('buttons.createAccount')} {/* "Hesap Oluştur" */}
                 </Text>
               </TouchableOpacity>
             )}
@@ -598,7 +548,7 @@ function AdminLogin() {
           <Text
             className="text-lg font-rubik text-center mt-4"
             style={{color: colors.text.third}}>
-            eğer hesabınız varsa {'\n'}
+            {t('links.haveAccount')} {'\n'}
             <TouchableOpacity
               onPress={() => {
                 clearInputs();
@@ -607,7 +557,7 @@ function AdminLogin() {
               <Text
                 className="text-xl font-rubik text-center"
                 style={{color: '#0091ff', textDecorationLine: 'underline'}}>
-                Giriş Yap
+                {t('buttons.signIn')}
               </Text>
             </TouchableOpacity>
           </Text>
@@ -616,7 +566,8 @@ function AdminLogin() {
           <Text
             className="text-lg font-rubik text-center mt-4"
             style={{color: colors.text.third}}>
-            eğer hesabınız yoksa{'\n'}
+            {t('links.noAccount')}
+            {'\n'}
             <TouchableOpacity
               onPress={() => {
                 clearInputs();
@@ -625,40 +576,20 @@ function AdminLogin() {
               <Text
                 className="text-xl font-rubik text-center"
                 style={{color: '#0091ff', textDecorationLine: 'underline'}}>
-                Hesap Oluştur
+                {t('buttons.createAccount')}
               </Text>
             </TouchableOpacity>
           </Text>
         )}
-        {/* <View className="flex flex-row justify-center">
-            <TouchableOpacity
-              onPress={handleGoogleLogin}
-              className="shadow-md shadow-zinc-350 rounded-full w-5/6 py-4 mt-2"
-              style={{backgroundColor: theme.name === "Light" ? colors.background.primary:"#333333"}}>
-              <View className="flex flex-row items-center justify-center">
-                <Image
-                  source={icons.google}
-                  className="w-5 h-5"
-                  resizeMode="contain"
-                />
-                <Text
-                  className="text-lg font-rubik-medium ml-3"
-                  style={{color: colors.text.primary}}>
-                  Google ile devam et
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View> */}
       </ScrollView>
 
-      <Modal
+      {/* <Modal
         transparent
         visible={kvkkModalVisible}
         animationType="fade"
         onRequestClose={() => setKvkkModalVisible(false)}>
         <View className="flex-1 justify-center items-center bg-black/40">
           <View
-            // Kart: ekranın ~%70 yüksekliğini aşmasın
             style={{
               width: '91%',
               maxHeight: height * 0.7,
@@ -666,14 +597,12 @@ function AdminLogin() {
               padding: 20,
               backgroundColor: colors.background.primary,
             }}>
-            {/* Scroll alanı: kalan yüksekliği kullansın */}
             <ScrollView
-              style={{flexGrow: 1}} // mevcut alanı doldur
+              style={{flexGrow: 1}}
               contentContainerStyle={{paddingBottom: 8}}
               showsVerticalScrollIndicator={true}
               keyboardShouldPersistTaps="handled"
-              nestedScrollEnabled // Android için iyi olur
-            >
+              nestedScrollEnabled>
               <Text
                 style={{
                   marginTop: 15,
@@ -686,72 +615,12 @@ function AdminLogin() {
                 etmek için{' '}
                 <Text className="font-rubik-medium">Health Connect</Text> ve
                 <Text className="font-rubik-medium"> Google Fit</Text>{' '}
-                uygulamalarını indirmeniz gerekiyor.{'\n'}Şimdi Play Store’a
-                gitmek istiyor musunuz?ÖRNEK: 6698 sayılı Kanunun 16. maddesinde
-                düzenlenen Veri Sorumluları Siciline kayıt yükümlülüğü
-                kapsamında veri sorumlularının VERBİS’e bilgi girişi yapması.
-                ÖRNEK: Gelir Vergisi Kanununun 70. maddesi gereği,
-                gayrimenkulünü kiraya verenlerin, vermek zorunda olduğu yıllık
-                beyanname kapsamında kendisine ait kişisel verilerin Maliye
-                Bakanlığının ilgili birimlerince işlenmesi. C- Fiili İmkânsızlık
-                Nedeniyle Rızasını Açıklayamayacak Durumda Bulunan Veya Rızasına
-                Hukuki Geçerlilik Tanınmayan Kişinin Kendisinin ya da Bir
-                Başkasının Hayatı Veya Beden Bütünlüğünün Korunması İçin Zorunlu
-                Olması Kişisel verisi işlenecek kişinin herhangi bir fiili
-                imkânsızlık nedeniyle rızasını açıklayamayacak durumda olması
-                veya rızasına hukuki geçerlilik tanınmayan kişinin kendisi veya
-                başkasının hayatı ve beden bütünlüğünün korunması için zorunlu
-                olması halinde kişisel verilerin işlenmesi mümkündür. ÖRNEK:
-                Bilinci yerinde olmayan bir kişinin beden bütünlüğünün korunması
-                amacıyla tıbbi müdahale yapılması gereken durumlarda;
-                yakınlarına haber vermek, yetkili sağlık kurumları tarafından
-                tutulan kayıtlar üzerinden hasta geçmişini öğrenerek gerekli
-                müdahaleyi yapmak gibi amaçlarla kişinin adı, soyadı, kimlik
-                numarası, telefon numarası vb. kişisel verilerinin işlenmesi bu
-                kapsamdadır. 16 16 | ÖRNEKLERLE KİŞİSEL VERİLERİN KORUNMASINA
-                İLİŞKİN REHBER ÖRNEK: Hürriyeti kısıtlanan bir kişinin
-                kurtarılması amacıyla, kendisinin ya da şüphelinin cep telefonu
-                sinyali, kredi kartı kullanım ve işlem hareketleri, araç takip
-                sistemi bilgileri, MOBESE kayıtları vb. kişisel verilerinin
-                ilgili birimlerce işlenerek yer tespitini yapılması. ÖRNEK:
-                Dağda mahsur kalan bir kişinin kurtarılması amacıyla, cep
-                telefonu sinyali, GPS ve mobil trafik verisinin işlenerek
-                yerinin belirlenmesi. D- Bir Sözleşmenin Kurulması Veya İfasıyla
-                Doğrudan Doğruya İlgili Olması Kaydıyla, Sözleşmenin Taraflarına
-                Ait Kişisel Verilerin İşlenmesinin Gerekli Olması Bu veri işleme
-                şartına dayanarak kişisel veri işlenebilmesi için işlemenin
-                gerçekten bu amaca hizmet ediyor olması ve bu amaçla sınırlı
-                olarak gerçekleştiriliyor olması gereklidir. Ayrıca, işlenen
-                kişisel verilerin sadece sözleşmenin taraflarına ait olması ve
-                sözleşme çerçevesiyle sınırlı olmak kaydıyla kişisel veri
-                işlenmesinin gerektiği de unutulmamalıdır. ÖRNEK: Bir
-                emlakçının, kira sözleşmesi ile ilgili olarak ev sahibi ve
-                kiracı arasında imzalanan sözleşme kapsamında tarafların kimlik
-                numarası, banka hesap numarası, adres, imza ve telefon gibi
-                kişisel verilerini işlemesi, dosyasında muhafaza etmesi. ÖRNEK:
-                Bir satıcının müşterisine sattığı bir malı teslim etmek amacıyla
-                müşterisinin adresini taşıma şirketine vermesi. 17 ÖRNEKLERLE
-                KİŞİSEL VERİLERİN KORUNMASINA İLİŞKİN REHBER | 17 ÖRNEK: Bir
-                bankanın, maaş müşterisi ile imzaladığı sözleşme kapsamında
-                müşterinin kimlik numarası, elektronik posta, adres, imza, cep
-                telefon numarası gibi kişisel verilerini işlemesi ve dosyasında
-                muhafaza etmesi. E- Veri Sorumlusunun Hukuki Yükümlülüğünü
-                Yerine Getirebilmesi İçin Zorunlu Olması Bu veri işleme şartının
-                uygulanabilmesi için kişisel veri işleme, veri sorumlusunun
-                hukuki yükümlülüğünü yerine getirebilmesi için gerekli ve bu
-                amaçla sınırlı olarak gerçekleştiriliyor olmalıdır. ÖRNEK:
-                Taşıma işiyle yükümlü bulunan bir kargo firması tarafından,
-                kişiye teslimat yapılabilmesi için, alıcının adres ve iletişim
-                bilgilerinin kaydedilmesi. ÖRNEK: Bir şirketin çalışanına maaş
-                ödeyebilmesi için banka hesap bilgilerini işlemesi. ÖRNEK:
-                Seminer organizasyonu yapılan bir
+                uygulamalarını indirmeniz gerekiyor...
               </Text>
             </ScrollView>
 
-            {/* Butonlar: Scroll alanının altında, sabit kalsın */}
             <View
               className="flex flex-row justify-between mt-5"
-              // flexShrink ile butonların görünür kalmasını garanti altına al
               style={{flexShrink: 0}}>
               <TouchableOpacity
                 onPress={() => {
@@ -763,7 +632,7 @@ function AdminLogin() {
                 <Text
                   className="font-rubik text-lg"
                   style={{color: colors.text.primary}}>
-                  Onaylamıyorum
+                  {t('consents.reject')}
                 </Text>
               </TouchableOpacity>
 
@@ -775,20 +644,21 @@ function AdminLogin() {
                   setKvkkModalVisible(false);
                 }}>
                 <Text className="font-rubik text-lg text-white">
-                  Onaylıyorum
+                  {t('consents.approve')}
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
-      </Modal>
+      </Modal> */}
 
       <View className="flex-1 ">
         <Text className="text-center absolute bottom-6 self-center text-sm text-gray-400">
-          Hemşire hesabı başvurusu için iletişime geçebilirsiniz{'\n'}
+          {t('footer.nurseApplication')}
+          {'\n'}
         </Text>
         <Text className="text-center absolute bottom-6 self-center text-sm text-gray-400 underline">
-          egzersiz.saglik.uygulaması@gmail.com
+          {t('footer.contactEmail')}
         </Text>
       </View>
     </SafeAreaView>

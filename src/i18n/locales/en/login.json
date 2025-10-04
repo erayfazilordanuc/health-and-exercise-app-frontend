@@ -1,0 +1,65 @@
+{
+  "title": "{{role}} Sign In",
+  "subtitle": "Sign in to your account or create a new one.",
+  "form": {
+    "fullName": "Full name",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "birthDate": "Date of Birth",
+    "gender": "Gender",
+    "genderOptions": {
+      "female": "Female",
+      "male": "Male"
+    },
+    "code": "Verification Code"
+  },
+  "datepicker": {
+    "locale": "en",
+    "title": "Select Date",
+    "confirm": "OK",
+    "cancel": "Cancel"
+  },
+  "buttons": {
+    "signIn": "Sign In",
+    "createAccount": "Create Account",
+    "toggleToSignIn": "Sign In",
+    "toggleToRegister": "Create Account"
+  },
+  "links": {
+    "haveAccount": "if you already have an account",
+    "noAccount": "if you don't have an account"
+  },
+  "consents": {
+    "kvkkAndExplicit": "KVKK Text and Explicit Consent Statement",
+    "studyConsent": "Informed Consent Form",
+    "approveHint": "Please read the entire text and scroll to the end to confirm.",
+    "approve": "Approve",
+    "reject": "Decline",
+    "footer": "I am aware that I can withdraw my consent at any time from Profile > Settings > Permissions and Consents."
+  },
+  "toasts": {
+    "fillAllFields": "Please fill in all fields",
+    "invalidFullName": "Please enter your full name with a space",
+    "loginNurseUsername": "This username belongs to a nurse",
+    "usernameMin": "Username must be at least 4 characters",
+    "usernameMax": "Username can be at most 25 characters",
+    "invalidEmail": "Please enter a valid email address",
+    "passwordMin": "Password must be at least 8 characters",
+    "invalidBirthDate": "Please enter a valid date",
+    "noInternetForPolicies": "Agreements could not be loaded, please check your internet connection",
+    "consentsRequired": "You must provide the necessary approvals to create an account",
+    "codeRequired": "Please enter the verification code",
+    "networkError": "Please check your internet connection",
+    "serverError": "An error occurred",
+    "unexpectedError": "An unexpected error occurred",
+    "wrongCredentials": "Username or password is incorrect",
+    "usernameTaken": "This username is already taken",
+    "nurseNotFound": "No nurse credentials found for the provided information",
+    "emailSent": "Verification code sent to your email"
+  },
+  "footer": {
+    "nurseApplication": "For nurse account application, please contact",
+    "contactEmail": "egzersiz.saglik.uygulaması@gmail.com"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "title": "{{appName}}",
+  "subtitle": "{{appName}} ile hemşire rehberliğinde aktivitenizi izler, iyileşme sürecinizi umutla destekleriz.",
+  "buttons": {
+    "signIn": "{{role}} Girişi"
+  }
+}

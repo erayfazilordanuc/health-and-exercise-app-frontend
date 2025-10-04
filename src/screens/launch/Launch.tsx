@@ -21,12 +21,15 @@ import {useUser} from '../../contexts/UserContext';
 import {BlurView} from '@react-native-community/blur';
 import NetInfo from '@react-native-community/netinfo';
 import {getDbUser, getUser, updateAvatarApi} from '../../api/user/userService';
+import {initI18n} from '../../i18n';
+import {useTranslation} from 'react-i18next';
 
 const {width, height} = Dimensions.get('window');
 
 const Launch = () => {
   // useNotificationNavigation();
   const insets = useSafeAreaInsets();
+  const {t} = useTranslation(['launch', 'common']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const colorScheme = useColorScheme();
@@ -151,8 +154,7 @@ const Launch = () => {
         <Text
           className="font-rubik-semibold text-xl text-center mt-4"
           style={[styles.titleBlack, {color: '#404040'}]}>
-          HopeMove ile hemşire rehberliğinde aktivitenizi izler, iyileşme
-          sürecinizi umutla destekleriz.
+          {t('subtitle', {appName: t('common:app.name')})}
         </Text>
         <TouchableOpacity
           className="px-6 py-3 rounded-2xl mb-2"
@@ -169,7 +171,7 @@ const Launch = () => {
             style={{
               color: colors.text.primary,
             }}>
-            Kullanıcı Girişi
+            {t('buttons.signIn', {role: t('common:roles.user')})}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -187,15 +189,13 @@ const Launch = () => {
             style={{
               color: colors.text.primary,
             }}>
-            Hemşire Girişi
+            {t('buttons.signIn', {role: t('common:roles.admin')})}
           </Text>
         </TouchableOpacity>
         {/* Alt sol mavi dekor */}
         <View style={styles.bottomLeftShape} />
         <View style={styles.bottomRightShape} />
-        <Text style={styles.footerText}>
-          Egzersiz takip ve sağlık uygulaması
-        </Text>
+        <Text style={styles.footerText}>{t('common:app.tagline')}</Text>
       </SafeAreaView>
     );
 };

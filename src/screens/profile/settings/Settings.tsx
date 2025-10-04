@@ -201,13 +201,13 @@ const Settings = () => {
                 }}
               />
             )}
-            {/* <SettingsItem
-            icon={icons.language}
-            title={'Dil'}
-            onPress={() => {
-              navigation.navigate('Language');
-            }}
-          /> */}
+            <SettingsItem
+              icon={icons.language}
+              title={'Dil'}
+              onPress={() => {
+                navigation.navigate('Language');
+              }}
+            />
           </View>
         </View>
         <View
