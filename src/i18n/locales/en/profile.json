@@ -1,0 +1,111 @@
+{
+  "title": "Profile",
+  "header": {
+    "screenTitle": "Profile",
+    "roleSuffixNurse": " (Nurse)"
+  },
+  "labels": {
+    "username": "Username",
+    "email": "Email",
+    "age": "Age",
+    "birthDate": "Date of Birth",
+    "gender": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "steps": "Steps",
+    "caloriesBurned": "Calories Burned",
+    "sleep": "Sleep",
+    "heartRate": "Heart Rate",
+    "stepUnit": "steps",
+    "stepCount": "Step Count",
+    "sleepUnits": "hours",
+    "synchronized": "Synchronized",
+    "sync": "Sync",
+    "syncDataPermissionInfo": "To sync your data, you need to grant the required permissions to Health Connect."
+  },
+  "weeklyGoal": {
+    "title": "Weekly Step Goal",
+    "completed": "Completed successfully!",
+    "goal": "Goal: {{value}} steps",
+    "progress": "Progress: {{value}} steps",
+    "badgesTitle": "Goal Achievement Badges:",
+    "addGoalCta": "Add Goal For This Week",
+    "inputPlaceholder": "e.g. 15000 steps",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "findings": {
+    "title": "Findings",
+    "syncCta": "Sync",
+    "synced": "Synchronized"
+  },
+  "avatarModal": {
+    "title": "Choose Avatar",
+    "selected": "Selected Avatar",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "hcAlert": {
+    "message": "To track your health data in HopeMove, you need to install **Health Connect** and **Samsung Health**. Would you like to go to the Play Store now?",
+    "downloadHC": "Download Health Connect",
+    "downloadedHC": "Health Connect downloaded",
+    "downloadSH": "Download Samsung Health",
+    "downloadedSH": "Samsung Health downloaded",
+    "yes": "Go to Permissions",
+    "cancel": "Cancel"
+  },
+  "addValueModal": {
+    "titleFallback": "Finding",
+    "valuePlaceholder": "Finding value",
+    "update": "Update",
+    "cancel": "Cancel"
+  },
+  "datePicker": {
+    "title": "Select your sleep duration",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "toasts": {
+    "noInternet": "No internet connection",
+    "noInternetRefresh": "No internet connection, page could not be refreshed",
+    "dataLoadError": "Failed to load data, please check your internet connection",
+    "enterAValue": "Please enter a value.",
+    "invalidValue": "Please enter a valid value.",
+    "valueRange": "The value must be between {{min}} and {{max}}.",
+    "networkError": "Please check your internet connection",
+    "genericError": "An error occurred",
+    "sleepOutOfRange": "Sleep duration must be between 0–16 hours.",
+    "tooLowForHistory": "The value you entered is too low based on your previous progress"
+  },
+ "weeklyStrip": {
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "accessibility": {
+      "prevHint": "Go to previous week",
+      "nextHint": "Go to next week"
+    },
+    "weekShort": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "monthLabel": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    }
+  }
+}

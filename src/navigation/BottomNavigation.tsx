@@ -2,7 +2,7 @@ import {
   BottomTabBarButtonProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
-import React, {useEffect, useRef} from 'react';
+import React, {use, useEffect, useRef} from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  ViewStyle,
 } from 'react-native';
 import icons from '../constants/icons';
 import CustomHeader from '../components/CustomHeader';
@@ -22,18 +23,15 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Security from '../screens/profile/settings/Security';
 import Reminders from '../screens/profile/settings/Reminders';
 import Language from '../screens/profile/settings/Language';
-import Preferences from '../screens/profile/settings/Preferences';
+import Preferences from '../screens/profile/settings/Appearance';
 import Profile from '../screens/profile/Profile';
 import {useTheme} from '../themes/ThemeProvider';
-import {themes} from '../themes/themes';
+import {Theme, themes} from '../themes/themes';
 import Exercises from '../screens/exercises/user/ExercisesUser';
 import Home from '../screens/home/Home';
 import Permissions from '../screens/profile/settings/Permissions';
 import ExercisesHome from '../screens/exercises/user/ExercisesUser';
 import Exercise1 from '../screens/exercises/user/ExerciseDetail';
-import WordGame from '../screens/exercises/mindGames/WordGame';
-import Exercise2 from '../screens/exercises/mindGames/Exercise2';
-import MindGame2 from '../screens/exercises/mindGames/MindGame2';
 import Development from '../screens/profile/settings/Development';
 import {getUser} from '../api/user/userService';
 import Notifications from '../screens/profile/settings/Notifications';
@@ -45,7 +43,6 @@ import {useNotificationNavigation} from '../hooks/useNotificationNavigation';
 import {useUser} from '../contexts/UserContext';
 import ExercisesUser from '../screens/exercises/user/ExercisesUser';
 import ExercisesAdmin from '../screens/exercises/admin/ExercisesAdmin';
-import AllExercises from '../screens/exercises/user/AllExercises';
 import EditExercise from '../screens/exercises/admin/EditExercise';
 import Achievements from '../screens/groups/ExerciseProgress';
 import Workout from '../screens/exercises/user/Exercise';
@@ -55,6 +52,9 @@ import DeviceInfo from 'react-native-device-info';
 import sessionManager from '../session/sessionManager';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ExerciseProgress from '../screens/groups/ExerciseProgress';
+import {useTranslation} from 'react-i18next';
+import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
+import Appearance from '../screens/profile/settings/Appearance';
 
 const Tab = createBottomTabNavigator();
 
@@ -81,13 +81,8 @@ const GroupsNativeStack = createNativeStackNavigator<GroupsStackParamList>();
 const ExercisesNativeStack =
   createNativeStackNavigator<ExercisesStackParamList>();
 
-const PhysicalExercisesNativeStack =
-  createNativeStackNavigator<PhysicalExercisesStackParamList>();
-
-const MindGamesNativeStack =
-  createNativeStackNavigator<MindGamesStackParamList>();
-
 function SettingsStack() {
+  const {t} = useTranslation('nav');
   const {theme, colors, setTheme} = useTheme();
   const {user} = useUser();
 
@@ -103,7 +98,7 @@ function SettingsStack() {
         options={{
           header: () => (
             <CustomHeader
-              title={'Ayarlar'}
+              title={t('stacks.settings.root')}
               icon={icons.settings}
               className="border-primary-300"
               backArrowEnable={true}
@@ -117,8 +112,36 @@ function SettingsStack() {
         options={{
           header: () => (
             <CustomHeader
-              title={'Tercihler'}
+              title={t('stacks.settings.preferences')}
               icon={icons.preferences}
+              className="border-primary-300"
+              backArrowEnable={true}
+            />
+          ),
+        }}
+      />
+      <SettingsNativeStack.Screen
+        name="Appearance"
+        component={Appearance}
+        options={{
+          header: () => (
+            <CustomHeader
+              title={t('stacks.settings.appearance')}
+              icon={icons.appearance}
+              className="border-primary-300"
+              backArrowEnable={true}
+            />
+          ),
+        }}
+      />
+      <SettingsNativeStack.Screen
+        name="Language"
+        component={Language}
+        options={{
+          header: () => (
+            <CustomHeader
+              title={t('stacks.settings.language')}
+              icon={icons.language}
               className="border-primary-300"
               backArrowEnable={true}
             />
@@ -131,7 +154,7 @@ function SettingsStack() {
         options={{
           header: () => (
             <CustomHeader
-              title={'Bildirimler'}
+              title={t('stacks.settings.notifications')}
               icon={icons.bell}
               className="border-primary-300"
               backArrowEnable={true}
@@ -160,8 +183,8 @@ function SettingsStack() {
             <CustomHeader
               title={
                 user && user.role === 'ROLE_ADMIN'
-                  ? 'İzinler'
-                  : 'İzinler ve Onaylar'
+                  ? t('stacks.settings.permissions.admin')
+                  : t('stacks.settings.permissions.user')
               }
               icon={icons.shield}
               className="border-primary-300"
@@ -176,7 +199,7 @@ function SettingsStack() {
         options={{
           header: () => (
             <CustomHeader
-              title={'Güvenlik'}
+              title={t('stacks.settings.security')}
               icon={icons.shield}
               className="border-primary-300"
               backArrowEnable={true}
@@ -191,7 +214,7 @@ function SettingsStack() {
         options={{
           header: () => (
             <CustomHeader
-              title={'Geliştirme'}
+              title={t('stacks.settings.development')}
               icon={icons.shield}
               className="border-primary-300"
               backArrowEnable={true}
@@ -199,25 +222,13 @@ function SettingsStack() {
           ),
         }}
       />
-      {/* <SettingsNativeStack.Screen
-        name="Language"
-        component={Language}
-        options={{
-          header: () => (
-            <CustomHeader
-              title={'Dil'}
-              icon={icons.language}
-              className="border-primary-300"
-              backArrowEnable={true}
-            />
-          ),
-        }}
-      /> */}
     </SettingsNativeStack.Navigator>
   );
 }
 
 function ProfileStack() {
+  const {t} = useTranslation('nav');
+
   return (
     <ProfileNativeStack.Navigator
       initialRouteName="Profile"
@@ -231,7 +242,7 @@ function ProfileStack() {
           headerShown: false,
           header: () => (
             <CustomHeader
-              title={'Profil'}
+              title={t('stacks.profile.root')}
               icon={icons.preferences}
               className="border-primary-300"
             />
@@ -245,7 +256,7 @@ function ProfileStack() {
           headerShown: false,
           header: () => (
             <CustomHeader
-              title={'Ayarlar'}
+              title={t('stacks.profile.settings')}
               icon={icons.settings}
               className="border-primary-300"
               backArrowEnable={true}
@@ -258,6 +269,7 @@ function ProfileStack() {
 }
 
 function GroupsStack() {
+  const {t} = useTranslation('nav');
   const {theme, colors, setTheme} = useTheme();
 
   // const [user, setUser] = React.useState<User | null>(null);
@@ -317,7 +329,7 @@ function GroupsStack() {
             headerShown: false,
             header: () => (
               <CustomHeader
-                title={'Gruplar'}
+                title={t('stacks.groups.root')}
                 icon={icons.notes}
                 className="border-primary-300"
               />
@@ -332,7 +344,7 @@ function GroupsStack() {
             headerShown: false,
             header: () => (
               <CustomHeader
-                title={'Grup'}
+                title={t('stacks.groups.group')}
                 icon={icons.notes}
                 className="border-primary-300"
                 backArrowEnable={true}
@@ -347,7 +359,7 @@ function GroupsStack() {
             headerShown: false,
             header: () => (
               <CustomHeader
-                title={'Üye'}
+                title={t('stacks.groups.member')}
                 icon={icons.notes}
                 className="border-primary-300"
                 backArrowEnable={true}
@@ -362,7 +374,7 @@ function GroupsStack() {
             headerShown: false,
             header: () => (
               <CustomHeader
-                title={'Sohbet'}
+                title={t('stacks.groups.chat')}
                 icon={icons.notes}
                 className="border-primary-300"
                 backArrowEnable={true}
@@ -377,7 +389,7 @@ function GroupsStack() {
             headerShown: false,
             header: () => (
               <CustomHeader
-                title={'Egzersiz İlerlemesi'}
+                title={t('stacks.groups.exerciseProgress')}
                 icon={icons.notes}
                 className="border-primary-300"
                 backArrowEnable={true}
@@ -392,7 +404,7 @@ function GroupsStack() {
             headerShown: false,
             header: () => (
               <CustomHeader
-                title={'Sohbet'}
+                title={t('stacks.groups.achievements')}
                 icon={icons.notes}
                 className="border-primary-300"
                 backArrowEnable={true}
@@ -430,20 +442,6 @@ function ExercisesStack() {
             header: () => (
               <CustomHeader
                 title={'Egzersizler Hasta'}
-                icon={icons.todo}
-                className="border-primary-300"
-              />
-            ),
-          }}
-        />
-        <ExercisesNativeStack.Screen
-          name="AllExercises"
-          component={AllExercises}
-          options={{
-            headerShown: false,
-            header: () => (
-              <CustomHeader
-                title={'Tüm Egzersizler'}
                 icon={icons.todo}
                 className="border-primary-300"
               />
@@ -542,10 +540,10 @@ const TabIcon = ({
       className="flex-1 flex flex-col items-center"
       style={{
         marginTop: focused
-          ? title === 'Ana Ekran'
+          ? icon === icons.home
             ? -6
             : -5
-          : title === 'Ana Ekran'
+          : icon === icons.home
           ? -5.5
           : -4,
       }}>
@@ -555,10 +553,10 @@ const TabIcon = ({
         resizeMode="contain"
         className={`${
           focused
-            ? title == 'Ana Ekran'
+            ? icon === icons.home
               ? 'size-7'
               : 'size-6'
-            : title == 'Ana Ekran'
+            : icon === icons.home
             ? 'size-7'
             : 'size-6'
         }`}
@@ -658,8 +656,38 @@ function getActiveChildRoute(
   return r; // { name, params, ... }
 }
 
+export function baseTabBarStyle(
+  theme: Theme,
+  width: number,
+  bottomInset: number,
+): ViewStyle {
+  const style: ViewStyle = {
+    minHeight: 60,
+    // height: undefined, // gerek yok, kaldır
+    paddingTop: 11,
+    paddingBottom: 11,
+    marginHorizontal: width / 24,
+    position: 'absolute',
+    bottom: 15 + Math.max(bottomInset, 0),
+    left: 15,
+    right: 15,
+    borderRadius: 40,
+    borderWidth: 1,
+    borderTopWidth: 0.9,
+    borderColor: theme.colors.isLight
+      ? 'rgba(0,0,0,0.09)'
+      : 'rgba(150,150,150,0.09)',
+    backgroundColor: theme.colors.isLight
+      ? 'rgba(255,255,255,0.95)'
+      : 'rgba(25,25,25,0.95)',
+    elevation: 0,
+  };
+  return style;
+}
+
 export function BottomNavigator() {
   const insets = useSafeAreaInsets();
+  const {t} = useTranslation('nav');
   const {theme, colors, setTheme} = useTheme();
   const {width} = Dimensions.get('screen');
   const {user} = useUser();
@@ -682,108 +710,10 @@ export function BottomNavigator() {
   return (
     <Tab.Navigator
       key={theme.name}
-      // screenOptions={{
-      //   tabBarShowLabel: false,
-      //   // // tabBarStyle: {
-      //   // //   backgroundColor: colors.background.primary,
-      //   // //   borderColor: colors.background.primary,
-      //   // //   position: 'absolute',
-      //   // //   minHeight: 60,
-      //   // //   borderTopWidth: 0,
-      //   // // },
-      //   // tabBarStyle: {
-      //   //   marginHorizontal: width / 24,
-      //   //   position: 'absolute',
-      //   //   bottom: 15,
-      //   //   left: 15,
-      //   //   right: 15,
-      //   //   // height: 56,
-      //   //   borderRadius: 40,
-      //   //   borderWidth: 1,
-      //   //   borderTopWidth: 0.9,
-      //   //   borderColor:
-      //   //     theme.colors.isLight
-      //   //       ? 'rgba(0,0,0,0.09)'
-      //   //       : 'rgba(150,150,150,0.09)',
-      //   //   backgroundColor:
-      //   //     theme.colors.isLight
-      //   //       ? 'rgba(255,255,255,0.95)'
-      //   //       : 'rgba(25,25,25,0.95)',
-      //   //   elevation: 0,
-      //   // },
-
-      //   // Tasarım korunuyor, sabit height yok, dinamik minHeight + padding var
-      //   tabBarStyle: {
-      //     minHeight: 50 + Math.max(insets.bottom, 0),
-      //     height: undefined,
-      //     paddingTop: 11,
-      //     paddingBottom: Math.max(insets.bottom, 11),
-
-      //     // mevcut görünümü koru
-      //     marginHorizontal: width / 24,
-      //     position: 'absolute',
-      //     bottom: 15,
-      //     left: 15,
-      //     right: 15,
-      //     borderRadius: 40,
-      //     borderWidth: 1,
-      //     borderTopWidth: 0.9,
-      //     borderColor:
-      //       theme.colors.isLight
-      //         ? 'rgba(0,0,0,0.09)'
-      //         : 'rgba(150,150,150,0.09)',
-      //     backgroundColor:
-      //       theme.colors.isLight
-      //         ? 'rgba(255,255,255,0.95)'
-      //         : 'rgba(25,25,25,0.95)',
-      //     elevation: 0,
-      //   },
-
-      //   // item yüksekliğini serbest bırak; margin yerine padding kullan
-      //   tabBarItemStyle: {
-      //     height: 'auto',
-      //     paddingVertical: 0,
-      //   },
-
-      //   // ÖNEMLİ: İkonları saran container ortalansın; margin hilesi yok
-      //   tabBarIconStyle: {
-      //     margin: 0,
-      //     padding: 0,
-      //   },
-      //   tabBarHideOnKeyboard: true,
-      //   tabBarButton: props => <CustomTabButton {...props} />,
-      //   // animation: 'shift', // (ISSUE) TO DO Shift animation causes freezing when switching to profile tab.
-      // }}
       screenOptions={{
         tabBarShowLabel: false,
-
-        tabBarStyle: {
-          minHeight: 56,
-          height: undefined,
-          paddingTop: 11,
-          paddingBottom: 11,
-          marginHorizontal: width / 24,
-          position: 'absolute',
-          bottom: 15 + Math.max(insets.bottom, 0), // ⬅️ sadece konumda kullan
-          left: 15,
-          right: 15,
-
-          borderRadius: 40,
-          borderWidth: 1,
-          borderTopWidth: 0.9,
-          borderColor: theme.colors.isLight
-            ? 'rgba(0,0,0,0.09)'
-            : 'rgba(150,150,150,0.09)',
-          backgroundColor: theme.colors.isLight
-            ? 'rgba(255,255,255,0.95)'
-            : 'rgba(25,25,25,0.95)',
-          elevation: 0,
-        },
-
-        tabBarItemStyle: {
-          height: 'auto',
-          paddingVertical: 0,
-        },
+        tabBarStyle: baseTabBarStyle(theme, width, insets.bottom),
+        tabBarItemStyle: {height: 'auto', paddingVertical: 0},
         tabBarIconStyle: {margin: 0, padding: 0},
         tabBarHideOnKeyboard: true,
         tabBarButton: props => <CustomTabButton {...props} />,
@@ -828,50 +758,6 @@ export function BottomNavigator() {
               });
           },
         })}
-        // listeners={({navigation}) => ({
-        //   tabPress: e => {
-        //     const state = navigation.getState();
-        //     const tabRoute = state.routes.find(r => r.name === 'Groups');
-        //     const stackState = tabRoute?.state as
-        //       | import('@react-navigation/native').NavigationState
-        //       | undefined;
-
-        //     let current: string | null = null;
-        //     if (stackState && typeof stackState.index === 'number') {
-        //       current = stackState.routes[stackState.index]?.name ?? null;
-        //     }
-
-        //     if (!current) {
-        //       console.log('current yok, kök kabul ediyorum');
-        //       return;
-        //     }
-
-        //     console.log('current', current);
-        //     if (user?.role === 'ROLE_USER') {
-        //       if (current === 'Group') return; // zaten Group ekranındaysan
-        //     } else {
-        //       if (current === 'Groups') return; // zaten Groups ekranındaysan
-        //     }
-
-        //     e.preventDefault();
-        //     // navigation.navigate('Groups', {
-        //     //   screen: user?.role === 'ROLE_USER' ? 'Group' : 'Groups',
-        //     // });
-
-        //     navigation.reset({
-        //       index: 0,
-        //       routes: [
-        //         {
-        //           name:
-        //             (user && !user.groupId) ||
-        //             (user && user.role === 'ROLE_ADMIN')
-        //               ? 'Groups'
-        //               : 'Group', // veya user.role'a göre 'Group'
-        //         },
-        //       ],
-        //     });
-        //   },
-        // })}
         options={{
           headerShown: false,
           headerTitle: 'Grup',
@@ -885,8 +771,8 @@ export function BottomNavigator() {
               icon={icons.peopleV3}
               title={
                 (user && !user.groupId) || (user && user.role === 'ROLE_ADMIN')
-                  ? 'Gruplar'
-                  : 'Grup'
+                  ? t('tabs.groups.admin')
+                  : t('tabs.groups.user')
               }
             />
           ),
@@ -896,34 +782,46 @@ export function BottomNavigator() {
       <Tab.Screen
         name="Exercises"
         component={ExercisesStack}
-        options={{
-          headerShown: false,
-          headerTitle:
-            user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler',
-          headerTitleStyle: {
-            fontFamily: 'Rubik-SemiBold',
-            fontSize: 24,
-          },
-          // header: () => (
-          //   <CustomHeader
-          //     title={'Egzersizler'}
-          //     icon={icons.todo}
-          //     className="border-emerald-500"
-          //   />
-          // ),
-          title: user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler',
-          tabBarIcon: ({focused}) => (
-            <TabIcon
-              focused={focused}
-              icon={icons.gym}
-              title={
-                user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler'
-              }
-            />
-          ),
+        options={({route}) => {
+          // İçte hangi ekran odakta?
+          const focused =
+            getFocusedRouteNameFromRoute(route) ?? 'ExercisesUser';
+
+          // Exercise ekrandaysa tab bar’ı sakla
+          const hideTabBar = focused === 'Exercise';
+
+          const style: ViewStyle = hideTabBar
+            ? {display: 'none'}
+            : baseTabBarStyle(theme, width, insets.bottom);
+
+          return {
+            headerShown: false,
+            headerTitle:
+              user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler',
+            headerTitleStyle: {fontFamily: 'Rubik-SemiBold', fontSize: 24},
+            tabBarStyle: style,
+            tabBarItemStyle: {height: 'auto', paddingVertical: 0},
+            tabBarIconStyle: {margin: 0, padding: 0},
+            tabBarHideOnKeyboard: true,
+            tabBarButton: props => <CustomTabButton {...props} />,
+            title:
+              user && user.role === 'ROLE_USER'
+                ? t('tabs.exercises.user')
+                : t('tabs.exercises.admin'),
+            tabBarIcon: ({focused}) => (
+              <TabIcon
+                focused={focused}
+                icon={icons.gym}
+                title={
+                  user && user.role === 'ROLE_USER'
+                    ? t('tabs.exercises.user')
+                    : t('tabs.exercises.admin')
+                }
+              />
+            ),
+          };
         }}
       />
-      {/* )} */}
       <Tab.Screen
         name="Home"
         component={Home}
@@ -935,7 +833,11 @@ export function BottomNavigator() {
             fontSize: 24,
           },
           tabBarIcon: ({focused}) => (
-            <TabIcon focused={focused} icon={icons.home} title="Ana Ekran" />
+            <TabIcon
+              focused={focused}
+              icon={icons.home}
+              title={t('tabs.home')}
+            />
           ),
         }}
       />
@@ -954,7 +856,11 @@ export function BottomNavigator() {
             fontSize: 24,
           },
           tabBarIcon: ({focused}) => (
-            <TabIcon focused={focused} icon={icons.person} title="Profil" />
+            <TabIcon
+              focused={focused}
+              icon={icons.person}
+              title={t('tabs.profile')}
+            />
           ),
         }}
       />

@@ -6,5 +6,10 @@
   "roles": {
     "user": "Kullanıcı",
     "admin": "Hemşire"
-  },"locale": "tr-TR"
+  },
+  "locale": "tr-TR",
+  "alerts": {
+    "yes": "Evet",
+    "cancel": "İptal"
+  }
 }

@@ -189,12 +189,13 @@ export const EXERCISE_KEYS = {
 
 export function useWeeklyActiveDaysProgressByUserId(
   userId?: number,
+  date?: Date,
   options?: Omit<
     UseQueryOptions<
-      ExerciseProgressDTO[], // ✅ TQueryFnData
-      AxiosError, // ✅ TError
-      ExerciseProgressDTO[], // ✅ TData
-      ReturnType<typeof EXERCISE_KEYS.weeklyActiveDaysProgress> // ✅ TQueryKey
+      ExerciseProgressDTO[],
+      AxiosError,
+      ExerciseProgressDTO[],
+      ReturnType<typeof EXERCISE_KEYS.weeklyActiveDaysProgress>
     >,
     'queryKey' | 'queryFn' | 'enabled'
   >,
@@ -207,7 +208,7 @@ export function useWeeklyActiveDaysProgressByUserId(
   >({
     queryKey: EXERCISE_KEYS.weeklyActiveDaysProgress(userId ?? -1),
     enabled: Number.isFinite(userId) && (userId as number) > 0,
-    queryFn: () => getWeeklyActiveDaysProgressByUserId(userId as number),
+    queryFn: () => getWeeklyActiveDaysProgressByUserId(userId as number, date),
     staleTime: 5 * 60 * 1000, // 5 dk cache taze
     gcTime: 30 * 60 * 1000, // 30 dk GC
     retry: 1,

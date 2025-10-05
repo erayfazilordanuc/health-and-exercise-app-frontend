@@ -32,9 +32,11 @@ import {ConsentModal} from '../../../components/ConsentModal';
 import NetInfo from '@react-native-community/netinfo';
 import LinearGradient from 'react-native-linear-gradient';
 import {Icon} from 'react-native-elements';
+import {useTranslation} from 'react-i18next';
 
 const Permissions = () => {
   const insets = useSafeAreaInsets();
+  const {t} = useTranslation('settings');
   const {colors, theme} = useTheme();
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(true);
@@ -156,7 +158,7 @@ const Permissions = () => {
                 return Linking.openSettings();
               }
             } catch (e) {
-              Alert.alert('Ayarlar açılamadı');
+              Alert.alert(t('alerts.cantOpenSettigns'));
             }
           }}>
           <Text
@@ -165,7 +167,7 @@ const Permissions = () => {
               fontSize: 18,
               color: colors.text.primary,
             }}>
-            Uygulama İzinlerine Git
+            {t('permissions.goToAppSettings')}
           </Text>
           <Image
             source={icons.rightArrow}
@@ -185,7 +187,7 @@ const Permissions = () => {
               fontSize: 18,
               color: colors.text.primary,
             }}>
-            Bildirim İzinlerine Git
+            {t('permissions.goToNotificationSettings')}
           </Text>
           <Image
             source={icons.rightArrow}
@@ -206,13 +208,13 @@ const Permissions = () => {
                 fontSize: 18,
                 color: colors.text.primary,
               }}>
-              Onaylar
+              {t('permissions.consentsTitle')}
             </Text>
 
             {isOnline ? (
               <>
                 <ConsentCard
-                  title={'KVKK Metni'}
+                  title={t('permissions.kvkkTitle')}
                   type="kvkk"
                   status={kvkkConsent?.status}
                   loading={loading}
@@ -222,7 +224,7 @@ const Permissions = () => {
                 />
 
                 <ConsentCard
-                  title={'Sağlık Verisi Kullanım Rızası'}
+                  title={t('permissions.healthTitle')}
                   type="health"
                   status={healthConsent?.status}
                   loading={loading}
@@ -232,7 +234,7 @@ const Permissions = () => {
                 />
 
                 <ConsentCard
-                  title={'Egzersiz Verisi Kullanım Rızası'}
+                  title={t('permissions.exerciseTitle')}
                   type="exercise"
                   status={exerciseConsent?.status}
                   loading={loading}
@@ -242,7 +244,7 @@ const Permissions = () => {
                 />
 
                 <ConsentCard
-                  title={'Aydınlatılmış Onam Formu'}
+                  title={t('permissions.studyTitle')}
                   type="study"
                   status={studyConsent?.status}
                   loading={loading}
@@ -330,12 +332,12 @@ const Permissions = () => {
                 <Text
                   className="font-rubik-medium mt-2 text-center"
                   style={{color: colors.text.primary, fontSize: 18}}>
-                  Sözleşmeler yüklenemedi
+                  {t('offline.consentsLoadFailed')}
                 </Text>
                 <Text
                   className="font-rubik mt-2 text-center"
                   style={{color: colors.text.primary, opacity: 0.7}}>
-                  İnternet bağlantısı yok
+                  {t('offline.noInternet')}
                 </Text>
               </View>
             )}
@@ -344,7 +346,7 @@ const Permissions = () => {
         <ConsentModal
           visible={kvkkModalVisible}
           requireScrollToEnd
-          approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
+          approveHint={t('permissions.approveHint')}
           onApprove={async () => {
             if (kvkkConsent?.status !== 'ACKNOWLEDGED') {
               const response = await approve(kvkkConsent?.id!);
@@ -352,15 +354,15 @@ const Permissions = () => {
             }
             setKvkkModalVisible(false);
           }}
-          onReject={async () => {
+          onDecline={async () => {
             if (kvkkConsent?.status === 'ACKNOWLEDGED') {
               const response = await withdraw(kvkkConsent?.id!);
               if (response) setKvkkConsent(response);
             }
             setKvkkModalVisible(false);
           }}
-          onApproveText="Onaylıyorum"
-          onRejectText="Onaylamıyorum"
+          onApproveText={t('permissions.approve')}
+          onDeclineText={t('permissions.decline')}
           body={
             <Text
               className="font-rubik text-md"
@@ -373,7 +375,7 @@ const Permissions = () => {
         <ConsentModal
           visible={healthModalVisible}
           requireScrollToEnd
-          approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
+          approveHint={t('permissions.approveHint')}
           onApprove={async () => {
             if (healthConsent?.status !== 'ACCEPTED') {
               const response = await approve(healthConsent?.id!);
@@ -381,15 +383,15 @@ const Permissions = () => {
             }
             setHealthModalVisible(false);
           }}
-          onReject={async () => {
+          onDecline={async () => {
             if (healthConsent?.status === 'ACCEPTED') {
               const response = await withdraw(healthConsent?.id!);
               if (response) setHealthConsent(response);
             }
             setHealthModalVisible(false);
           }}
-          onApproveText="Onaylıyorum"
-          onRejectText="Onaylamıyorum"
+          onApproveText={t('permissions.approve')}
+          onDeclineText={t('permissions.decline')}
           body={
             <Text
               className="font-rubik text-md"
@@ -402,7 +404,7 @@ const Permissions = () => {
         <ConsentModal
           visible={exerciseModalVisible}
           requireScrollToEnd
-          approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
+          approveHint={t('permissions.approveHint')}
           onApprove={async () => {
             if (exerciseConsent?.status !== 'ACCEPTED') {
               const response = await approve(exerciseConsent?.id!);
@@ -410,15 +412,15 @@ const Permissions = () => {
             }
             setExerciseModalVisible(false);
           }}
-          onReject={async () => {
+          onDecline={async () => {
             if (exerciseConsent?.status === 'ACCEPTED') {
               const response = await withdraw(exerciseConsent?.id!);
               if (response) setExerciseConsent(response);
             }
             setExerciseModalVisible(false);
           }}
-          onApproveText="Onaylıyorum"
-          onRejectText="Onaylamıyorum"
+          onApproveText={t('permissions.approve')}
+          onDeclineText={t('permissions.decline')}
           body={
             <Text
               className="font-rubik text-md"
@@ -431,7 +433,7 @@ const Permissions = () => {
         <ConsentModal
           visible={studyModalVisible}
           requireScrollToEnd
-          approveHint="Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın."
+          approveHint={t('permissions.approveHint')}
           onApprove={async () => {
             if (studyConsent?.status !== 'ACCEPTED') {
               const response = await approve(studyConsent?.id!);
@@ -439,15 +441,15 @@ const Permissions = () => {
             }
             setStudyModalVisible(false);
           }}
-          onReject={async () => {
+          onDecline={async () => {
             if (studyConsent?.status === 'ACCEPTED') {
               const response = await withdraw(studyConsent?.id!);
               if (response) setStudyConsent(response);
             }
             setStudyModalVisible(false);
           }}
-          onApproveText="Onaylıyorum"
-          onRejectText="Onaylamıyorum"
+          onApproveText={t('permissions.approve')}
+          onDeclineText={t('permissions.decline')}
           body={
             <Text
               className="font-rubik text-md"

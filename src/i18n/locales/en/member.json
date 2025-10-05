@@ -1,0 +1,68 @@
+{
+  "header": {
+    "title": "Patient:"
+  },
+  "sections": {
+    "patientInfo": "Patient Information",
+    "lastMessage": "Last Message",
+    "calendar": "Exercise Calendar",
+    "symptoms": "Symptoms",
+    "weeklyStepGoal": "Weekly Step Goal",
+    "weeklySessions": "Weekly Session Stats"
+  },
+  "fields": {
+    "fullName": "Full Name:",
+    "username": "Username:",
+    "age": "Age:",
+    "birthDate": "Date of Birth:",
+    "gender": "Gender:",
+    "genderOptions": {
+      "male": "Male",
+      "female": "Female"
+    },
+    "themeUsed": "Theme in Use:",
+    "themeMap": {
+      "blue": "Blue-Turquoise",
+      "purple": "Purple-Pink",
+      "green": "Green-Yellow",
+      "red": "Red-Orange"
+    }
+  },
+  "buttons": {
+    "chat": "Chat",
+    "details": "Details"
+  },
+  "access": {
+    "blockedTitle": "Data cannot be displayed.",
+    "blockedDetail": "Required consents to access the user's data are missing."
+  },
+  "calendar": {
+    "legend": {
+      "done": "Completed",
+      "notDone": "Not Completed",
+      "todo": "To Do",
+      "today": "Today"
+    },
+    "dateLabel": "{{date}}"
+  },
+  "symptoms": {
+    "pulse": "Pulse",
+    "calories": "Calories Burned",
+    "steps": "Steps",
+    "sleep": "Sleep",
+    "empty": "No symptom record found."
+  },
+  "steps": {
+    "completed": "Completed",
+    "noGoal": "No goal set.",
+    "goal": "Goal: {{goal}} steps",
+    "progress": "Progress: {{steps}} steps",
+    "badges": "Goal Achievement Badges:"
+  },
+  "sessions": {
+    "count": "App opens: {{count}}",
+    "total": "Total usage time: {{duration}}",
+    "empty": "No session record found."
+  },
+  "dailyStatusText": "{{date}}\nI rate my mood today as {{score}}/9."
+}

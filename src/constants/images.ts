@@ -12,6 +12,11 @@ import particles_blue from '../assets/images/particles_blue.png';
 import bubbles_blue_low from '../assets/images/bubbles_blue_low.png';
 import bubbles_blue_low_launch from '../assets/images/bubbles_blue_low_launch.png';
 import orange_pink_background from '../assets/images/orange_pink_background.png';
+import status1 from '../assets/images/status1.png';
+import status3 from '../assets/images/status3.png';
+import status5 from '../assets/images/status5.png';
+import status7 from '../assets/images/status7.png';
+import status9 from '../assets/images/status9.png';
 
 export default {
   map,
@@ -28,4 +33,9 @@ export default {
   bubbles_blue_low,
   bubbles_blue_low_launch,
   orange_pink_background,
+  status1,
+  status3,
+  status5,
+  status7,
+  status9,
 };

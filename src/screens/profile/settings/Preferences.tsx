@@ -24,10 +24,11 @@ import {update} from 'lodash';
 import {useUser} from '../../../contexts/UserContext';
 import LinearGradient from 'react-native-linear-gradient';
 import ColorCircle from '../../../components/ColorCircle';
+import {useTranslation} from 'react-i18next';
 
 const Preferences = () => {
   const insets = useSafeAreaInsets();
-
+  const {t} = useTranslation('settings');
   const {user, setUser} = useUser();
   const [isThemeDefault, setIsThemeDefault] = useState(false);
   const {theme, colors, setTheme} = useTheme();
@@ -117,9 +118,12 @@ const Preferences = () => {
                   fontSize: 18,
                   color: colors.text.primary,
                 }}>
-                Tema :{'  '}
+                {t('appearance.debug.theme')}
+                {'  '}
                 <Text selectable className="text-xl font-rubik">
-                  {theme.name == 'Dark' ? 'Koyu' : 'Açık'}
+                  {theme.name == 'Dark'
+                    ? t('appearance.dark')
+                    : t('appearance.light')}
                 </Text>
               </Text>
               <Text
@@ -127,7 +131,8 @@ const Preferences = () => {
                 style={{
                   color: colors.text.primary,
                 }}>
-                Renkler :{'  '}
+                {t('appearance.debug.colors')}
+                {'  '}
                 <Text selectable className="text-xl font-rubik">
                   {colors.primary[100]}
                 </Text>
@@ -137,7 +142,8 @@ const Preferences = () => {
                 style={{
                   color: colors.text.primary,
                 }}>
-                Arkaplan rengi :{'  '}
+                {t('appearance.debug.background')}
+                {'  '}
                 <Text selectable className="text-xl font-rubik">
                   {colors.background.primary}
                 </Text>
@@ -153,7 +159,7 @@ const Preferences = () => {
                   fontSize: 18,
                   color: colors.text.primary,
                 }}>
-                Tema Rengi
+                {t('appearance.themeColor')}
               </Text>
               <View
                 className="flex-row items-center p-2 rounded-2xl"
@@ -164,7 +170,7 @@ const Preferences = () => {
                     fontSize: 16,
                     color: colors.text.primary,
                   }}>
-                  Seçili:
+                  {t('appearance.selected')}
                 </Text>
                 <ColorCircle
                   color1={theme.colors.primary[300]}
@@ -184,7 +190,7 @@ const Preferences = () => {
                     fontSize: 16,
                     color: colors.text.primary,
                   }}>
-                  Mavi-Turkuaz
+                  {t('appearance.colorBlueTurquoise')}
                 </Text>
                 <ColorCircle
                   color1={themes.blue.light.colors.primary[300]}
@@ -201,7 +207,7 @@ const Preferences = () => {
                     fontSize: 16,
                     color: colors.text.primary,
                   }}>
-                  Mor-Pembe
+                  {t('appearance.colorPurplePink')}
                 </Text>
                 <ColorCircle
                   color1={themes.purple.light.colors.primary[300]}
@@ -218,7 +224,7 @@ const Preferences = () => {
                     fontSize: 16,
                     color: colors.text.primary,
                   }}>
-                  Yeşil-Sarı
+                  {t('appearance.colorGreenYellow')}
                 </Text>
                 <ColorCircle
                   color1={themes.green.light.colors.primary[300]}
@@ -235,7 +241,7 @@ const Preferences = () => {
                     fontSize: 16,
                     color: colors.text.primary,
                   }}>
-                  Kırmızı-Turuncu
+                  {t('appearance.colorRedOrange')}
                 </Text>
                 <ColorCircle
                   color1={themes.red.light.colors.primary[300]}
@@ -245,117 +251,6 @@ const Preferences = () => {
             </View>
           </View>
 
-          <View className="flex flex-col items-between justify-center px-3 pt-2 pb-4">
-            <View className="flex-col mb-2">
-              <Text
-                className="font-rubik-medium ml-2"
-                style={{
-                  fontSize: 18,
-                  color: colors.text.primary,
-                }}>
-                Tema Modu
-              </Text>
-              <View
-                className="flex-row items-center p-2 rounded-2xl ml-2"
-                style={{backgroundColor: colors.background.primary}}>
-                <Text
-                  className="font-rubik mr-2"
-                  style={{
-                    fontSize: 16,
-                    color: colors.text.primary,
-                  }}>
-                  Seçili:
-                </Text>
-                <Image
-                  source={
-                    getOption().mode === 'system'
-                      ? icons.system_default_theme
-                      : getOption().mode === 'light'
-                      ? icons.lightMode
-                      : icons.darkModeFilled
-                  }
-                  className="size-7 mr-1"
-                  tintColor={colors.text.primary}
-                />
-                {getOption().mode === 'system' && (
-                  <Text
-                    className="font-rubik ml-3"
-                    style={{
-                      fontSize: 12,
-                      color: colors.text.primary,
-                    }}>
-                    (Cihazınızdaki açık/koyu moduna{'\n'}otomatik uyum sağlar.)
-                  </Text>
-                )}
-              </View>
-            </View>
-            <View className="flex flex-row items-center justify-center">
-              <TouchableOpacity
-                className="mr-1 py-2 px-4 rounded-2xl flex flex-row items-center justify-center"
-                style={{
-                  // backgroundColor:
-                  //   theme.colors.isLight
-                  //     ? colors.background.primary
-                  //     : colors.background.secondary,
-                  backgroundColor: colors.background.secondary,
-                }}
-                onPress={() => handleThemeModeChange('light')}>
-                <Image
-                  source={icons.lightMode}
-                  className="size-7"
-                  tintColor={colors.text.primary}
-                />
-                <Text
-                  className="ml-3 font-rubik"
-                  style={{
-                    fontSize: 15,
-                    color: colors.text.primary,
-                  }}>
-                  Açık
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="mx-1 py-2 px-4 rounded-2xl flex flex-row items-center justify-center"
-                style={{
-                  backgroundColor: colors.background.secondary,
-                }}
-                onPress={() => handleThemeModeChange('dark')}>
-                <Image
-                  source={icons.darkModeFilled}
-                  className="size-7"
-                  tintColor={colors.text.primary}
-                />
-                <Text
-                  className="ml-3 font-rubik"
-                  style={{
-                    fontSize: 15,
-                    color: colors.text.primary,
-                  }}>
-                  Koyu
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="ml-1 py-2 px-4 rounded-2xl flex flex-row items-center justify-center"
-                style={{
-                  backgroundColor: colors.background.secondary,
-                }}
-                onPress={() => handleThemeModeChange('system')}>
-                <Image
-                  source={icons.system_default_theme}
-                  className="size-7"
-                  tintColor={colors.text.primary}
-                />
-                <Text
-                  className="ml-3 font-rubik"
-                  style={{
-                    fontSize: 15,
-                    color: colors.text.primary,
-                  }}>
-                  Sistem
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
           {/* <View className="p-4 pb-5 flex flex-row items-center">
             <Text
               className="text-xl font-rubik-medium"
@@ -379,30 +274,125 @@ const Preferences = () => {
               style={{backgroundColor: colors.primary[300]}}></View>
           </View> */}
         </View>
+        <View
+          className="flex flex-col items-between justify-center px-3 pt-2 pb-4 mt-3"
+          style={{
+            backgroundColor: colors.background.primary,
+            borderRadius: 17,
+          }}>
+          <View className="flex-col mb-2">
+            <Text
+              className="font-rubik-medium ml-2"
+              style={{
+                fontSize: 18,
+                color: colors.text.primary,
+              }}>
+              {t('appearance.themeMode')}
+            </Text>
+            <View
+              className="flex-row items-center p-2 rounded-2xl ml-2"
+              style={{backgroundColor: colors.background.primary}}>
+              <Text
+                className="font-rubik mr-2"
+                style={{
+                  fontSize: 16,
+                  color: colors.text.primary,
+                }}>
+                {t('appearance.selected')}
+              </Text>
+              <Image
+                source={
+                  getOption().mode === 'system'
+                    ? icons.system_default_theme
+                    : getOption().mode === 'light'
+                    ? icons.lightMode
+                    : icons.darkModeFilled
+                }
+                className="size-7 mr-1"
+                tintColor={colors.text.primary}
+              />
+              {getOption().mode === 'system' && (
+                <Text
+                  className="font-rubik ml-3"
+                  style={{
+                    fontSize: 12,
+                    color: colors.text.primary,
+                  }}>
+                  {t('appearance.systemNote')}
+                </Text>
+              )}
+            </View>
+          </View>
+          <View className="flex flex-row items-center justify-center">
+            <TouchableOpacity
+              className="mr-1 py-2 px-4 rounded-2xl flex flex-row items-center justify-center"
+              style={{
+                // backgroundColor:
+                //   theme.colors.isLight
+                //     ? colors.background.primary
+                //     : colors.background.secondary,
+                backgroundColor: colors.background.secondary,
+              }}
+              onPress={() => handleThemeModeChange('light')}>
+              <Image
+                source={icons.lightMode}
+                className="size-7"
+                tintColor={colors.text.primary}
+              />
+              <Text
+                className="ml-3 font-rubik"
+                style={{
+                  fontSize: 15,
+                  color: colors.text.primary,
+                }}>
+                {t('appearance.light')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="mx-1 py-2 px-4 rounded-2xl flex flex-row items-center justify-center"
+              style={{
+                backgroundColor: colors.background.secondary,
+              }}
+              onPress={() => handleThemeModeChange('dark')}>
+              <Image
+                source={icons.darkModeFilled}
+                className="size-7"
+                tintColor={colors.text.primary}
+              />
+              <Text
+                className="ml-3 font-rubik"
+                style={{
+                  fontSize: 15,
+                  color: colors.text.primary,
+                }}>
+                {t('appearance.dark')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="ml-1 py-2 px-4 rounded-2xl flex flex-row items-center justify-center"
+              style={{
+                backgroundColor: colors.background.secondary,
+              }}
+              onPress={() => handleThemeModeChange('system')}>
+              <Image
+                source={icons.system_default_theme}
+                className="size-7"
+                tintColor={colors.text.primary}
+              />
+              <Text
+                className="ml-3 font-rubik"
+                style={{
+                  fontSize: 15,
+                  color: colors.text.primary,
+                }}>
+                {t('appearance.system')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
 };
 
 export default Preferences;
-
-{
-  /* <TouchableOpacity
-              className="text-xl font-rubik-medium ml-1"
-              onPress={() => {
-                setTheme(
-                  theme === themes.blue.dark
-                    ? themes.blue.light
-                    : themes.blue.dark,
-                );
-              }}>
-              <Image
-                source={
-                  theme.name === 'Dark' // theme === themes.blue.light is not working
-                    ? icons.nightMode
-                    : icons.dayMode
-                }
-                className="size-10"
-              />
-            </TouchableOpacity> */
-}

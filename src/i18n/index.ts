@@ -13,6 +13,7 @@ import en_home from './locales/en/home.json';
 import en_profile from './locales/en/profile.json';
 import en_exercise from './locales/en/exercise.json';
 import en_groups from './locales/en/groups.json';
+import en_member from './locales/en/member.json';
 import en_chat from './locales/en/chat.json';
 import tr_common from './locales/tr/common.json';
 import tr_launch from './locales/tr/launch.json';
@@ -23,6 +24,7 @@ import tr_home from './locales/tr/home.json';
 import tr_profile from './locales/tr/profile.json';
 import tr_exercise from './locales/tr/exercise.json';
 import tr_groups from './locales/tr/groups.json';
+import tr_member from './locales/tr/member.json';
 import tr_chat from './locales/tr/chat.json';
 
 const resources = {
@@ -36,6 +38,7 @@ const resources = {
     profile: en_profile,
     exercise: en_exercise,
     groups: en_groups,
+    member: en_member,
     chat: en_chat,
   },
   tr: {
@@ -48,6 +51,7 @@ const resources = {
     profile: tr_profile,
     exercise: tr_exercise,
     groups: tr_groups,
+    member: tr_member,
     chat: tr_chat,
   },
 } as const;
@@ -93,6 +97,7 @@ export async function initI18n() {
       'profile',
       'exercise',
       'groups',
+      'member',
       'chat',
     ],
     interpolation: {escapeValue: false},

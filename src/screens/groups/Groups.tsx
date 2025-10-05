@@ -37,11 +37,14 @@ import CustomAlertSingleton, {
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
+import {useTranslation} from 'react-i18next';
 
 const Groups = () => {
   const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<GroupsScreenNavigationProp>();
+  const {t} = useTranslation('groups');
+  const {t: c} = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const {user, setUser} = useUser();
   const [groups, setGroups] = useState<Group[]>([]);
@@ -60,10 +63,7 @@ const Groups = () => {
 
     const net = await NetInfo.fetch();
     if (!net.isConnected) {
-      ToastAndroid.show(
-        'Grup oluşturulamıyor. İnternet bağlantınızı kontrol ediniz',
-        ToastAndroid.LONG,
-      );
+      ToastAndroid.show(t('toasts.createFailed'), ToastAndroid.LONG);
       return;
     }
 
@@ -90,10 +90,7 @@ const Groups = () => {
     if (user && groupToJoin && groupToJoin.id) {
       const response = await sendJoinGroupRequest(groupToJoin.id);
       if (response.status === 200) {
-        ToastAndroid.show(
-          'Gruba katılma isteği gönderildi',
-          ToastAndroid.SHORT,
-        );
+        ToastAndroid.show(t('toasts.joinRequestSent'), ToastAndroid.SHORT);
         fetchRequest(user.id!);
         setIsJoinModalVisible(false);
         setLoading(false);
@@ -103,11 +100,11 @@ const Groups = () => {
 
   const onDeleteJoinRequest = async () => {
     alertRef.current?.show({
-      message: 'Gruba katılma isteğini iptal etmek istediğinize emin misin?',
+      message: t('alerts.cancelJoin'),
       // secondMessage: 'Bu işlem geri alınamaz.',
       isPositive: false,
-      onYesText: 'Evet',
-      onCancelText: 'Vazgeç',
+      onYesText: t('buttons.yes'),
+      onCancelText: t('buttons.no'),
       onYes: async () => {
         if (groupJoinRequest) {
           const response = await deleteJoinGroupRequest(groupJoinRequest.id!);
@@ -115,7 +112,7 @@ const Groups = () => {
             setGroupJoinRequest(undefined);
             setRequestedGroupAdmin(undefined);
             ToastAndroid.show(
-              'Gruba katılma isteği başarıyla iptal edildi',
+              t('toasts.joinRequestCanceled'),
               ToastAndroid.SHORT,
             );
           }
@@ -267,7 +264,7 @@ const Groups = () => {
             <Text
               className="text-lg font-rubik-medium"
               style={{color: '#55CC88'}}>
-              Katıl
+              {t('buttons.join')}
             </Text>
           </TouchableOpacity>
         )}
@@ -302,7 +299,7 @@ const Groups = () => {
             color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
-          Gruplar
+          {t('titles.groups')}
         </Text>
       </View>
       <ScrollView
@@ -319,7 +316,7 @@ const Groups = () => {
             <Text
               className="font-rubik-medium Ftext-center"
               style={{color: colors.text.primary, fontSize: 20}}>
-              Gönderilen İstek
+              {t('request.cardTitle')}
             </Text>
             <View
               className="rounded-2xl mt-1 py-3 px-5"
@@ -328,7 +325,7 @@ const Groups = () => {
                 <Text
                   className="font-rubik-medium text-xl text-center"
                   style={{color: colors.text.primary}}>
-                  Grup:{' '}
+                  {t('request.group')}{' '}
                 </Text>
                 <Text
                   className="font-rubik text-xl text-center"
@@ -340,7 +337,7 @@ const Groups = () => {
                 <Text
                   className="font-rubik-medium text-xl text-center"
                   style={{color: colors.text.primary}}>
-                  Hemşire:{' '}
+                  {t('request.nurse')}{' '}
                 </Text>
                 <Text
                   className="font-rubik text-xl text-center"
@@ -352,12 +349,12 @@ const Groups = () => {
                 <Text
                   className="font-rubik-medium text-xl text-center"
                   style={{color: colors.text.primary}}>
-                  Durum:{' '}
+                  {t('request.status')}{' '}
                 </Text>
                 <Text
                   className="font-rubik text-xl text-center"
                   style={{color: colors.text.primary}}>
-                  Beklemede
+                  {t('request.pending')}
                 </Text>
               </View>
               <TouchableOpacity
@@ -369,7 +366,7 @@ const Groups = () => {
                 <Text
                   className="font-rubik text-center text-md"
                   style={{color: colors.background.secondary}}>
-                  İptal Et
+                  {t('request.cancel')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -392,7 +389,7 @@ const Groups = () => {
                   className="flex-1 font-rubik w-full"
                   style={{color: colors.text.primary}}
                   multiline={false}
-                  placeholder="Grupları ara"
+                  placeholder={t('search.placeholder')}
                   placeholderClassName="pl-4"
                   placeholderTextColor={colors.text.secondary}
                   selectionColor={colors.primary[300]}
@@ -454,7 +451,7 @@ const Groups = () => {
               <Text
                 className="text-2xl font-rubik mb-1 ml-1"
                 style={{color: colors.text.primary}}>
-                Gruplarım
+                {t('admin.myGroups')}
               </Text>
               {groups.length > 0 ? (
                 groups.map((group: Group, index) => (
@@ -482,8 +479,10 @@ const Groups = () => {
                   </TouchableOpacity>
                 ))
               ) : (
-                <Text className="text-lg font-rubik mt-3 ml-1">
-                  Henüz bir grubunuz bulunmamakta
+                <Text
+                  className="text-lg font-rubik mt-3 ml-1"
+                  style={{color: colors.text.primary}}>
+                  {t('list.empty')}
                 </Text>
               )}
             </View>
@@ -503,10 +502,11 @@ const Groups = () => {
               <Text
                 className="text-lg font-bold mb-8 text-center"
                 style={{color: colors.text.primary}}>
+                {c('locale') === 'en-US' && t('modals.join.confirmText')}
                 <Text style={{color: colors.primary[200]}}>
                   {groupToJoin?.name}
-                </Text>{' '}
-                grubuna katılmak istediğinize emin misiniz?
+                </Text>
+                {c('locale') === 'tr-TR' ? t('modals.join.confirmText') : ' ?'}
               </Text>
               <View className="flex-row justify-between w-full">
                 {!loading ? (
@@ -517,7 +517,7 @@ const Groups = () => {
                       style={{backgroundColor: '#0EC946'}}>
                       {/* #55CC88 */}
                       <Text className="text-base font-rubik text-white">
-                        İstek Gönder
+                        {t('buttons.sendRequest')}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -527,7 +527,7 @@ const Groups = () => {
                       <Text
                         className="text-base font-bold"
                         style={{color: colors.text.primary}}>
-                        İptal
+                        {t('buttons.cancel')}
                       </Text>
                     </TouchableOpacity>
                   </>
@@ -557,7 +557,7 @@ const Groups = () => {
               <Text
                 className="text-lg font-bold mb-4 text-center"
                 style={{color: colors.text.primary}}>
-                Grup Oluşturma
+                {t('modals.create.title')}
               </Text>
               <View
                 className="flex flex-row items-center justify-start z-50 rounded-2xl mb-4"
@@ -571,7 +571,7 @@ const Groups = () => {
                   onChangeText={(value: string) => {
                     setNewGroupName(value);
                   }}
-                  placeholder="Grup İsmi"
+                  placeholder={t('modals.create.name')}
                   className="text-lg font-rubik ml-5 flex-1"
                   style={{color: colors.text.primary}}
                 />
@@ -580,7 +580,7 @@ const Groups = () => {
                 <Text
                   className="text-lg font-rubik"
                   style={{color: colors.text.primary}}>
-                  Egzersiz Etkinliği
+                  {t('modals.create.exerciseEnabled')}
                 </Text>
                 <View
                   className="ml-3"
@@ -611,7 +611,7 @@ const Groups = () => {
                       className="flex-1 p-2 rounded-xl items-center mx-1"
                       style={{backgroundColor: '#0EC946'}}>
                       <Text className="text-base font-bold text-white">
-                        Oluştur
+                        {t('buttons.create')}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -621,7 +621,7 @@ const Groups = () => {
                       <Text
                         className="text-base font-bold"
                         style={{color: colors.text.primary}}>
-                        İptal
+                        {t('buttons.cancel')}
                       </Text>
                     </TouchableOpacity>
                   </>
@@ -671,7 +671,7 @@ const Groups = () => {
             <Text
               className="font-rubik text-lg"
               style={{color: colors.background.secondary}}>
-              Yeni Grup Oluştur
+              {t('buttons.createNew')}
             </Text>
           </TouchableOpacity>
         </View>

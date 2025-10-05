@@ -10,13 +10,14 @@ import {
   Platform,
 } from 'react-native';
 import {useTheme} from '../themes/ThemeProvider'; // yolunu projene göre düzelt
+import {useTranslation} from 'react-i18next';
 
 type CustomModalProps = {
   visible: boolean;
   onApprove: () => void;
-  onReject: () => void;
+  onDecline: () => void;
   onApproveText?: string;
-  onRejectText?: string;
+  onDeclineText?: string;
   /** Uzun KVKK metni; string ya da React node verebilirsin */
   body: string | React.ReactNode;
 };
@@ -26,11 +27,12 @@ const {height} = Dimensions.get('window');
 export const CustomModal: React.FC<CustomModalProps> = ({
   visible,
   onApprove,
-  onReject,
+  onDecline,
   onApproveText,
-  onRejectText,
+  onDeclineText,
   body,
 }) => {
+  const {t} = useTranslation('common');
   const {colors} = useTheme();
 
   // Modal’ı önce mount edip içerik ölçülünce fade-in
@@ -66,7 +68,7 @@ export const CustomModal: React.FC<CustomModalProps> = ({
       animationType="none" // kendi fade animasyonumuzu kullanıyoruz
       statusBarTranslucent={Platform.OS === 'android'}
       hardwareAccelerated
-      onRequestClose={onReject}>
+      onRequestClose={onDecline}>
       <Animated.View
         style={{
           flex: 1,
@@ -113,7 +115,7 @@ export const CustomModal: React.FC<CustomModalProps> = ({
               marginTop: 10,
             }}>
             <TouchableOpacity
-              onPress={onReject}
+              onPress={onDecline}
               style={{
                 paddingHorizontal: 20,
                 paddingVertical: 12,
@@ -121,7 +123,7 @@ export const CustomModal: React.FC<CustomModalProps> = ({
                 backgroundColor: colors.background.secondary,
               }}>
               <Text style={{fontSize: 16, color: colors.text.primary}}>
-                {onRejectText ?? 'Onaylamıyorum'}
+                {onDeclineText ?? t('alerts.decline')}
               </Text>
             </TouchableOpacity>
 
@@ -134,7 +136,7 @@ export const CustomModal: React.FC<CustomModalProps> = ({
                 backgroundColor: colors.primary[200],
               }}>
               <Text style={{fontSize: 16, color: '#fff'}}>
-                {onApproveText ?? 'Onaylıyorum'}
+                {onApproveText ?? t('alerts.approve')}
               </Text>
             </TouchableOpacity>
           </View>

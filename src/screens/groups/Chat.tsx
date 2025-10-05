@@ -33,6 +33,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../../contexts/UserContext';
 import LinearGradient from 'react-native-linear-gradient';
 import {useRoomMessages, useSendMessage} from '../../hooks/messageQueries';
+import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
+import {useTranslation} from 'react-i18next';
 
 const {width, height} = Dimensions.get('window');
 
@@ -41,6 +43,7 @@ const Chat = () => {
   const insets = useSafeAreaInsets();
   const {params} = useRoute<ChatRouteProp>();
   const {roomId, sender, receiver, fromNotification, navigatedInApp} = params;
+  const {t} = useTranslation('chat');
   const {user, setUser} = useUser();
   const {colors, theme} = useTheme();
 
@@ -66,6 +69,8 @@ const Chat = () => {
 
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(85);
+
+  const tabBarHeight = useBottomTabBarHeight();
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -305,12 +310,12 @@ const Chat = () => {
     //   }>
     <View className="flex-1">
       <LinearGradient
-              colors={colors.gradient}
-              locations={[0.15, 0.25, 0.7, 1]}
-              start={{x: 0.1, y: 0}}
-              end={{x: 0.8, y: 1}}
-              className="absolute top-0 left-0 right-0 bottom-0"
-            />
+        colors={colors.gradient}
+        locations={[0.15, 0.25, 0.7, 1]}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.8, y: 1}}
+        className="absolute top-0 left-0 right-0 bottom-0"
+      />
       <View
         className="flex-1 px-5 pb-2"
         style={{
@@ -332,12 +337,10 @@ const Chat = () => {
                 : colors.background.primary,
               fontSize: 24,
             }}>
-            Sohbet:{' '}
+            {t('header.title')}{' '}
             <Text
               style={{
-                color: theme.colors.isLight
-                  ? colors.primary[200]
-                  : '#2F2F30',
+                color: theme.colors.isLight ? colors.primary[200] : '#2F2F30',
               }}>
               {' ' + receiver.fullName}
             </Text>
@@ -358,11 +361,11 @@ const Chat = () => {
             <Text
               className="text-center text-lg font-rubik"
               style={{color: colors.background.primary}}>
-              Henüz bu görüşmede bir mesaj bulunmuyor.
+              {t('empty.title')}
             </Text>
             <Text className="text-center text-2xl mt-2">💬</Text>
             <Text className="text-center text-sm mt-1 text-gray-500">
-              Sağlık sürecinizle ilgili ilk mesajı paylaşabilirsiniz.
+              {t('empty.hint')}
             </Text>
           </View>
         ) : (
@@ -407,15 +410,12 @@ const Chat = () => {
                       {(() => {
                         const match = msg.message.match(/dailyStatus(\d+)/);
                         const score = parseInt(match![1], 10);
-                        // return msg.sender !== sender
-                        //   ? `  Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.`
-                        //   : `Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.  `;
-                        return `${
-                          msg.createdAt
-                            ? new Date(msg.createdAt).toLocaleDateString() +
-                              '\n'
-                            : ''
-                        }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`; // Bugün ruh halimi 9 üzerinden ${score} olarak değerlendiriyorum.`;
+                        return t('dailyStatusText', {
+                          date: msg.createdAt
+                            ? new Date(msg.createdAt).toLocaleDateString()
+                            : '',
+                          score,
+                        });
                       })()}
                     </Text>
                   )}
@@ -434,16 +434,17 @@ const Chat = () => {
             borderColor: theme.colors.isLight
               ? 'rgba(150,150,150,0.09)'
               : 'rgba(150,150,150,0.09)',
-            marginBottom: keyboardHeight,
+            marginBottom: keyboardHeight + tabBarHeight / 10, // TO DO buradaki bölüm değeri değiştirilebilir
           }}>
           <TextInput
             value={message}
-            placeholder="Mesajınızı yazın"
+            placeholder={t('input.placeholder')}
             placeholderTextColor="gray"
             onChangeText={setMessage}
             onSubmitEditing={() => {
               if (message.length > 0) sendMessage();
-              else ToastAndroid.show('Lütfen mesaj gir', ToastAndroid.SHORT);
+              else
+                ToastAndroid.show(t('toasts.emptyMessage'), ToastAndroid.SHORT);
             }}
             selectionColor={'#7AADFF'}
             className="flex-1 font-rubik text-md pl-2"
@@ -452,7 +453,8 @@ const Chat = () => {
           <TouchableOpacity
             onPress={async () => {
               if (message.length > 0) await sendMessage();
-              else ToastAndroid.show('Lütfen mesaj gir', ToastAndroid.SHORT);
+              else
+                ToastAndroid.show(t('toasts.emptyMessage'), ToastAndroid.SHORT);
             }}
             className="ml-2 px-4 py-3 rounded-3xl"
             style={{backgroundColor: '#0EC946'}}>

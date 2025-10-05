@@ -15,6 +15,7 @@
     "settings": {
       "root": "Settings",
       "preferences": "Preferences",
+      "appearance": "Appearance",
       "notifications": "Notifications",
       "permissions": {
         "user": "Permissions and Consents",

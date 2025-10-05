@@ -23,14 +23,13 @@
     "chat": {
       "lastMessage": "Last Message",
       "goToChat": "Go to Chat",
-      "youPrefix": "You: ",
-      "userPrefix": "{{username}}: "
+      "youPrefix": "You: "
     }
   },
   "dailyStatusModal": {
     "title": "How do you feel today?",
-    "save": "Save",
-    "saving": "Saving..."
+    "subtitle": "Pick an emoji that best describes your mood.",
+    "save": "Save"
   },
   "notifications": {
     "permissionDeniedTitle": "Notifications are disabled.",

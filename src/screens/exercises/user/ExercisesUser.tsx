@@ -64,10 +64,12 @@ import {useGroupById} from '../../../hooks/groupQueries';
 import {Dumbbell, Armchair} from 'lucide-react-native';
 import {isTodayExerciseDay} from '../../../utils/dates';
 import {getDbUser} from '../../../api/user/userService';
+import {useTranslation} from 'react-i18next';
 
 const {height, width} = Dimensions.get('window');
 
 const ExercisesUser = () => {
+  const {t} = useTranslation(['exercise', 'common']);
   const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
@@ -230,7 +232,7 @@ const ExercisesUser = () => {
       if (!initialized) setInitialized(true);
     } catch (error) {
       console.log(error);
-      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
+      ToastAndroid.show(t('exercise:toasts.progressFetch'), ToastAndroid.SHORT);
     } finally {
       setLoading(false);
     }
@@ -443,13 +445,13 @@ const ExercisesUser = () => {
   // });
 
   const WEEK = [
-    {num: 1, label: 'Pzt'},
-    {num: 2, label: 'Sal'},
-    {num: 3, label: 'Çar'},
-    {num: 4, label: 'Per'},
-    {num: 5, label: 'Cum'},
-    {num: 6, label: 'Cmt'},
-    {num: 7, label: 'Paz'},
+    {num: 1, label: t('exercise:scheduleModal.weekShort.mon')},
+    {num: 2, label: t('exercise:scheduleModal.weekShort.tue')},
+    {num: 3, label: t('exercise:scheduleModal.weekShort.wed')},
+    {num: 4, label: t('exercise:scheduleModal.weekShort.thu')},
+    {num: 5, label: t('exercise:scheduleModal.weekShort.fri')},
+    {num: 6, label: t('exercise:scheduleModal.weekShort.sat')},
+    {num: 7, label: t('exercise:scheduleModal.weekShort.sun')},
   ];
 
   const ACTIVE_COLOR = '#0091ff';
@@ -467,7 +469,7 @@ const ExercisesUser = () => {
 
   // useEffect(() => {
   //   if (!isFocused) return;
-  //   const parent = navigation.getParent(); // veya getParent('RootTabs') eğer id verdiyseniz
+  //   const parent = navigation.getParent(); // veya getParent('exercise:RootTabs') eğer id verdiyseniz
   //   parent?.setOptions({
   //     tabBarStyle: makeTabBarStyle(theme, width),
   //   });
@@ -517,7 +519,9 @@ const ExercisesUser = () => {
             color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
-          {user && user.role === 'ROLE_USER' ? 'Egzersiz' : 'Egzersizler'}
+          {user && user.role === 'ROLE_USER'
+            ? t('exercise:headers.mainUser')
+            : t('exercise:headers.mainAdmin')}
         </Text>
       </View>
       {user && user.groupId && group && group.exerciseEnabled ? (
@@ -539,7 +543,7 @@ const ExercisesUser = () => {
                   <Text
                     className="font-rubik text-center"
                     style={{fontSize: 17, color: colors.text.primary}}>
-                    Bugünün Egzersizi
+                    {t('exercise:today.title')}
                   </Text>
 
                   {todayInitialized ? (
@@ -562,7 +566,7 @@ const ExercisesUser = () => {
                             style={{
                               color: colors.background.primary,
                             }}>
-                            Egzersize başla
+                            {t('exercise:today.start')}
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
@@ -585,7 +589,7 @@ const ExercisesUser = () => {
                             style={{
                               color: colors.background.third,
                             }}>
-                            Tamamlandı!{'\n'}Egzersizi gör
+                            {t('exercise:today.completed')}
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
@@ -608,7 +612,7 @@ const ExercisesUser = () => {
                             style={{
                               color: colors.isLight ? '#FFECD1' : '#473E31',
                             }}>
-                            Egzersize{'\n'}devam et
+                            {t('exercise:today.continue')}
                           </Text>
                           <Image
                             source={icons.gymnastic_1}
@@ -640,7 +644,9 @@ const ExercisesUser = () => {
                                     fontSize: 22,
                                     color: colors.text.primary,
                                   }}>
-                                  %{todayPercent}
+                                  {t('common:locale') === 'tr-TR'
+                                    ? `%${todayPercent}`
+                                    : `${todayPercent}%`}
                                 </Text>
                               )}
                             </AnimatedCircularProgress>
@@ -664,12 +670,12 @@ const ExercisesUser = () => {
                 <Text
                   className="font-rubik text-center"
                   style={{fontSize: 16, color: colors.text.primary}}>
-                  Bugün için planlanan egzersiziniz yok.
+                  {t('exercise:today.noPlan')}
                 </Text>
                 <Text
                   className="font-rubik mt-1 mb-2 text-center"
                   style={{fontSize: 18, color: colors.text.primary}}>
-                  İyi dinlenmeler!
+                  {t('exercise:today.restWell')}
                 </Text>
               </>
             )}
@@ -685,7 +691,7 @@ const ExercisesUser = () => {
               <Text
                 className="font-rubik mb-2 ml-2"
                 style={{fontSize: 19, color: colors.text.primary}}>
-                Egzersiz Takvimi
+                {t('exercise:calendar.title')}
               </Text>
               <Text
                 className="font-rubik mb-1 mr-1 rounded-xl"
@@ -696,7 +702,7 @@ const ExercisesUser = () => {
                   color: colors.text.primary,
                   backgroundColor: colors.background.secondary,
                 }}>
-                {new Date().toLocaleDateString('tr-TR', {
+                {new Date().toLocaleDateString(t('common:locale'), {
                   day: 'numeric',
                   month: 'long',
                   year: 'numeric',
@@ -721,7 +727,7 @@ const ExercisesUser = () => {
                     <Text
                       className="text-xs font-rubik ml-1"
                       style={{color: colors.text.primary}}>
-                      Tamamlandı
+                      {t('exercise:calendar.legend.completed')}
                     </Text>
                   </View>
                   <View className="flex-row items-center space-x-2 mt-2">
@@ -732,7 +738,7 @@ const ExercisesUser = () => {
                     <Text
                       className="text-xs font-rubik ml-1"
                       style={{color: colors.text.primary}}>
-                      Tamamlanmadı
+                      {t('exercise:calendar.legend.notCompleted')}
                     </Text>
                   </View>
                 </View>
@@ -747,7 +753,7 @@ const ExercisesUser = () => {
                     <Text
                       className="text-xs font-rubik ml-1"
                       style={{color: colors.text.primary}}>
-                      Yapılacak
+                      {t('exercise:calendar.legend.scheduled')}
                     </Text>
                   </View>
                   <View className="flex-row items-center space-x-2 mt-2">
@@ -758,7 +764,7 @@ const ExercisesUser = () => {
                     <Text
                       className="text-xs font-rubik ml-1"
                       style={{color: colors.text.primary}}>
-                      Bugün
+                      {t('exercise:calendar.legend.today')}
                     </Text>
                   </View>
                 </View>
@@ -773,7 +779,7 @@ const ExercisesUser = () => {
                 <Text
                   className="text-sm font-rubik"
                   style={{color: colors.text.secondary}}>
-                  Egzersiz Günleri Seç
+                  {t('exercise:calendar.selectDaysButton')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -786,12 +792,12 @@ const ExercisesUser = () => {
           <Text
             className="font-rubik text-center"
             style={{fontSize: 18, color: colors.text.primary}}>
-            Egzersiz özelliği etkin değil.
+            {t('exercise:featureDisabled.title')}
           </Text>
           <Text
             className="font-rubik mt-1 mb-2 text-center"
             style={{fontSize: 14, color: colors.text.primary}}>
-            Egzersiz yapabilmek için uygun bir gruba dahil olmanız gerekiyor.
+            {t('exercise:featureDisabled.subtitle')}
           </Text>
         </View>
       )}
@@ -821,7 +827,7 @@ const ExercisesUser = () => {
             <Text
               className="font-rubik-semibold text-2xl mb-3 text-center"
               style={{color: colors.text.primary}}>
-              Egzersiz Günleri
+              {t('exercise:scheduleModal.title')}
             </Text>
             {!isScheduleLoading && !activeDays && (
               <>
@@ -830,14 +836,14 @@ const ExercisesUser = () => {
                   style={{
                     color: colors.isLight ? colors.text.third : '#C9C9C9',
                   }}>
-                  En az 3 gün seçiniz
+                  {t('exercise:scheduleModal.subtitleMin')}
                 </Text>
                 <Text
                   className="font-rubik text-md mb-3 text-center"
                   style={{
                     color: colors.isLight ? colors.text.third : '#C9C9C9',
                   }}>
-                  Egzersiz yapmak istediğiniz günlerin üzerine tıklayınız
+                  {t('exercise:scheduleModal.subtitleHint')}
                 </Text>
               </>
             )}
@@ -897,7 +903,7 @@ const ExercisesUser = () => {
                 onPress={async () => {
                   if (!activeDays && !isScheduleLoading) {
                     ToastAndroid.show(
-                      'Lütfen bir egzersiz düzeni seçiniz',
+                      t('exercise:toasts.pickScheduleFirst'),
                       ToastAndroid.SHORT,
                     );
                     return;
@@ -908,7 +914,7 @@ const ExercisesUser = () => {
                 <Text
                   className="font-rubik text-md text-center"
                   style={{color: colors.text.secondary}}>
-                  İptal
+                  {t('exercise:scheduleModal.cancel')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -921,7 +927,7 @@ const ExercisesUser = () => {
                 onPress={async () => {
                   if (updatedActiveDays && updatedActiveDays.length < 3)
                     ToastAndroid.show(
-                      'Lütfen en az 3 gün seçiniz',
+                      t('exercise:toasts.minThreeDays'),
                       ToastAndroid.SHORT,
                     );
                   else {
@@ -935,12 +941,12 @@ const ExercisesUser = () => {
                         return;
                       } else
                         ToastAndroid.show(
-                          'Bir hata oluştu, internet bağlantınızı kontrol edin',
+                          t('exercise:toasts.networkError'),
                           ToastAndroid.SHORT,
                         );
                     } else
                       ToastAndroid.show(
-                        'Lütfen bekleyip tekrar deneyiniz',
+                        t('exercise:toasts.tryAgainLater'),
                         ToastAndroid.SHORT,
                       );
                     setUpdatedActiveDays(backupActiveDays);
@@ -949,7 +955,7 @@ const ExercisesUser = () => {
                 <Text
                   className="font-rubik text-md text-center"
                   style={{color: colors.text.secondary}}>
-                  Kaydet
+                  {t('exercise:scheduleModal.save')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -975,14 +981,13 @@ const ExercisesUser = () => {
             <Text
               className="text-xl font-rubik-medium mb-3"
               style={{color: colors.text.primary}}>
-              Egzersiz Türü Seçimi
+              {t('exercise:typeModal.title')}
             </Text>
             <Text
               className={`font-rubik text-center ${
                 theme.colors.isLight ? 'text-gray-500' : 'text-gray-400'
               } mb-6`}>
-              Bugünkü egzersizinizi ayakta mı yoksa oturarak mı yapmak
-              istediğinizi seçiniz.
+              {t('exercise:typeModal.description')}
             </Text>
 
             <View className="flex-row justify-between w-full">
@@ -998,7 +1003,7 @@ const ExercisesUser = () => {
                   className="mt-3 font-rubik-semibold text-lg"
                   style={{color: colors.primary[200]}}>
                   {/*text-blue-600 */}
-                  Ayakta
+                  {t('exercise:typeModal.standing')}
                 </Text>
               </TouchableOpacity>
 
@@ -1014,7 +1019,7 @@ const ExercisesUser = () => {
                   className="mt-3 font-rubik-semibold text-lg"
                   style={{color: colors.primary[200]}}>
                   {/*text-blue-600 */}
-                  Oturarak
+                  {t('exercise:typeModal.seated')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1031,7 +1036,7 @@ const ExercisesUser = () => {
                 className={`${
                   theme.colors.isLight ? 'text-gray-600' : 'text-gray-400'
                 } font-rubik`}>
-                Geri Dön
+                {t('exercise:typeModal.back')}
               </Text>
             </TouchableOpacity>
           </View>

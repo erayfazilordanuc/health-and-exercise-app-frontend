@@ -6,12 +6,13 @@ type ProfileStackParamList = {
 type SettingsStackParamList = {
   Settings: undefined;
   Preferences: undefined;
+  Appearance: undefined;
+  Language: undefined;
   Notifications: undefined;
   Reminders: undefined;
   Permissions: undefined;
   Security: undefined;
   Development: undefined;
-  // Language: undefined;
 };
 
 type ExercisesStackParamList = {

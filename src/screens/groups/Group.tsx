@@ -55,6 +55,7 @@ import CustomAlertSingleton, {
 } from '../../components/CustomAlertSingleton';
 import {AvatarKey, AVATARS} from '../../constants/avatars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useTranslation} from 'react-i18next';
 
 const Group = () => {
   const insets = useSafeAreaInsets();
@@ -63,6 +64,7 @@ const Group = () => {
   const {params} = useRoute<GroupRouteProp>();
   const {groupId, fromNotification} = params;
   const navigation = useNavigation<GroupsScreenNavigationProp>();
+  const {t} = useTranslation('groups');
   const qc = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -232,10 +234,7 @@ const Group = () => {
   // }, [groupId]);
 
   const onLeaveGroup = async () => {
-    ToastAndroid.show(
-      'Gruptan ayrılma isteğiniz hemşireye iletildi.',
-      ToastAndroid.SHORT,
-    );
+    ToastAndroid.show(t('toasts.leaveSent'), ToastAndroid.SHORT);
     setIsLeaveAlertVisible(false);
 
     // if (user) {
@@ -287,14 +286,14 @@ const Group = () => {
           <Text
             className="text-lg font-rubik-medium dark:text-blue-300 mr-2"
             style={{color: colors.text.primary}}>
-            Hemşire
+            {t('groupDetail.roles.admin')}
           </Text>
         )}
         {user && item.username === user.username && (
           <Text
             className="text-lg font-rubik-medium dark:text-blue-300 mr-2"
             style={{color: colors.text.primary}}>
-            Siz
+            {t('groupDetail.roles.you')}
           </Text>
         )}
         {item.role === 'ROLE_USER' && user && user.role === 'ROLE_ADMIN' && (
@@ -313,7 +312,7 @@ const Group = () => {
             <Text
               className="text-lg font-rubik-medium dark:text-blue-300"
               style={{color: colors.text.primary}}>
-              Detay
+              {t('buttons.detail')}
             </Text>
           </TouchableOpacity>
         )}
@@ -325,6 +324,15 @@ const Group = () => {
       </Text> */}
     </Pressable>
   );
+
+  // TO DO sıralama ekle
+  // style={{
+  //                   backgroundColor: active
+  //                     ? colors.background.third
+  //                     : colors.background.secondary,
+  //                   borderWidth: active ? 1 : 0,
+  //                   borderColor: active ? colors.primary[200] : 'transparent',
+  //                 }}
 
   return (
     <View className="flex-1">
@@ -348,7 +356,7 @@ const Group = () => {
             color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
-          Grup:{'  '}
+          {t('titles.group')}:{'  '}
           <Text
             style={{
               color: theme.colors.isLight ? colors.primary[200] : '#2F2F30',
@@ -406,7 +414,7 @@ const Group = () => {
                   <Text
                     className="font-rubik-medium"
                     style={{fontSize: 19, color: colors.text.primary}}>
-                    Hemşire Bilgileri
+                    {t('groupDetail.nurseInfo')}
                   </Text>
                   <Image
                     source={AVATARS[admin.avatar as AvatarKey]}
@@ -417,7 +425,8 @@ const Group = () => {
                   <Text
                     className="font-rubik-medium text-lg"
                     style={{color: colors.text.primary}}>
-                    Adı Soyadı:{'  '}
+                    {t('groupDetail.fields.fullName')}
+                    {'  '}
                   </Text>
                   <Text
                     className="font-rubik text-lg"
@@ -429,7 +438,8 @@ const Group = () => {
                   <Text
                     className="font-rubik-medium text-lg"
                     style={{color: colors.text.primary}}>
-                    E-posta:{'  '}
+                    {t('groupDetail.fields.email')}
+                    {'  '}
                   </Text>
                   <Text
                     className="font-rubik text-lg"
@@ -454,7 +464,7 @@ const Group = () => {
                 <Text
                   className="font-rubik mt-1"
                   style={{fontSize: 20, color: colors.primary[200]}}>
-                  En Son Mesaj
+                  {t('groupDetail.sections.lastMessage')}:
                 </Text>
               )}
               <TouchableOpacity
@@ -558,7 +568,7 @@ const Group = () => {
                 <Text
                   className="font-rubik text-md"
                   style={{color: colors.primary[200], marginTop: 1}}>
-                  Sohbete Git
+                  {t('buttons.goToChat')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -568,7 +578,7 @@ const Group = () => {
                 style={{color: colors.text.primary}}>
                 {lastMessage.receiver === user?.username
                   ? admin?.fullName + ' : ' + lastMessage.message
-                  : 'Siz : ' + lastMessage.message}
+                  : t('groupDetail.sections.youPrefix') + lastMessage.message}
               </Text>
             )}
           </View>
@@ -585,7 +595,7 @@ const Group = () => {
             <Text
               className="font-rubik ml-1"
               style={{fontSize: 20, color: colors.text.primary}}>
-              Grup Ayarları
+              {t('groupDetail.sections.settings')}
             </Text>
 
             <View
@@ -596,7 +606,7 @@ const Group = () => {
               <Text
                 className="font-rubik ml-1"
                 style={{fontSize: 16, color: colors.text.primary}}>
-                Egzersiz Etkinliği
+                {t('groupDetail.settings.exercise')}
               </Text>
 
               <View
@@ -613,14 +623,14 @@ const Group = () => {
                     setExerciseEnabled(value);
                     alertRef.current?.show({
                       message: value
-                        ? 'Grup için egzersiz yapma özelliğini etkinleştirmek istediğinize emin misiniz?'
-                        : 'Grup için egzersiz yapma özelliğini devre dışı bırakmak istediğinize emin misiniz?',
+                        ? t('groupDetail.settings.confirmEnable')
+                        : t('groupDetail.settings.confirmDisable'),
                       secondMessage: value
                         ? undefined
-                        : 'Bu işlem egzersiz yapan kullanıcıların verilerinin kaydedilmemesine sebep olacaktır.',
+                        : t('groupDetail.settings.disableWarning'),
                       isPositive: value ? true : false,
-                      onYesText: 'Evet',
-                      onCancelText: 'İptal',
+                      onYesText: t('buttons.yes'),
+                      onCancelText: t('buttons.cancel'),
                       onYes: async () => {
                         if (group && group.id) {
                           const updateDTO: UpdateGroupDTO = {
@@ -667,7 +677,7 @@ const Group = () => {
               <Text
                 className="font-rubik ml-1"
                 style={{fontSize: 20, color: colors.text.primary}}>
-                Gruba katılma istekleri
+                {t('groupDetail.sections.joinRequests')}
               </Text>
               {joinRequests.map(jr => (
                 <View
@@ -681,7 +691,7 @@ const Group = () => {
                     <Text
                       className="font-rubik-medium text-lg ml-1"
                       style={{color: colors.text.primary}}>
-                      Adı Soyadı:{' '}
+                      {t('groupDetail.fields.fullName')}{' '}
                     </Text>
                     <Text
                       className="font-rubik text-lg ml-1"
@@ -693,7 +703,7 @@ const Group = () => {
                     <Text
                       className="font-rubik-medium text-lg ml-1"
                       style={{color: colors.text.primary}}>
-                      Kullanıcı Adı:{' '}
+                      {t('groupDetail.fields.username')}{' '}
                     </Text>
                     <Text
                       className="font-rubik text-lg ml-1"
@@ -712,7 +722,7 @@ const Group = () => {
                       <Text
                         className="font-rubik text-md"
                         style={{color: colors.background.primary}}>
-                        Onayla
+                        {t('buttons.approve')}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -724,7 +734,7 @@ const Group = () => {
                       <Text
                         className="font-rubik text-md"
                         style={{color: colors.background.primary}}>
-                        Reddet
+                        {t('buttons.reject')}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -744,7 +754,7 @@ const Group = () => {
             <Text
               className="font-rubik ml-1"
               style={{fontSize: 20, color: colors.text.primary}}>
-              Üyeler
+              {t('groupDetail.sections.members')}
             </Text>
             <Text
               className="font-rubik text-2xl mr-3"
@@ -760,87 +770,21 @@ const Group = () => {
                   {renderItem({item: user})}
                 </View>
               ))}
-            {/* <FlatList
-              data={members}
-              keyExtractor={item => (item.id ? item.id.toString() : '')}
-              renderItem={renderItem}
-              // ListEmptyComponent={
-              //   <Text className="text-center text-zinc-400">
-              //     Henüz bir grup yok
-              //   </Text>
-              // }
-            /> */}
           </View>
         </View>
         <View className="mt-4 w-1/2">
           <CustomAlert
-            message={'Gruptan ayrılmak istediğinize emin misiniz?'}
+            message={t('alerts.leaveGroup')}
             visible={isLeaveAlertVisible}
             onYes={onLeaveGroup}
             onCancel={() => {
               setIsLeaveAlertVisible(false);
             }}
           />
-
-          {/* {!loading && user && user.role === 'ROLE_USER' && (
-            <TouchableOpacity
-              style={{backgroundColor: colors.background.primary}}
-              onPress={() => {
-                setIsLeaveAlertVisible(true);
-              }}
-              className="flex flex-row items-center justify-between py-4 px-5 rounded-3xl">
-              <View className="flex flex-row items-center gap-3">
-                <Image
-                  source={icons.logout}
-                  className="size-7"
-                  tintColor={'#fd5353'}
-                />
-                <Text
-                  style={{color: '#fd5353'}}
-                  className={`font-rubik text-xl`}>
-                  Gruptan Ayrıl
-                </Text>
-              </View>
-            </TouchableOpacity>
-          )} */}
-
-          {/* {!loading &&
-            members &&
-            members.length === 0 &&
-            user &&
-            user.role === 'ROLE_ADMIN' && (
-              <TouchableOpacity
-                style={{backgroundColor: colors.background.primary}}
-                onPress={() => {
-                  setIsLeaveAlertVisible(true);
-                }}
-                className="flex flex-row items-center justify-between py-4 px-5 rounded-3xl">
-                <View className="flex flex-row items-center gap-3">
-                  <Image
-                    source={icons.logout}
-                    className="size-7"
-                    tintColor={'#fd5353'}
-                  />
-                  <Text
-                    style={{color: '#fd5353'}}
-                    className={`font-rubik text-xl`}>
-                    Grubu Sil
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            )} */}
         </View>
       </ScrollView>
       {user && user.role === 'ROLE_USER' && (
-        <View className="absolute bottom-20 right-3 items-center">
-          {/* <Text
-                    className="mb-1 font-rubik text-base"
-                    style={{color: colors.text.primary}}>
-                    Grup Oluştur
-                  </Text> */}
-
-          {/* Buton */}
-        </View>
+        <View className="absolute bottom-20 right-3 items-center"></View>
       )}
 
       <CustomAlertSingleton ref={alertRef} />

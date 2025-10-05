@@ -20,7 +20,7 @@ import {has} from 'lodash';
 export const checkSamsungHInstalled = async (): Promise<boolean> => {
   if (Platform.OS !== 'android') return false;
   try {
-    const hasSH = await isInstalled('com.samsung.android.app.shealth');
+    const hasSH = await isInstalled('com.sec.android.app.shealth');
     return hasSH;
   } catch (err) {
     console.log('[GF] check failed', err);

@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, Dimensions} from 'react-native';
 import {useTheme} from '../themes/ThemeProvider';
+import {useTranslation} from 'react-i18next';
 
 interface CustomAlertProps {
   message?: string;
@@ -25,6 +26,7 @@ const CustomAlert = ({
   onCancelText,
   onYesText,
 }: CustomAlertProps) => {
+  const {t} = useTranslation('common');
   const {colors} = useTheme();
   const {width} = Dimensions.get('window');
 
@@ -100,7 +102,7 @@ const CustomAlert = ({
                 fontSize: 16,
                 textAlign: 'center',
               }}>
-              {onCancelText || 'İptal'}
+              {onCancelText || t('alerts.cancel')}
             </Text>
           </TouchableOpacity>
 
@@ -119,7 +121,7 @@ const CustomAlert = ({
                 fontSize: 16,
                 textAlign: 'center',
               }}>
-              {onYesText || 'Evet'}
+              {onYesText || t('alerts.yes')}
             </Text>
           </TouchableOpacity>
         </View>

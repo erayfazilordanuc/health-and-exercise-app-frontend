@@ -26,6 +26,7 @@ import {useLogout} from '../../../api/auth/authService';
 import NotificationSetting from 'react-native-open-notification';
 import {useUser} from '../../../contexts/UserContext';
 import {deleteUser} from '../../../api/user/userService';
+import {useTranslation} from 'react-i18next';
 
 interface SettingsItemProps {
   icon: ImageSourcePropType;
@@ -33,6 +34,7 @@ interface SettingsItemProps {
   onPress?: () => void;
   textColor?: string;
   showArrow?: boolean;
+  px?: number;
 }
 
 const SettingsItem = ({
@@ -41,13 +43,17 @@ const SettingsItem = ({
   onPress,
   textColor,
   showArrow = true,
+  px = 20,
 }: SettingsItemProps) => {
   const {colors} = useTheme();
   return (
     <TouchableOpacity
-      style={{backgroundColor: colors.background.primary}}
+      style={{
+        backgroundColor: colors.background.primary,
+        paddingHorizontal: px,
+      }}
       onPress={onPress}
-      className="flex flex-row items-center justify-between py-4 px-5 rounded-2xl">
+      className="flex flex-row items-center justify-between py-4 rounded-2xl">
       <View className="flex flex-row items-center gap-3">
         <Image
           source={icon}
@@ -76,6 +82,7 @@ const Settings = () => {
   const navigation = useNavigation<SettingsScreenNavigationProp>();
   const appNavigation = useNavigation<AppScreenNavigationProp>();
   const insets = useSafeAreaInsets();
+  const {t} = useTranslation('settings');
   const {colors} = useTheme();
 
   const {user} = useUser();
@@ -108,11 +115,7 @@ const Settings = () => {
           routes: [{name: 'Launch'}],
         }),
       );
-    } else
-      ToastAndroid.show(
-        'Hesap silme işlemi başarısız oldu.',
-        ToastAndroid.LONG,
-      );
+    } else ToastAndroid.show(t('toasts.deleteFailed'), ToastAndroid.LONG);
   };
 
   const handleSecretTap = () => {
@@ -143,11 +146,25 @@ const Settings = () => {
               borderRadius: 17,
               backgroundColor: colors.background.primary,
             }}>
-            <SettingsItem
+            {/* <SettingsItem
               icon={icons.preferences}
-              title={'Tercihler'}
+              title={t('items.preferences')}
               onPress={() => {
                 navigation.navigate('Preferences');
+              }}
+            /> */}
+            <SettingsItem
+              icon={icons.appearance}
+              title={t('items.appearance')}
+              onPress={() => {
+                navigation.navigate('Appearance');
+              }}
+            />
+            <SettingsItem
+              icon={icons.language}
+              title={t('items.language')}
+              onPress={() => {
+                navigation.navigate('Language');
               }}
             />
             {/* <SettingsItem
@@ -161,8 +178,8 @@ const Settings = () => {
               icon={icons.permission}
               title={
                 user && user.role === 'ROLE_ADMIN'
-                  ? 'İzinler'
-                  : 'İzinler ve Onaylar'
+                  ? t('items.permissionsAdmin')
+                  : t('items.permissionsUser')
               }
               onPress={() => {
                 navigation.navigate('Permissions');
@@ -176,7 +193,7 @@ const Settings = () => {
             />
             <SettingsItem
               icon={icons.app_info}
-              title={'Uygulama Bilgileri'}
+              title={t('items.appInfo')}
               onPress={() => {
                 if (Platform.OS === 'ios') {
                   Linking.openURL('app-settings:');
@@ -201,13 +218,6 @@ const Settings = () => {
                 }}
               />
             )}
-            <SettingsItem
-              icon={icons.language}
-              title={'Dil'}
-              onPress={() => {
-                navigation.navigate('Language');
-              }}
-            />
           </View>
         </View>
         <View
@@ -215,18 +225,20 @@ const Settings = () => {
           style={{borderRadius: 17}}>
           <SettingsItem
             icon={icons.logout}
-            title="Çıkış Yap"
+            title={t('items.logout')}
             textColor="#fd5353"
             showArrow={false}
+            px={12}
             onPress={async () => {
               setIsLogoutAlertVisible(true);
             }}
           />
           <SettingsItem
             icon={icons.delete_user}
-            title="Hesabımı Sil"
+            title={t('items.deleteAccount')}
             textColor="#fd5353"
             showArrow={false}
+            px={12}
             onPress={async () => {
               setIsDeleteAlertVisible(true);
             }}
@@ -242,7 +254,7 @@ const Settings = () => {
         />
       </View>
       <CustomAlert
-        message={'Çıkmak istediğinize emin misiniz?'}
+        message={t('alerts.confirmLogout')}
         visible={isLogoutAlertVisible}
         onYes={handleLogout}
         onCancel={() => {
@@ -250,7 +262,7 @@ const Settings = () => {
         }}
       />
       <CustomAlert
-        message={'Hesabınızı silmek istediğinizden emin misiniz?'}
+        message={t('alerts.confirmDelete')}
         visible={isDeleteAlertVisible}
         onYes={handleDelete}
         onCancel={() => {

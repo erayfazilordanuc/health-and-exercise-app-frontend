@@ -1,3 +1,19 @@
 {
+  "header": {
+    "title": "Chat:"
+  },
+  "empty": {
+    "title": "There are no messages in this conversation yet.",
+    "hint": "You can share your first message about the health process."
+  },
+  "input": {
+    "placeholder": "Type your message"
+  },
+  "buttons": {
+    "send": "Send"
+  },
+  "toasts": {
+    "emptyMessage": "Please enter a message."
+  },
   "dailyStatusText": "{{date}}\nI rate my mood today as {{score}}/9."
 }

@@ -1,0 +1,95 @@
+{
+  "titles": {
+    "groups": "Gruplar",
+    "group": "Grup"
+  },
+  "search": {
+    "placeholder": "Grupları ara"
+  },
+  "list": {
+    "empty": "Grup bulunamadı."
+  },
+  "buttons": {
+    "join": "Katıl",
+    "createNew": "Yeni Grup Oluştur",
+    "details": "Detaylar",
+    "cancel": "İptal",
+    "yes": "Evet",
+    "no": "Vazgeç",
+    "sendRequest": "İstek Gönder",
+    "create": "Oluştur",
+    "goToChat": "Sohbete Git",
+    "approve": "Onayla",
+    "reject": "Reddet",
+    "detail": "Detay"
+  },
+  "request": {
+    "cardTitle": "Gönderilen İstek",
+    "group": "Grup:",
+    "nurse": "Hemşire:",
+    "status": "Durum:",
+    "pending": "Beklemede",
+    "cancel": "İptal Et"
+  },
+  "modals": {
+    "join": {
+      "title": "Gruba Katıl",
+      "confirmText": " grubuna katılmak istediğinize emin misiniz?"
+    },
+    "create": {
+      "title": "Grup Oluşturma",
+      "name": "Grup İsmi",
+      "exerciseEnabled": "Egzersiz Etkinliği"
+    }
+  },
+  "alerts": {
+    "cancelJoin": "Gruba katılma isteğini iptal etmek istediğinize emin misiniz?",
+    "leaveGroup": "Gruptan ayrılmak istediğinize emin misiniz?"
+  },
+  "admin": {
+    "myGroups": "Gruplarım"
+  },
+  "toasts": {
+    "noInternet": "Grup işlemi yapılamıyor. Lütfen internet bağlantınızı kontrol edin.",
+    "joinRequestSent": "Gruba katılma isteği gönderildi.",
+    "joinRequestCanceled": "Gruba katılma isteği iptal edildi.",
+    "createFailed": "Grup oluşturulamıyor. İnternet bağlantınızı kontrol ediniz.",
+    "leaveSent": "Gruptan ayrılma isteğiniz hemşireye iletildi."
+  },
+  "groupDetail": {
+    "nurseInfo": "Hemşire Bilgileri",
+    "fields": {
+      "username": "Kullanıcı Adı:",
+      "fullName": "Adı Soyadı:",
+      "email": "E-posta:"
+    },
+    "roles": {
+      "admin": "Hemşire",
+      "you": "Siz"
+    },
+    "sections": {
+      "lastMessage": "En Son Mesaj",
+      "youPrefix": "Siz: ",
+      "settings": "Grup Ayarları",
+      "joinRequests": "Gruba katılma istekleri",
+      "members": "Üyeler",
+      "sort": {
+        "sortTitle": "Sırala",
+        "role": "Rol",
+        "name": "İsim",
+        "username": "Kullanıcı Adı"
+      }
+    },
+    "settings": {
+      "exercise": "Egzersiz Etkinliği",
+      "confirmEnable": "Grup için egzersiz yapma özelliğini etkinleştirmek istediğinize emin misiniz?",
+      "confirmDisable": "Grup için egzersiz yapma özelliğini devre dışı bırakmak istediğinize emin misiniz?",
+      "disableWarning": "Bu işlem egzersiz yapan kullanıcıların verilerinin kaydedilmemesine sebep olacaktır.",
+      "yes": "Evet",
+      "cancel": "İptal"
+    },
+    "members": {
+      "count": "{{count}}"
+    }
+  }
+}

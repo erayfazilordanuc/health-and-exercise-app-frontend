@@ -1,3 +1,19 @@
 {
+  "header": {
+    "title": "Sohbet:"
+  },
+  "empty": {
+    "title": "Henüz bu görüşmede bir mesaj bulunmuyor.",
+    "hint": "Sağlık sürecinizle ilgili ilk mesajı paylaşabilirsiniz."
+  },
+  "input": {
+    "placeholder": "Mesajınızı yazın"
+  },
+  "buttons": {
+    "send": "Gönder"
+  },
+  "toasts": {
+    "emptyMessage": "Lütfen mesaj girin."
+  },
   "dailyStatusText": "{{date}}\nBugün ruh halimi {{score}}/9 olarak değerlendiriyorum."
 }

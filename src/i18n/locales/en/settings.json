@@ -1,0 +1,74 @@
+// locales/en/settings.json
+{
+  "items": {
+    "preferences": "Preferences",
+    "appearance": "Appearance",
+    "notifications": "Notifications",
+    "permissionsUser": "Permissions and Consents",
+    "permissionsAdmin": "Permissions",
+    "appInfo": "App Info",
+    "security": "Security",
+    "development": "Development",
+    "language": "Language",
+    "logout": "Log Out",
+    "deleteAccount": "Delete My Account"
+  },
+
+  "alerts": {
+    "confirmLogout": "Are you sure you want to log out?",
+    "confirmDelete": "Are you sure you want to delete your account?",
+    "cantOpenSettigns": "Could not open settings"
+  },
+
+  "toasts": {
+    "deleteFailed": "Account deletion failed."
+  },
+
+  "permissions": {
+    "goToAppSettings": "Open App Permissions",
+    "goToNotificationSettings": "Open Notification Permissions",
+    "consentsTitle": "Consents",
+    "kvkkTitle": "KVKK Notice",
+    "healthTitle": "Consent to Use Health Data",
+    "exerciseTitle": "Consent to Use Exercise Data",
+    "studyTitle": "Informed Consent Form",
+    "approveHint": "To approve, please read the entire text and scroll to the end.",
+    "approve": "I Approve",
+    "decline": "I Do Not Approve",
+    "approved": "Approved",
+    "declined": "Declined",
+    "approveAction": "Approve",
+    "withdraw": "Withdraw"
+  },
+
+  "offline": {
+    "consentsLoadFailed": "Unable to load agreements",
+    "noInternet": "No internet connection"
+  },
+
+  "language": {
+    "title": "Language"
+  },
+
+  "appearance": {
+    "themeColor": "Theme Color",
+    "selected": "Selected:",
+    "colorBlueTurquoise": "Blue–Turquoise",
+    "colorPurplePink": "Purple–Pink",
+    "colorGreenYellow": "Green–Yellow",
+    "colorRedOrange": "Red–Orange",
+
+    "mock": "Colors",
+    "themeMode": "Theme Mode",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "systemNote": "(Automatically follows your device’s light/dark mode.)",
+
+    "debug": {
+      "theme": "Theme:",
+      "colors": "Colors:",
+      "background": "Background color:"
+    }
+  }
+}

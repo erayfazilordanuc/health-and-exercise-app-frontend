@@ -28,6 +28,7 @@
   },
   "dailyStatusModal": {
     "title": "Bugün kendinizi nasıl hissediyorsunuz?",
+    "subtitle": "Ruh halini en iyi şekilde ifade eden bir emoji seç.",
     "save": "Kaydet"
   },
   "notifications": {

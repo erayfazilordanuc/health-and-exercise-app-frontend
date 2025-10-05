@@ -1,6 +1,7 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useTransition} from 'react';
 import {View, Text, TouchableOpacity} from 'react-native';
 import {useTheme} from '../themes/ThemeProvider';
+import {useTranslation} from 'react-i18next';
 
 type ConsentStatus = 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN' | 'ACKNOWLEDGED';
 
@@ -20,6 +21,7 @@ const ConsentCard: React.FC<ConsentCardProps> = ({
   onPress,
 }) => {
   const {colors} = useTheme();
+  const {t} = useTranslation('settings');
 
   const approved = useMemo(() => {
     if (loading) return false;
@@ -35,10 +37,14 @@ const ConsentCard: React.FC<ConsentCardProps> = ({
     if (loading) return '';
 
     if (type === 'kvkk') {
-      return status === 'ACKNOWLEDGED' ? 'Onaylandı' : 'Onaylanmadı';
+      return status === 'ACKNOWLEDGED'
+        ? t('permissions.approved')
+        : t('permissions.declined');
     }
     // health / study gibi diğerleri
-    return status === 'ACCEPTED' ? 'Onaylandı' : 'Onaylanmadı';
+    return status === 'ACCEPTED'
+      ? t('permissions.approved')
+      : t('permissions.declined');
   }, [type, status, loading]);
 
   const leftTextColorClass =
@@ -49,7 +55,9 @@ const ConsentCard: React.FC<ConsentCardProps> = ({
 
   // Buton etiketi (hepsi için ACCEPTED → iptal, diğer → onayla)
   const buttonText = useMemo(() => {
-    return approved ? 'Onayı İptal Et' : 'Onayla';
+    return approved
+      ? t('permissions.withdraw')
+      : t('permissions.approveAction');
   }, [approved]);
 
   return (

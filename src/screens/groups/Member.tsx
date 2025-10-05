@@ -71,6 +71,8 @@ import ColorCircle from '../../components/ColorCircle';
 import {calcPercent} from '../../api/exercise/exerciseService';
 import {useGroupById} from '../../hooks/groupQueries';
 import {AvatarKey, AVATARS} from '../../constants/avatars';
+import {useTranslation} from 'react-i18next'; // ⬅️ eklendi
+import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -78,6 +80,8 @@ const Member = () => {
   const {memberId, fromNotification} = params;
   const navigation = useNavigation<GroupsScreenNavigationProp>();
   const {colors, theme} = useTheme();
+  const {t} = useTranslation('member');
+  const {t: c} = useTranslation('common');
   const insets = useSafeAreaInsets();
   const [allLoading, setAllLoading] = useState(true);
   const {user: admin} = useUser();
@@ -115,14 +119,13 @@ const Member = () => {
     enabled: !!memberId,
   });
 
+  const tabBarHeight = useBottomTabBarHeight();
   const scrollRef = useRef<ScrollView>(null);
   const [symptomsSectionY, setSymptomsSectionY] = useState(0);
 
-  // isSymptomsLoading'in önce true olup sonra false'a düştüğünü tespit etmek için:
   const prevSymptomsLoadingRef = useRef(false);
 
   function scrollToSymptoms() {
-    // layout güncellenmiş olsun diye frame sonunda kaydır
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({
         y: Math.max(0, symptomsSectionY - 12),
@@ -134,31 +137,20 @@ const Member = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const today = new Date(new Date().setHours(12, 0, 0, 0));
   const [symptomsDate, setSymptomsDate] = useState(today);
-  const day = (d: Date) => d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  const day = (d: Date) => d.toISOString().slice(0, 10);
 
-  // EKRANDA:
-  const toDay = React.useMemo(() => day(new Date()), []); // örn: '2025-08-24'
+  const toDay = React.useMemo(() => day(new Date()), []);
   const fromDay = React.useMemo(() => day(subDays(new Date(), 7)), []);
 
   console.log(today.toString(), toDay.toString(), fromDay.toString());
-
-  // const {fromISO, toISO} = useMemo(() => {
-  //   const to = new Date(); // şimdi
-  //   const from = new Date(to);
-  //   from.setDate(to.getDate() - 7); // 7 gün önce
-
-  //   // Güne yuvarla -> key stabil olsun
-  //   const day = (d: Date) => d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
-  //   return {fromISO: day(from), toISO: day(to)};
-  // }, [symptomsDate]);
 
   const {
     data: sessions,
     isLoading: isSessionsLoading,
     error: sessionsError,
   } = useUserSessions(memberId, fromDay, toDay, {
-    staleTime: 5 * 60 * 1000, // 5 dk taze kalsın
-    refetchOnWindowFocus: false, // odağa gelince zorla refetch etme
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const {
@@ -176,13 +168,14 @@ const Member = () => {
     scrollToSymptoms();
   }, [symptoms]);
 
+  const [progressDate, setProgressDate] = useState(new Date());
   const {
     data: weeklyExerciseProgress = [],
     isLoading: isProgressLoading,
     isError: isProgressError,
     error: progressError,
     refetch: refetchProgress,
-  } = useWeeklyActiveDaysProgressByUserId(memberId, {
+  } = useWeeklyActiveDaysProgressByUserId(memberId, progressDate, {
     staleTime: 60_000,
   });
 
@@ -218,10 +211,10 @@ const Member = () => {
         const match = lastMessage.message.match(/dailyStatus(\d+)/);
         const score = parseInt(match![1], 10);
 
-        lastMessage.message =
-          '\n' +
-          new Date().toLocaleDateString() +
-          `\nBugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+        lastMessage.message = t('dailyStatusText', {
+          date: new Date().toLocaleDateString(),
+          score,
+        });
       }
       setLastMessage(lastMessage);
     }
@@ -231,7 +224,7 @@ const Member = () => {
     useCallback(() => {
       console.log('dışarda');
       fetchLastMessage();
-    }, [member, admin]), // memberId, TO DO test et
+    }, [member, admin]),
   );
 
   const calculateAge = () => {
@@ -275,8 +268,6 @@ const Member = () => {
           return false;
         }
 
-        // if (!member) return true;
-
         navigation.navigate('Group', {fromNotification});
         return true;
       };
@@ -304,7 +295,7 @@ const Member = () => {
 
     return {
       sessionCount,
-      totalMinutes: Math.round(totalMinutes), // yuvarlanmış
+      totalMinutes: Math.round(totalMinutes),
     };
   }
 
@@ -355,7 +346,7 @@ const Member = () => {
       <View
         className="pb-3"
         style={{
-          backgroundColor: 'transparent', // colors.background.secondary,
+          backgroundColor: 'transparent',
           justifyContent: 'center',
           alignItems: 'flex-start',
         }}>
@@ -365,7 +356,8 @@ const Member = () => {
             color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
-          Hasta:{'  '}
+          {t('header.title')}
+          {'  '}
           <Text
             style={{
               color: theme.colors.isLight ? colors.primary[200] : '#2F2F30',
@@ -377,18 +369,20 @@ const Member = () => {
 
       <ScrollView
         ref={scrollRef}
-        contentContainerClassName="pb-28"
+        contentContainerStyle={{
+          paddingBottom: 96 + tabBarHeight / 2,
+        }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
             progressBackgroundColor={colors.background.secondary}
-            colors={[colors.primary[300]]} // Android (array!)
+            colors={[colors.primary[300]]}
             tintColor={colors.primary[300]}
           />
         }>
         <View
-          className="flex flex-column justify-start pl-5 p-3 mb-3" // border
+          className="flex flex-column justify-start pl-5 p-3 mb-3"
           style={{
             borderRadius: 17,
             backgroundColor: colors.background.primary,
@@ -398,33 +392,19 @@ const Member = () => {
             <Text
               className="font-rubik-medium"
               style={{fontSize: 18, color: colors.text.primary}}>
-              Hasta Bilgileri
+              {t('sections.patientInfo')}
             </Text>
             <Image
               source={AVATARS[member?.avatar as AvatarKey]}
               className="mr-1 size-12"
             />
           </View>
-          {/* <View className="flex flex-row items-center mt-1 mb-1">
-            <Text
-              className="font-rubik-medium text-lg"
-              style={{color: colors.text.primary}}>
-              Avatar:{'  '}
-            </Text>
-            <Image
-              source={
-                member?.avatar
-                  ? AVATARS[member?.avatar as AvatarKey]
-                  : AVATARS.non
-              }
-              className="size-10 ml-1 mr-1"
-            />
-          </View> */}
           <View className="flex flex-row items-center mt-1 mb-1">
             <Text
               className="font-rubik-medium text-lg"
               style={{color: colors.text.primary}}>
-              Adı Soyadı:{'  '}
+              {t('fields.fullName')}
+              {'  '}
             </Text>
             <Text
               className="font-rubik text-lg"
@@ -436,7 +416,8 @@ const Member = () => {
             <Text
               className="font-rubik-medium text-lg"
               style={{color: colors.text.primary}}>
-              Kullanıcı Adı:{'  '}
+              {t('fields.username')}
+              {'  '}
             </Text>
             <Text
               className="font-rubik text-lg"
@@ -448,7 +429,8 @@ const Member = () => {
             <Text
               className="font-rubik-medium text-lg"
               style={{color: colors.text.primary}}>
-              Yaş:{'  '}
+              {t('fields.age')}
+              {'  '}
             </Text>
             <Text
               className="font-rubik text-lg"
@@ -460,12 +442,13 @@ const Member = () => {
             <Text
               className="font-rubik-medium text-lg"
               style={{color: colors.text.primary}}>
-              Doğum Tarihi:{'  '}
+              {t('fields.birthDate')}
+              {'  '}
             </Text>
             <Text
               className="font-rubik text-lg"
               style={{color: colors.text.primary}}>
-              {new Date(member?.birthDate!).toLocaleDateString('tr-TR', {
+              {new Date(member?.birthDate!).toLocaleDateString(c('locale'), {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric',
@@ -476,12 +459,15 @@ const Member = () => {
             <Text
               className="font-rubik-medium text-lg"
               style={{color: colors.text.primary}}>
-              Cinsiyet:{'  '}
+              {t('fields.gender')}
+              {'  '}
             </Text>
             <Text
               className="font-rubik text-lg"
               style={{color: colors.text.primary}}>
-              {member?.gender === 'male' ? 'Erkek' : 'Kadın'}
+              {member?.gender === 'male'
+                ? t('fields.genderOptions.male')
+                : t('fields.genderOptions.female')}
             </Text>
           </View>
           {getMembersTheme() && (
@@ -489,19 +475,20 @@ const Member = () => {
               <Text
                 className="font-rubik-medium text-lg"
                 style={{color: colors.text.primary}}>
-                Kullandığı Tema:{'  '}
+                {t('fields.themeUsed')}
+                {'  '}
               </Text>
               <Text
                 className="font-rubik text-lg"
                 style={{color: colors.text.primary}}>
                 {getMembersTheme()?.light.name.startsWith('blue')
-                  ? 'Mavi-Turkuaz '
+                  ? t('fields.themeMap.blue') + ' '
                   : getMembersTheme()?.light.name.startsWith('purple')
-                  ? 'Mor-Pembe '
+                  ? t('fields.themeMap.purple') + ' '
                   : getMembersTheme()?.light.name.startsWith('green')
-                  ? 'Yeşil-Sarı '
+                  ? t('fields.themeMap.green') + ' '
                   : getMembersTheme()?.light.name.startsWith('red')
-                  ? 'Kırmızı-Turuncu '
+                  ? t('fields.themeMap.red') + ' '
                   : ''}
               </Text>
               <ColorCircle
@@ -524,7 +511,7 @@ const Member = () => {
               <Text
                 className="font-rubik mt-1"
                 style={{fontSize: 18, color: colors.primary[200]}}>
-                En Son Mesaj
+                {t('sections.lastMessage')}
               </Text>
             )}
             <TouchableOpacity
@@ -533,33 +520,6 @@ const Member = () => {
               onPress={async () => {
                 if (!admin || !member) return;
 
-                // const response = await isRoomExistBySenderAndReceiver(
-                //   admin.username,
-                //   member.username,
-                // );
-                // if (response && response.status === 200) {
-                //   const roomId = response;
-                //   if (roomId !== 0) {
-                //     navigation.navigate('Chat', {
-                //       roomId: roomId,
-                //       sender: admin.username,
-                //       receiver: member,
-                //       fromNotification: false,
-                //     });
-                //   } else {
-                //     const nextRoomResponse = await getNextRoomId();
-                //     if (nextRoomResponse.status === 200) {
-                //       const nextRoomId = nextRoomResponse.data;
-                //       navigation.navigate('Chat', {
-                //         roomId: nextRoomId,
-                //         sender: admin.username,
-                //         receiver: member,
-                //         fromNotification: false,
-                //       });
-                //     }
-                //   }
-                // }
-                // 1) roomId'yi cache'den al; yoksa fetch et ve cache'e yaz
                 let roomId = await qc.ensureQueryData({
                   queryKey: MSG_KEYS.roomIdByUsers(
                     admin.username,
@@ -575,7 +535,6 @@ const Member = () => {
                   const {data: newId} = await getNextRoomId();
                   finalRoomId = newId;
 
-                  // ➤ Cache'i anında düzelt
                   qc.setQueryData(
                     MSG_KEYS.roomIdByUsers(admin.username, member.username),
                     newId,
@@ -592,7 +551,7 @@ const Member = () => {
               <Text
                 className="font-rubik text-md"
                 style={{color: colors.primary[200]}}>
-                Sohbet
+                {t('buttons.chat')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -607,15 +566,6 @@ const Member = () => {
           )}
         </View>
 
-        {/* {isProgressLoading || isSymptomsLoading ? (
-            <View className="flex flex-row items-center justify-center w-full">
-              <ActivityIndicator
-                className="mt-7 self-center"
-                size="large"
-                color={colors.text.secondary} // {colors.primary[300] ?? colors.primary}
-              />
-            </View>
-          ) :  */}
         {isAllInitialized ? (
           !accessAuthorized ? (
             <View
@@ -624,17 +574,13 @@ const Member = () => {
               <Text
                 className="ml-2 text-lg font-rubik"
                 style={{color: colors.text.primary}}>
-                Veriler görüntülenemiyor.
+                {t('access.blockedTitle')}
               </Text>
               <Text
                 className="ml-2 text-md font-rubik mt-1"
                 style={{color: colors.text.primary}}>
-                Kullanıcının verilerine erişebilmek için gerekli onaylar
-                bulunmamaktadır.
+                {t('access.blockedDetail')}
               </Text>
-              {/* <Text className="ml-2 text-md font-rubik mt-1">
-                Veri paylaşımı için gerekli onaylar verilmemiş.
-              </Text> */}
             </View>
           ) : (
             <>
@@ -651,7 +597,7 @@ const Member = () => {
                       <Text
                         className="font-rubik mb-2 ml-2"
                         style={{fontSize: 18, color: colors.text.primary}}>
-                        Egzersiz Takvimi
+                        {t('sections.calendar')}
                       </Text>
                       <Text
                         className="font-rubik mb-3 rounded-xl"
@@ -662,13 +608,61 @@ const Member = () => {
                           color: colors.text.primary,
                           backgroundColor: colors.background.secondary,
                         }}>
-                        {new Date().toLocaleDateString('tr-TR', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
+                        {t('calendar.dateLabel', {
+                          date: new Date().toLocaleDateString(c('locale'), {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          }),
                         })}
                       </Text>
                     </View>
+                    {/* <View className="flex flex-row items-center justify-between mb-1">
+                      <View className="flex-row items-center">
+                        <TouchableOpacity
+                          className="px-2 pt-2 pb-3 rounded-xl mr-2"
+                          style={{backgroundColor: colors.background.secondary}}
+                          onPress={() => {}}>
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              fontWeight: '700',
+                              color: colors.text.primary,
+                            }}>
+                            ‹
+                          </Text>
+                        </TouchableOpacity>
+
+                        <Pressable
+                          className="px-3 py-2 rounded-xl"
+                          style={{backgroundColor: colors.background.secondary}}
+                          onPress={() => {}}>
+                          <Text
+                            className="font-rubik"
+                            style={{color: colors.text.primary, fontSize: 14}}>
+                            {'zıbıttı çıktı'}
+                          </Text>
+                        </Pressable>
+
+                        <TouchableOpacity
+                          className="px-2 pt-2 pb-3 rounded-xl ml-2"
+                          style={{
+                            backgroundColor: colors.background.secondary,
+                            opacity: 0.5, // canGoNext ? 1 :
+                          }}
+                          disabled={false}
+                          onPress={() => {}}>
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              fontWeight: '700',
+                              color: colors.text.primary,
+                            }}>
+                            ›
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View> */}
                     <CustomWeeklyProgressCalendar
                       weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
                       activeDays={activeDays}
@@ -684,7 +678,7 @@ const Member = () => {
                             <Text
                               className="text-xs font-rubik ml-1"
                               style={{color: colors.text.primary}}>
-                              Tamamlandı
+                              {t('calendar.legend.done')}
                             </Text>
                           </View>
                           <View className="flex-row items-center space-x-2 mt-2">
@@ -695,7 +689,7 @@ const Member = () => {
                             <Text
                               className="text-xs font-rubik ml-1"
                               style={{color: colors.text.primary}}>
-                              Tamamlanmadı
+                              {t('calendar.legend.notDone')}
                             </Text>
                           </View>
                         </View>
@@ -704,13 +698,13 @@ const Member = () => {
                             <View
                               className="p-2 rounded-full"
                               style={{
-                                backgroundColor: '#4f9cff' /*'#4f9cff' */,
+                                backgroundColor: '#4f9cff',
                               }}
                             />
                             <Text
                               className="text-xs font-rubik ml-1"
                               style={{color: colors.text.primary}}>
-                              Yapılacak
+                              {t('calendar.legend.todo')}
                             </Text>
                           </View>
                           <View className="flex-row items-center space-x-2 mt-2">
@@ -721,7 +715,7 @@ const Member = () => {
                             <Text
                               className="text-xs font-rubik ml-1"
                               style={{color: colors.text.primary}}>
-                              Bugün
+                              {t('calendar.legend.today')}
                             </Text>
                           </View>
                         </View>
@@ -740,7 +734,7 @@ const Member = () => {
                             <Text
                               className="text-lg font-rubik"
                               style={{color: colors.primary[200]}}>
-                              Detaylar
+                              {t('buttons.details')}
                             </Text>
                           </TouchableOpacity>
                         )}
@@ -755,34 +749,16 @@ const Member = () => {
                   borderRadius: 17,
                   backgroundColor: colors.background.primary,
                 }}>
-                {/* <ProgressBar
-              value={93}
-              label="Genel sağlık"
-              iconSource={icons.better_health}
-              color="#41D16F"
-            /> */}
-                {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
-                {/* <ProgressBar
-              value={96}
-              label="O2 Seviyesi"
-              iconSource={icons.o2sat}
-              color="#2CA4FF"
-            /> */}
-                {/* <ProgressBar
-              value={83}
-              label="Tansiyon"
-              iconSource={icons.blood_pressure}
-              color="#FF9900"/> FDEF22*/}
                 {symptoms ? (
                   <>
                     <Text
                       className="font-rubik pt-2"
                       style={{fontSize: 18, color: colors.text.primary}}>
-                      Bulgular
+                      {t('sections.symptoms')}
                     </Text>
                     <ProgressBar
                       value={symptoms?.pulse}
-                      label="Nabız"
+                      label={t('symptoms.pulse')}
                       iconSource={icons.pulse}
                       color="#FF3F3F"
                     />
@@ -790,7 +766,7 @@ const Member = () => {
                     symptoms?.totalCaloriesBurned > 0 ? (
                       <ProgressBar
                         value={symptoms?.totalCaloriesBurned}
-                        label="Yakılan Kalori"
+                        label={t('symptoms.calories')}
                         iconSource={icons.kcal}
                         color="#FF9900"
                       />
@@ -799,7 +775,7 @@ const Member = () => {
                       symptoms?.activeCaloriesBurned > 0 && (
                         <ProgressBar
                           value={symptoms?.activeCaloriesBurned}
-                          label="Yakılan Kalori"
+                          label={t('symptoms.calories')}
                           iconSource={icons.kcal}
                           color="#FF9900"
                         />
@@ -807,9 +783,9 @@ const Member = () => {
                     )}
                     <ProgressBar
                       value={symptoms?.steps}
-                      label="Adım"
+                      label={t('symptoms.steps')}
                       iconSource={icons.man_walking}
-                      color="#2CA4FF" //FDEF22
+                      color="#2CA4FF"
                     />
                     <ProgressBar
                       value={
@@ -817,7 +793,7 @@ const Member = () => {
                           ? symptoms?.sleepMinutes
                           : undefined
                       }
-                      label="Uyku"
+                      label={t('symptoms.sleep')}
                       iconSource={icons.sleep}
                       color="#FDEF22"
                     />
@@ -827,14 +803,14 @@ const Member = () => {
                     <ActivityIndicator
                       className="mt-2 self-center"
                       size="large"
-                      color={colors.primary[200]} // {colors.primary[300] ?? colors.primary}
+                      color={colors.primary[200]}
                     />
                   </View>
                 ) : (
                   <Text
                     className="font-rubik py-2"
                     style={{fontSize: 18, color: colors.text.primary}}>
-                    Bulgu Kaydı Bulunamadı
+                    {t('symptoms.empty')}
                   </Text>
                 )}
 
@@ -851,43 +827,6 @@ const Member = () => {
                     colors={colors}
                   />
                 </View>
-                {/* <TouchableOpacity
-                    onPress={async () => {
-                      const net = await NetInfo.fetch();
-                      const isOnline = !!net.isConnected;
-                      if (isOnline) setShowDatePicker(true);
-                      else
-                        ToastAndroid.show(
-                          'Bağlantı yok. İşlem gerçekleştirilemiyor.',
-                          ToastAndroid.SHORT,
-                        );
-                    }}
-                    className="px-3 py-2 rounded-xl self-end mt-1 mb-2"
-                    style={{backgroundColor: colors.primary[200]}}>
-                    <Text className="text-white font-rubik text-sm">
-                      {symptomsDate.toLocaleDateString('tr-TR')}{' '}
-                    </Text>
-                  </TouchableOpacity>
-
-                  {showDatePicker && (
-                    <DatePicker
-                      modal
-                      locale="tr"
-                      mode="date"
-                      title="Tarih Seçin"
-                      confirmText="Tamam"
-                      cancelText="İptal"
-                      open={showDatePicker}
-                      date={symptomsDate}
-                      minimumDate={monthAgo}
-                      maximumDate={new Date()}
-                      onConfirm={d => {
-                        setSymptomsDate(d);
-                        setShowDatePicker(false);
-                      }}
-                      onCancel={() => setShowDatePicker(false)}
-                    />
-                  )} */}
               </View>
 
               <View
@@ -896,7 +835,7 @@ const Member = () => {
                 <Text
                   className="font-rubik text-xl ml-1 mb-3"
                   style={{color: colors.text.primary}}>
-                  Haftalık Adım Hedefi
+                  {t('sections.weeklyStepGoal')}
                 </Text>
                 {weeklyGoal ? (
                   <View
@@ -907,7 +846,7 @@ const Member = () => {
                         <Text
                           className="font-rubik text-lg ml-2"
                           style={{color: '#16d750'}}>
-                          Tamamlandı
+                          {t('steps.completed')}
                         </Text>
                         <Image
                           source={icons.check}
@@ -919,12 +858,12 @@ const Member = () => {
                     <Text
                       className="font-rubik text-lg ml-2 mb-2"
                       style={{color: colors.text.primary}}>
-                      Hedef: {' ' + weeklyGoal.goal} adım
+                      {t('steps.goal', {goal: weeklyGoal.goal})}
                     </Text>
                     <Text
                       className="font-rubik text-lg ml-2"
                       style={{color: colors.text.primary}}>
-                      İlerleme: {' ' + weeklySteps} adım
+                      {t('steps.progress', {steps: weeklySteps || 0})}
                     </Text>
                   </View>
                 ) : (
@@ -934,7 +873,7 @@ const Member = () => {
                     <Text
                       className="font-rubik text-lg ml-3 mr-3"
                       style={{color: colors.text.primary}}>
-                      Hedef mevcut değil
+                      {t('steps.noGoal')}
                     </Text>
                   </View>
                 )}
@@ -943,7 +882,7 @@ const Member = () => {
                   <Text
                     className="font-rubik text-lg ml-3 mr-1"
                     style={{color: colors.text.primary}}>
-                    Hedef Başarım Rozetleri:{' '}
+                    {t('steps.badges')}{' '}
                   </Text>
                   <Image source={icons.badge1_colorful} className="size-7" />
                   <Text
@@ -973,27 +912,30 @@ const Member = () => {
                       <Text
                         className="font-rubik pt-2"
                         style={{fontSize: 18, color: colors.text.primary}}>
-                        Haftalık Oturum Bilgileri
+                        {t('sections.weeklySessions')}
                       </Text>
                       <Text
                         className="font-rubik pt-2"
                         style={{fontSize: 15, color: colors.text.primary}}>
-                        Uygulamaya giriş sayısı:{' '}
-                        {getWeeklyStats(sessions).sessionCount}
+                        {t('sessions.count', {
+                          count: getWeeklyStats(sessions).sessionCount,
+                        })}
                       </Text>
                       <Text
                         className="font-rubik pt-2"
                         style={{fontSize: 15, color: colors.text.primary}}>
-                        {'Toplam kullanım süresi'}:{' '}
-                        {formatMinutes(getWeeklyStats(sessions).totalMinutes)}
+                        {t('sessions.total', {
+                          duration: formatMinutes(
+                            getWeeklyStats(sessions).totalMinutes,
+                          ),
+                        })}
                       </Text>
-                      {/* <SessionList sessions={sessions} /> */}
                     </View>
                   ) : (
                     <Text
                       className="font-rubik pt-2"
                       style={{fontSize: 18, color: colors.text.primary}}>
-                      Oturum Kaydı Bulunamadı
+                      {t('sessions.empty')}
                     </Text>
                   )}
                 </View>

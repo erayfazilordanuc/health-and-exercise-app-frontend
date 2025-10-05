@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import {View, Text, TouchableOpacity} from 'react-native';
 
 export type WeeklyStripColors = {
@@ -43,9 +44,27 @@ const isAfterDay = (a: Date, b: Date) =>
 const isBeforeDay = (a: Date, b: Date) =>
   atMidnight(a).getTime() < atMidnight(b).getTime();
 /** ------------------------------------------------------ **/
+const {t} = useTranslation('profile');
+const {t: c} = useTranslation('common');
 
-const trShortDays = ['Pzt', 'Sal', 'Çrş', 'Per', 'Cum', 'Cmt', 'Paz'];
-const sunStartShortDays = ['Paz', 'Pzt', 'Sal', 'Çrş', 'Per', 'Cum', 'Cmt'];
+const trShortDays = [
+  t('weeklyStrip.weekShort.mon'), // Pazartesi
+  t('weeklyStrip.weekShort.tue'), // Salı
+  t('weeklyStrip.weekShort.wed'), // Çarşamba
+  t('weeklyStrip.weekShort.thu'), // Perşembe
+  t('weeklyStrip.weekShort.fri'), // Cuma
+  t('weeklyStrip.weekShort.sat'), // Cumartesi
+  t('weeklyStrip.weekShort.sun'), // Pazar
+];
+const sunStartShortDays = [
+  t('weeklyStrip.weekShort.sun'), // Pazar
+  t('weeklyStrip.weekShort.mon'), // Pazartesi
+  t('weeklyStrip.weekShort.tue'), // Salı
+  t('weeklyStrip.weekShort.wed'), // Çarşamba
+  t('weeklyStrip.weekShort.thu'), // Perşembe
+  t('weeklyStrip.weekShort.fri'), // Cuma
+  t('weeklyStrip.weekShort.sat'), // Cumartesi
+];
 
 const WeeklyStrip: React.FC<WeeklyStripProps> = ({
   selectedDate,
@@ -53,7 +72,7 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
   minDate,
   maxDate,
   startOnMonday = true,
-  locale = 'tr-TR',
+  locale = c('locale'),
   hasData,
   colors,
 }) => {
@@ -122,7 +141,7 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
       {/* Üst başlık */}
       <View className="flex flex-row items-center justify-between mb-3 mt-2">
         <TouchableOpacity
-          accessibilityHint="Önceki hafta"
+          accessibilityHint={t('weeklyStrip.prevWeek')}
           onPress={goPrev}
           disabled={!canGoPrevWeek}
           className="px-3 pt-1 pb-2 rounded-xl"
@@ -140,7 +159,7 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
         </Text>
 
         <TouchableOpacity
-          accessibilityHint="Sonraki hafta"
+          accessibilityHint={t('weeklyStrip.nextWeek')}
           onPress={goNext}
           disabled={!canGoNextWeek}
           className="px-3 pt-1 pb-2 rounded-xl"

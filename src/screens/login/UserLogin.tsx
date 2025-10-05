@@ -286,7 +286,7 @@ function UserLogin() {
             ? ConsentStatus['ACKNOWLEDGED']
             : ConsentStatus['REJECTED'],
           policyId: kvkkPolicy?.id!,
-          locale: 'tr-TR',
+          locale: t('common:locale'),
           source: 'MOBILE',
         };
         const kvkkResponse = await giveConsent(kvkkConsent);
@@ -297,7 +297,7 @@ function UserLogin() {
             ? ConsentStatus['ACCEPTED']
             : ConsentStatus['REJECTED'],
           policyId: healthPolicy?.id!,
-          locale: 'tr-TR',
+          locale: t('common:locale'),
           source: 'MOBILE',
         };
         const healthDataResponse = await giveConsent(healthDataConsent);
@@ -308,7 +308,7 @@ function UserLogin() {
             ? ConsentStatus['ACCEPTED']
             : ConsentStatus['REJECTED'],
           policyId: exercisePolicy?.id!,
-          locale: 'tr-TR',
+          locale: t('common:locale'),
           source: 'MOBILE',
         };
         const exerciseDataResponse = await giveConsent(exerciseDataConsent);
@@ -319,7 +319,7 @@ function UserLogin() {
             ? ConsentStatus['ACCEPTED']
             : ConsentStatus['REJECTED'],
           policyId: studyPolicy?.id!,
-          locale: 'tr-TR',
+          locale: t('common:locale'),
           source: 'MOBILE',
         };
         const studyResponse = await giveConsent(studyConsent);
@@ -496,11 +496,14 @@ function UserLogin() {
                   className="text-lg font-rubik ml-6 py-3 flex-1"
                   style={{color: birthDate ? colors.text.primary : 'gray'}}>
                   {birthDate
-                    ? new Date(birthDate).toLocaleDateString('tr-TR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })
+                    ? new Date(birthDate).toLocaleDateString(
+                        t('common:locale'),
+                        {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        },
+                      )
                     : t('login:form.birthDate')}
                 </Text>
                 <TouchableOpacity
@@ -756,14 +759,14 @@ function UserLogin() {
           setExerciseDataApproved(true);
           setConsentModalVisible(false);
         }}
-        onReject={() => {
+        onDecline={() => {
           setKvkkAcknowledged(false);
           setHealthDataApproved(false);
           setExerciseDataApproved(false);
           setConsentModalVisible(false);
         }}
         onApproveText={t('login:consents.approve')}
-        onRejectText={t('login:consents.reject')}
+        onDeclineText={t('login:consents.reject')}
         body={
           <>
             <Text
@@ -788,12 +791,12 @@ function UserLogin() {
           setStudyApproved(true);
           setStudyModalVisible(false);
         }}
-        onReject={() => {
+        onDecline={() => {
           setStudyApproved(false);
           setStudyModalVisible(false);
         }}
         onApproveText={t('login:consents.approve')}
-        onRejectText={t('login:consents.reject')}
+        onDeclineText={t('login:consents.reject')}
         body={
           <Text
             className="font-rubik text-md"

@@ -528,7 +528,9 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
                 }}>
                 <Text
                   style={{color: 'white', fontSize: 17, textAlign: 'center'}}>
-                  {isLast ? 'Bitir  ' : 'Sonraki videoya geç  '}
+                  {isLast
+                    ? t('exercise:videoPlayer.buttons.finish')
+                    : t('exercise:videoPlayer.buttons.next')}
                 </Text>
                 <Image
                   source={isLast ? icons.check_1 : icons.next}

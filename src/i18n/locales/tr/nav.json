@@ -15,6 +15,7 @@
     "settings": {
       "root": "Ayarlar",
       "preferences": "Tercihler",
+      "appearance": "Görünüm",
       "notifications": "Bildirimler",
       "permissions": {
         "user": "İzinler ve Onaylar",

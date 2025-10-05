@@ -1,0 +1,68 @@
+{
+  "header": {
+    "title": "Hasta:"
+  },
+  "sections": {
+    "patientInfo": "Hasta Bilgileri",
+    "lastMessage": "En Son Mesaj",
+    "calendar": "Egzersiz Takvimi",
+    "symptoms": "Bulgular",
+    "weeklyStepGoal": "Haftalık Adım Hedefi",
+    "weeklySessions": "Haftalık Oturum Bilgileri"
+  },
+  "fields": {
+    "fullName": "Adı Soyadı:",
+    "username": "Kullanıcı Adı:",
+    "age": "Yaş:",
+    "birthDate": "Doğum Tarihi:",
+    "gender": "Cinsiyet:",
+    "genderOptions": {
+      "male": "Erkek",
+      "female": "Kadın"
+    },
+    "themeUsed": "Kullandığı Tema:",
+    "themeMap": {
+      "blue": "Mavi-Turkuaz",
+      "purple": "Mor-Pembe",
+      "green": "Yeşil-Sarı",
+      "red": "Kırmızı-Turuncu"
+    }
+  },
+  "buttons": {
+    "chat": "Sohbet",
+    "details": "Detaylar"
+  },
+  "access": {
+    "blockedTitle": "Veriler görüntülenemiyor.",
+    "blockedDetail": "Kullanıcının verilerine erişebilmek için gerekli onaylar bulunmamaktadır."
+  },
+  "calendar": {
+    "legend": {
+      "done": "Tamamlandı",
+      "notDone": "Tamamlanmadı",
+      "todo": "Yapılacak",
+      "today": "Bugün"
+    },
+    "dateLabel": "{{date}}"
+  },
+  "symptoms": {
+    "pulse": "Nabız",
+    "calories": "Yakılan Kalori",
+    "steps": "Adım",
+    "sleep": "Uyku",
+    "empty": "Bulgu kaydı bulunamadı."
+  },
+  "steps": {
+    "completed": "Tamamlandı",
+    "noGoal": "Hedef mevcut değil.",
+    "goal": "Hedef: {{goal}} adım",
+    "progress": "İlerleme: {{steps}} adım",
+    "badges": "Hedef Başarım Rozetleri:"
+  },
+  "sessions": {
+    "count": "Uygulamaya giriş sayısı: {{count}}",
+    "total": "Toplam kullanım süresi: {{duration}}",
+    "empty": "Oturum kaydı bulunamadı."
+  },
+  "dailyStatusText": "{{date}}\nBugün ruh halimi {{score}}/9 olarak değerlendiriyorum."
+}

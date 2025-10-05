@@ -10,13 +10,14 @@ import {
   Dimensions,
 } from 'react-native';
 import {useTheme} from '../themes/ThemeProvider';
+import {useTranslation} from 'react-i18next';
 
 type ConsentModalProps = {
   visible: boolean;
   onApprove: () => void;
-  onReject: () => void;
+  onDecline: () => void;
   onApproveText?: string;
-  onRejectText?: string;
+  onDeclineText?: string;
   body: React.ReactNode | string;
   /** En alta kaydırmadan onay butonu aktif olmasın */
   requireScrollToEnd?: boolean;
@@ -29,14 +30,15 @@ type ConsentModalProps = {
 export const ConsentModal: React.FC<ConsentModalProps> = ({
   visible,
   onApprove,
-  onReject,
+  onDecline,
   onApproveText,
-  onRejectText,
+  onDeclineText,
   body,
   requireScrollToEnd = false,
   approveDisabled = false,
-  approveHint = 'Lütfen metni sonuna kadar kaydırın.',
 }) => {
+  const {t} = useTranslation('login');
+  const {t: c} = useTranslation('common');
   const {colors} = useTheme();
   const {height} = Dimensions.get('screen');
 
@@ -108,7 +110,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
       animationType="none"
       statusBarTranslucent={Platform.OS === 'android'}
       hardwareAccelerated
-      onRequestClose={onReject}>
+      onRequestClose={onDecline}>
       <Animated.View
         style={{
           flex: 1,
@@ -164,7 +166,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
                 textAlign: 'center',
                 color: colors.text.third ?? 'gray',
               }}>
-              {approveHint}
+              {t('consents.approveHint')}
             </Text>
           )}
 
@@ -175,7 +177,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
               marginTop: 10,
             }}>
             <TouchableOpacity
-              onPress={onReject}
+              onPress={onDecline}
               style={{
                 paddingHorizontal: 20,
                 paddingVertical: 12,
@@ -183,7 +185,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
                 backgroundColor: colors.background.secondary,
               }}>
               <Text style={{fontSize: 16, color: colors.text.primary}}>
-                {onRejectText ?? 'Onaylamıyorum'}
+                {onDeclineText ?? c('alerts.decline')}
               </Text>
             </TouchableOpacity>
 
@@ -204,7 +206,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
                   color: '#fff',
                   opacity: approveIsDisabled ? 0.8 : 1,
                 }}>
-                {onApproveText ?? 'Onaylıyorum'}
+                {onApproveText ?? c('alerts.approve')}
               </Text>
             </TouchableOpacity>
           </View>

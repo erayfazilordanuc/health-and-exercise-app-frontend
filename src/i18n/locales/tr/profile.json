@@ -1,0 +1,111 @@
+{
+  "title": "Profil",
+  "header": {
+    "screenTitle": "Profil",
+    "roleSuffixNurse": " (Hemşire)"
+  },
+  "labels": {
+    "username": "Kullanıcı Adı",
+    "email": "E-posta",
+    "age": "Yaş",
+    "birthDate": "Doğum Tarihi",
+    "gender": "Cinsiyet",
+    "male": "Erkek",
+    "female": "Kadın",
+    "steps": "Adım",
+    "caloriesBurned": "Yakılan Kalori",
+    "sleep": "Uyku",
+    "heartRate": "Nabız",
+    "stepUnit": "adım",
+    "stepCount": "Adım Sayısı",
+    "sleepUnits": "saat",
+    "synchronized": "Senkronize",
+    "sync": "Senkronize et",
+    "syncDataPermissionInfo": "Verilerinizi senkronize edebilmek için Health Connect uygulamasına gerekli izinleri vermeniz gerekiyor."
+  },
+  "weeklyGoal": {
+    "title": "Haftalık Adım Hedefi",
+    "completed": "Başarıyla tamamlandı!",
+    "goal": "Hedef: {{value}} adım",
+    "progress": "İlerleme: {{value}} adım",
+    "badgesTitle": "Hedef Başarım Rozetleri:",
+    "addGoalCta": "Bu Hafta İçin Hedef Ekle",
+    "inputPlaceholder": "Örn: 15000 adım",
+    "save": "Kaydet",
+    "cancel": "İptal"
+  },
+  "findings": {
+    "title": "Bulgular",
+    "syncCta": "Senkronize et",
+    "synced": "Senkronize"
+  },
+  "avatarModal": {
+    "title": "Avatar Seçimi",
+    "selected": "Seçili Avatar",
+    "cancel": "İptal",
+    "save": "Kaydet"
+  },
+  "hcAlert": {
+    "message": "Sağlık verilerinizi HopeMove uygulamasından takip etmek için **Health Connect** ve **Samsung Health** uygulamalarını indirmeniz gerekiyor. Şimdi Play Store’a gitmek istiyor musunuz?",
+    "downloadHC": "Health Connect'i indir",
+    "downloadedHC": "Health Connect indirildi",
+    "downloadSH": "Samsung Health'i indir",
+    "downloadedSH": "Samsung Health indirildi",
+    "yes": "İzinlere Git",
+    "cancel": "Vazgeç"
+  },
+  "addValueModal": {
+    "titleFallback": "Bulgu",
+    "valuePlaceholder": "Bulgu değeri",
+    "update": "Güncelle",
+    "cancel": "İptal"
+  },
+  "datePicker": {
+    "title": "Uyku sürenizi seçiniz",
+    "confirm": "Onayla",
+    "cancel": "İptal"
+  },
+  "toasts": {
+    "noInternet": "İnternet bağlantısı yok",
+    "noInternetRefresh": "İnternet bağlantısı yok, sayfa yenilenemedi",
+    "dataLoadError": "Veriler yüklenemedi, internet bağlantınızı kontrol edin",
+    "enterAValue": "Lütfen bir değer giriniz.",
+    "invalidValue": "Lütfen geçerli bir değer giriniz.",
+    "valueRange": "Değer {{min}} ile {{max}} arasında olmalıdır.",
+    "networkError": "Lütfen internet bağlantınızı kontrol edin",
+    "genericError": "Bir hata oluştu",
+    "sleepOutOfRange": "Uyku süresi 0–16 saat arasında olmalıdır.",
+    "tooLowForHistory": "Girdiğiniz değer önceki ilerlemenize göre çok düşük"
+  },
+  "weeklyStrip": {
+    "prevWeek": "Önceki hafta",
+    "nextWeek": "Sonraki hafta",
+    "accessibility": {
+      "prevHint": "Önceki haftaya git",
+      "nextHint": "Sonraki haftaya git"
+    },
+    "weekShort": {
+      "mon": "Pzt",
+      "tue": "Sal",
+      "wed": "Çar",
+      "thu": "Per",
+      "fri": "Cum",
+      "sat": "Cmt",
+      "sun": "Paz"
+    },
+    "monthLabel": {
+      "january": "Ocak",
+      "february": "Şubat",
+      "march": "Mart",
+      "april": "Nisan",
+      "may": "Mayıs",
+      "june": "Haziran",
+      "july": "Temmuz",
+      "august": "Ağustos",
+      "september": "Eylül",
+      "october": "Ekim",
+      "november": "Kasım",
+      "december": "Aralık"
+    }
+  }
+}

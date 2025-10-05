@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 import NetInfo from '@react-native-community/netinfo';
+import dayjs from 'dayjs';
 
 export const progressExerciseVideo = async (
   exerciseId: number,
@@ -56,10 +57,18 @@ export const getWeeklyActiveDaysProgress = async () => {
   }
 };
 
-export const getWeeklyActiveDaysProgressByUserId = async (userId: number) => {
+export const getWeeklyActiveDaysProgressByUserId = async (
+  userId: number,
+  date?: Date,
+) => {
   try {
+    const params = date
+      ? {date: dayjs(date).format('YYYY-MM-DD')} // 2025-10-05 gibi
+      : undefined;
+
     const response = await apiClient.get(
       `/exercises/weekly-active-days/progress/${userId}`,
+      {params},
     );
     console.log('weekly active days exercise progress by user id', response);
 

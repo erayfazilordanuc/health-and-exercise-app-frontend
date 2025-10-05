@@ -13,6 +13,7 @@ import {
   NativeModules,
   Platform,
   ImageBackground,
+  Touchable,
 } from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -80,6 +81,7 @@ import {
 import {calcPercent} from '../../api/exercise/exerciseService';
 import {AVATARS, type AvatarKey} from '../../constants/avatars';
 import {color} from 'react-native-elements/dist/helpers';
+import {useTranslation} from 'react-i18next';
 // import {
 //   isExerciseReminderScheduled,
 //   registerExerciseReminder,
@@ -90,6 +92,7 @@ const {height: SCREEN_HEIGHT, width: SCREEN_WIDTH} = Dimensions.get('window');
 const Home = () => {
   const navigation = useNavigation<RootScreenNavigationProp>();
   const exercisesNavigation = useNavigation<ExercisesScreenNavigationProp>();
+  const {t} = useTranslation(['home', 'chat', 'common']);
   let exitCount = 0; // TO DO sayaç lazım
   const {theme, colors} = useTheme();
   const insets = useSafeAreaInsets();
@@ -202,7 +205,6 @@ const Home = () => {
   );
 
   const fetchLastMessage = async () => {
-    console.log('işte');
     if (!user || !admin) return;
     const lastMessageResponse = await getLastMessageBySenderAndReceiver(
       admin.username,
@@ -224,14 +226,14 @@ const Home = () => {
     const notificationPermissionsGranted = await requestPermission();
     if (!notificationPermissionsGranted) {
       alertRef.current?.show({
-        message: 'Bildirimlere izin vermediniz.',
+        message: t('home:notifications.permissionDeniedTitle'),
         secondMessage:
           user.role === 'ROLE_USER'
-            ? 'Egzersiz hatırlatmaları ve mesaj bildirimleri almak için bildirim izinlerini etkinleştirmeniz gerekmektedir.'
-            : 'Mesaj bildirimleri almak için bildirim izinlerini etkinleştirmeniz gerekmektedir.',
+            ? t('home:notifications.permissionDeniedUser')
+            : t('home:notifications.permissionDeniedNurse'),
         isPositive: true,
-        onYesText: 'İzin ver',
-        onCancelText: 'Kapat',
+        onYesText: t('home:notifications.allow'),
+        onCancelText: t('home:notifications.close'),
         onYes: async () => {
           NotificationSetting.open();
         },
@@ -461,7 +463,10 @@ const Home = () => {
           exitCount = 0;
           BackHandler.exitApp();
         } else {
-          ToastAndroid.show('Çıkmak için tekrar ediniz', ToastAndroid.SHORT);
+          ToastAndroid.show(
+            t('home:backHandler.pressAgainToExit'),
+            ToastAndroid.SHORT,
+          );
           exitCount++;
         }
         return true;
@@ -501,7 +506,6 @@ const Home = () => {
 
             if (typeof id !== 'number') {
               throw new Error('Geçersiz roomId cevabı');
-              return 0;
             }
             return id;
           },
@@ -533,8 +537,13 @@ const Home = () => {
         const score = parseInt(match![1], 10);
 
         newMessage.message = `${
-          message ? new Date().toLocaleDateString() + '\n' : ''
-        }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`;
+          message
+            ? t('chat:dailyStatusText', {
+                date: new Date().toLocaleDateString(),
+                score,
+              })
+            : ''
+        }`;
         const newLastMessage: LocalMessage = {
           message: newMessage as Message,
           savedAt: new Date(),
@@ -543,8 +552,13 @@ const Home = () => {
         const notiResponse = await sendNotification(
           admin.username,
           `${
-            message ? new Date().toLocaleDateString() + '\n' : ''
-          }Bugün ruh halimi ${score}/9 olarak değerlendiriyorum.`,
+            message
+              ? t('chat:dailyStatusText', {
+                  date: new Date().toLocaleDateString(),
+                  score,
+                })
+              : ''
+          }`,
         );
 
         if (saveResponse.status === 200) {
@@ -553,7 +567,7 @@ const Home = () => {
         }
       }
     } catch (error) {
-      ToastAndroid.show('Bir hata oluştu', ToastAndroid.SHORT);
+      ToastAndroid.show(t('home:toasts.genericError'), ToastAndroid.SHORT);
       console.log(error);
     } finally {
       setLoading(false);
@@ -617,7 +631,7 @@ const Home = () => {
             color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
-          Ana Ekran
+          {t('home:title')}
         </Text>
       </View>
       <View
@@ -692,27 +706,128 @@ const Home = () => {
             onRequestClose={() => {}}>
             <View className="flex-1 justify-center items-center bg-black/50">
               <View
-                className="w-4/5 py-5 rounded-xl items-center"
+                className="w-9/10 py-5 rounded-xl items-center px-4"
                 style={{backgroundColor: colors.background.primary}}>
                 <Text
                   className="font-rubik-semibold text-2xl text-center"
-                  style={{color: colors.text.secondary}}>
-                  Bugün kendinizi nasıl hissediyorsunuz?
+                  style={{color: colors.text.primary}}>
+                  {t('home:dailyStatusModal.title')}
                 </Text>
-                <Image
-                  source={
-                    theme.colors.isLight
-                      ? images.dailyStatus
-                      : images.dailyStatusDark
-                  }
-                  style={{
-                    width: '90%', // ekranın %90'ı
-                    height: 125,
-                    aspectRatio: 2.2, // oran koruma (örnek)
-                  }}
-                  resizeMode="contain"
-                />
-                <Slider
+                <Text
+                  className="font-rubik-semibold text-md text-center my-1"
+                  style={{color: colors.text.secondary}}>
+                  {t('home:dailyStatusModal.subtitle')}
+                </Text>
+                <View className="flex-row mt-1">
+                  <View
+                    className={`flex-col items-center ${
+                      sliderValue === 1
+                        ? 'border border-black/20 rounded-xl p-1 mx-0.5'
+                        : ''
+                    }`}>
+                    <TouchableOpacity onPress={() => setSliderValue(1)}>
+                      <Image
+                        source={images.status1}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          aspectRatio: 1,
+                        }}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+                    <Text
+                      className="text-center text-lg font-rubik-semibold"
+                      style={{color: colors.text.primary}}>
+                      1
+                    </Text>
+                  </View>
+                  <View
+                    className={`flex-col items-center ${
+                      sliderValue === 3
+                        ? 'border border-black/20 rounded-xl p-1 mx-0.5'
+                        : ''
+                    }`}>
+                    <TouchableOpacity onPress={() => setSliderValue(3)}>
+                      <Image
+                        source={images.status3}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          aspectRatio: 1,
+                        }}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+                    <Text className="text-center text-lg font-rubik-semibold">
+                      3
+                    </Text>
+                  </View>
+                  <View
+                    className={`flex-col items-center ${
+                      sliderValue === 5
+                        ? 'border border-black/20 rounded-xl p-1 mx-0.5'
+                        : ''
+                    }`}>
+                    <TouchableOpacity onPress={() => setSliderValue(5)}>
+                      <Image
+                        source={images.status5}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          aspectRatio: 1,
+                        }}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+                    <Text className="text-center text-lg font-rubik-semibold">
+                      5
+                    </Text>
+                  </View>
+                  <View
+                    className={`flex-col items-center ${
+                      sliderValue === 7
+                        ? 'border border-black/20 rounded-xl p-1 mx-0.5'
+                        : ''
+                    }`}>
+                    <TouchableOpacity onPress={() => setSliderValue(7)}>
+                      <Image
+                        source={images.status7}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          aspectRatio: 1,
+                        }}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+                    <Text className="text-center text-lg font-rubik-semibold">
+                      7
+                    </Text>
+                  </View>
+                  <View
+                    className={`flex-col items-center ${
+                      sliderValue === 9
+                        ? 'border border-black/20 rounded-xl p-1 mx-0.5'
+                        : ''
+                    }`}>
+                    <TouchableOpacity onPress={() => setSliderValue(9)}>
+                      <Image
+                        source={images.status9}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          aspectRatio: 1,
+                        }}
+                        resizeMode="contain"
+                      />
+                      <Text className="text-center text-lg font-rubik-semibold">
+                        9
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {/* <Slider
                   style={{width: '75%', height: 20}}
                   minimumValue={1}
                   maximumValue={9}
@@ -722,7 +837,7 @@ const Home = () => {
                   minimumTrackTintColor="#0EC946"
                   maximumTrackTintColor="#0EC946"
                   thumbTintColor="#0EC946"
-                />
+                /> */}
                 {!loading ? (
                   <TouchableOpacity
                     className="py-2 px-3 rounded-2xl mt-5"
@@ -731,7 +846,7 @@ const Home = () => {
                     <Text
                       className="text-lg font-rubik"
                       style={{color: colors.background.secondary}}>
-                      Kaydet
+                      {t('home:dailyStatusModal.save')}
                     </Text>
                   </TouchableOpacity>
                 ) : (
@@ -770,7 +885,7 @@ const Home = () => {
                           <Text
                             className="text-center font-rubik text-xl"
                             style={{color: colors.text.primary}}>
-                            Bugünün Egzersizi
+                            {t('cards.exercise.todayTitle')}
                           </Text>
 
                           {initialized ? (
@@ -814,12 +929,12 @@ const Home = () => {
                                   {/* colors.primary[200] */}
                                   {todayExerciseProgress?.totalProgressDuration &&
                                   calcPercent(todayExerciseProgress) === 100
-                                    ? 'Tamamlandı'
+                                    ? t('cards.exercise.completed')
                                     : todayExerciseProgress?.totalProgressDuration &&
                                       todayExerciseProgress.totalProgressDuration >
                                         0
-                                    ? 'Egzersize git'
-                                    : 'Egzersize git'}
+                                    ? t('cards.exercise.goToExercise')
+                                    : t('cards.exercise.goToExercise')}
                                 </Text>
                                 <Image
                                   source={icons.gymnastic_1}
@@ -863,9 +978,14 @@ const Home = () => {
                                           style={{
                                             color: colors.text.primary,
                                           }}>
-                                          %
+                                          {t('common:locale') === 'tr-TR'
+                                            ? '%'
+                                            : ''}
                                           {calcPercent(todayExerciseProgress) ??
                                             0}
+                                          {t('common:locale') === 'tr-TR'
+                                            ? ''
+                                            : '%'}
                                         </Text>
                                       )}
                                     </AnimatedCircularProgress>
@@ -886,12 +1006,12 @@ const Home = () => {
                         <Text
                           className="font-rubik text-center"
                           style={{fontSize: 15, color: colors.text.primary}}>
-                          Bugün için planlanan egzersiziniz yok.
+                          {t('cards.exercise.noExerciseTodayTitle')}
                         </Text>
                         <Text
                           className="font-rubik mt-1 text-center"
                           style={{fontSize: 17, color: colors.text.primary}}>
-                          İyi dinlenmeler!
+                          {t('cards.exercise.noExerciseTodaySubtitle')}
                         </Text>
                       </>
                     ) : (
@@ -899,13 +1019,12 @@ const Home = () => {
                         <Text
                           className="font-rubik text-center"
                           style={{fontSize: 15, color: colors.text.primary}}>
-                          Egzersiz Günleri Seçilmedi
+                          {t('cards.exercise.noScheduleTitle')}
                         </Text>
                         <Text
                           className="font-rubik mt-1 text-center"
                           style={{fontSize: 17, color: colors.text.primary}}>
-                          Egzersizlerinize başlamak için lütfen egzersiz
-                          günlerinizi seçiniz
+                          {t('cards.exercise.noScheduleSubtitle')}
                         </Text>
                         <TouchableOpacity
                           className="mt-2 mb-1 self-center flex flex-row justify-center items-center rounded-2xl py-2 px-4"
@@ -920,7 +1039,7 @@ const Home = () => {
                           <Text
                             className="text-xl font-rubik"
                             style={{color: colors.primary[200]}}>
-                            Egzersiz Günleri Seç
+                            {t('cards.exercise.selectDays')}
                           </Text>
                         </TouchableOpacity>
                       </>
@@ -939,7 +1058,7 @@ const Home = () => {
                         <Text
                           className="font-rubik mt-1"
                           style={{fontSize: 18, color: colors.primary[200]}}>
-                          En Son Mesaj
+                          {t('cards.chat.lastMessage')}
                         </Text>
                       )}
                       <TouchableOpacity
@@ -1026,7 +1145,7 @@ const Home = () => {
                             color: colors.primary[200],
                             marginTop: 1,
                           }}>
-                          Sohbete Git
+                          {t('cards.chat.goToChat')}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -1036,7 +1155,7 @@ const Home = () => {
                         style={{color: colors.text.primary}}>
                         {lastMessage.receiver === user?.username
                           ? user?.fullName + ' : ' + lastMessage.message
-                          : 'Siz : ' + lastMessage.message}
+                          : t('cards.chat.youPrefix') + lastMessage.message}
                       </Text>
                     )}
                   </View>

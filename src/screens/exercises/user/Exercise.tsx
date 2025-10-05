@@ -5,13 +5,7 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
-import {
-  View,
-  BackHandler,
-  StatusBar,
-  Dimensions,
-  ToastAndroid,
-} from 'react-native';
+import {View, BackHandler, StatusBar, Dimensions} from 'react-native';
 import {
   RouteProp,
   useFocusEffect,
@@ -29,11 +23,13 @@ import {useUser} from '../../../contexts/UserContext';
 import {progressExerciseVideo} from '../../../api/exercise/progressService';
 import {Theme} from '../../../themes/themes';
 import {Cake} from 'lucide-react-native';
+import {useTranslation} from 'react-i18next';
 
 type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'Exercise'>;
 
 const Exercise = () => {
   const insets = useSafeAreaInsets();
+  const {t} = useTranslation('exercise');
   const {colors, theme} = useTheme();
   const {width} = Dimensions.get('screen');
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
@@ -66,109 +62,6 @@ const Exercise = () => {
 
   const [portraitInsets, setPortraitInsets] = useState(insets);
   const [portraitWidth, setPortraitWidth] = useState(width);
-
-  // const makeTabBarStyle = (theme: Theme, width: number) => ({
-  //   // marginHorizontal: width / 24,
-  //   // position: 'absolute',
-  //   // bottom: 15,
-  //   // left: 15,
-  //   // right: 15,
-  //   // height: 56,
-  //   // borderRadius: 40,
-  //   // borderWidth: 1,
-  //   // borderTopWidth: 0.9,
-  //   // borderColor:
-  //   //   theme.colors.isLight ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
-  //   // backgroundColor:
-  //   //   theme.colors.isLight ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
-  //   // elevation: 0,
-  //   // display: 'flex',
-  //   minHeight: 56 + Math.max(insets.bottom, 0),
-  //   height: undefined,
-  //   paddingTop: 6,
-  //   paddingBottom: Math.max(insets.bottom, 8),
-
-  //   // mevcut görünümü koru
-  //   marginHorizontal: width / 24,
-  //   position: 'absolute',
-  //   bottom: 15,
-  //   left: 15,
-  //   right: 15,
-  //   borderRadius: 40,
-  //   borderWidth: 1,
-  //   borderTopWidth: 0.9,
-  //   borderColor:
-  //     theme.colors.isLight ? 'rgba(0,0,0,0.09)' : 'rgba(150,150,150,0.09)',
-  //   backgroundColor:
-  //     theme.colors.isLight ? 'rgba(255,255,255,0.95)' : 'rgba(25,25,25,0.95)',
-  //   elevation: 0,
-  // });
-
-  // useLayoutEffect(() => {
-  //   const parentNav = navigation.getParent();
-
-  //   parentNav?.setOptions({
-  //     tabBarStyle: {...makeTabBarStyle(theme, width), display: 'none'},
-  //   });
-
-  //   return () =>
-  //     parentNav?.setOptions({
-  //       tabBarStyle: makeTabBarStyle(theme, width),
-  //     });
-  // }, [navigation]);
-
-  const makeTabBarStyle = (
-    theme: Theme,
-    width: number,
-    insetsBottom: number,
-  ) => ({
-    minHeight: 50 + Math.max(insetsBottom, 0),
-    height: undefined,
-    paddingTop: 11,
-    paddingBottom: Math.max(insetsBottom, 11),
-
-    // mevcut görünümü koru
-    marginHorizontal: width / 24,
-    position: 'absolute',
-    bottom: 15,
-    left: 15,
-    right: 15,
-    borderRadius: 40,
-    borderWidth: 1,
-    borderTopWidth: 0.9,
-    borderColor: theme.colors.isLight
-      ? 'rgba(0,0,0,0.09)'
-      : 'rgba(150,150,150,0.09)',
-    backgroundColor: theme.colors.isLight
-      ? 'rgba(255,255,255,0.95)'
-      : 'rgba(25,25,25,0.95)',
-    elevation: 0,
-  });
-
-  const baseTabBarStyleRef = useRef<any | null>(null);
-
-  useFocusEffect(
-    useCallback(() => {
-      const parent = navigation.getParent();
-      // Snapshot'ı sadece girişte al (portrait 'window' ölçüleri ve o anki insets)
-      const base = makeTabBarStyle(theme, portraitWidth, portraitInsets.bottom);
-      baseTabBarStyleRef.current = base;
-
-      // Görünmez yap ama base stilin ÜZERİNE
-      parent?.setOptions({
-        tabBarStyle: {...base, display: 'none'},
-      });
-
-      return () => {
-        // 4) Çıkarken snapshot'ı AYNI HALİYLE geri yaz
-        parent?.setOptions({
-          tabBarStyle:
-            baseTabBarStyleRef.current ??
-            makeTabBarStyle(theme, portraitWidth, portraitInsets.bottom),
-        });
-      };
-    }, [navigation, theme.name]), // dikkat: width/insets'i BAĞIMLILIĞA KOYMA!
-  );
 
   useFocusEffect(
     useCallback(() => {
@@ -424,10 +317,10 @@ const Exercise = () => {
       />
 
       <CustomAlert
-        message="Egzersizi terk etmek istediğinize emin misiniz?"
+        message={t('player.confirmExit.message')}
         // message="Egzersizi sonlandırmak istediğinizden emin misiniz?"
         // secondMessage="Merak etmeyin, şu ana kadarki ilerlemeniz otomatik olarak kaydedilecek."
-        secondMessage="İlerlemeniz kaydedilecektir"
+        secondMessage={t('player.confirmExit.subtitle')}
         visible={isBackActionAlertVisible}
         onYes={() => {
           setPaused(true);

@@ -1,0 +1,74 @@
+// locales/tr/settings.json
+{
+  "items": {
+    "preferences": "Tercihler",
+    "appearance": "Görünüm",
+    "notifications": "Bildirimler",
+    "permissionsUser": "İzinler ve Onaylar",
+    "permissionsAdmin": "İzinler",
+    "appInfo": "Uygulama Bilgileri",
+    "security": "Güvenlik",
+    "development": "Geliştirme",
+    "language": "Dil",
+    "logout": "Çıkış Yap",
+    "deleteAccount": "Hesabımı Sil"
+  },
+
+  "alerts": {
+    "confirmLogout": "Çıkmak istediğinize emin misiniz?",
+    "confirmDelete": "Hesabınızı silmek istediğinizden emin misiniz?",
+    "cantOpenSettigns": "Ayarlar açılamadı"
+  },
+
+  "toasts": {
+    "deleteFailed": "Hesap silme işlemi başarısız oldu."
+  },
+
+  "permissions": {
+    "goToAppSettings": "Uygulama İzinlerine Git",
+    "goToNotificationSettings": "Bildirim İzinlerine Git",
+    "consentsTitle": "Onaylar",
+    "kvkkTitle": "KVKK Metni",
+    "healthTitle": "Sağlık Verisi Kullanım Rızası",
+    "exerciseTitle": "Egzersiz Verisi Kullanım Rızası",
+    "studyTitle": "Aydınlatılmış Onam Formu",
+    "approveHint": "Onaylamak için lütfen tüm metni okuyup sonuna kadar kaydırın.",
+    "approve": "Onaylıyorum",
+    "decline": "Onaylamıyorum",
+    "approved": "Onaylandı",
+    "declined": "Onaylanmadı",
+    "approveAction": "Onayla",
+    "withdraw": "Onayı İptal Et"
+  },
+
+  "offline": {
+    "consentsLoadFailed": "Sözleşmeler yüklenemedi",
+    "noInternet": "İnternet bağlantısı yok"
+  },
+
+  "language": {
+    "title": "Dil"
+  },
+
+  "appearance": {
+    "themeColor": "Tema Rengi",
+    "selected": "Seçili:",
+    "colorBlueTurquoise": "Mavi–Turkuaz",
+    "colorPurplePink": "Mor–Pembe",
+    "colorGreenYellow": "Yeşil–Sarı",
+    "colorRedOrange": "Kırmızı–Turuncu",
+
+    "mock": "Renkler",
+    "themeMode": "Tema Modu",
+    "light": "Açık",
+    "dark": "Koyu",
+    "system": "Sistem",
+    "systemNote": "(Cihazınızdaki açık/koyu moduna otomatik uyum sağlar.)",
+
+    "debug": {
+      "theme": "Tema:",
+      "colors": "Renkler:",
+      "background": "Arka plan rengi:"
+    }
+  }
+}

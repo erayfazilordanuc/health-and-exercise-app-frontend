@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {
   View,
   Text,
@@ -12,7 +6,6 @@ import {
   BackHandler,
   ScrollView,
   InteractionManager,
-  ToastAndroid,
   Image,
   StatusBar,
   Dimensions,
@@ -23,35 +16,22 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import Video from 'react-native-video';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../../../themes/ThemeProvider';
 import icons from '../../../constants/icons';
 import VideoPlayer from 'react-native-video-player';
 import {createThumbnail} from 'react-native-create-thumbnail';
-import CustomAlert from '../../../components/CustomAlert';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../../../contexts/UserContext';
 import Orientation from 'react-native-orientation-locker';
 import {calcPercent} from '../../../api/exercise/exerciseService';
-import {Theme} from '../../../themes/themes';
 import NetInfo from '@react-native-community/netinfo';
-import {
-  checkHealthConnectInstalled,
-  checkSamsungHInstalled,
-  getSymptoms,
-  initializeHealthConnect,
-} from '../../../lib/health/healthConnectService';
-import {atLocalMidnight, isTodayLocal} from '../../../utils/dates';
-import {
-  useSaveSymptomsToday,
-  useSymptomsByDate,
-} from '../../../hooks/symptomsQueries';
 import {getCachedLocalUri} from '../../../utils/videoCache';
+import {useTranslation} from 'react-i18next';
 
 type ExerciseRouteProp = RouteProp<ExercisesStackParamList, 'ExerciseDetail'>;
 const ExerciseDetail = () => {
   const insets = useSafeAreaInsets();
+  const {t} = useTranslation('exercise');
   const {colors, theme} = useTheme();
   const {height, width} = Dimensions.get('window');
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
@@ -307,12 +287,18 @@ const ExerciseDetail = () => {
             color: colors.text.primary,
             fontSize: 24,
           }}>
-          Egzersiz Detayı
+          {t('headers.detail')}
         </Text>
       </View>
 
       <ScrollView
         className="h-full px-3 mt-3"
+        contentContainerStyle={{
+          flexGrow: 1,
+          // paddingBottom: height / 4.5,
+          paddingBottom: insets.bottom + height / 10,
+          // paddingTop: insets.top / 2,
+        }}
         style={{
           backgroundColor: colors.background.secondary,
         }}>
@@ -322,14 +308,14 @@ const ExerciseDetail = () => {
           <Text
             className="text-xl font-rubik-medium mb-2"
             style={{color: colors.text.primary}}>
-            Toplam İlerleme
+            {t('detail.totalProgress')}
           </Text>
           <Text className="text-xl font-rubik-medium" style={{color: color}}>
             {`%${todayPercent}`}
           </Text>
           {calcPercent(progress) === 100 && (
             <Text className="text-xl font-rubik-medium" style={{color: color}}>
-              Egzersiz Tamamlandı
+              {t('detail.exerciseCompleted')}
             </Text>
           )}
           <View
@@ -346,12 +332,12 @@ const ExerciseDetail = () => {
         </View>
 
         <View
-          className="px-5 pt-3 rounded-2xl mb-24"
+          className="px-5 pt-3 rounded-2xl"
           style={{backgroundColor: colors.background.primary}}>
           <Text
             className="text-center text-2xl font-rubik mb-2"
             style={{color: colors.text.primary}}>
-            Videolar
+            {t('detail.videos')}
           </Text>
           {progress.exerciseDTO.videos.map((video, index) => {
             // 🔑 Bu videonun progress kaydını bul (id yoksa videoUrl ile)
@@ -438,9 +424,12 @@ const ExerciseDetail = () => {
                   <Text
                     className="font-rubik text-center text-lg"
                     style={{color: colors.text.primary}}>
-                    {'Video ismi: ' +
+                    {t('detail.videoName') +
+                      ': ' +
                       video.name.trim() +
-                      '\nSüre: ' +
+                      '\n' +
+                      t('detail.duration') +
+                      ': ' +
                       ToMinuteSeconds(video.durationSeconds)}
                   </Text>
 
@@ -451,7 +440,7 @@ const ExerciseDetail = () => {
                         <Text
                           className="font-rubik text-lg mr-2"
                           style={{color: '#3BC476'}}>
-                          Tamamlandı
+                          {t('detail.completed')}
                         </Text>
                         <Image
                           source={icons.check}
@@ -465,7 +454,7 @@ const ExerciseDetail = () => {
                         <Text
                           className="font-rubik text-center text-lg"
                           style={{color: getColor()}}>
-                          İlerleme %{ratio}
+                          {t('detail.progressPct', '{ratio}', {ratio})}
                         </Text>
                         <TouchableOpacity
                           className="mt-3 mb-1"
@@ -485,7 +474,7 @@ const ExerciseDetail = () => {
                               backgroundColor: color,
                               color: colors.background.primary,
                             }}>
-                            Devam et
+                            {t('detail.continue')}
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -510,7 +499,7 @@ const ExerciseDetail = () => {
                               backgroundColor: color,
                               color: colors.background.primary,
                             }}>
-                            Başla
+                            {t('detail.start')}
                           </Text>
                         </TouchableOpacity>
                       )
@@ -536,7 +525,7 @@ const ExerciseDetail = () => {
                             backgroundColor: color,
                             color: colors.background.primary,
                           }}>
-                          Başla
+                          {t('detail.start')}
                         </Text>
                       </TouchableOpacity>
                     )

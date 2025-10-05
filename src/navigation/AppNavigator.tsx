@@ -14,7 +14,7 @@ import icons from '../constants/icons';
 import Security from '../screens/profile/settings/Security';
 import Notifications from '../screens/profile/settings/Reminders';
 import Language from '../screens/profile/settings/Language';
-import Preferences from '../screens/profile/settings/Preferences';
+import Preferences from '../screens/profile/settings/Appearance';
 import {useTheme} from '../themes/ThemeProvider';
 import {themes} from '../themes/themes';
 import {StatusBar} from 'react-native';

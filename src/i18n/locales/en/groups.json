@@ -1,0 +1,95 @@
+{
+  "titles": {
+    "groups": "Groups",
+    "group": "Group"
+  },
+  "search": {
+    "placeholder": "Search groups"
+  },
+  "list": {
+    "empty": "No groups found."
+  },
+  "buttons": {
+    "join": "Join",
+    "createNew": "Create New Group",
+    "details": "Details",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "Dismiss",
+    "sendRequest": "Send Request",
+    "create": "Create",
+    "goToChat": "Go to Chat",
+    "approve": "Approve",
+    "reject": "Reject",
+    "detail": "Detail"
+  },
+  "request": {
+    "cardTitle": "Sent Request",
+    "group": "Group:",
+    "nurse": "Nurse:",
+    "status": "Status:",
+    "pending": "Pending",
+    "cancel": "Cancel"
+  },
+  "modals": {
+    "join": {
+      "title": "Join Group",
+      "confirmText": " Are you sure you want to join this group "
+    },
+    "create": {
+      "title": "Create Group",
+      "name": "Group Name",
+      "exerciseEnabled": "Exercise Enabled"
+    }
+  },
+  "alerts": {
+    "cancelJoin": "Are you sure you want to cancel the join request?",
+    "leaveGroup": "Are you sure you want to leave the group?"
+  },
+  "admin": {
+    "myGroups": "My Groups"
+  },
+  "toasts": {
+    "noInternet": "Unable to complete the group action. Please check your internet connection.",
+    "joinRequestSent": "Join request sent.",
+    "joinRequestCanceled": "Join request canceled.",
+    "createFailed": "Unable to create group. Please check your internet connection.",
+    "leaveSent": "Your request to leave the group has been sent to the nurse."
+  },
+  "groupDetail": {
+    "nurseInfo": "Nurse Information",
+    "fields": {
+      "username": "Username:",
+      "fullName": "Full Name:",
+      "email": "Email:"
+    },
+    "roles": {
+      "admin": "Nurse",
+      "you": "You"
+    },
+    "sections": {
+      "lastMessage": "Last Message",
+      "youPrefix": "You: ",
+      "settings": "Group Settings",
+      "joinRequests": "Join Requests",
+      "members": "Members",
+      "sort": {
+        "sortTitle": "Sort",
+        "role": "Role",
+        "name": "Name",
+        "username": "Username"
+      }
+    },
+    "settings": {
+      "exercise": "Exercise Enabled",
+      "confirmEnable": "Are you sure you want to enable exercise for this group?",
+      "confirmDisable": "Are you sure you want to disable exercise for this group?",
+      "disableWarning": "This will prevent exercise data from being recorded for users.",
+      "yes": "Yes",
+      "cancel": "Cancel"
+    },
+    "members": {
+      "count": "{{count}}"
+    }
+  }
+}

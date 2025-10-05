@@ -7,5 +7,11 @@
     "user": "User",
     "admin": "Nurse"
   },
-  "locale": "en-US"
+  "locale": "en-US",
+  "alerts": {
+    "yes": "Yes",
+    "cancel": "Cancel",
+    "approve": "Approve",
+    "decline": "Decline"
+  }
 }

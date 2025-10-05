@@ -6,6 +6,7 @@ import {View, Text, Image, TouchableOpacity, ToastAndroid} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {fonts} from 'react-native-elements/dist/config';
 import NetInfo from '@react-native-community/netinfo';
+import {useTranslation} from 'react-i18next';
 
 type ProgressBarProps = {
   value?: number; // artık optional
@@ -57,6 +58,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   setSymptom,
   onAdd,
 }) => {
+  const {t} = useTranslation('profile');
   const {colors} = useTheme();
 
   const calculateProgressRatio = (): number => {
@@ -139,7 +141,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
               setAddModalFunction({setSymptom});
               onAdd(true);
             }}>
-            <GradientText text="Güncelle" />
+            <GradientText text={t('addValueModal.update')} />
           </TouchableOpacity>
         )}
       </View>

@@ -87,9 +87,12 @@ import {isSameDay} from 'date-fns';
 import {atLocalMidnight, isTodayLocal, ymdLocal} from '../../utils/dates';
 import {extractAxiosMessage} from '../../api/axios/axios';
 import {AVATARS, type AvatarKey} from '../../constants/avatars';
+import {useTranslation} from 'react-i18next';
 
 const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
+  const {t} = useTranslation('profile');
+  const {t: c} = useTranslation('common');
   const insets = useSafeAreaInsets();
   // const [user, setUser] = useState<User | null>(null);
   const {user, setUser} = useUser();
@@ -379,10 +382,7 @@ const Profile = () => {
     setRefreshing(true);
     const net = await NetInfo.fetch();
     if (!net.isConnected) {
-      ToastAndroid.show(
-        'İnternet bağlantısı yok, sayfa yenilenemedi',
-        ToastAndroid.LONG,
-      );
+      ToastAndroid.show(t('toasts.noInternetRefresh'), ToastAndroid.LONG);
       return;
     }
     try {
@@ -425,16 +425,24 @@ const Profile = () => {
     React.Dispatch<React.SetStateAction<number>> | undefined,
     {label: string; unit: string}
   >([
-    [setHeartRate, {label: 'Nabız', unit: 'bpm'}],
-    [setSteps, {label: 'Adım Sayısı', unit: 'adım'}],
-    [setActiveCaloriesBurned, {label: 'Yakılan Kalori', unit: 'kcal'}],
-    [setTotalSleepMinutes, {label: 'Uyku', unit: 'saat'}],
-    [undefined, {label: 'Bulgu', unit: ''}], // fallback
+    [setHeartRate, {label: t('labels.heartRate'), unit: 'bpm'}],
+    [setSteps, {label: t('labels.stepCount'), unit: t('labels.steps')}],
+    [
+      setActiveCaloriesBurned,
+      {label: t('labels.caloriesBurned'), unit: 'kcal'},
+    ],
+    [
+      setTotalSleepMinutes,
+      {label: t('labels.sleep'), unit: t('labels.sleepUnits')},
+    ],
+    [undefined, {label: t('addValueModal.titleFallback'), unit: ''}],
   ]);
 
   const getBulguLabel = () => {
     const bulgu = bulguMap.get(addModalFunction?.setSymptom);
-    return bulgu ? `${bulgu.label} (${bulgu.unit})` : 'Bulgu';
+    return bulgu
+      ? `${bulgu.label} (${bulgu.unit})`
+      : t('addValueModal.titleFallback');
   };
 
   const monthAgo = useMemo(() => {
@@ -538,7 +546,8 @@ const Profile = () => {
             color: theme.colors.isLight ? '#333333' : colors.background.primary,
             fontSize: 24,
           }}>
-          Profil {user?.role === 'ROLE_ADMIN' ? ' (Hemşire)' : ''}
+          {t('title')}{' '}
+          {user?.role === 'ROLE_ADMIN' ? t('header.roleSuffixNurse') : ''}
         </Text>
         <TouchableOpacity
           className="mr-1"
@@ -647,7 +656,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik-medium text-xl"
                   style={{color: colors.text.primary}}>
-                  Kullanıcı Adı:{'  '}
+                  {t('labels.username')}:{'  '}
                 </Text>
                 <Text
                   className="font-rubik text-xl"
@@ -660,7 +669,8 @@ const Profile = () => {
                   <Text
                     className="font-rubik-medium text-xl"
                     style={{color: colors.text.primary}}>
-                    E-posta{'  '}
+                    {t('labels.email')}
+                    {'  '}
                   </Text>
                   <Text
                     className="font-rubik text-xl"
@@ -673,7 +683,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik-medium text-lg"
                   style={{color: colors.text.primary}}>
-                  Yaş:{'  '}
+                  {t('labels.age')}:{'  '}
                 </Text>
                 <Text
                   className="font-rubik text-lg"
@@ -687,28 +697,33 @@ const Profile = () => {
                     <Text
                       className="font-rubik-medium text-lg"
                       style={{color: colors.text.primary}}>
-                      Doğum Tarihi:{'  '}
+                      {t('labels.birthDate')}:{'  '}
                     </Text>
                     <Text
                       className="font-rubik text-lg"
                       style={{color: colors.text.primary}}>
-                      {new Date(user?.birthDate!).toLocaleDateString('tr-TR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
+                      {new Date(user?.birthDate!).toLocaleDateString(
+                        c('locale'),
+                        {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        },
+                      )}
                     </Text>
                   </View>
                   <View className="flex flex-row items-center mt-1 mb-1">
                     <Text
                       className="font-rubik-medium text-lg"
                       style={{color: colors.text.primary}}>
-                      Cinsiyet:{'  '}
+                      {t('labels.gender')}:{'  '}
                     </Text>
                     <Text
                       className="font-rubik text-lg"
                       style={{color: colors.text.primary}}>
-                      {user?.gender === 'male' ? 'Erkek' : 'Kadın'}
+                      {user?.gender === 'male'
+                        ? t('labels.male')
+                        : t('labels.female')}
                     </Text>
                   </View>
                 </>
@@ -726,7 +741,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik text-xl ml-1 mb-3"
                   style={{color: colors.text.primary}}>
-                  Haftalık Adım Hedefi
+                  {t('weeklyGoal.title')}
                 </Text>
                 {weeklyGoal ? (
                   <View
@@ -737,7 +752,7 @@ const Profile = () => {
                         <Text
                           className="font-rubik text-lg ml-2"
                           style={{color: '#16d750'}}>
-                          Başarıyla tamamlandı!
+                          {t('weeklyGoal.completed')}
                         </Text>
                         <Image
                           source={icons.check}
@@ -749,12 +764,12 @@ const Profile = () => {
                     <Text
                       className="font-rubik text-lg ml-2 mb-2"
                       style={{color: colors.text.primary}}>
-                      Hedef: {' ' + weekly?.goal} adım
+                      {t('weeklyGoal.goal', {value: weekly?.goal ?? ''})}
                     </Text>
                     <Text
                       className="font-rubik text-lg ml-2"
                       style={{color: colors.text.primary}}>
-                      İlerleme: {' ' + weeklySteps} adım
+                      {t('weeklyGoal.progress', {value: weeklySteps ?? ''})}
                     </Text>
                   </View>
                 ) : (
@@ -769,7 +784,7 @@ const Profile = () => {
                       <Text
                         className="font-rubik text-lg ml-1 mr-1"
                         style={{color: colors.primary[200]}}>
-                        Bu Hafta İçin Hedef Ekle
+                        {t('weeklyGoal.addGoalCta')}
                         {!goaling && <Text>{'  '}+</Text>}
                       </Text>
                       {goaling && (
@@ -782,7 +797,7 @@ const Profile = () => {
                             }}
                             value={newStepGoalValue}
                             onChangeText={value => setNewStepGoalValue(value)}
-                            placeholder="Örn: 15000 adım"
+                            placeholder={t('weeklyGoal.inputPlaceholder')}
                             placeholderTextColor={colors.text.third}
                             selectionColor={colors.primary[300]}
                             keyboardType="numeric"
@@ -795,7 +810,9 @@ const Profile = () => {
                                 setGoaling(false);
                                 setNewStepGoalValue('');
                               }}>
-                              <Text style={{color: 'white'}}>İptal</Text>
+                              <Text style={{color: 'white'}}>
+                                {t('weeklyGoal.cancel')}
+                              </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                               className="py-2 px-3 rounded-2xl mb-1 ml-1"
@@ -804,7 +821,7 @@ const Profile = () => {
                                 if (newStepGoalValue) {
                                   if (parseInt(newStepGoalValue) > 100000) {
                                     ToastAndroid.show(
-                                      'Lütfen geçerli bir değer giriniz',
+                                      t('toasts.invalidValue'),
                                       ToastAndroid.SHORT,
                                     );
                                     return;
@@ -813,7 +830,7 @@ const Profile = () => {
                                   const net = await NetInfo.fetch();
                                   if (!net.isConnected) {
                                     ToastAndroid.show(
-                                      'İnternet bağlantınızı kontrol ediniz',
+                                      t('toasts.networkError'),
                                       ToastAndroid.SHORT,
                                     );
                                     return;
@@ -828,7 +845,7 @@ const Profile = () => {
                                       setWeeklyGoal(stepGoal);
                                     } else {
                                       ToastAndroid.show(
-                                        'Bir hata oluştu',
+                                        t('toasts.genericError'),
                                         ToastAndroid.SHORT,
                                       );
                                     }
@@ -841,18 +858,20 @@ const Profile = () => {
                                     // Örn: "Önceki haftadaki ilerlemenize göre bu kadar düşük bir hedef giremezsiniz"
                                     ToastAndroid.show(
                                       msg && msg === 'Bad Request'
-                                        ? 'Girdiğiniz değer önceki ilerlemenize göre çok düşük'
-                                        : 'Bir hata oluştu',
+                                        ? t('toasts.tooLowForHistory')
+                                        : t('toasts.genericError'),
                                       ToastAndroid.LONG,
                                     );
                                   }
                                 } else
                                   ToastAndroid.show(
-                                    'Lütfen bir değer giriniz',
+                                    t('toasts.enterAValue'),
                                     ToastAndroid.SHORT,
                                   );
                               }}>
-                              <Text style={{color: 'white'}}>Kaydet</Text>
+                              <Text style={{color: 'white'}}>
+                                {t('weeklyGoal.save')}
+                              </Text>
                             </TouchableOpacity>
                           </View>
                         </>
@@ -865,7 +884,7 @@ const Profile = () => {
                   <Text
                     className="font-rubik text-lg ml-3 mr-1"
                     style={{color: colors.text.primary}}>
-                    Hedef Başarım Rozetleri:{' '}
+                    {t('weeklyGoal.badgesTitle')}{' '}
                   </Text>
                   <Image source={icons.badge1_colorful} className="size-7" />
                   <Text
@@ -885,7 +904,7 @@ const Profile = () => {
                   <Text
                     className="font-rubik"
                     style={{fontSize: 20, color: colors.text.primary}}>
-                    Bulgular
+                    {t('findings.title')}
                   </Text>
 
                   {isHealthConnectInstalled &&
@@ -897,7 +916,9 @@ const Profile = () => {
                         borderRadius: 17,
                         backgroundColor: colors.background.primary,
                       }}>
-                      <Text style={{color: '#16d750'}}>Senkronize</Text>
+                      <Text style={{color: '#16d750'}}>
+                        {t('findings.title')}
+                      </Text>
                       <Image
                         source={icons.health_sync}
                         className="ml-2 size-6"
@@ -928,13 +949,12 @@ const Profile = () => {
                           setShowHCAlert(true);
                         } else if (!isHealthConnectReady) {
                           alertRef.current?.show({
-                            message:
-                              'Verilerinizi senkronize edebilmek için Health Connect uygulamasına gerekli izinleri vermeniz gerekiyor.',
+                            message: t('labels.syncDataPermissionInfo'),
                             // secondMessage: 'Bu işlem geri alınamaz.',
                             isPositive: true,
                             isInfo: true,
-                            onYesText: 'İzinlere Git',
-                            onCancelText: 'Vazgeç',
+                            onYesText: t('hcAlert.yes'),
+                            onCancelText: t('hcAlert.cancel'),
                             onYes: () => {
                               if (Platform.OS === 'ios') {
                                 Linking.openURL('app-settings:');
@@ -950,7 +970,7 @@ const Profile = () => {
                         }
                       }}>
                       <Text style={{color: colors.text.primary}}>
-                        Senkronize et
+                        {t('findings.syncCta')}
                       </Text>
                       <Image
                         source={icons.health_sync}
@@ -983,7 +1003,7 @@ const Profile = () => {
                 {/*heartRate != 0 && Burada eğer veri yoksa görünmeyebilir */}
                 <ProgressBar
                   value={heartRate}
-                  label="Nabız"
+                  label={t('labels.heartRate')}
                   iconSource={icons.pulse}
                   color="#FF3F3F"
                   setAddModalFunction={setAddModalFunction}
@@ -1024,7 +1044,7 @@ const Profile = () => {
                 {totalCaloriesBurned > 0 ? (
                   <ProgressBar
                     value={totalCaloriesBurned}
-                    label="Yakılan Kalori"
+                    label={t('labels.caloriesBurned')}
                     iconSource={icons.kcal}
                     color="#FF9900"
                     setAddModalFunction={setAddModalFunction}
@@ -1042,7 +1062,7 @@ const Profile = () => {
                   activeCaloriesBurned > 0 && (
                     <ProgressBar
                       value={activeCaloriesBurned}
-                      label="Yakılan Kalori"
+                      label={t('labels.caloriesBurned')}
                       iconSource={icons.kcal}
                       color="#FF9900"
                       setAddModalFunction={setAddModalFunction}
@@ -1060,7 +1080,7 @@ const Profile = () => {
                 )}
                 <ProgressBar
                   value={steps}
-                  label="Adım"
+                  label={t('labels.steps')}
                   iconSource={icons.man_walking}
                   color="#2CA4FF"
                   setAddModalFunction={setAddModalFunction}
@@ -1076,7 +1096,7 @@ const Profile = () => {
                 />
                 <ProgressBar
                   value={totalSleepMinutes}
-                  label="Uyku"
+                  label={t('labels.sleep')}
                   iconSource={icons.sleep}
                   color="#FDEF22"
                   setAddModalFunction={setAddModalFunction}
@@ -1152,7 +1172,7 @@ const Profile = () => {
                         const isOnline = !!net.isConnected;
                         if (!isOnline)
                           ToastAndroid.show(
-                            'Veriler yüklenemedi, internet bağlantınızı kontrol edin',
+                            t('toasts.dataLoadError'),
                             ToastAndroid.SHORT,
                           );
                       }
@@ -1291,7 +1311,7 @@ const Profile = () => {
                       const numericValue = parseFloat(normalized) || 0;
                       setAddModalValue(numericValue);
                     }}
-                    placeholder="Bulgu değeri"
+                    placeholder={t('addValueModal.valuePlaceholder')}
                     className="text-lg font-rubik ml-5 flex-1"
                     style={{color: colors.text.primary}}
                   />
@@ -1305,7 +1325,7 @@ const Profile = () => {
                             const net = await NetInfo.fetch();
                             if (!net.isConnected) {
                               ToastAndroid.show(
-                                'İnternet bağlantısı yok',
+                                t('toasts.networkError'),
                                 ToastAndroid.SHORT,
                               );
                               return;
@@ -1316,7 +1336,7 @@ const Profile = () => {
                             );
                             if (addModalValue == null || isNaN(addModalValue)) {
                               ToastAndroid.show(
-                                'Lütfen geçerli bir değer giriniz.',
+                                t('toasts.invalidValue'),
                                 ToastAndroid.SHORT,
                               );
                               setUpdateLoading(false);
@@ -1329,7 +1349,10 @@ const Profile = () => {
                                 addModalValue > limits.max)
                             ) {
                               ToastAndroid.show(
-                                `Değer ${limits.min} ile ${limits.max} arasında olmalıdır.`,
+                                t('toasts.valueRange', {
+                                  min: limits.min,
+                                  max: limits.max,
+                                }),
                                 ToastAndroid.LONG,
                               );
                               setUpdateLoading(false);
@@ -1382,7 +1405,7 @@ const Profile = () => {
                             setAddModalValue(0);
                           } else {
                             ToastAndroid.show(
-                              'Lütfen bir değer giriniz.',
+                              t('toasts.enterAValue'),
                               ToastAndroid.SHORT,
                             );
                           }
@@ -1391,7 +1414,7 @@ const Profile = () => {
                         className="flex-1 p-2 rounded-2xl items-center mx-1"
                         style={{backgroundColor: '#0EC946'}}>
                         <Text className="font-rubik text-lg text-white">
-                          Güncelle
+                          {t('addValueModal.update')}
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
@@ -1404,7 +1427,7 @@ const Profile = () => {
                         <Text
                           className="font-rubik text-lg"
                           style={{color: colors.text.primary}}>
-                          İptal
+                          {t('addValueModal.cancel')}
                         </Text>
                       </TouchableOpacity>
                     </>
@@ -1427,7 +1450,7 @@ const Profile = () => {
             date={time}
             title="Uyku sürenizi seçiniz"
             mode="time"
-            locale="tr-TR"
+            locale={c('locale')}
             is24hourSource="locale"
             onConfirm={async selectedTime => {
               const totalMinutes =
@@ -1435,7 +1458,7 @@ const Profile = () => {
               console.log(totalMinutes);
               if (totalMinutes <= 0 || totalMinutes > 960) {
                 ToastAndroid.show(
-                  'Uyku süresi 0–16 saat arasında olmalıdır.',
+                  t('toasts.sleepOutOfRange'),
                   ToastAndroid.LONG,
                 );
                 setShowTimePicker(false);
@@ -1457,8 +1480,8 @@ const Profile = () => {
               setShowTimePicker(false);
             }}
             onCancel={() => setShowTimePicker(false)}
-            confirmText="Onayla" // ✅ buton Türkçe
-            cancelText="İptal" // ✅ buton Türkçe
+            confirmText={t('datePicker.confirm')}
+            cancelText={t('datePicker.cancel')}
           />
         </ScrollView>
       </View>
@@ -1482,7 +1505,7 @@ const Profile = () => {
                 color: colors.text.primary,
               }}
               className="text-center font-rubik-medium">
-              Avatar Seçimi
+              {t('avatarModal.title')}
             </Text>
             <View className="flex-row items-center justify-center mt-4">
               <Text
@@ -1492,7 +1515,7 @@ const Profile = () => {
                   color: colors.text.primary,
                 }}
                 className="text-center font-rubik">
-                Seçili Avatar
+                {t('avatarModal.selected')}
               </Text>
               <Image
                 source={AVATARS[avatar as AvatarKey]}
@@ -1537,7 +1560,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik text-lg"
                   style={{color: colors.text.primary}}>
-                  İptal
+                  {t('avatarModal.cancel')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -1550,7 +1573,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik text-lg"
                   style={{color: colors.background.secondary}}>
-                  Kaydet
+                  {t('avatarModal.save')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1575,12 +1598,17 @@ const Profile = () => {
                 color: colors.text.primary,
               }}
               className="text-center font-rubik">
-              Telefonunuzdaki sağlık verilerini HopeMove uygulamasından takip
-              etmek için{' '}
-              <Text className="font-rubik-medium">Health Connect</Text> ve
-              <Text className="font-rubik-medium"> Samsung Health</Text>{' '}
-              uygulamalarını indirmeniz gerekiyor.{'\n'}Şimdi Play Store’a
-              gitmek istiyor musunuz?
+              {t('hcAlert.message')
+                .split(/(\*\*.*?\*\*)/g)
+                .map((part, i) =>
+                  part.startsWith('**') ? (
+                    <Text key={i} style={{fontWeight: 'bold'}}>
+                      {part.replace(/\*\*/g, '')}
+                    </Text>
+                  ) : (
+                    part
+                  ),
+                )}
             </Text>
             <View className="flex flex-col justify-between w-4/5 mt-3">
               <TouchableOpacity
@@ -1602,8 +1630,8 @@ const Profile = () => {
                 <View className="flex flex-row items-center justify-center">
                   <Text className="font-rubik text-lg text-white">
                     {isHealthConnectInstalled
-                      ? 'Health Connect indirildi'
-                      : `Health Connect'i indir`}
+                      ? t('hcAlert.downloadedHC')
+                      : t('hcAlert.downloadHC')}
                   </Text>
                   {isHealthConnectInstalled && (
                     <Image
@@ -1633,8 +1661,8 @@ const Profile = () => {
                 <View className="flex flex-row items-center justify-center">
                   <Text className="font-rubik text-lg text-white">
                     {isSamsungHInstalled
-                      ? 'Samsung Health indirildi'
-                      : `Samsung Health'i indir`}
+                      ? t('hcAlert.downloadedSH')
+                      : t('hcAlert.downloadSH')}
                   </Text>
                   {isSamsungHInstalled && (
                     <Image
@@ -1654,7 +1682,7 @@ const Profile = () => {
                 <Text
                   className="font-rubik text-lg"
                   style={{color: colors.text.primary}}>
-                  Vazgeç
+                  {t('hcAlert.cancel')}
                 </Text>
               </TouchableOpacity>
             </View>
