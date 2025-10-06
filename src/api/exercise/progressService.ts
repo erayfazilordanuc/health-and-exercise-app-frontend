@@ -28,7 +28,7 @@ export const progressExerciseVideo = async (
   }
 };
 
-export const getWeeklyActiveDaysProgress = async () => {
+export const getWeeklyActiveDaysProgress = async (date?: Date) => {
   try {
     const net = await NetInfo.fetch();
     if (!net.isConnected) {
@@ -39,8 +39,13 @@ export const getWeeklyActiveDaysProgress = async () => {
       }
     }
 
+    const params = date
+      ? {date: dayjs(date).format('YYYY-MM-DD')} // 2025-10-05 gibi
+      : undefined;
+
     const response = await apiClient.get(
       `/exercises/weekly-active-days/progress`,
+      {params},
     );
     console.log('weekly active days exercise progress', response);
 

@@ -75,6 +75,8 @@
       "members": "Members",
       "sort": {
         "sortTitle": "Sort",
+        "asc": "Ascending",
+        "desc": "Descending",
         "role": "Role",
         "name": "Name",
         "username": "Username"

@@ -663,6 +663,83 @@ const Group = () => {
           </View>
         )}
 
+        {/* <View className="flex-row mt-3 mb-1 items-center">
+              <Text
+                className="font-rubik mr-2"
+                style={{fontSize: 16, color: colors.text.primary}}>
+                {t('groupDetail.sort.title', 'Sıralama')}
+              </Text>
+
+              <View className="flex-row">
+                {(
+                  [
+                    {
+                      key: 'usageDuration',
+                      label: t(
+                        'groupDetail.sort.usageDuration',
+                        'Uygulama Kullanım Süresi',
+                      ),
+                    },
+                    {
+                      key: 'exerciseCount',
+                      label: t(
+                        'groupDetail.sort.exerciseCount',
+                        'Egzersiz Tamamlama Adedi',
+                      ),
+                    },
+                    {
+                      key: 'goalBadgeCount',
+                      label: t(
+                        'groupDetail.sort.goalBadgeCount',
+                        'Hedef Rozeti Sayısı',
+                      ),
+                    },
+                  ] as {key: any; label: string}[]
+                ) // (any) -> mevcut SortKey union’ını değiştirmeden hızlı kullanım
+                  .map(opt => {
+                    const active = sort.key === opt.key;
+                    return (
+                      <TouchableOpacity
+                        key={opt.key}
+                        onPress={() => setKey(opt.key)}
+                        className="py-2 px-3 mr-2 rounded-2xl"
+                        style={{
+                          backgroundColor: active
+                            ? colors.background.third
+                            : colors.background.secondary,
+                          borderWidth: active ? 1 : 0,
+                          borderColor: active
+                            ? colors.primary[200]
+                            : 'transparent',
+                        }}>
+                        <Text
+                          className="font-rubik"
+                          style={{color: colors.text.primary}}>
+                          {opt.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+              </View>
+
+              <TouchableOpacity
+                onPress={toggleDir}
+                className="py-2 px-3 ml-1 rounded-2xl"
+                style={{
+                  backgroundColor: colors.background.secondary,
+                  borderWidth: 1,
+                  borderColor: colors.primary[200],
+                }}>
+                <Text
+                  className="font-rubik"
+                  style={{color: colors.text.primary}}>
+                  {sort.dir === 'asc'
+                    ? t('groupDetail.sort.asc', '↑ Artan')
+                    : t('groupDetail.sort.desc', '↓ Azalan')}
+                </Text>
+              </TouchableOpacity>
+            </View> */}
+
         {user &&
           user.role === 'ROLE_ADMIN' &&
           joinRequests &&

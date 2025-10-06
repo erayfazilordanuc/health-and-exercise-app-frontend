@@ -75,6 +75,8 @@
       "members": "Üyeler",
       "sort": {
         "sortTitle": "Sırala",
+        "asc": "Artan",
+        "desc": "Azalan",
         "role": "Rol",
         "name": "İsim",
         "username": "Kullanıcı Adı"

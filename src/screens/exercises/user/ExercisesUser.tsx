@@ -18,6 +18,7 @@ import React, {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -123,6 +124,17 @@ const ExercisesUser = () => {
     }
   }, [user, activeDays]);
 
+  const today = new Date(new Date().setHours(12, 0, 0, 0));
+  const minDate = useMemo(() => {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - 84);
+    return d;
+  }, []);
+  const [progressDate, setProgressDate] = useState(today);
+  const canGoPrev = progressDate > minDate;
+  const canGoNext = progressDate < today;
+
   const upsertMutation = useUpsertExerciseSchedule();
 
   const [todayExerciseProgress, setTodayExerciseProgress] =
@@ -213,6 +225,14 @@ const ExercisesUser = () => {
     };
   }, []);
 
+  const fetchWeeklyProgress = async (date?: Date) => {
+    const weeklyExerciseProgressRes: ExerciseProgressDTO[] =
+      await getWeeklyActiveDaysProgress(date);
+
+    // if (!isEqual(weeklyExerciseProgressRes, weeklyExerciseProgress))
+    setWeeklyExersiseProgress(weeklyExerciseProgressRes);
+  };
+
   const fetchProgress = async () => {
     setLoading(true);
     try {
@@ -224,11 +244,7 @@ const ExercisesUser = () => {
       }
       if (!todayInitialized) setTodayInitialized(true);
 
-      const weeklyExerciseProgressRes: ExerciseProgressDTO[] =
-        await getWeeklyActiveDaysProgress();
-
-      // if (!isEqual(weeklyExerciseProgressRes, weeklyExerciseProgress))
-      setWeeklyExersiseProgress(weeklyExerciseProgressRes);
+      fetchWeeklyProgress();
       if (!initialized) setInitialized(true);
     } catch (error) {
       console.log(error);
@@ -243,6 +259,11 @@ const ExercisesUser = () => {
       fetchProgress();
     }
   }, [isFocused, updatedActiveDays, user?.groupId, user?.role]);
+
+  useEffect(() => {
+    console.log('progressDate changed', progressDate);
+    fetchWeeklyProgress(progressDate);
+  }, [progressDate]);
 
   const onStartExercise = async (position: ExercisePosition) => {
     // const todayExercise: ExerciseDTO = await getTodayExerciseByPosition(
@@ -693,7 +714,7 @@ const ExercisesUser = () => {
                 style={{fontSize: 19, color: colors.text.primary}}>
                 {t('exercise:calendar.title')}
               </Text>
-              <Text
+              {/* <Text
                 className="font-rubik mb-1 mr-1 rounded-xl"
                 style={{
                   paddingVertical: 5,
@@ -707,7 +728,83 @@ const ExercisesUser = () => {
                   month: 'long',
                   year: 'numeric',
                 })}
-              </Text>
+              </Text> */}
+            </View>
+            <View className="flex flex-row items-center justify-between mb-2">
+              <View className="flex-row items-center">
+                <TouchableOpacity
+                  className="rounded-xl"
+                  style={{
+                    paddingTop: 4,
+                    paddingBottom: 8,
+                    paddingHorizontal: 8,
+                    backgroundColor: colors.background.secondary,
+                    opacity: canGoPrev ? 1 : 0.4,
+                  }}
+                  disabled={!canGoPrev}
+                  onPress={() => {
+                    const d = new Date(progressDate);
+                    d.setHours(12, 0, 0, 0);
+                    d.setDate(d.getDate() - 7);
+                    setProgressDate(d);
+                  }}>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: '700',
+                      color: colors.text.primary,
+                    }}>
+                    ‹
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Orta: bugüne dön (tek dokunuş) */}
+                <View
+                  className="px-3 py-2 rounded-xl mx-1"
+                  style={{
+                    backgroundColor: colors.background.secondary,
+                  }}>
+                  <Text
+                    className="font-rubik"
+                    style={{color: colors.text.primary, fontSize: 14}}>
+                    {new Date(progressDate).toLocaleDateString(
+                      t('common:locale'),
+                      {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      },
+                    )}
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  className="rounded-xl"
+                  style={{
+                    paddingTop: 4,
+                    paddingBottom: 8,
+                    paddingHorizontal: 8,
+                    backgroundColor: colors.background.secondary,
+                    opacity: canGoNext ? 1 : 0.4,
+                  }}
+                  disabled={!canGoNext}
+                  onPress={() => {
+                    const d = new Date(progressDate);
+                    d.setHours(12, 0, 0, 0);
+                    d.setDate(d.getDate() + 7);
+                    if (d > today) d.setTime(today.getTime());
+                    setProgressDate(d);
+                  }}>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: '700',
+                      color: colors.text.primary,
+                    }}>
+                    ›
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
             {weeklyExerciseProgress && (
               <CustomWeeklyProgressCalendar

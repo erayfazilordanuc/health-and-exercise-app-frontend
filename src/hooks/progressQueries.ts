@@ -183,8 +183,15 @@ export function useWeeklyActiveDaysProgressOfflineAware(options?: {
 
 export const EXERCISE_KEYS = {
   root: ['exercises'] as const,
-  weeklyActiveDaysProgress: (userId: number) =>
-    [...EXERCISE_KEYS.root, 'weekly-active-days', 'progress', userId] as const,
+
+  weeklyActiveDaysProgress: (userId: number, dateISO?: string) =>
+    [
+      ...EXERCISE_KEYS.root,
+      'weekly-active-days',
+      'progress',
+      userId,
+      dateISO,
+    ] as const,
 };
 
 export function useWeeklyActiveDaysProgressByUserId(
@@ -200,17 +207,19 @@ export function useWeeklyActiveDaysProgressByUserId(
     'queryKey' | 'queryFn' | 'enabled'
   >,
 ) {
+  const dateISO = date?.toISOString();
+
   return useQuery<
     ExerciseProgressDTO[],
     AxiosError,
     ExerciseProgressDTO[],
     ReturnType<typeof EXERCISE_KEYS.weeklyActiveDaysProgress>
   >({
-    queryKey: EXERCISE_KEYS.weeklyActiveDaysProgress(userId ?? -1),
-    enabled: Number.isFinite(userId) && (userId as number) > 0,
+    queryKey: EXERCISE_KEYS.weeklyActiveDaysProgress(userId ?? -1, dateISO),
+    enabled: Number.isFinite(userId) && (userId as number) > 0 && !!dateISO,
     queryFn: () => getWeeklyActiveDaysProgressByUserId(userId as number, date),
-    staleTime: 5 * 60 * 1000, // 5 dk cache taze
-    gcTime: 30 * 60 * 1000, // 30 dk GC
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     retry: 1,
     refetchOnWindowFocus: false,
     ...options,

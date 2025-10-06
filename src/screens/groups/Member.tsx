@@ -134,9 +134,18 @@ const Member = () => {
     });
   }
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const today = new Date(new Date().setHours(12, 0, 0, 0));
+  const minDate = useMemo(() => {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - 84);
+    return d;
+  }, []);
   const [symptomsDate, setSymptomsDate] = useState(today);
+  const [progressDate, setProgressDate] = useState(today);
+  const canGoPrev = progressDate > minDate;
+  const canGoNext = progressDate < today;
+
   const day = (d: Date) => d.toISOString().slice(0, 10);
 
   const toDay = React.useMemo(() => day(new Date()), []);
@@ -168,7 +177,6 @@ const Member = () => {
     scrollToSymptoms();
   }, [symptoms]);
 
-  const [progressDate, setProgressDate] = useState(new Date());
   const {
     data: weeklyExerciseProgress = [],
     isLoading: isProgressLoading,
@@ -599,7 +607,7 @@ const Member = () => {
                         style={{fontSize: 18, color: colors.text.primary}}>
                         {t('sections.calendar')}
                       </Text>
-                      <Text
+                      {/* <Text
                         className="font-rubik mb-3 rounded-xl"
                         style={{
                           paddingVertical: 5,
@@ -615,14 +623,27 @@ const Member = () => {
                             year: 'numeric',
                           }),
                         })}
-                      </Text>
+                      </Text> */}
                     </View>
-                    {/* <View className="flex flex-row items-center justify-between mb-1">
+                    <View className="flex flex-row items-center justify-between mb-2">
                       <View className="flex-row items-center">
+                        {/* Geri (−7 gün) */}
                         <TouchableOpacity
-                          className="px-2 pt-2 pb-3 rounded-xl mr-2"
-                          style={{backgroundColor: colors.background.secondary}}
-                          onPress={() => {}}>
+                          className="rounded-xl"
+                          style={{
+                            paddingTop: 4,
+                            paddingBottom: 8,
+                            paddingHorizontal: 8,
+                            backgroundColor: colors.background.secondary,
+                            opacity: canGoPrev ? 1 : 0.4,
+                          }}
+                          disabled={!canGoPrev}
+                          onPress={() => {
+                            const d = new Date(progressDate);
+                            d.setHours(12, 0, 0, 0);
+                            d.setDate(d.getDate() - 7);
+                            setProgressDate(d);
+                          }}>
                           <Text
                             style={{
                               fontSize: 18,
@@ -633,25 +654,41 @@ const Member = () => {
                           </Text>
                         </TouchableOpacity>
 
-                        <Pressable
-                          className="px-3 py-2 rounded-xl"
-                          style={{backgroundColor: colors.background.secondary}}
-                          onPress={() => {}}>
+                        {/* Orta: bugüne dön (tek dokunuş) */}
+                        <View
+                          className="px-3 py-2 rounded-xl mx-1"
+                          style={{
+                            backgroundColor: colors.background.secondary,
+                          }}>
                           <Text
                             className="font-rubik"
                             style={{color: colors.text.primary, fontSize: 14}}>
-                            {'zıbıttı çıktı'}
+                            {new Date(progressDate).toLocaleDateString(
+                              c('locale'),
+                              {day: 'numeric', month: 'long', year: 'numeric'},
+                            )}
                           </Text>
-                        </Pressable>
+                        </View>
 
+                        {/* İleri (+7 gün) */}
                         <TouchableOpacity
-                          className="px-2 pt-2 pb-3 rounded-xl ml-2"
+                          className="rounded-xl"
                           style={{
+                            paddingTop: 4,
+                            paddingBottom: 8,
+                            paddingHorizontal: 8,
                             backgroundColor: colors.background.secondary,
-                            opacity: 0.5, // canGoNext ? 1 :
+                            opacity: canGoNext ? 1 : 0.4,
                           }}
-                          disabled={false}
-                          onPress={() => {}}>
+                          disabled={!canGoNext}
+                          onPress={() => {
+                            const d = new Date(progressDate);
+                            d.setHours(12, 0, 0, 0);
+                            d.setDate(d.getDate() + 7); // ← daha önce boştu/yanlıştı
+                            // clamp: bugünün ötesine geçmesin
+                            if (d > today) d.setTime(today.getTime());
+                            setProgressDate(d);
+                          }}>
                           <Text
                             style={{
                               fontSize: 18,
@@ -662,7 +699,7 @@ const Member = () => {
                           </Text>
                         </TouchableOpacity>
                       </View>
-                    </View> */}
+                    </View>
                     <CustomWeeklyProgressCalendar
                       weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
                       activeDays={activeDays}

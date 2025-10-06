@@ -220,7 +220,7 @@ const Appearance = () => {
           start={{x: 0.1, y: 0}}
           end={{x: 0.8, y: 1}}
           style={{borderRadius: 17}}
-          className="mb-3 px-4 pb-5 pt-2">
+          className="mb-3 px-4 pb-4 pt-2">
           <Text
             className="font-rubik-semibold"
             style={{
