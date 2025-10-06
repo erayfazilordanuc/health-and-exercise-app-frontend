@@ -222,7 +222,7 @@ function UserLogin() {
       //   return;
       // }
 
-      if (fullName.split('login: ').length < 2) {
+      if (fullName.split(' ').length < 2) {
         ToastAndroid.show(t('login:toasts.invalidFullName'), ToastAndroid.LONG);
         return;
       }
@@ -437,7 +437,7 @@ function UserLogin() {
             className="text-3xl font-rubik-semibold text-center mt-6 mb-4"
             style={{color: '#404040'}}>
             {t('login:title', {
-              role: t('common:roles.admin'),
+              role: t('common:roles.user'),
             })}
           </Text>
 

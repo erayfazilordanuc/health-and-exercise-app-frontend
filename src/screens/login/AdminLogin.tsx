@@ -173,8 +173,23 @@ function AdminLogin() {
         return;
       }
 
+      if (fullName.split(' ').length < 2) {
+        ToastAndroid.show(t('login:toasts.invalidFullName'), ToastAndroid.LONG);
+        return;
+      }
+
       if (!emailRegex.test(email.trim())) {
         ToastAndroid.show(t('login:toasts.invalidEmail'), ToastAndroid.SHORT);
+        return;
+      }
+
+      if (username.length < 4) {
+        ToastAndroid.show(t('login:toasts.usernameMin'), ToastAndroid.SHORT);
+        return;
+      }
+
+      if (username.length > 25) {
+        ToastAndroid.show(t('login:toasts.usernameMax'), ToastAndroid.SHORT);
         return;
       }
 
@@ -285,7 +300,6 @@ function AdminLogin() {
           className="text-3xl font-rubik-semibold text-center mt-6 mb-4"
           style={{color: '#404040'}}>
           {t('login:title', {role: t('common:roles.admin')})}{' '}
-          {/* "Hemşire Girişi" */}
         </Text>
 
         {loginMethod === LoginMethod.registration && (
