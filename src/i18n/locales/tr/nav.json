@@ -14,6 +14,7 @@
   "stacks": {
     "settings": {
       "root": "Ayarlar",
+      "account": "Hesap",
       "preferences": "Tercihler",
       "appearance": "Görünüm",
       "notifications": "Bildirimler",

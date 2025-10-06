@@ -55,6 +55,7 @@ import ExerciseProgress from '../screens/groups/ExerciseProgress';
 import {useTranslation} from 'react-i18next';
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 import Appearance from '../screens/profile/settings/Appearance';
+import Account from '../screens/profile/settings/Account';
 
 const Tab = createBottomTabNavigator();
 
@@ -100,6 +101,20 @@ function SettingsStack() {
             <CustomHeader
               title={t('stacks.settings.root')}
               icon={icons.settings}
+              className="border-primary-300"
+              backArrowEnable={true}
+            />
+          ),
+        }}
+      />
+      <SettingsNativeStack.Screen
+        name="Account"
+        component={Account}
+        options={{
+          header: () => (
+            <CustomHeader
+              title={t('stacks.settings.account')}
+              icon={icons.account}
               className="border-primary-300"
               backArrowEnable={true}
             />

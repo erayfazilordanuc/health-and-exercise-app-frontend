@@ -5,6 +5,7 @@ type ProfileStackParamList = {
 
 type SettingsStackParamList = {
   Settings: undefined;
+  Account: undefined;
   Preferences: undefined;
   Appearance: undefined;
   Language: undefined;

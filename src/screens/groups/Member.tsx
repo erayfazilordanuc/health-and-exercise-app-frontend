@@ -601,108 +601,116 @@ const Member = () => {
                       borderRadius: 17,
                       backgroundColor: colors.background.primary,
                     }}>
-                    <View className="flex flex-row items-center justify-between">
+                    <View className="flex flex-row items-center justify-between mb-2">
                       <Text
-                        className="font-rubik mb-2 ml-2"
-                        style={{fontSize: 18, color: colors.text.primary}}>
+                        className="font-rubik ml-2"
+                        style={{fontSize: 17, color: colors.text.primary}}>
                         {t('sections.calendar')}
                       </Text>
-                      {/* <Text
-                        className="font-rubik mb-3 rounded-xl"
-                        style={{
-                          paddingVertical: 5,
-                          paddingHorizontal: 9,
-                          fontSize: 14,
-                          color: colors.text.primary,
-                          backgroundColor: colors.background.secondary,
-                        }}>
-                        {t('calendar.dateLabel', {
-                          date: new Date().toLocaleDateString(c('locale'), {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                          }),
-                        })}
-                      </Text> */}
-                    </View>
-                    <View className="flex flex-row items-center justify-between mb-2">
-                      <View className="flex-row items-center">
-                        {/* Geri (−7 gün) */}
-                        <TouchableOpacity
-                          className="rounded-xl"
-                          style={{
-                            paddingTop: 4,
-                            paddingBottom: 8,
-                            paddingHorizontal: 8,
-                            backgroundColor: colors.background.secondary,
-                            opacity: canGoPrev ? 1 : 0.4,
-                          }}
-                          disabled={!canGoPrev}
-                          onPress={() => {
-                            const d = new Date(progressDate);
-                            d.setHours(12, 0, 0, 0);
-                            d.setDate(d.getDate() - 7);
-                            setProgressDate(d);
-                          }}>
-                          <Text
+                      <View className="flex flex-row items-center justify-between">
+                        <View className="flex-row items-center">
+                          <TouchableOpacity
+                            className="rounded-lg"
                             style={{
-                              fontSize: 18,
-                              fontWeight: '700',
-                              color: colors.text.primary,
+                              paddingTop: 5,
+                              paddingBottom: 8,
+                              paddingHorizontal: 8,
+                              backgroundColor: colors.background.secondary,
+                              opacity: canGoPrev ? 1 : 0.4,
+                            }}
+                            disabled={!canGoPrev}
+                            onPress={() => {
+                              const d = new Date(progressDate);
+                              d.setHours(12, 0, 0, 0);
+                              d.setDate(d.getDate() - 7);
+                              setProgressDate(d);
                             }}>
-                            ‹
-                          </Text>
-                        </TouchableOpacity>
+                            <Text
+                              style={{
+                                fontSize: 15,
+                                fontWeight: '700',
+                                color: colors.text.primary,
+                              }}>
+                              ‹
+                            </Text>
+                          </TouchableOpacity>
 
-                        {/* Orta: bugüne dön (tek dokunuş) */}
-                        <View
-                          className="px-3 py-2 rounded-xl mx-1"
-                          style={{
-                            backgroundColor: colors.background.secondary,
-                          }}>
-                          <Text
-                            className="font-rubik"
-                            style={{color: colors.text.primary, fontSize: 14}}>
-                            {new Date(progressDate).toLocaleDateString(
-                              c('locale'),
-                              {day: 'numeric', month: 'long', year: 'numeric'},
-                            )}
-                          </Text>
+                          {/* Orta: bugüne dön (tek dokunuş) */}
+                          <View
+                            className="px-3 mx-1"
+                            style={{
+                              borderRadius: 10,
+                              paddingVertical: 5,
+                              backgroundColor: colors.background.secondary,
+                            }}>
+                            <Text
+                              className="font-rubik"
+                              style={{
+                                color: colors.text.primary,
+                                fontSize: 14,
+                                lineHeight: 18,
+                              }}>
+                              {new Date(progressDate).toLocaleDateString(
+                                c('locale'),
+                                {day: 'numeric', month: 'long'},
+                              )}
+                              {'\n'}
+                              <Text
+                                className="text-center"
+                                style={{fontSize: 12, opacity: 0.85}}>
+                                {new Date(progressDate).toLocaleDateString(
+                                  c('locale'),
+                                  {year: 'numeric'},
+                                )}
+                              </Text>
+                            </Text>
+                            {/* <Text
+                                                className="font-rubik"
+                                                style={{color: colors.text.primary, fontSize: 12}}>
+                                                {new Date(progressDate).toLocaleDateString(
+                                                  t('common:locale'),
+                                                  {
+                                                    day: 'numeric',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                  },
+                                                )}
+                                              </Text> */}
+                          </View>
+
+                          <TouchableOpacity
+                            className="rounded-lg"
+                            style={{
+                              paddingTop: 5,
+                              paddingBottom: 8,
+                              paddingHorizontal: 8,
+                              backgroundColor: colors.background.secondary,
+                              opacity: canGoNext ? 1 : 0.4,
+                            }}
+                            disabled={!canGoNext}
+                            onPress={() => {
+                              const d = new Date(progressDate);
+                              d.setHours(12, 0, 0, 0);
+                              d.setDate(d.getDate() + 7);
+                              if (d > today) d.setTime(today.getTime());
+                              setProgressDate(d);
+                            }}>
+                            <Text
+                              style={{
+                                fontSize: 15,
+                                fontWeight: '700',
+                                color: colors.text.primary,
+                              }}>
+                              ›
+                            </Text>
+                          </TouchableOpacity>
                         </View>
-
-                        {/* İleri (+7 gün) */}
-                        <TouchableOpacity
-                          className="rounded-xl"
-                          style={{
-                            paddingTop: 4,
-                            paddingBottom: 8,
-                            paddingHorizontal: 8,
-                            backgroundColor: colors.background.secondary,
-                            opacity: canGoNext ? 1 : 0.4,
-                          }}
-                          disabled={!canGoNext}
-                          onPress={() => {
-                            const d = new Date(progressDate);
-                            d.setHours(12, 0, 0, 0);
-                            d.setDate(d.getDate() + 7); // ← daha önce boştu/yanlıştı
-                            // clamp: bugünün ötesine geçmesin
-                            if (d > today) d.setTime(today.getTime());
-                            setProgressDate(d);
-                          }}>
-                          <Text
-                            style={{
-                              fontSize: 18,
-                              fontWeight: '700',
-                              color: colors.text.primary,
-                            }}>
-                            ›
-                          </Text>
-                        </TouchableOpacity>
                       </View>
                     </View>
                     <CustomWeeklyProgressCalendar
                       weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
                       activeDays={activeDays}
+                      weekDate={progressDate}
                     />
                     <View className="flex flex-row items-center justify-between">
                       <View className="flex flex-row items-center justify-start ml-2 mt-3 my-1">

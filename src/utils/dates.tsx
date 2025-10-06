@@ -21,3 +21,16 @@ export const isTodayExerciseDay = (days: number[]) => {
 };
 
 export const isTodayLocal = (d: Date) => isSameDay(new Date(), d);
+
+export const getMondayLocal = (input: Date | string) => {
+  const base =
+    typeof input === 'string'
+      ? atLocalMidnight(parseYMDLocal(input))
+      : atLocalMidnight(input);
+
+  const day = base.getDay(); // 0=Sun..6=Sat
+  const diff = day === 0 ? -6 : 1 - day; // Pazartesiye çek
+  const monday = new Date(base);
+  monday.setDate(base.getDate() + diff);
+  return atLocalMidnight(monday);
+};

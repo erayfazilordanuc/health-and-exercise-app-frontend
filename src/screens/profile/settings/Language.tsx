@@ -42,20 +42,20 @@ const Language = () => {
       className="h-full pb-32 px-3 pt-3"
       style={{backgroundColor: colors.background.secondary}}>
       <View
-        className="flex flex-col px-4 py-3 rounded-2xl"
+        className="flex flex-col px-4 py-4 rounded-2xl"
         style={{backgroundColor: colors.background.primary}}>
-        <View className="flex-row flex-wrap">
-          <Chip code="tr" label="Türkçe" />
-          <Chip code="en" label="English" />
-        </View>
-
         <Text
-          className="mt-4 font-rubik"
+          className="mb-2 font-rubik"
           style={{color: colors.text.primary, opacity: 0.7}}>
           {current === 'tr'
             ? ' Seçili dil: Türkçe'
             : ' Selected language: English'}
         </Text>
+
+        <View className="flex-row flex-wrap">
+          <Chip code="tr" label="Türkçe" />
+          <Chip code="en" label="English" />
+        </View>
       </View>
     </View>
   );

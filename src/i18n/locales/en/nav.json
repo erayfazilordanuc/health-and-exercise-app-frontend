@@ -14,6 +14,7 @@
   "stacks": {
     "settings": {
       "root": "Settings",
+      "account": "Account",
       "preferences": "Preferences",
       "appearance": "Appearance",
       "notifications": "Notifications",

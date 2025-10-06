@@ -82,6 +82,7 @@ import {calcPercent} from '../../api/exercise/exerciseService';
 import {AVATARS, type AvatarKey} from '../../constants/avatars';
 import {color} from 'react-native-elements/dist/helpers';
 import {useTranslation} from 'react-i18next';
+import StatusOption from './components/StatusOption';
 // import {
 //   isExerciseReminderScheduled,
 //   registerExerciseReminder,
@@ -481,6 +482,14 @@ const Home = () => {
     }, []),
   );
 
+  const STATUS_OPTIONS = [
+    {value: 1, image: images.status1},
+    {value: 3, image: images.status3},
+    {value: 5, image: images.status5},
+    {value: 7, image: images.status7},
+    {value: 9, image: images.status9},
+  ];
+
   const onSaveDailyStatus = async () => {
     setLoading(true);
     try {
@@ -706,8 +715,11 @@ const Home = () => {
             onRequestClose={() => {}}>
             <View className="flex-1 justify-center items-center bg-black/50">
               <View
-                className="w-9/10 py-5 rounded-xl items-center px-4"
-                style={{backgroundColor: colors.background.primary}}>
+                className="py-4 px-2 rounded-xl items-center"
+                style={{
+                  backgroundColor: colors.background.primary,
+                  maxWidth: '95%',
+                }}>
                 <Text
                   className="font-rubik-semibold text-2xl text-center"
                   style={{color: colors.text.primary}}>
@@ -719,113 +731,19 @@ const Home = () => {
                   {t('home:dailyStatusModal.subtitle')}
                 </Text>
                 <View className="flex-row mt-1">
-                  <View
-                    className={`flex-col items-center ${
-                      sliderValue === 1
-                        ? 'border border-black/20 rounded-xl p-1 mx-0.5'
-                        : ''
-                    }`}>
-                    <TouchableOpacity onPress={() => setSliderValue(1)}>
-                      <Image
-                        source={images.status1}
-                        style={{
-                          width: 70,
-                          height: 70,
-                          aspectRatio: 1,
-                        }}
-                        resizeMode="contain"
-                      />
-                    </TouchableOpacity>
-                    <Text
-                      className="text-center text-lg font-rubik-semibold"
-                      style={{color: colors.text.primary}}>
-                      1
-                    </Text>
-                  </View>
-                  <View
-                    className={`flex-col items-center ${
-                      sliderValue === 3
-                        ? 'border border-black/20 rounded-xl p-1 mx-0.5'
-                        : ''
-                    }`}>
-                    <TouchableOpacity onPress={() => setSliderValue(3)}>
-                      <Image
-                        source={images.status3}
-                        style={{
-                          width: 70,
-                          height: 70,
-                          aspectRatio: 1,
-                        }}
-                        resizeMode="contain"
-                      />
-                    </TouchableOpacity>
-                    <Text className="text-center text-lg font-rubik-semibold">
-                      3
-                    </Text>
-                  </View>
-                  <View
-                    className={`flex-col items-center ${
-                      sliderValue === 5
-                        ? 'border border-black/20 rounded-xl p-1 mx-0.5'
-                        : ''
-                    }`}>
-                    <TouchableOpacity onPress={() => setSliderValue(5)}>
-                      <Image
-                        source={images.status5}
-                        style={{
-                          width: 70,
-                          height: 70,
-                          aspectRatio: 1,
-                        }}
-                        resizeMode="contain"
-                      />
-                    </TouchableOpacity>
-                    <Text className="text-center text-lg font-rubik-semibold">
-                      5
-                    </Text>
-                  </View>
-                  <View
-                    className={`flex-col items-center ${
-                      sliderValue === 7
-                        ? 'border border-black/20 rounded-xl p-1 mx-0.5'
-                        : ''
-                    }`}>
-                    <TouchableOpacity onPress={() => setSliderValue(7)}>
-                      <Image
-                        source={images.status7}
-                        style={{
-                          width: 70,
-                          height: 70,
-                          aspectRatio: 1,
-                        }}
-                        resizeMode="contain"
-                      />
-                    </TouchableOpacity>
-                    <Text className="text-center text-lg font-rubik-semibold">
-                      7
-                    </Text>
-                  </View>
-                  <View
-                    className={`flex-col items-center ${
-                      sliderValue === 9
-                        ? 'border border-black/20 rounded-xl p-1 mx-0.5'
-                        : ''
-                    }`}>
-                    <TouchableOpacity onPress={() => setSliderValue(9)}>
-                      <Image
-                        source={images.status9}
-                        style={{
-                          width: 70,
-                          height: 70,
-                          aspectRatio: 1,
-                        }}
-                        resizeMode="contain"
-                      />
-                      <Text className="text-center text-lg font-rubik-semibold">
-                        9
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+                  {STATUS_OPTIONS.map(opt => (
+                    <StatusOption
+                      key={opt.value}
+                      label={opt.value}
+                      image={opt.image}
+                      selected={sliderValue === opt.value}
+                      onPress={() => setSliderValue(opt.value)}
+                      isLight={colors.isLight}
+                      textPrimaryColor={colors.text.primary}
+                      darkBorderColor={colors.text.third}
+                      lightBorderColor="#A6A6A6"
+                    />
+                  ))}
                 </View>
                 {/* <Slider
                   style={{width: '75%', height: 20}}

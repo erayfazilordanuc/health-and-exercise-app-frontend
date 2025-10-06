@@ -125,6 +125,7 @@ import edit_blue from '../assets/icons/edit_blue.png';
 import offline from '../assets/icons/offline.png';
 import delete_user from '../assets/icons/delete_user.png';
 import appearance from '../assets/icons/appearance.png';
+import account from '../assets/icons/account.png';
 
 export default {
   google,
@@ -254,4 +255,5 @@ export default {
   offline,
   delete_user,
   appearance,
+  account,
 };

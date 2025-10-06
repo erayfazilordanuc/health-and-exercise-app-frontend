@@ -27,56 +27,7 @@ import NotificationSetting from 'react-native-open-notification';
 import {useUser} from '../../../contexts/UserContext';
 import {deleteUser} from '../../../api/user/userService';
 import {useTranslation} from 'react-i18next';
-
-interface SettingsItemProps {
-  icon: ImageSourcePropType;
-  title: string;
-  onPress?: () => void;
-  textColor?: string;
-  showArrow?: boolean;
-  px?: number;
-}
-
-const SettingsItem = ({
-  icon,
-  title,
-  onPress,
-  textColor,
-  showArrow = true,
-  px = 20,
-}: SettingsItemProps) => {
-  const {colors} = useTheme();
-  return (
-    <TouchableOpacity
-      style={{
-        backgroundColor: colors.background.primary,
-        paddingHorizontal: px,
-      }}
-      onPress={onPress}
-      className="flex flex-row items-center justify-between py-4 rounded-2xl">
-      <View className="flex flex-row items-center gap-3">
-        <Image
-          source={icon}
-          className="size-7"
-          tintColor={textColor ? textColor : colors.text.primary}
-        />
-        <Text
-          style={{color: textColor ? textColor : colors.text.primary}}
-          className={`font-rubik text-xl`}>
-          {title}
-        </Text>
-      </View>
-
-      {showArrow && (
-        <Image
-          source={icons.rightArrow}
-          className="size-5"
-          tintColor={colors.text.primary}
-        />
-      )}
-    </TouchableOpacity>
-  );
-};
+import {SettingsItem} from './components/SettingsItem';
 
 const Settings = () => {
   const navigation = useNavigation<SettingsScreenNavigationProp>();
@@ -154,6 +105,13 @@ const Settings = () => {
               }}
             /> */}
             <SettingsItem
+              icon={icons.patient}
+              title={t('items.account')}
+              onPress={() => {
+                navigation.navigate('Account');
+              }}
+            />
+            <SettingsItem
               icon={icons.appearance}
               title={t('items.appearance')}
               onPress={() => {
@@ -227,20 +185,11 @@ const Settings = () => {
             icon={icons.logout}
             title={t('items.logout')}
             textColor="#fd5353"
+            bg={colors.isLight ? '#f9e4e4ff' : '#331d1dff'}
             showArrow={false}
             px={12}
             onPress={async () => {
               setIsLogoutAlertVisible(true);
-            }}
-          />
-          <SettingsItem
-            icon={icons.delete_user}
-            title={t('items.deleteAccount')}
-            textColor="#fd5353"
-            showArrow={false}
-            px={12}
-            onPress={async () => {
-              setIsDeleteAlertVisible(true);
             }}
           />
         </View>

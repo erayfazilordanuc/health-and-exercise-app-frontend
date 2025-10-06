@@ -2,6 +2,7 @@
 {
   "items": {
     "preferences": "Preferences",
+    "account": "Account",
     "appearance": "Appearance",
     "notifications": "Notifications",
     "permissionsUser": "Permissions and Consents",

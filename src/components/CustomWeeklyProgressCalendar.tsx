@@ -7,16 +7,19 @@ import {
 } from 'react-native-circular-progress';
 import {useUser} from '../contexts/UserContext';
 import {useTranslation} from 'react-i18next';
+import {getMondayLocal, ymdLocal} from '../utils/dates';
 interface CustomWeeklyProgressCalendarProps {
   todayPercent?: number;
   weeklyPercents: number[]; // aktif günlerin yüzdeleri (activeDays ile aynı sıra)
   activeDays: number[]; // 1=Mon ... 7=Sun (ör: [1,3,5])
+  weekDate?: Date;
 }
 
 const CustomWeeklyProgressCalendar = ({
   todayPercent,
   weeklyPercents,
   activeDays,
+  weekDate,
 }: CustomWeeklyProgressCalendarProps) => {
   const {colors, theme} = useTheme();
   const {t} = useTranslation(['exercise', 'common']);
@@ -36,8 +39,12 @@ const CustomWeeklyProgressCalendar = ({
   };
   const monday = getMonday(today);
 
-  // Aktif günleri 1..7’a göre sırala (UI tutarlılığı için)
-  const activeDaysSorted = [...new Set(activeDays)].sort((a, b) => a - b); // ör: [1,3,5]
+  const mondayToday = getMondayLocal(new Date());
+  const mondayRef = weekDate ? getMondayLocal(weekDate) : mondayToday;
+
+  const isCurrentWeek = ymdLocal(mondayRef) === ymdLocal(mondayToday);
+
+  const activeDaysSorted = [...new Set(activeDays)].sort((a, b) => a - b);
   console.log(activeDays);
   console.log(activeDaysSorted);
 
@@ -146,6 +153,8 @@ const CustomWeeklyProgressCalendar = ({
             const isToday = isSameDay(date, today);
             const isFuture = date > today;
 
+            const isTodayEffective = isToday && isCurrentWeek;
+
             // Aktif gün için varsayılan arkaplan mantığı
             let bgColor = colors.background.secondary;
 
@@ -178,7 +187,7 @@ const CustomWeeklyProgressCalendar = ({
                   margin: 5,
                   height: 77,
                   width: 77,
-                  backgroundColor: isToday
+                  backgroundColor: isTodayEffective
                     ? '#B9E2FE'
                     : colors.background.primary,
                 }}>
@@ -187,7 +196,7 @@ const CustomWeeklyProgressCalendar = ({
                   className="text-sm text-center font-rubik"
                   style={{
                     color:
-                      isToday && !theme.colors.isLight
+                      isTodayEffective && !theme.colors.isLight
                         ? colors.background.primary
                         : colors.text.primary,
                   }}>
@@ -195,7 +204,7 @@ const CustomWeeklyProgressCalendar = ({
                 </Text>
 
                 {/* İçerik */}
-                {isToday && isActive && percent !== 100 ? (
+                {isToday && isCurrentWeek && isActive && percent !== 100 ? (
                   <View
                     className="flex flex-row items-center justify-center"
                     style={{
@@ -226,7 +235,10 @@ const CustomWeeklyProgressCalendar = ({
                       )}
                     </CircularProgress>
                   </View>
-                ) : isActive && !isFuture && percent !== 100 ? (
+                ) : isActive &&
+                  isCurrentWeek &&
+                  !isFuture &&
+                  percent !== 100 ? (
                   <View
                     className="flex flex-row items-center justify-center"
                     style={{

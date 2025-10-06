@@ -55,7 +55,7 @@ import {
   useTodaysProgressOfflineFirst,
   useWeeklyActiveDaysProgressOfflineAware,
 } from '../../../hooks/progressQueries';
-import {isEqual} from 'lodash';
+import {isEqual, set} from 'lodash';
 import {Theme, themes} from '../../../themes/themes';
 import {
   useExerciseSchedule,
@@ -63,9 +63,10 @@ import {
 } from '../../../hooks/exerciseQueries';
 import {useGroupById} from '../../../hooks/groupQueries';
 import {Dumbbell, Armchair} from 'lucide-react-native';
-import {isTodayExerciseDay} from '../../../utils/dates';
+import {isTodayExerciseDay, isTodayLocal} from '../../../utils/dates';
 import {getDbUser} from '../../../api/user/userService';
 import {useTranslation} from 'react-i18next';
+import ExerciseProgress from '../../groups/ExerciseProgress';
 
 const {height, width} = Dimensions.get('window');
 
@@ -231,16 +232,23 @@ const ExercisesUser = () => {
 
     // if (!isEqual(weeklyExerciseProgressRes, weeklyExerciseProgress))
     setWeeklyExersiseProgress(weeklyExerciseProgressRes);
+
+    return weeklyExerciseProgressRes;
+  };
+
+  const fetchTodayProgress = async () => {
+    const todayExerciseProgressRes: ExerciseProgressDTO =
+      await getTodaysProgress();
+    // if (!isEqual(todayExerciseProgressRes, todayExerciseProgress))
+    setTodayExerciseProgress(todayExerciseProgressRes);
+    return todayExerciseProgressRes;
   };
 
   const fetchProgress = async () => {
     setLoading(true);
     try {
       if (updatedActiveDays && isTodayExerciseDay(updatedActiveDays)) {
-        const todayExerciseProgressRes: ExerciseProgressDTO =
-          await getTodaysProgress();
-        // if (!isEqual(todayExerciseProgressRes, todayExerciseProgress))
-        setTodayExerciseProgress(todayExerciseProgressRes);
+        await fetchTodayProgress();
       }
       if (!todayInitialized) setTodayInitialized(true);
 
@@ -260,9 +268,15 @@ const ExercisesUser = () => {
     }
   }, [isFocused, updatedActiveDays, user?.groupId, user?.role]);
 
+  const fetchProgressByDate = async () => {
+    console.log('progressDate changed', progressDate.toISOString());
+    const newWeeklyProgress = await fetchWeeklyProgress(progressDate);
+    if (!isTodayLocal(progressDate)) {
+      setTodayPercent(0);
+    }
+  };
   useEffect(() => {
-    console.log('progressDate changed', progressDate);
-    fetchWeeklyProgress(progressDate);
+    fetchProgressByDate();
   }, [progressDate]);
 
   const onStartExercise = async (position: ExercisePosition) => {
@@ -652,7 +666,7 @@ const ExercisesUser = () => {
                               width={6}
                               rotation={0}
                               lineCap="round"
-                              fill={todayPercent}
+                              fill={calcPercent(todayExerciseProgress)}
                               tintColor={colors.primary[300]}
                               onAnimationComplete={() =>
                                 console.log('onAnimationComplete')
@@ -666,8 +680,8 @@ const ExercisesUser = () => {
                                     color: colors.text.primary,
                                   }}>
                                   {t('common:locale') === 'tr-TR'
-                                    ? `%${todayPercent}`
-                                    : `${todayPercent}%`}
+                                    ? `%${calcPercent(todayExerciseProgress)}`
+                                    : `${calcPercent(todayExerciseProgress)}%`}
                                 </Text>
                               )}
                             </AnimatedCircularProgress>
@@ -708,109 +722,119 @@ const ExercisesUser = () => {
               borderRadius: 17,
               backgroundColor: colors.background.primary,
             }}>
-            <View className="flex flex-row items-center justify-between">
+            <View className="flex flex-row items-center justify-between mb-2">
               <Text
-                className="font-rubik mb-2 ml-2"
-                style={{fontSize: 19, color: colors.text.primary}}>
+                className="font-rubik ml-2"
+                style={{fontSize: 17, color: colors.text.primary}}>
                 {t('exercise:calendar.title')}
               </Text>
-              {/* <Text
-                className="font-rubik mb-1 mr-1 rounded-xl"
-                style={{
-                  paddingVertical: 5,
-                  paddingHorizontal: 9,
-                  fontSize: 14,
-                  color: colors.text.primary,
-                  backgroundColor: colors.background.secondary,
-                }}>
-                {new Date().toLocaleDateString(t('common:locale'), {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </Text> */}
-            </View>
-            <View className="flex flex-row items-center justify-between mb-2">
-              <View className="flex-row items-center">
-                <TouchableOpacity
-                  className="rounded-xl"
-                  style={{
-                    paddingTop: 4,
-                    paddingBottom: 8,
-                    paddingHorizontal: 8,
-                    backgroundColor: colors.background.secondary,
-                    opacity: canGoPrev ? 1 : 0.4,
-                  }}
-                  disabled={!canGoPrev}
-                  onPress={() => {
-                    const d = new Date(progressDate);
-                    d.setHours(12, 0, 0, 0);
-                    d.setDate(d.getDate() - 7);
-                    setProgressDate(d);
-                  }}>
-                  <Text
+              <View className="flex flex-row items-center justify-between">
+                <View className="flex-row items-center">
+                  <TouchableOpacity
+                    className="rounded-lg"
                     style={{
-                      fontSize: 18,
-                      fontWeight: '700',
-                      color: colors.text.primary,
+                      paddingTop: 5,
+                      paddingBottom: 8,
+                      paddingHorizontal: 8,
+                      backgroundColor: colors.background.secondary,
+                      opacity: canGoPrev ? 1 : 0.4,
+                    }}
+                    disabled={!canGoPrev}
+                    onPress={() => {
+                      const d = new Date(progressDate);
+                      d.setHours(12, 0, 0, 0);
+                      d.setDate(d.getDate() - 7);
+                      setProgressDate(d);
                     }}>
-                    ‹
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: '700',
+                        color: colors.text.primary,
+                      }}>
+                      ‹
+                    </Text>
+                  </TouchableOpacity>
 
-                {/* Orta: bugüne dön (tek dokunuş) */}
-                <View
-                  className="px-3 py-2 rounded-xl mx-1"
-                  style={{
-                    backgroundColor: colors.background.secondary,
-                  }}>
-                  <Text
-                    className="font-rubik"
-                    style={{color: colors.text.primary, fontSize: 14}}>
-                    {new Date(progressDate).toLocaleDateString(
-                      t('common:locale'),
-                      {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      },
-                    )}
-                  </Text>
+                  {/* Orta: bugüne dön (tek dokunuş) */}
+                  <View
+                    className="px-3 mx-1"
+                    style={{
+                      borderRadius: 10,
+                      paddingVertical: 5,
+                      backgroundColor: colors.background.secondary,
+                    }}>
+                    <Text
+                      className="font-rubik"
+                      style={{
+                        color: colors.text.primary,
+                        fontSize: 14,
+                        lineHeight: 18,
+                      }}>
+                      {new Date(progressDate).toLocaleDateString(
+                        t('common:locale'),
+                        {day: 'numeric', month: 'long'},
+                      )}
+                      {'\n'}
+                      <Text
+                        className="text-center"
+                        style={{fontSize: 12, opacity: 0.85}}>
+                        {new Date(progressDate).toLocaleDateString(
+                          t('common:locale'),
+                          {year: 'numeric'},
+                        )}
+                      </Text>
+                    </Text>
+                    {/* <Text
+                      className="font-rubik"
+                      style={{color: colors.text.primary, fontSize: 12}}>
+                      {new Date(progressDate).toLocaleDateString(
+                        t('common:locale'),
+                        {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        },
+                      )}
+                    </Text> */}
+                  </View>
+
+                  <TouchableOpacity
+                    className="rounded-lg"
+                    style={{
+                      paddingTop: 5,
+                      paddingBottom: 8,
+                      paddingHorizontal: 8,
+                      backgroundColor: colors.background.secondary,
+                      opacity: canGoNext ? 1 : 0.4,
+                    }}
+                    disabled={!canGoNext}
+                    onPress={() => {
+                      const d = new Date(progressDate);
+                      d.setHours(12, 0, 0, 0);
+                      d.setDate(d.getDate() + 7);
+                      if (d > today) d.setTime(today.getTime());
+                      setProgressDate(d);
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: '700',
+                        color: colors.text.primary,
+                      }}>
+                      ›
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-
-                <TouchableOpacity
-                  className="rounded-xl"
-                  style={{
-                    paddingTop: 4,
-                    paddingBottom: 8,
-                    paddingHorizontal: 8,
-                    backgroundColor: colors.background.secondary,
-                    opacity: canGoNext ? 1 : 0.4,
-                  }}
-                  disabled={!canGoNext}
-                  onPress={() => {
-                    const d = new Date(progressDate);
-                    d.setHours(12, 0, 0, 0);
-                    d.setDate(d.getDate() + 7);
-                    if (d > today) d.setTime(today.getTime());
-                    setProgressDate(d);
-                  }}>
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontWeight: '700',
-                      color: colors.text.primary,
-                    }}>
-                    ›
-                  </Text>
-                </TouchableOpacity>
               </View>
             </View>
+
             {weeklyExerciseProgress && (
               <CustomWeeklyProgressCalendar
-                todayPercent={calcPercent(todayExerciseProgress)}
+                todayPercent={todayPercent}
                 weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
                 activeDays={updatedActiveDays ?? []}
+                weekDate={progressDate}
               />
             )}
             <View className="flex flex-row items-center justify-between mt-3">
