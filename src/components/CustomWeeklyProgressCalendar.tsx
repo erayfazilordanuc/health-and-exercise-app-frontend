@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useTransition} from 'react';
+import React, {useEffect, useMemo, useRef, useTransition} from 'react';
 import {View, Text, ScrollView} from 'react-native';
 import {useTheme} from '../themes/ThemeProvider';
 import {
@@ -37,12 +37,15 @@ const CustomWeeklyProgressCalendar = ({
     date.setDate(date.getDate() + diff);
     return date;
   };
-  const monday = getMonday(today);
-
   const mondayToday = getMondayLocal(new Date());
-  const mondayRef = weekDate ? getMondayLocal(weekDate) : mondayToday;
 
-  const isCurrentWeek = ymdLocal(mondayRef) === ymdLocal(mondayToday);
+  // ✅ weekDate değiştiğinde yeniden hesapla (getTime() ile güvenli bağımlılık)
+  const baseMonday = useMemo(() => {
+    const base = weekDate ? getMondayLocal(weekDate) : mondayToday;
+    return base;
+  }, [weekDate ? weekDate.getTime() : undefined, mondayToday.getTime()]);
+
+  const isCurrentWeek = ymdLocal(baseMonday) === ymdLocal(mondayToday);
 
   const activeDaysSorted = [...new Set(activeDays)].sort((a, b) => a - b);
   console.log(activeDays);
@@ -76,11 +79,14 @@ const CustomWeeklyProgressCalendar = ({
   });
 
   // Bugünün index’ini bul (scroll için)
-  const todayIndex = fullWeek.findIndex(day => {
-    const date = new Date(monday);
-    date.setDate(monday.getDate() + day.offset);
-    return isSameDay(date, today);
-  });
+  // ✅ Bugün indeksi baseMonday'e göre
+  const todayIndex = useMemo(() => {
+    return fullWeek.findIndex(day => {
+      const date = new Date(baseMonday);
+      date.setDate(baseMonday.getDate() + day.offset);
+      return isSameDay(date, today);
+    });
+  }, [fullWeek, baseMonday, today.getTime()]);
 
   useEffect(() => {
     if (scrollRef.current && todayIndex !== -1) {
@@ -147,8 +153,8 @@ const CustomWeeklyProgressCalendar = ({
         style={{backgroundColor: colors.background.secondary}}>
         {fullWeek.map(
           ({label, offset, isActive, progressIndex, dayNum}, index) => {
-            const date = new Date(monday);
-            date.setDate(monday.getDate() + offset);
+            const date = new Date(baseMonday);
+            date.setDate(baseMonday.getDate() + offset);
 
             const isToday = isSameDay(date, today);
             const isFuture = date > today;
