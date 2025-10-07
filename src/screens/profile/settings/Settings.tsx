@@ -105,7 +105,7 @@ const Settings = () => {
               }}
             /> */}
             <SettingsItem
-              icon={icons.patient}
+              icon={icons.account}
               title={t('items.account')}
               onPress={() => {
                 navigation.navigate('Account');

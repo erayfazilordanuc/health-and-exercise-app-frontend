@@ -168,9 +168,9 @@ const CustomWeeklyProgressCalendar = ({
             if (isActive) {
               if (percent === 100) {
                 bgColor = '#14E077'; // tamamlandı
-              } else if (isToday) {
+              } else if (isToday && isCurrentWeek) {
                 bgColor = '#0091ff'; // bugün (yapılacak)
-              } else if (!isFuture) {
+              } else if (!isFuture || !isCurrentWeek) {
                 bgColor = '#fd5353'; // geçmişte tamamlanmamış
               } else {
                 bgColor = '#0091ff'; // gelecekte yapılacak
