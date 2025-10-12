@@ -53,6 +53,7 @@ export const getUserByUsername = async (username: string) => {
 export const updateUser = async (updateUserDTO: UpdateUserDTO) => {
   const response = await apiClient.put('/users/me', updateUserDTO);
   console.log('update user response', response);
+  AsyncStorage.setItem('user', JSON.stringify(response.data));
   return response;
 };
 

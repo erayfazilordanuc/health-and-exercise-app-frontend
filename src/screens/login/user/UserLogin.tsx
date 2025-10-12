@@ -214,7 +214,15 @@ function UserLogin() {
       setLoading(true);
 
       if (
-        !(fullName && username && fullName && password && gender && birthDate)
+        !(
+          fullName &&
+          username &&
+          fullName &&
+          email &&
+          password &&
+          gender &&
+          birthDate
+        )
       ) {
         ToastAndroid.show(t('login:toasts.fillAllFields'), ToastAndroid.SHORT);
         return;
@@ -237,6 +245,11 @@ function UserLogin() {
 
       if (username.length > 25) {
         ToastAndroid.show(t('login:toasts.usernameMax'), ToastAndroid.SHORT);
+        return;
+      }
+
+      if (!emailRegex.test(email.trim())) {
+        ToastAndroid.show(t('login:toasts.invalidEmail'), ToastAndroid.SHORT);
         return;
       }
 
@@ -268,7 +281,7 @@ function UserLogin() {
 
       const registerPayload: RegisterRequestPayload = {
         username: username.trim(),
-        // email: 'ostensible@gmail.com',
+        email: email.trim(),
         fullName: fullName.trim(),
         birthDate: birthDate,
         password: password.trim(),
@@ -487,6 +500,26 @@ function UserLogin() {
           </View>
           {loginMethod === LoginMethod.registration && (
             <>
+              <View
+                className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
+                style={{
+                  backgroundColor: theme.colors.isLight
+                    ? colors.background.primary
+                    : '#333333',
+                }}>
+                <TextInput
+                  placeholderTextColor={'gray'}
+                  selectionColor={'#7AADFF'}
+                  autoCapitalize="none"
+                  value={email}
+                  onChangeText={(value: string) => {
+                    setEmail(value);
+                  }}
+                  placeholder={t('form.email')} // "E-posta"
+                  className="text-lg font-rubik ml-5 flex-1"
+                  style={{color: colors.text.primary}}
+                />
+              </View>
               <View
                 className="flex flex-row items-center justify-start z-50 rounded-full mt-2 py-1"
                 style={{
