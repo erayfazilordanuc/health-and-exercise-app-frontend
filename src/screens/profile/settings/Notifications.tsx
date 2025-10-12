@@ -27,7 +27,7 @@ const Notifications = () => {
       const response = await axios.post(
         'https://eray.ordanuc.com/api/notifications/send',
         {
-          receiver: 'hasta1',
+          receiver: '1',
           message: 'merhaba bu bir test',
         },
         {

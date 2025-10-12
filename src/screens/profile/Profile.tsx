@@ -53,7 +53,12 @@ import {Picker} from '@react-native-picker/picker';
 import ProgressBar from '../../components/ProgressBar';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
-import {getDbUser, getUser, useUpdateAvatar} from '../../api/user/userService';
+import {
+  getDbUser,
+  getUser,
+  updateUserMeasurements,
+  useUpdateAvatar,
+} from '../../api/user/userService';
 import GradientText from '../../components/GradientText';
 import {
   getLocal,
@@ -90,12 +95,15 @@ import {AVATARS, type AvatarKey} from '../../constants/avatars';
 import {useTranslation} from 'react-i18next';
 
 const Profile = () => {
+  const rootNavigation = useNavigation<RootScreenNavigationProp>();
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const {t} = useTranslation('profile');
   const {t: c} = useTranslation('common');
   const insets = useSafeAreaInsets();
   // const [user, setUser] = useState<User | null>(null);
   const {user, setUser} = useUser();
+  const [uHeight, setHeight] = useState(user?.height);
+  const [uWeight, setWeight] = useState(user?.weight);
   const {colors, theme} = useTheme();
   const qc = useQueryClient();
   const {height} = Dimensions.get('screen');
@@ -122,6 +130,7 @@ const Profile = () => {
   const [addModalValue, setAddModalValue] = useState<Float>();
   const {updateAvatar} = useUpdateAvatar();
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showMeasurementsModal, setShowMeasurementsModal] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [showHCAlert, setShowHCAlert] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -521,7 +530,63 @@ const Profile = () => {
   );
 
   const isLongName = () => {
-    return user?.fullName.length && user?.fullName.length > 20;
+    return user?.fullName.length && user?.fullName.length > 15;
+  };
+
+  const getFullName = () => {
+    if (!user) return '';
+
+    if (!isLongName()) return user.fullName;
+
+    let fullName = '';
+
+    const parts = user.fullName.split(' ');
+
+    for (let i = 0; i < parts.length - 1; i++) {
+      fullName += parts[i] + ' ';
+    }
+
+    fullName += '\n' + parts[parts.length - 1];
+
+    console.log(fullName);
+
+    return fullName;
+  };
+
+  const calculateBmi = () => {
+    if (uHeight && uWeight) {
+      const hm = uHeight / 100;
+      const bmi = uWeight / (hm * hm);
+      let result = bmi.toFixed(2).toString() + ' ';
+      if (bmi < 18.5) {
+        result += t('bmiLevel.underweight');
+      } else if (bmi < 24.9) {
+        result += t('bmiLevel.normal');
+      } else if (bmi < 29.9) {
+        result += t('bmiLevel.overweight');
+      } else {
+        // if (bmi < 34.9)
+        result += t('bmiLevel.obese');
+      }
+
+      return result;
+    }
+    return '';
+  };
+
+  const updateMeasurements = async () => {
+    const dto: UpdateMeasurementsDTO = {
+      height: uHeight,
+      weight: uWeight,
+    };
+    const response = await updateUserMeasurements(dto);
+    if (response.status >= 200 && response.status <= 300) {
+      setUser(response.data);
+      return true;
+    } else {
+      ToastAndroid.show(t('toasts.saveUnsuccessful'), ToastAndroid.SHORT);
+    }
+    return false;
   };
 
   return (
@@ -598,13 +663,8 @@ const Profile = () => {
               backgroundColor: colors.background.primary,
             }}>
             <View className="flex flex-col justify-center pl-5 pr-4 py-3">
-              <View className="flex flex-row justify-between mt-1">
-                <View
-                  className={`flex ${
-                    isLongName()
-                      ? 'flex-col items-start'
-                      : 'flex-row items-center'
-                  } justify-start`}>
+              <View className="flex flex-row justify-between my-1">
+                <View className="flex-row items-center justify-start">
                   <TouchableOpacity
                     onPress={() => {
                       setShowAvatarModal(true);
@@ -622,11 +682,11 @@ const Profile = () => {
                     style={{
                       marginTop: isLongName() ? 10 : 0,
                     }}
-                    className="font-rubik-medium text-2xl ml-3"
+                    className="font-rubik-medium text-2xl ml-5"
                     start={{x: 0, y: 0}}
                     end={{x: 0.7, y: 0}}
                     colors={[colors.primary[300], colors.secondary[300]]}>
-                    {user?.fullName}
+                    {getFullName()}
                   </GradientText>
                 </View>
                 <View className="flex flex-row items-center justify-end">
@@ -652,48 +712,46 @@ const Profile = () => {
                   </TouchableOpacity>
                 </View>
               </View>
-              <View className="flex flex-row items-center mt-3 mb-1">
-                <Text
-                  className="font-rubik-medium text-xl"
-                  style={{color: colors.text.primary}}>
-                  {t('labels.username')}:{'  '}
-                </Text>
-                <Text
-                  className="font-rubik text-xl"
-                  style={{color: colors.text.primary}}>
-                  {user?.username}
-                </Text>
-              </View>
-              {user?.role === 'ROLE_ADMIN' && (
-                <View className="flex flex-row items-center mt-3 mb-1">
-                  <Text
-                    className="font-rubik-medium text-xl"
-                    style={{color: colors.text.primary}}>
-                    {t('labels.email')}
-                    {'  '}
-                  </Text>
-                  <Text
-                    className="font-rubik text-xl"
-                    style={{color: colors.text.primary}}>
-                    {user?.email}
-                  </Text>
-                </View>
-              )}
-              <View className="flex flex-row items-center mt-1 mb-1">
-                <Text
-                  className="font-rubik-medium text-lg"
-                  style={{color: colors.text.primary}}>
-                  {t('labels.age')}:{'  '}
-                </Text>
-                <Text
-                  className="font-rubik text-lg"
-                  style={{color: colors.text.primary}}>
-                  {calculateAge()}
-                </Text>
-              </View>
               {showDetail && (
                 <>
-                  <View className="flex flex-row items-center mt-1 mb-1">
+                  <View className="flex flex-row items-center mt-3 mb-1">
+                    <Text
+                      className="font-rubik-medium text-lg"
+                      style={{color: colors.text.primary}}>
+                      {t('labels.username')}:{'  '}
+                    </Text>
+                    <Text
+                      className="font-rubik text-lg"
+                      style={{color: colors.text.primary}}>
+                      {user?.username}
+                    </Text>
+                  </View>
+                  <View className="flex flex-row items-center my-1">
+                    <Text
+                      className="font-rubik-medium text-lg"
+                      style={{color: colors.text.primary}}>
+                      {t('labels.email')}
+                      {':  '}
+                    </Text>
+                    <Text
+                      className="font-rubik text-lg"
+                      style={{color: colors.text.primary}}>
+                      {user?.email}
+                    </Text>
+                  </View>
+                  <View className="flex flex-row items-center my-1">
+                    <Text
+                      className="font-rubik-medium text-lg"
+                      style={{color: colors.text.primary}}>
+                      {t('labels.age')}:{'  '}
+                    </Text>
+                    <Text
+                      className="font-rubik text-lg"
+                      style={{color: colors.text.primary}}>
+                      {calculateAge()}
+                    </Text>
+                  </View>
+                  <View className="flex flex-row items-center my-1">
                     <Text
                       className="font-rubik-medium text-lg"
                       style={{color: colors.text.primary}}>
@@ -712,7 +770,7 @@ const Profile = () => {
                       )}
                     </Text>
                   </View>
-                  <View className="flex flex-row items-center mt-1 mb-1">
+                  <View className="flex flex-row items-center my-1">
                     <Text
                       className="font-rubik-medium text-lg"
                       style={{color: colors.text.primary}}>
@@ -725,6 +783,89 @@ const Profile = () => {
                         ? t('labels.male')
                         : t('labels.female')}
                     </Text>
+                  </View>
+
+                  {user?.role === 'ROLE_USER' && (
+                    <>
+                      <View className="flex flex-row items-between my-1">
+                        <View className="flex flex-row items-center">
+                          <Text
+                            className="font-rubik-medium text-lg"
+                            style={{color: colors.text.primary}}>
+                            {t('labels.height')}:{'  '}
+                          </Text>
+                          <Text
+                            className="font-rubik text-lg"
+                            style={{color: colors.text.primary}}>
+                            {user?.height ? user?.height + ' cm' : ''}
+                          </Text>
+                        </View>
+                      </View>
+                      <View className="flex flex-row items-between my-1">
+                        <View className="flex flex-row items-center">
+                          <Text
+                            className="font-rubik-medium text-lg"
+                            style={{color: colors.text.primary}}>
+                            {t('labels.weight')}:{'  '}
+                          </Text>
+                          <Text
+                            className="font-rubik text-lg"
+                            style={{color: colors.text.primary}}>
+                            {user?.weight ? user?.weight + ' cm' : ''}
+                          </Text>
+                        </View>
+                      </View>
+                    </>
+                  )}
+                  {/* <View className="flex flex-row items-center my-1">
+                    <Text
+                      className="font-rubik-medium text-md"
+                      style={{color: colors.text.primary}}>
+                      {t('labels.bmi')}:{'  '}
+                    </Text>
+                    <Text
+                      className="font-rubik text-md"
+                      style={{color: colors.text.primary}}>
+                      {calculateBmi()}
+                    </Text>
+                  </View> */}
+                  <View className="flex flex-row items-center justify-between my-1">
+                    {user?.role === 'ROLE_USER' && (
+                      <TouchableOpacity
+                        className="self-end px-3 py-2 mb-1 mt-2 rounded-2xl flex-row items-center jusfiyf-center"
+                        style={{backgroundColor: colors.background.secondary}}
+                        onPress={() => {
+                          setShowMeasurementsModal(true);
+                        }}>
+                        <Image
+                          source={icons.measurements}
+                          className="size-5 mb-1"
+                          tintColor={colors.text.primary}
+                        />
+                        <Text
+                          className="font-rubik-medium text-md ml-2 mr-1"
+                          style={{color: colors.text.primary}}>
+                          {t('labels.editMeasurements')}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                      className="self-end px-3 py-2 mb-1 mt-2 rounded-2xl flex-row items-center jusfiyf-center"
+                      style={{backgroundColor: colors.background.secondary}}
+                      onPress={() => {
+                        navigation.navigate('Settings', {screen: 'Account'});
+                      }}>
+                      <Image
+                        source={icons.editAccount}
+                        className="size-5 mb-1"
+                        tintColor={colors.text.primary}
+                      />
+                      <Text
+                        className="font-rubik-medium text-md ml-2 mr-1"
+                        style={{color: colors.text.primary}}>
+                        {t('labels.edit')}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 </>
               )}
@@ -1101,7 +1242,8 @@ const Profile = () => {
                   color="#FDEF22"
                   setAddModalFunction={setAddModalFunction}
                   setSymptom={setTotalSleepMinutes}
-                  onAdd={setShowTimePicker}
+                  onAdd={setIsAddModalVisible}
+                  // onAdd={setShowTimePicker}
                   updateDisabled={
                     (healthConnectSymptoms?.sleepMinutes &&
                       healthConnectSymptoms?.sleepMinutes > 0) ||
@@ -1444,11 +1586,11 @@ const Profile = () => {
               </View>
             </View>
           </Modal>
-          <DatePicker
+          {/* <DatePicker
             modal
             open={showTimePicker}
             date={time}
-            title="Uyku sürenizi seçiniz"
+            title={t('datePicker.title')}
             mode="time"
             locale={c('locale')}
             is24hourSource="locale"
@@ -1482,11 +1624,145 @@ const Profile = () => {
             onCancel={() => setShowTimePicker(false)}
             confirmText={t('datePicker.confirm')}
             cancelText={t('datePicker.cancel')}
-          />
+          /> */}
         </ScrollView>
       </View>
 
       <CustomAlertSingleton ref={alertRef} />
+
+      <Modal
+        transparent={true}
+        visible={showMeasurementsModal}
+        animationType="fade"
+        onRequestClose={() => setShowMeasurementsModal(false)}>
+        <View className="flex-1 justify-center items-center bg-black/40">
+          <View
+            className="w-11/12 rounded-3xl p-5 pt-6 pb-4 items-center"
+            style={{backgroundColor: colors.background.primary}}>
+            <Text
+              style={{
+                marginTop: -5,
+                fontSize: 20,
+                lineHeight: 26,
+                color: colors.text.primary,
+              }}
+              className="text-center font-rubik-medium">
+              {t('labels.measurements')}
+            </Text>
+            <View
+              className="flex-row items-center justify-center mt-4 rounded-2xl"
+              style={{backgroundColor: colors.background.primary}}>
+              <Text
+                className="font-rubik text-xl pr-3"
+                style={{color: colors.text.primary}}>
+                {t('labels.height')}:
+              </Text>
+              <View
+                className="flex-row items-center justify-between rounded-2xl pl-3"
+                style={{
+                  backgroundColor: colors.background.secondary,
+                }}>
+                <TextInput
+                  value={uHeight?.toString()}
+                  placeholder={t('labels.heightPlaceholder')}
+                  placeholderTextColor="gray"
+                  onChangeText={text => {
+                    if (text === '') {
+                      setHeight(undefined);
+                    } else {
+                      const num = parseInt(text);
+                      if (!isNaN(num)) {
+                        setHeight(num);
+                      }
+                    }
+                  }}
+                  selectionColor={'#7AADFF'}
+                  className="font-rubik text-xl rounded-2xl pr-4"
+                  style={{
+                    backgroundColor: colors.background.secondary,
+                    color: colors.text.primary,
+                  }}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+
+            <View
+              className="flex-row items-center justify-center mt-2 rounded-2xl"
+              style={{backgroundColor: colors.background.primary}}>
+              <Text
+                className="font-rubik text-xl pr-3"
+                style={{color: colors.text.primary}}>
+                {t('labels.weight')}:
+              </Text>
+              <View
+                className="flex flex-row justify-between mb-1 rounded-2xl pl-3"
+                style={{
+                  backgroundColor: colors.background.secondary,
+                }}>
+                <TextInput
+                  value={uWeight?.toString()}
+                  placeholder={t('labels.weightPlaceholder')}
+                  placeholderTextColor="gray"
+                  onChangeText={text => {
+                    if (text === '') {
+                      setWeight(undefined);
+                    } else {
+                      const num = parseInt(text);
+                      if (!isNaN(num)) {
+                        setWeight(num);
+                      }
+                    }
+                  }}
+                  selectionColor={'#7AADFF'}
+                  className="font-rubik text-xl rounded-2xl pr-4"
+                  style={{
+                    backgroundColor: colors.background.secondary,
+                    color: colors.text.primary,
+                  }}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+
+            <View className="flex-row items-center justify-center">
+              <TouchableOpacity
+                onPress={() => {
+                  setShowMeasurementsModal(false);
+                  setHeight(undefined);
+                  setWeight(undefined);
+                }}
+                className="py-2 px-3 rounded-2xl items-center mx-2 mt-6"
+                style={{backgroundColor: colors.background.secondary}}>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  {t('avatarModal.cancel')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={async () => {
+                  const updated = await updateMeasurements();
+                  if (updated) {
+                    setShowMeasurementsModal(false);
+                    ToastAndroid.show(
+                      t('toasts.saveSuccessful'),
+                      ToastAndroid.SHORT,
+                    );
+                  }
+                }}
+                className="py-2 px-3 rounded-2xl items-center mx-2 mt-6"
+                style={{backgroundColor: '#16d750'}}>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.background.secondary}}>
+                  {t('avatarModal.save')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         transparent={true}

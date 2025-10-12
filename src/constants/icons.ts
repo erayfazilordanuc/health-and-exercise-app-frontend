@@ -126,6 +126,8 @@ import offline from '../assets/icons/offline.png';
 import delete_user from '../assets/icons/delete_user.png';
 import appearance from '../assets/icons/appearance.png';
 import account from '../assets/icons/account.png';
+import editAccount from '../assets/icons/editAccount.png';
+import measurements from '../assets/icons/measurements.png';
 
 export default {
   google,
@@ -256,4 +258,6 @@ export default {
   delete_user,
   appearance,
   account,
+  editAccount,
+  measurements,
 };

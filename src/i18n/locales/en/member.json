@@ -13,6 +13,7 @@
   "fields": {
     "fullName": "Full Name:",
     "username": "Username:",
+    "email": "Email:",
     "age": "Age:",
     "birthDate": "Date of Birth:",
     "gender": "Gender:",
@@ -20,13 +21,24 @@
       "male": "Male",
       "female": "Female"
     },
+    "height": "Height",
+    "weight": "Weight",
+    "bmi": "Body Mass Index (BMI)",
     "themeUsed": "Theme in Use:",
     "themeMap": {
       "blue": "Blue-Turquoise",
       "purple": "Purple-Pink",
       "green": "Green-Yellow",
       "red": "Red-Orange"
-    }
+    },
+    "showDetail": "Show Details",
+    "hideDetail": "Hide Details"
+  },
+  "bmiLevel": {
+    "underweight": "Underweight",
+    "normal": "Normal",
+    "overweight": "Overweight",
+    "obese": "Obese"
   },
   "buttons": {
     "chat": "Chat",

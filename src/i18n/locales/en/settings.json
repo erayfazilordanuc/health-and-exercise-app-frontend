@@ -12,6 +12,7 @@
     "development": "Development",
     "language": "Language",
     "logout": "Log Out",
+    "save": "Save",
     "deleteAccount": "Delete My Account"
   },
 

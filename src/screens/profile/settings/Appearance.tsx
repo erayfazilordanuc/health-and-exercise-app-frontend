@@ -19,7 +19,7 @@ import {
 import {useTheme} from '../../../themes/ThemeProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import icons from '../../../constants/icons';
-import {updateUser} from '../../../api/user/userService';
+import {updateUser, updateUserTheme} from '../../../api/user/userService';
 import {update} from 'lodash';
 import {useUser} from '../../../contexts/UserContext';
 import LinearGradient from 'react-native-linear-gradient';
@@ -61,11 +61,7 @@ const Appearance = () => {
     setTheme(getActiveTheme(themeObj, mode, colorScheme));
 
     if (user.id) {
-      const updateDTO: UpdateUserDTO = {
-        id: user.id,
-        theme: nextThemeOption,
-      };
-      const response = await updateUser(updateDTO);
+      const response = await updateUserTheme(nextThemeOption);
       if (response.status >= 200 && response.status <= 300) {
         AsyncStorage.setItem('user', JSON.stringify(response.data as User));
         setUser(response.data);
@@ -83,11 +79,7 @@ const Appearance = () => {
     setTheme(getActiveTheme(themeObj, newMode, colorScheme));
 
     if (user.id) {
-      const updateDTO: UpdateUserDTO = {
-        id: user.id,
-        theme: nextThemeOption,
-      };
-      const response = await updateUser(updateDTO);
+      const response = await updateUserTheme(nextThemeOption);
       if (response.status >= 200 && response.status <= 300) {
         AsyncStorage.setItem('user', JSON.stringify(response.data as User));
         setUser(response.data);

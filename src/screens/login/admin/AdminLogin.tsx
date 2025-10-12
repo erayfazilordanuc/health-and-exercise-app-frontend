@@ -20,24 +20,24 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import icons from '../../constants/icons';
+import icons from '../../../constants/icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNetInfo} from '@react-native-community/netinfo';
-import {useTheme} from '../../themes/ThemeProvider';
+import {useTheme} from '../../../themes/ThemeProvider';
 import {
   login,
   loginAdmin,
   register,
   registerAdmin,
-} from '../../api/auth/authService';
-import {useUser} from '../../contexts/UserContext';
+} from '../../../api/auth/authService';
+import {useUser} from '../../../contexts/UserContext';
 import DatePicker from 'react-native-date-picker';
 import {Dropdown} from 'react-native-element-dropdown';
 import {BlurView} from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
-import {LoginMethod} from '../../types/enums';
+import {LoginMethod} from '../../../types/enums';
 import {useTranslation} from 'react-i18next';
 
 function AdminLogin() {
@@ -524,6 +524,19 @@ function AdminLogin() {
               style={{color: colors.text.primary}}
             />
           </View>
+        )}
+
+        {loginMethod !== LoginMethod.registration && (
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate('ForgotPassword');
+            }}>
+            <Text
+              className="text-lg font-rubik text-center mt-2"
+              style={{color: '#0091ff', textDecorationLine: 'underline'}}>
+              {t('login:forgotPassword.title')}
+            </Text>
+          </TouchableOpacity>
         )}
 
         {!loading ? (

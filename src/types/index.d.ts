@@ -19,6 +19,8 @@ type User = {
   email?: string;
   birthDate?: string; // yyyy-mm-dd
   gender?: string;
+  height?: number;
+  weight?: number;
   role: string;
   groupId?: number;
   achievements: AchievementDTO[];
@@ -111,10 +113,18 @@ type UpdateUserDTO = {
   id: number;
   username?: string | null;
   email?: string | null;
+  password?: string | null;
   birthDate?: string | null;
   fullName?: string | null;
+  height?: number | null;
+  weight?: number | null;
   groupId?: number | null;
   theme?: ThemeOption | null;
+};
+
+type UpdateMeasurementsDTO = {
+  height?: number | null;
+  weight?: number | null;
 };
 
 type LoginRequestPayload = {
@@ -140,6 +150,19 @@ type AdminLoginRequestPayload = {
 type AdminRegisterRequestPayload = {
   registerDTO: RegisterRequestPayload;
   code?: string | null;
+};
+
+type ForgotPasswordRequestDTO = {
+  email: string;
+};
+
+type VerifyCodeDTO = {
+  email: string;
+  code: string;
+};
+
+type NewPasswordDTO = {
+  password: string;
 };
 
 type Symptoms = {

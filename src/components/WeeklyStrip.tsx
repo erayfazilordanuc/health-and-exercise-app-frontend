@@ -209,6 +209,7 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
                 <Text
                   className="font-rubik-medium"
                   style={{
+                    marginTop: 1,
                     color: selected ? '#ffffff' : colors.text.primary,
                     fontSize: 16,
                   }}>

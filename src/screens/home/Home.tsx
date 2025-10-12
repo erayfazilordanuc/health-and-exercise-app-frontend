@@ -584,6 +584,30 @@ const Home = () => {
     }
   };
 
+  const isLongName = () => {
+    return user?.fullName.length && user?.fullName.length > 15;
+  };
+
+  const getFullName = () => {
+    if (!user) return '';
+
+    if (!isLongName()) return user.fullName;
+
+    let fullName = '';
+
+    const parts = user.fullName.split(' ');
+
+    for (let i = 0; i < parts.length - 1; i++) {
+      fullName += parts[i] + ' ';
+    }
+
+    fullName += '\n' + parts[parts.length - 1];
+
+    console.log(fullName);
+
+    return fullName;
+  };
+
   return (
     <>
       <LinearGradient
@@ -673,14 +697,14 @@ const Home = () => {
                     ? AVATARS[user?.avatar as AvatarKey]
                     : AVATARS.non
                 }
-                className="size-10 ml-1 mr-1"
+                className="size-10 ml-1 mr-2"
               />
               <GradientText
                 className="pl-2 text-2xl font-rubik-medium text-center"
                 start={{x: 0, y: 0}}
                 end={{x: 0.7, y: 0}}
                 colors={[colors.primary[300], colors.secondary[300]]}>
-                {user?.fullName}
+                {getFullName()}
               </GradientText>
             </View>
             {!isAdmin ? (

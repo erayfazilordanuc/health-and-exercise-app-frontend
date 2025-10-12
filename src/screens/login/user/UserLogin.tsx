@@ -21,14 +21,14 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import icons from '../../constants/icons';
+import icons from '../../../constants/icons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNetInfo} from '@react-native-community/netinfo';
-import {useTheme} from '../../themes/ThemeProvider';
-import {login, register} from '../../api/auth/authService';
-import {useUser} from '../../contexts/UserContext';
+import {useTheme} from '../../../themes/ThemeProvider';
+import {login, register} from '../../../api/auth/authService';
+import {useUser} from '../../../contexts/UserContext';
 import {Picker} from '@react-native-picker/picker';
 import DateTimePicker, {
   DateTimePickerEvent,
@@ -37,16 +37,19 @@ import {Dropdown} from 'react-native-element-dropdown';
 import DatePicker from 'react-native-date-picker';
 import {BlurView} from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
-import {CustomModal} from '../../components/CustomModal';
-import {getLatestPolicy, giveConsent} from '../../api/consent/consentService';
+import {CustomModal} from '../../../components/CustomModal';
+import {
+  getLatestPolicy,
+  giveConsent,
+} from '../../../api/consent/consentService';
 import {
   ConsentPolicyPurpose,
   ConsentPurpose,
   ConsentStatus,
   LoginMethod,
-} from '../../types/enums';
-import {ConsentModal} from '../../components/ConsentModal';
-import {parseTheme} from '../../themes/themes';
+} from '../../../types/enums';
+import {ConsentModal} from '../../../components/ConsentModal';
+import {parseTheme} from '../../../themes/themes';
 import NetInfo from '@react-native-community/netinfo';
 import {useTranslation} from 'react-i18next'; // <-- i18n eklendi
 
@@ -664,6 +667,18 @@ function UserLogin() {
               </TouchableOpacity>
             </View>
           )}
+          {loginMethod !== LoginMethod.registration && (
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('ForgotPassword');
+              }}>
+              <Text
+                className="text-lg font-rubik text-center mt-2"
+                style={{color: '#0091ff', textDecorationLine: 'underline'}}>
+                {t('login:forgotPassword.title')}
+              </Text>
+            </TouchableOpacity>
+          )}
           {!loading ? (
             <View className="flex flex-row justify-center">
               {loginMethod === LoginMethod.default && (
@@ -708,6 +723,7 @@ function UserLogin() {
               color={colors.primary[300] ?? colors.primary}
             />
           )}
+
           {loginMethod !== LoginMethod.default && (
             <Text
               className="text-lg font-rubik text-center mt-4"

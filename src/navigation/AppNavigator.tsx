@@ -22,10 +22,13 @@ import Home from '../screens/home/Home';
 import Profile from '../screens/profile/Profile';
 import Groups from '../screens/groups/groups';
 import Exercises from '../screens/exercises/user/ExercisesUser';
-import UserLogin from '../screens/login/UserLogin';
-import AdminLogin from '../screens/login/AdminLogin';
+import UserLogin from '../screens/login/user/UserLogin';
+import AdminLogin from '../screens/login/admin/AdminLogin';
 import {useNotificationNavigation} from '../hooks/useNotificationNavigation';
 import {flushPendingNav, navigationRef} from './NavigationService';
+import ForgotPassword from '../screens/login/forgotPassword/ForgotPassword';
+import VerifyCode from '../screens/login/forgotPassword/VerifyCode';
+import ResetPassword from '../screens/login/forgotPassword/ResetPassword';
 
 const RootNativeStack = createNativeStackNavigator<RootStackParamList>();
 const AppNativeStack = createNativeStackNavigator<AppStackParamList>(); // This one works
@@ -55,6 +58,27 @@ function AppStack() {
       <AppNativeStack.Screen
         name="AdminLogin"
         component={AdminLogin}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <AppNativeStack.Screen
+        name="ForgotPassword"
+        component={ForgotPassword}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <AppNativeStack.Screen
+        name="VerifyCode"
+        component={VerifyCode}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <AppNativeStack.Screen
+        name="ResetPassword"
+        component={ResetPassword}
         options={{
           headerShown: false,
         }}

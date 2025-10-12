@@ -179,15 +179,18 @@ const Settings = () => {
           </View>
         </View>
         <View
-          className="mt-3 px-3 flex-row items-center justify-between"
+          className="mt-3 px-3 flex-row items-center justify-end"
           style={{borderRadius: 17}}>
           <SettingsItem
             icon={icons.logout}
             title={t('items.logout')}
             textColor="#fd5353"
+            fontClassName="text-lg"
+            iconClassName="size-6"
+            pyClassName="py-3"
             bg={colors.isLight ? '#f9e4e4ff' : '#331d1dff'}
             showArrow={false}
-            px={12}
+            px={15}
             onPress={async () => {
               setIsLogoutAlertVisible(true);
             }}

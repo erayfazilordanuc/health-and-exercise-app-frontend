@@ -61,5 +61,39 @@
   "footer": {
     "nurseApplication": "For nurse account application, please contact",
     "contactEmail": "egzersiz.saglik.uygulaması@gmail.com"
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "instruction": "Enter the email address associated with your account, and we'll send you a code to reset your password.",
+    "form": {
+      "email": "Email Address",
+      "code": "Code",
+      "newPassword": "New Password"
+    },
+    "verifyCodeTitle": "Verify Code",
+    "verifyCodeInstruction": "Enter the code sent to your associated email address.",
+    "resetPasswordTitle": "Reset Password",
+    "resetPasswordInstruction": "Enter your new password",
+    "buttons": {
+      "sendResetLink": "Send Reset Link",
+      "verifyCode": "Verify",
+      "confirm": "Confirm"
+    },
+    "links": {
+      "backToLogin": "Back to Sign In"
+    },
+    "toasts": {
+      "emailRequired": "Please enter your email address.",
+      "codeRequired": "Please enter the code.",
+      "passwordRequired": "Please enter a password.",
+      "invalidCode": "Invalid code",
+      "sendCodeSuccess": "Password reset code have been sent to your email.",
+      "verifyCodeSuccess": "Password reset code verified.",
+      "passwordChangeSuccess": "Password has been successfully changed, redirecting you to the app.",
+      "userNotFound": "No user found with this email address."
+    },
+    "confirmExit": {
+      "message": "Are you sure you want to cancel the password reset process?"
+    }
   }
 }

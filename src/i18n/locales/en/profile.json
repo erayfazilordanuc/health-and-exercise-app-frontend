@@ -5,13 +5,27 @@
     "roleSuffixNurse": " (Nurse)"
   },
   "labels": {
+    "fullName": "Full Name",
     "username": "Username",
     "email": "Email",
+    "exampleEmail": "example@email.com",
+    "password": "Şifre",
+    "changePassword": "Change Password",
+    "enterPassword": "Enter new password",
+    "passwordPlaceholder": "Password",
     "age": "Age",
     "birthDate": "Date of Birth",
     "gender": "Gender",
     "male": "Male",
     "female": "Female",
+    "height": "Height",
+    "weight": "Weight",
+    "heightPlaceholder": "e.g. 156 cm",
+    "weightPlaceholder": "e.g. 50 kg",
+    "bmi": "Body Mass Index (BMI)",
+    "editMeasurements": "Edit\nMeasurements",
+    "measurements": "Measurements",
+    "edit": "Edit Information",
     "steps": "Steps",
     "caloriesBurned": "Calories Burned",
     "sleep": "Sleep",
@@ -22,6 +36,15 @@
     "synchronized": "Synchronized",
     "sync": "Sync",
     "syncDataPermissionInfo": "To sync your data, you need to grant the required permissions to Health Connect."
+  },
+  "buttons": {
+    "cancel": "Cancel"
+  },
+  "bmiLevel": {
+    "underweight": "Underweight",
+    "normal": "Normal",
+    "overweight": "Overweight",
+    "obese": "Obese"
   },
   "weeklyGoal": {
     "title": "Weekly Step Goal",
@@ -75,9 +98,11 @@
     "networkError": "Please check your internet connection",
     "genericError": "An error occurred",
     "sleepOutOfRange": "Sleep duration must be between 0–16 hours.",
-    "tooLowForHistory": "The value you entered is too low based on your previous progress"
+    "tooLowForHistory": "The value you entered is too low based on your previous progress",
+    "saveSuccessful": "Information saved successfully",
+    "saveUnsuccessful": "Information save unsuccessful"
   },
- "weeklyStrip": {
+  "weeklyStrip": {
     "prevWeek": "Previous week",
     "nextWeek": "Next week",
     "accessibility": {

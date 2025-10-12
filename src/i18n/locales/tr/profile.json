@@ -5,13 +5,27 @@
     "roleSuffixNurse": " (Hemşire)"
   },
   "labels": {
+    "fullName": "Ad Soyad",
     "username": "Kullanıcı Adı",
     "email": "E-posta",
+    "exampleEmail": "ornek@email.com",
+    "password": "Şifre",
+    "changePassword": "Şifreyi Değiştir",
+    "enterPassword": "Yeni Şifrenizi Girin",
+    "passwordPlaceholder": "Şifre",
     "age": "Yaş",
     "birthDate": "Doğum Tarihi",
     "gender": "Cinsiyet",
     "male": "Erkek",
     "female": "Kadın",
+    "height": "Boy",
+    "weight": "Kilo",
+    "heightPlaceholder": "Örn: 156 cm",
+    "weightPlaceholder": "Örn: 50 kg",
+    "bmi": "Vücut Kitle İndeksi (VKİ)",
+    "editMeasurements": "Ölçüleri\nDüzenle",
+    "measurements": "Ölçüler",
+    "edit": "Bilgileri Düzenle",
     "steps": "Adım",
     "caloriesBurned": "Yakılan Kalori",
     "sleep": "Uyku",
@@ -22,6 +36,15 @@
     "synchronized": "Senkronize",
     "sync": "Senkronize et",
     "syncDataPermissionInfo": "Verilerinizi senkronize edebilmek için Health Connect uygulamasına gerekli izinleri vermeniz gerekiyor."
+  },
+  "buttons": {
+    "cancel": "İptal"
+  },
+  "bmiLevel": {
+    "underweight": "Zayıf",
+    "normal": "Normal",
+    "overweight": "Kilolu",
+    "obese": "Obez"
   },
   "weeklyGoal": {
     "title": "Haftalık Adım Hedefi",
@@ -75,7 +98,9 @@
     "networkError": "Lütfen internet bağlantınızı kontrol edin",
     "genericError": "Bir hata oluştu",
     "sleepOutOfRange": "Uyku süresi 0–16 saat arasında olmalıdır.",
-    "tooLowForHistory": "Girdiğiniz değer önceki ilerlemenize göre çok düşük"
+    "tooLowForHistory": "Girdiğiniz değer önceki ilerlemenize göre çok düşük",
+    "saveSuccessful": "Bilgiler başarıyla kaydedildi",
+    "saveUnsuccessful": "Bilgiler kaydedilemedi"
   },
   "weeklyStrip": {
     "prevWeek": "Önceki hafta",

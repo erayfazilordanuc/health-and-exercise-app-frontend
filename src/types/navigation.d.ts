@@ -71,10 +71,14 @@ type RootStackParamList = {
   Exercises: NavigatorScreenParams<ExercisesStackParamList>;
 };
 
+// There may be LoginStackParamList and ForgotPasswordStackParamList in order to provide best practice solutions
 type AppStackParamList = {
   Launch: undefined;
   UserLogin: undefined;
   AdminLogin: undefined;
+  ForgotPassword: undefined;
+  VerifyCode: {email: string};
+  ResetPassword: {token: string};
   App: NavigatorScreenParams<RootStackParamList>;
 };
 

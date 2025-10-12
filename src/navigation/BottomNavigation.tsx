@@ -456,7 +456,7 @@ function ExercisesStack() {
             headerShown: false,
             header: () => (
               <CustomHeader
-                title={'Egzersizler Hasta'}
+                title={'Egzersizler Üye'}
                 icon={icons.todo}
                 className="border-primary-300"
               />

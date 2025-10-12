@@ -56,6 +56,18 @@ export const updateUser = async (updateUserDTO: UpdateUserDTO) => {
   return response;
 };
 
+export const updateUserTheme = async (themeKey: String) => {
+  const response = await apiClient.put(`/users/theme/${themeKey}`);
+  console.log('update user theme response', response);
+  return response;
+};
+
+export const updateUserMeasurements = async (dto: UpdateMeasurementsDTO) => {
+  const response = await apiClient.put(`/users/measurements`, dto);
+  console.log('update user measurements response', response);
+  return response;
+};
+
 export const updateAvatarApi = async (key: string) => {
   const response = await apiClient.put(`/users/me/avatar/${key}`);
   console.log('update user avatar response', response);

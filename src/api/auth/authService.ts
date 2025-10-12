@@ -175,6 +175,17 @@ export const logout = async () => {
   // await AsyncStorage.removeItem('RQ_CACHE_V1');
 };
 
+export const getTokenSubject = (token: string) => {
+  try {
+    const decoded = jwtDecode(token);
+    const subject = decoded.sub;
+    return subject ?? null;
+  } catch (error) {
+    console.error('Token decode edilemedi:', error);
+    return null;
+  }
+};
+
 export const getTokenExpirationTime = (token: string): number | null => {
   try {
     const decoded = jwtDecode(token) as {exp?: number};
@@ -193,4 +204,40 @@ export const getTokenTimeLeft = (token: string): number | null => {
   const timeLeft = exp - now;
 
   return timeLeft; // saniye olarak kalan süre
+};
+
+export const sendCode = async (dto: ForgotPasswordRequestDTO) => {
+  const response = await apiClient.post(`/auth/forgot-password/send-code`, dto);
+  console.log('send code response', response);
+  return response; // ok.build() döner
+};
+
+export const verifyCode = async (dto: VerifyCodeDTO) => {
+  const response = await apiClient.post(
+    `/auth/forgot-password/validate-code`,
+    dto,
+  );
+  console.log('verify code response', response);
+  return response; // password reset token döner
+};
+
+export const changePassword = async (dto: NewPasswordDTO, token: string) => {
+  const response = await apiClient.post('/auth/change-password', dto, {
+    headers: {
+      Authorization: `${token}`,
+    },
+  });
+  console.log('token', token);
+  console.log('change password response', response);
+  if (response && response.status >= 200 && response.status < 400) {
+    const username = getTokenSubject(token);
+    if (username) {
+      const loginDto: LoginRequestPayload = {
+        username,
+        password: dto.password,
+      };
+      const loginResponse = await login(loginDto);
+    }
+  }
+  return response; // user nesnesi döner
 };

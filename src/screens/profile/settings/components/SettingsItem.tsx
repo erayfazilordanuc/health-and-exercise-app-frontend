@@ -28,8 +28,11 @@ interface SettingsItemProps {
   title: string;
   onPress?: () => void;
   textColor?: string;
+  fontClassName?: string;
+  iconClassName?: string;
   showArrow?: boolean;
   px?: number;
+  pyClassName?: string;
   bg?: string;
 }
 
@@ -38,8 +41,11 @@ export const SettingsItem = ({
   title,
   onPress,
   textColor,
+  fontClassName = 'text-xl',
+  iconClassName = 'size-7',
   showArrow = true,
   px = 20,
+  pyClassName = 'py-4',
   bg,
 }: SettingsItemProps) => {
   const {colors} = useTheme();
@@ -50,16 +56,18 @@ export const SettingsItem = ({
         paddingHorizontal: px,
       }}
       onPress={onPress}
-      className="flex flex-row items-center justify-between py-4 rounded-2xl">
+      className={`flex flex-row items-center justify-between ${pyClassName} rounded-2xl`}>
       <View className="flex flex-row items-center gap-3">
         <Image
           source={icon}
-          className="size-7"
+          className={iconClassName}
           tintColor={textColor ? textColor : colors.text.primary}
         />
         <Text
-          style={{color: textColor ? textColor : colors.text.primary}}
-          className={`font-rubik text-xl`}>
+          style={{
+            color: textColor ? textColor : colors.text.primary,
+          }}
+          className={`font-rubik ${fontClassName}`}>
           {title}
         </Text>
       </View>

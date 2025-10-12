@@ -13,14 +13,16 @@ import {
   updateGroup,
 } from '../api/group/groupService';
 import type {AxiosError} from 'axios';
-// import type { User } from '<<PROJENE_GÖRE_USER_TIPI_YOLU>>';
+import {MemberSort, SortDir} from '../types/enums';
 
 export const GROUP_KEYS = {
   root: ['groups'] as const,
   list: () => [...GROUP_KEYS.root, 'list'] as const,
   byId: (id: number) => ['group', id] as const,
-  usersByGroupId: (groupId: number) =>
+  usersByGroupId_ROOT: (groupId: number) =>
     [...GROUP_KEYS.root, 'users', groupId] as const,
+  usersByGroupId: (groupId: number, sortBy: MemberSort) =>
+    [...GROUP_KEYS.usersByGroupId_ROOT(groupId), {sortBy}] as const,
   adminByGroupId: (groupId: number) =>
     [...GROUP_KEYS.root, 'admin', groupId] as const,
 };
@@ -58,6 +60,8 @@ export const useGroupById = (
 
 export const useGroupUsers = (
   groupId?: number,
+  sortBy: MemberSort = MemberSort.DEFAULT, // Yeni parametre: sortBy, varsayılan değeri DEFAULT
+  sortDir: SortDir = SortDir.ASC,
   options?: Omit<
     UseQueryOptions<
       User[], // TQueryFnData
@@ -74,9 +78,15 @@ export const useGroupUsers = (
     User[],
     ReturnType<typeof GROUP_KEYS.usersByGroupId>
   >({
-    queryKey: GROUP_KEYS.usersByGroupId(groupId ?? -1),
+    queryKey: GROUP_KEYS.usersByGroupId(groupId ?? -1, sortBy),
     enabled: Number.isFinite(groupId) && (groupId as number) > 0,
-    queryFn: () => getUsersByGroupId(groupId as number), // -> Promise<User[]>
+    queryFn: () => getUsersByGroupId(groupId as number, sortBy),
+    select: (users: User[]) => {
+      if (sortDir === SortDir.DESC) {
+        return [...users].reverse();
+      }
+      return users;
+    },
     networkMode: 'offlineFirst', // offline'da cache'i göster
     staleTime: 5 * 60 * 1000, // 5 dk taze
     gcTime: 30 * 60 * 1000, // 30 dk GC
@@ -87,14 +97,15 @@ export const useGroupUsers = (
 
 export const invalidateGroupUsers = (qc: QueryClient, groupId: number) =>
   qc.invalidateQueries({
-    queryKey: GROUP_KEYS.usersByGroupId(groupId),
-    exact: true,
+    // Kısmi anahtar kullanarak o gruba ait tüm sıralamaları geçersiz kılar.
+    queryKey: GROUP_KEYS.usersByGroupId_ROOT(groupId),
   });
 
 export const prefetchGroupUsers = (qc: QueryClient, groupId: number) =>
   qc.prefetchQuery({
-    queryKey: GROUP_KEYS.usersByGroupId(groupId),
-    queryFn: () => getUsersByGroupId(groupId),
+    // Varsayılan sıralama türü için tam bir anahtar ve fonksiyon kullanılır.
+    queryKey: GROUP_KEYS.usersByGroupId(groupId, MemberSort.DEFAULT),
+    queryFn: () => getUsersByGroupId(groupId, MemberSort.DEFAULT),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -179,7 +190,7 @@ export const useUpdateGroup = () => {
       // liste ve ilişkili query’leri tazele
       qc.invalidateQueries({queryKey: GROUP_KEYS.list()});
       if (dto?.id) {
-        qc.invalidateQueries({queryKey: GROUP_KEYS.usersByGroupId(dto.id)});
+        invalidateGroupUsers(qc, dto.id);
         qc.invalidateQueries({queryKey: GROUP_KEYS.adminByGroupId(dto.id)});
       }
     },

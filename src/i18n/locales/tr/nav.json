@@ -39,7 +39,7 @@
       "achievements": "Başarılar"
     },
     "exercises": {
-      "userRoot": "Egzersizler (Hasta)",
+      "userRoot": "Egzersizler",
       "adminRoot": "Egzersizler (Hemşire)",
       "all": "Tüm Egzersizler",
       "detail": "Egzersiz Detay",
@@ -51,7 +51,7 @@
     }
   },
   "labels": {
-    "patient": "Hasta",
+    "patient": "",
     "nurse": "Hemşire"
   }
 }

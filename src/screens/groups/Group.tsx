@@ -56,6 +56,7 @@ import CustomAlertSingleton, {
 import {AvatarKey, AVATARS} from '../../constants/avatars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
+import {MemberSort} from '../../types/enums';
 
 const Group = () => {
   const insets = useSafeAreaInsets();
@@ -384,7 +385,10 @@ const Group = () => {
                   //   queryKey: ['groupUsers', groupId],
                   // });
                   await qc.refetchQueries({
-                    queryKey: GROUP_KEYS.usersByGroupId(groupId),
+                    queryKey: GROUP_KEYS.usersByGroupId(
+                      groupId,
+                      MemberSort.DEFAULT,
+                    ),
                     exact: true,
                     type: 'active', // sadece aktif (mounted) query’leri refetch et
                   });

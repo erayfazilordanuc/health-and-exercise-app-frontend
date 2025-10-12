@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios/axios';
 import {getUser} from '../user/userService';
+import {MemberSort} from '../../types/enums';
 
 export const sendJoinGroupRequest = async (groupId: number) => {
   const response = await apiClient.post(`/groups/id/${groupId}/join-request`);
@@ -71,7 +72,10 @@ export const getGroupAdmin = async (id: number) => {
   else return null;
 };
 
-export const getUsersByGroupId = async (groupId: number) => {
+export const getUsersByGroupId = async (
+  groupId: number,
+  sortBY: MemberSort,
+) => {
   const response = await apiClient.get(`/groups/id/${groupId}/users`);
   if (response.status >= 200 && response.status < 300) {
     return response.data;

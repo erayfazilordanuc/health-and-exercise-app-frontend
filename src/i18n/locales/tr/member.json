@@ -13,6 +13,7 @@
   "fields": {
     "fullName": "Adı Soyadı:",
     "username": "Kullanıcı Adı:",
+    "E-posta": "E-posta:",
     "age": "Yaş:",
     "birthDate": "Doğum Tarihi:",
     "gender": "Cinsiyet:",
@@ -20,13 +21,24 @@
       "male": "Erkek",
       "female": "Kadın"
     },
+    "height": "Boy",
+    "weight": "Kilo",
+    "bmi": "Vücut Kitle İndeksi (VKİ)",
     "themeUsed": "Kullandığı Tema:",
     "themeMap": {
       "blue": "Mavi-Turkuaz",
       "purple": "Mor-Pembe",
       "green": "Yeşil-Sarı",
       "red": "Kırmızı-Turuncu"
-    }
+    },
+    "showDetail": "Detayları Göster",
+    "hideDetail": "Detayları Gizle"
+  },
+  "bmiLevel": {
+    "underweight": "Zayıf",
+    "normal": "Normal",
+    "overweight": "Kilolu",
+    "obese": "Obez"
   },
   "buttons": {
     "chat": "Sohbet",

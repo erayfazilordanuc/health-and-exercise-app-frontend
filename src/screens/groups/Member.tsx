@@ -86,6 +86,7 @@ const Member = () => {
   const [allLoading, setAllLoading] = useState(true);
   const {user: admin} = useUser();
   const {data: member, isLoading, error} = useUserById(memberId);
+  const [showDetail, setShowDetail] = useState(false);
   const {
     data: group,
     isLoading: isGroupLoading,
@@ -341,6 +342,27 @@ const Member = () => {
     return base;
   };
 
+  const calculateBmi = () => {
+    if (member && member.height && member.weight) {
+      const hm = member.height / 100;
+      const bmi = member.weight / (hm * hm);
+      let result = bmi.toFixed(2).toString() + ' ';
+      if (bmi < 18.5) {
+        result += t('bmiLevel.underweight');
+      } else if (bmi < 24.9) {
+        result += t('bmiLevel.normal');
+      } else if (bmi < 29.9) {
+        result += t('bmiLevel.overweight');
+      } else {
+        // if (bmi < 34.9)
+        result += t('bmiLevel.obese');
+      }
+
+      return result;
+    }
+    return '';
+  };
+
   return (
     <View style={{paddingTop: insets.top * 1.3}} className="flex-1 px-3">
       <LinearGradient
@@ -390,120 +412,222 @@ const Member = () => {
           />
         }>
         <View
-          className="flex flex-column justify-start pl-5 p-3 mb-3"
+          className="flex flex-column justify-start pl-5 pb-3 px-3 mb-3"
           style={{
             borderRadius: 17,
             backgroundColor: colors.background.primary,
             borderColor: colors.primary[300],
           }}>
-          <View className="flex-row items-center justify-between">
-            <Text
-              className="font-rubik-medium"
-              style={{fontSize: 18, color: colors.text.primary}}>
-              {t('sections.patientInfo')}
-            </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginTop: 12,
+            }}>
+            {!showDetail ? (
+              <View className="flex flex-row items-center justify-start mt-1">
+                <TouchableOpacity
+                  className="mb-1 py-3 px-4"
+                  style={{
+                    borderRadius: 13,
+                    backgroundColor: colors.background.third,
+                  }}
+                  onPress={() => {
+                    setShowDetail(!showDetail);
+                  }}>
+                  <Text
+                    className="font-rubik text-md"
+                    style={{color: colors.primary[200]}}>
+                    {showDetail
+                      ? t('fields.hideDetail')
+                      : t('fields.showDetail')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View className="flex-col items-start justify-end">
+                <View className="flex-row items-center">
+                  <Text
+                    className="font-rubik-medium text-lg"
+                    style={{color: colors.text.primary}}>
+                    {t('fields.fullName')}
+                    {'  '}
+                  </Text>
+                  <Text
+                    className="font-rubik text-lg"
+                    style={{color: colors.text.primary}}>
+                    {member?.fullName}
+                  </Text>
+                </View>
+                <View className="flex-row items-center my-1">
+                  <Text
+                    className="font-rubik-medium text-lg"
+                    style={{color: colors.text.primary}}>
+                    {t('fields.username')}
+                    {'  '}
+                  </Text>
+                  <Text
+                    className="font-rubik text-lg"
+                    style={{color: colors.text.primary}}>
+                    {member?.username}
+                  </Text>
+                </View>
+              </View>
+            )}
             <Image
               source={AVATARS[member?.avatar as AvatarKey]}
-              className="mr-1 size-12"
+              className="mr-1 size-14"
             />
           </View>
-          <View className="flex flex-row items-center mt-1 mb-1">
-            <Text
-              className="font-rubik-medium text-lg"
-              style={{color: colors.text.primary}}>
-              {t('fields.fullName')}
-              {'  '}
-            </Text>
-            <Text
-              className="font-rubik text-lg"
-              style={{color: colors.text.primary}}>
-              {member?.fullName}
-            </Text>
-          </View>
-          <View className="flex flex-row items-center mt-1 mb-1">
-            <Text
-              className="font-rubik-medium text-lg"
-              style={{color: colors.text.primary}}>
-              {t('fields.username')}
-              {'  '}
-            </Text>
-            <Text
-              className="font-rubik text-lg"
-              style={{color: colors.text.primary}}>
-              {member?.username}
-            </Text>
-          </View>
-          <View className="flex flex-row items-center mt-1 mb-1">
-            <Text
-              className="font-rubik-medium text-lg"
-              style={{color: colors.text.primary}}>
-              {t('fields.age')}
-              {'  '}
-            </Text>
-            <Text
-              className="font-rubik text-lg"
-              style={{color: colors.text.primary}}>
-              {calculateAge()}
-            </Text>
-          </View>
-          <View className="flex flex-row items-center mt-1 mb-1">
-            <Text
-              className="font-rubik-medium text-lg"
-              style={{color: colors.text.primary}}>
-              {t('fields.birthDate')}
-              {'  '}
-            </Text>
-            <Text
-              className="font-rubik text-lg"
-              style={{color: colors.text.primary}}>
-              {new Date(member?.birthDate!).toLocaleDateString(c('locale'), {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </Text>
-          </View>
-          <View className="flex flex-row items-center mt-1 mb-1">
-            <Text
-              className="font-rubik-medium text-lg"
-              style={{color: colors.text.primary}}>
-              {t('fields.gender')}
-              {'  '}
-            </Text>
-            <Text
-              className="font-rubik text-lg"
-              style={{color: colors.text.primary}}>
-              {member?.gender === 'male'
-                ? t('fields.genderOptions.male')
-                : t('fields.genderOptions.female')}
-            </Text>
-          </View>
-          {getMembersTheme() && (
-            <View className="flex flex-row items-center mt-1 mb-1">
-              <Text
-                className="font-rubik-medium text-lg"
-                style={{color: colors.text.primary}}>
-                {t('fields.themeUsed')}
-                {'  '}
-              </Text>
-              <Text
-                className="font-rubik text-lg"
-                style={{color: colors.text.primary}}>
-                {getMembersTheme()?.light.name.startsWith('blue')
-                  ? t('fields.themeMap.blue') + ' '
-                  : getMembersTheme()?.light.name.startsWith('purple')
-                  ? t('fields.themeMap.purple') + ' '
-                  : getMembersTheme()?.light.name.startsWith('green')
-                  ? t('fields.themeMap.green') + ' '
-                  : getMembersTheme()?.light.name.startsWith('red')
-                  ? t('fields.themeMap.red') + ' '
-                  : ''}
-              </Text>
-              <ColorCircle
-                color1={getMembersTheme()?.light.colors.primary[300]!}
-                color2={getMembersTheme()?.light.colors.secondary[300]!}
-                padding={14}
-              />
+          {showDetail && (
+            <>
+              <View className="flex flex-row items-center mb-1">
+                <Text
+                  className="font-rubik-medium text-lg"
+                  style={{color: colors.text.primary}}>
+                  {t('fields.email')}
+                  {'  '}
+                </Text>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  {member?.email}
+                </Text>
+              </View>
+              <View className="flex flex-row items-center my-1">
+                <Text
+                  className="font-rubik-medium text-lg"
+                  style={{color: colors.text.primary}}>
+                  {t('fields.age')}
+                  {'  '}
+                </Text>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  {calculateAge()}
+                </Text>
+              </View>
+              <View className="flex flex-row items-center my-1">
+                <Text
+                  className="font-rubik-medium text-lg"
+                  style={{color: colors.text.primary}}>
+                  {t('fields.birthDate')}
+                  {'  '}
+                </Text>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  {new Date(member?.birthDate!).toLocaleDateString(
+                    c('locale'),
+                    {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    },
+                  )}
+                </Text>
+              </View>
+              <View className="flex flex-row items-center my-1">
+                <Text
+                  className="font-rubik-medium text-lg"
+                  style={{color: colors.text.primary}}>
+                  {t('fields.gender')}
+                  {'  '}
+                </Text>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  {member?.gender === 'male'
+                    ? t('fields.genderOptions.male')
+                    : t('fields.genderOptions.female')}
+                </Text>
+              </View>
+              <View className="flex flex-row items-center my-1">
+                <Text
+                  className="font-rubik-medium text-lg"
+                  style={{color: colors.text.primary}}>
+                  {t('fields.height')}
+                  {':  '}
+                </Text>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  {member?.height} cm
+                </Text>
+              </View>
+              <View className="flex flex-row items-center my-1">
+                <Text
+                  className="font-rubik-medium text-lg"
+                  style={{color: colors.text.primary}}>
+                  {t('fields.weight')}
+                  {':  '}
+                </Text>
+                <Text
+                  className="font-rubik text-lg"
+                  style={{color: colors.text.primary}}>
+                  {member?.weight} kg
+                </Text>
+              </View>
+              <View className="flex flex-row items-center my-1">
+                <Text
+                  className="font-rubik-medium text-md"
+                  style={{color: colors.text.primary}}>
+                  {t('fields.bmi')}:{'  '}
+                </Text>
+                <Text
+                  className="font-rubik text-md"
+                  style={{color: colors.text.primary}}>
+                  {calculateBmi()}
+                </Text>
+              </View>
+              {getMembersTheme() && (
+                <View className="flex flex-row items-center mt-1 mb-3">
+                  <Text
+                    className="font-rubik-medium text-md"
+                    style={{color: colors.text.primary}}>
+                    {t('fields.themeUsed')}
+                    {'  '}
+                  </Text>
+                  <Text
+                    className="font-rubik text-md"
+                    style={{color: colors.text.primary}}>
+                    {getMembersTheme()?.light.name.startsWith('blue')
+                      ? t('fields.themeMap.blue') + ' '
+                      : getMembersTheme()?.light.name.startsWith('purple')
+                      ? t('fields.themeMap.purple') + ' '
+                      : getMembersTheme()?.light.name.startsWith('green')
+                      ? t('fields.themeMap.green') + ' '
+                      : getMembersTheme()?.light.name.startsWith('red')
+                      ? t('fields.themeMap.red') + ' '
+                      : ''}
+                  </Text>
+                  <ColorCircle
+                    color1={getMembersTheme()?.light.colors.primary[300]!}
+                    color2={getMembersTheme()?.light.colors.secondary[300]!}
+                    padding={12}
+                  />
+                </View>
+              )}
+            </>
+          )}
+          {showDetail && (
+            <View className="flex flex-row items-center justify-start">
+              <TouchableOpacity
+                className="mb-1 py-3 px-4"
+                style={{
+                  borderRadius: 13,
+                  backgroundColor: colors.background.third,
+                }}
+                onPress={() => {
+                  setShowDetail(!showDetail);
+                }}>
+                <Text
+                  className="font-rubik text-md"
+                  style={{color: colors.primary[200]}}>
+                  {showDetail ? t('fields.hideDetail') : t('fields.showDetail')}
+                </Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -523,7 +647,7 @@ const Member = () => {
               </Text>
             )}
             <TouchableOpacity
-              className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center"
+              className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center mt-1 mr-1"
               style={{backgroundColor: colors.background.third}}
               onPress={async () => {
                 if (!admin || !member) return;

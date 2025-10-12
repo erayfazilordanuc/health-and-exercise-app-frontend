@@ -61,5 +61,39 @@
   "footer": {
     "nurseApplication": "Hemşire hesabı başvurusu için iletişime geçebilirsiniz",
     "contactEmail": "egzersiz.saglik.uygulaması@gmail.com"
+  },
+  "forgotPassword": {
+    "title": "Şifremi Unuttum",
+    "instruction": "Hesabınızla ilişkili e-posta adresini girin, size şifrenizi sıfırlamanız için bir kod göndereceğiz.",
+    "form": {
+      "email": "E-posta Adresi",
+      "code": "Kod",
+      "newPassword": "Yeni Şifre"
+    },
+    "verifyCodeTitle": "Kod Doğrulama",
+    "verifyCodeInstruction": "İlgili e-posta adresinize gönderilen kodu giriniz.",
+    "resetPasswordTitle": "Şifre Sıfırlama",
+    "resetPasswordInstruction": "Yeni şifrenizi girin",
+    "buttons": {
+      "sendResetLink": "Sıfırlama Bağlantısı Gönder",
+      "verifyCode": "Doğrula",
+      "confirm": "Onayla"
+    },
+    "links": {
+      "backToLogin": "Giriş Ekranına Dön"
+    },
+    "toasts": {
+      "emailRequired": "Lütfen e-posta adresinizi girin.",
+      "codeRequired": "Lütfen kodu girin.",
+      "passwordRequired": "Lütfen bir şifre girin.",
+      "invalidCode": "Kod geçersiz",
+      "sendCodeSuccess": "Şifre sıfırlama kodu e-postanıza gönderildi.",
+      "verifyCodeSuccess": "Şifre sıfırlama kodu onaylandı.",
+      "passwordChangeSuccess": "Şifre başarıyla yenilendi, uygulamaya yönlendiriliyorsunuz.",
+      "userNotFound": "Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı."
+    },
+    "confirmExit": {
+      "message": "Şifre sıfırlama işlemini iptal etmek istediğinize emin misiniz?"
+    }
   }
 }

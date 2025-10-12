@@ -39,7 +39,7 @@
       "achievements": "Achievements"
     },
     "exercises": {
-      "userRoot": "Exercises (Patient)",
+      "userRoot": "Exercises",
       "adminRoot": "Exercises (Nurse)",
       "all": "All Exercises",
       "detail": "Exercise Detail",

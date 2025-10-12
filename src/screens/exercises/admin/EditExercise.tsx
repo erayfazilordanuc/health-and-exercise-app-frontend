@@ -520,12 +520,12 @@ const EditExercise = () => {
   return (
     <>
       <LinearGradient
-              colors={colors.gradient}
-              locations={[0.15, 0.25, 0.7, 1]}
-              start={{x: 0.1, y: 0}}
-              end={{x: 0.8, y: 1}}
-              className="absolute top-0 left-0 right-0 bottom-0"
-            />
+        colors={colors.gradient}
+        locations={[0.15, 0.25, 0.7, 1]}
+        start={{x: 0.1, y: 0}}
+        end={{x: 0.8, y: 1}}
+        className="absolute top-0 left-0 right-0 bottom-0"
+      />
       <View
         className="flex flex-row"
         style={{
@@ -537,10 +537,9 @@ const EditExercise = () => {
         <Text
           className="pl-7 font-rubik-semibold"
           style={{
-            color:
-              theme.colors.isLight
-                ? colors.text.primary
-                : colors.background.secondary,
+            color: theme.colors.isLight
+              ? colors.text.primary
+              : colors.background.secondary,
             fontSize: 24,
           }}>
           Egzersiz Düzenle

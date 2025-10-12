@@ -29,3 +29,16 @@ export enum ExercisePosition {
   STANDING,
   SEATED,
 }
+
+export enum MemberSort {
+  DEFAULT = 'DEFAULT',
+  LAST_LOGIN = 'LAST_LOGIN',
+  TOTAL_APP_MINUTES = 'TOTAL_APP_MINUTES',
+  EXERCISE_COMPLETIONS = 'EXERCISE_COMPLETIONS',
+  BADGE_SCORE = 'BADGE_SCORE',
+}
+
+export enum SortDir {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
