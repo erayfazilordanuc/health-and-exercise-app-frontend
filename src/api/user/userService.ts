@@ -60,12 +60,14 @@ export const updateUser = async (updateUserDTO: UpdateUserDTO) => {
 export const updateUserTheme = async (themeKey: String) => {
   const response = await apiClient.put(`/users/theme/${themeKey}`);
   console.log('update user theme response', response);
+  AsyncStorage.setItem('user', JSON.stringify(response.data));
   return response;
 };
 
 export const updateUserMeasurements = async (dto: UpdateMeasurementsDTO) => {
   const response = await apiClient.put(`/users/measurements`, dto);
   console.log('update user measurements response', response);
+  AsyncStorage.setItem('user', JSON.stringify(response.data));
   return response;
 };
 

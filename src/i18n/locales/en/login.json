@@ -89,7 +89,7 @@
       "invalidCode": "Invalid code",
       "sendCodeSuccess": "Password reset code have been sent to your email.",
       "verifyCodeSuccess": "Password reset code verified.",
-      "passwordChangeSuccess": "Password has been successfully changed, redirecting you to the app.",
+      "passwordChangeSuccess": "Password has been successfully changed.",
       "userNotFound": "No user found with this email address."
     },
     "confirmExit": {

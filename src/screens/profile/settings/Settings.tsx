@@ -25,7 +25,6 @@ import CustomAlert from '../../../components/CustomAlert';
 import {useLogout} from '../../../api/auth/authService';
 import NotificationSetting from 'react-native-open-notification';
 import {useUser} from '../../../contexts/UserContext';
-import {deleteUser} from '../../../api/user/userService';
 import {useTranslation} from 'react-i18next';
 import {SettingsItem} from './components/SettingsItem';
 
@@ -53,20 +52,6 @@ const Settings = () => {
         routes: [{name: 'Launch'}],
       }),
     );
-  };
-
-  const handleDelete = async () => {
-    const isUserDeleted = await deleteUser();
-    if (isUserDeleted) {
-      await logout();
-      appNavigation.navigate('Launch');
-      appNavigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{name: 'Launch'}],
-        }),
-      );
-    } else ToastAndroid.show(t('toasts.deleteFailed'), ToastAndroid.LONG);
   };
 
   const handleSecretTap = () => {
@@ -211,14 +196,6 @@ const Settings = () => {
         onYes={handleLogout}
         onCancel={() => {
           setIsLogoutAlertVisible(false);
-        }}
-      />
-      <CustomAlert
-        message={t('alerts.confirmDelete')}
-        visible={isDeleteAlertVisible}
-        onYes={handleDelete}
-        onCancel={() => {
-          setIsDeleteAlertVisible(false);
         }}
       />
     </>

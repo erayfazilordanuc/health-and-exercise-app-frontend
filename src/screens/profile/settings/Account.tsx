@@ -133,6 +133,8 @@ const Account = () => {
     if (response.status >= 200 && response.status <= 300) {
       ToastAndroid.show(t('toasts.saveSuccessful'), ToastAndroid.SHORT);
       setUser(response.data);
+      setPasswordChange(false);
+      setPassword('');
     } else {
       ToastAndroid.show(t('toasts.saveUnsuccessful'), ToastAndroid.SHORT);
     }

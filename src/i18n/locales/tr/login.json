@@ -89,7 +89,7 @@
       "invalidCode": "Kod geçersiz",
       "sendCodeSuccess": "Şifre sıfırlama kodu e-postanıza gönderildi.",
       "verifyCodeSuccess": "Şifre sıfırlama kodu onaylandı.",
-      "passwordChangeSuccess": "Şifre başarıyla yenilendi, uygulamaya yönlendiriliyorsunuz.",
+      "passwordChangeSuccess": "Şifre başarıyla yenilendi.",
       "userNotFound": "Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı."
     },
     "confirmExit": {
