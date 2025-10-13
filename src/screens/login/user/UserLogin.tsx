@@ -424,7 +424,7 @@ function UserLogin() {
     });
 
     return () => {
-      unsubscribe(); // cleanup
+      if (loginMethod === LoginMethod.registration) unsubscribe();
     };
   }, [loginMethod]);
 
