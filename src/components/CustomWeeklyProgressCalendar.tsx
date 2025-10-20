@@ -242,7 +242,6 @@ const CustomWeeklyProgressCalendar = ({
                     </CircularProgress>
                   </View>
                 ) : isActive &&
-                  isCurrentWeek &&
                   !isFuture &&
                   percent !== 100 ? (
                   <View

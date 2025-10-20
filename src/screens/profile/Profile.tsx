@@ -1058,7 +1058,7 @@ const Profile = () => {
                         backgroundColor: colors.background.primary,
                       }}>
                       <Text style={{color: '#16d750'}}>
-                        {t('findings.title')}
+                        {t('findings.synced')}
                       </Text>
                       <Image
                         source={icons.health_sync}

@@ -95,9 +95,11 @@ const Account = () => {
       user.username === uUsername &&
       user.email === uEmail &&
       !uPassword
-    )
+    ) {
+      setPasswordChange(false);
+      ToastAndroid.show(t('toasts.alreadySaved'), ToastAndroid.SHORT);
       return;
-
+    }
     if (!uUsername || !uFullName) {
       ToastAndroid.show("t('toasts.saveSuccessful')", ToastAndroid.SHORT);
     }

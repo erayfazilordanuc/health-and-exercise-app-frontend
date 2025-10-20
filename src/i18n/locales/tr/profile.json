@@ -99,6 +99,7 @@
     "genericError": "Bir hata oluştu",
     "sleepOutOfRange": "Uyku süresi 0–16 saat arasında olmalıdır.",
     "tooLowForHistory": "Girdiğiniz değer önceki ilerlemenize göre çok düşük",
+    "alreadySaved": "Verileriniz zaten güncel.",
     "saveSuccessful": "Bilgiler başarıyla kaydedildi",
     "saveUnsuccessful": "Bilgiler kaydedilemedi"
   },
