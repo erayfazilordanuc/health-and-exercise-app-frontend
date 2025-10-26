@@ -3,12 +3,14 @@
     "title": "Hasta:"
   },
   "sections": {
-    "patientInfo": "Hasta Bilgileri",
-    "lastMessage": "En Son Mesaj",
-    "calendar": "Egzersiz Takvimi",
+    "patientInfo": "Hasta bilgileri",
+    "lastMessage": "En son mesaj",
+    "exerciseProgress": "Egzersiz ilerlemesi",
+    "weeklySummary": "Haftalık Aktivite Özeti",
+    "calendar": "Egzersiz takvimi",
     "symptoms": "Bulgular",
-    "weeklyStepGoal": "Haftalık Adım Hedefi",
-    "weeklySessions": "Haftalık Oturum Bilgileri"
+    "weeklyStepGoal": "Haftalık adım hedefi",
+    "weeklySessions": "Haftalık oturum bilgileri"
   },
   "fields": {
     "fullName": "Adı Soyadı:",
@@ -31,8 +33,8 @@
       "green": "Yeşil-Sarı",
       "red": "Kırmızı-Turuncu"
     },
-    "showDetail": "Detayları Göster",
-    "hideDetail": "Detayları Gizle"
+    "showDetail": "Detayları göster",
+    "hideDetail": "Detayları gizle"
   },
   "bmiLevel": {
     "underweight": "Zayıf",
@@ -49,7 +51,9 @@
     "blockedDetail": "Kullanıcının verilerine erişebilmek için gerekli onaylar bulunmamaktadır."
   },
   "calendar": {
+    "inactiveDay": "Bugüne ait egzersiz yok",
     "legend": {
+      "hasDone": "yapıldı",
       "done": "Tamamlandı",
       "notDone": "Tamamlanmadı",
       "todo": "Yapılacak",
@@ -58,10 +62,17 @@
     "dateLabel": "{{date}}"
   },
   "symptoms": {
+    "sum": "Semptom özeti",
+    "avgPulse": "Ortalama nabız",
+    "maxPulse": "Max nabız",
+    "minPulse": "Min nabız",
     "pulse": "Nabız",
-    "calories": "Yakılan Kalori",
-    "steps": "Adım",
-    "sleep": "Uyku",
+    "totalCalories": "Toplam yakılan kalori",
+    "calories": "Yakılan kalori",
+    "totalSteps": "Topal adım sayısı",
+    "steps": "Adım sayısı",
+    "totalSleep": "Toplam uyku süresi",
+    "sleep": "Uyku süresi",
     "empty": "Bulgu kaydı bulunamadı."
   },
   "steps": {
@@ -69,12 +80,17 @@
     "noGoal": "Hedef mevcut değil.",
     "goal": "Hedef: {{goal}} adım",
     "progress": "İlerleme: {{steps}} adım",
-    "badges": "Hedef Başarım Rozetleri:"
+    "badges": "Hedef başarım rozetleri:"
   },
   "sessions": {
     "count": "Uygulamaya giriş sayısı: {{count}}",
     "total": "Toplam kullanım süresi: {{duration}}",
     "empty": "Oturum kaydı bulunamadı."
+  },
+  "summary": {
+    "dateRange": "Tarih aralığı",
+    "previousWeek": "Önceki hafta",
+    "nextWeek": "Sonraki hafta"
   },
   "dailyStatusText": "{{date}}\nBugün ruh halimi {{score}}/9 olarak değerlendiriyorum."
 }

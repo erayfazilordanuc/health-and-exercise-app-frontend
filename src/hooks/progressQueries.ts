@@ -11,7 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import apiClient from '../api/axios/axios';
 import {
-  getTodaysProgressByUserId,
+  getProgressByUserIdAndDate,
   getWeeklyActiveDaysProgressByUserId,
 } from '../api/exercise/progressService';
 import {useEffect} from 'react';
@@ -192,6 +192,15 @@ export const EXERCISE_KEYS = {
       userId,
       dateISO,
     ] as const,
+
+  progressByDate: (userId: number, dateISO?: string) =>
+    [
+      ...EXERCISE_KEYS.root,
+      'progress',
+      'by-date', // 'daily' yerine 'by-date'
+      userId,
+      dateISO,
+    ] as const,
 };
 
 export function useWeeklyActiveDaysProgressByUserId(
@@ -244,3 +253,71 @@ export const prefetchWeeklyActiveDaysProgress = (
     queryFn: () => getWeeklyActiveDaysProgressByUserId(userId),
     staleTime: 5 * 60 * 1000,
   });
+
+export function useExerciseProgressByUserIdAndDate(
+  userId?: number, // Hook'un çağrıldığı yerde 'enabled' ile
+  date?: Date, // kontrol edilebilmesi için opsiyonel yapıldı.
+  options?: Omit<
+    UseQueryOptions<
+      ExerciseProgressDTO | null,
+      AxiosError,
+      ExerciseProgressDTO | null,
+      ReturnType<typeof EXERCISE_KEYS.progressByDate> // Yeni key'in tipi
+    >,
+    'queryKey' | 'queryFn' | 'enabled'
+  >,
+) {
+  const dateISO = date?.toISOString();
+
+  return useQuery<
+    ExerciseProgressDTO | null,
+    AxiosError,
+    ExerciseProgressDTO | null,
+    ReturnType<typeof EXERCISE_KEYS.progressByDate> // Yeni key'in tipi
+  >({
+    // queryKey, 'userId' ve 'dateISO'yu içerecek şekilde güncellendi
+    queryKey: EXERCISE_KEYS.progressByDate(userId ?? -1, dateISO),
+
+    // 'enabled' kontrolü, 'userId' ve 'date'in geçerli olmasını sağlar
+    enabled:
+      Number.isFinite(userId) && (userId as number) > 0 && date instanceof Date, // date'in geçerli bir tarih nesnesi olduğunu kontrol et
+
+    // 'queryFn' artık 'enabled' sayesinde 'userId' ve 'date'in
+    // var olduğundan emin olarak çalışır.
+    queryFn: () => getProgressByUserIdAndDate(userId as number, date as Date),
+
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    ...options,
+  });
+}
+
+export const invalidateProgressByDate = (
+  qc: QueryClient,
+  userId: number,
+  date?: Date, // Belirli bir tarihi veya 'date' verilmezse
+  // o kullanıcıya ait tüm tarihleri geçersiz kıl
+) =>
+  qc.invalidateQueries({
+    queryKey: EXERCISE_KEYS.progressByDate(userId, date?.toISOString()),
+    // 'exact: true' kaldırıldı, böylece 'date' verilmediğinde
+    // ['exercises', 'progress', 'by-date', userId] altındaki her şey
+    // (yani tüm tarihler) geçersiz olur.
+  });
+
+export const prefetchProgressByDate = (
+  qc: QueryClient,
+  userId: number,
+  date: Date, // Prefetch için spesifik bir tarih gereklidir
+) => {
+  // 'useQuery' ile eşleşmesi için 'dateISO' mutlaka key'e eklenmelidir.
+  const dateISO = date.toISOString();
+
+  return qc.prefetchQuery({
+    queryKey: EXERCISE_KEYS.progressByDate(userId, dateISO),
+    queryFn: () => getProgressByUserIdAndDate(userId, date),
+    staleTime: 5 * 60 * 1000,
+  });
+};

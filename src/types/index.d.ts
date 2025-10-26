@@ -176,6 +176,16 @@ type Symptoms = {
   updatedAt?: Date | null;
 };
 
+type WeeklySymptomsSummary = {
+  avgPulse?: number;
+  maxPulse: number;
+  minPulse: number;
+  steps?: number;
+  totalCaloriesBurned?: number | null;
+  activeCaloriesBurned?: number | null;
+  sleepMinutes?: number | null;
+};
+
 type StepGoalDTO = {
   id: number;
   userId: number;

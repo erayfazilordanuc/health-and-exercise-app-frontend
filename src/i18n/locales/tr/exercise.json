@@ -61,17 +61,17 @@
         "7": "Paz"
       }
     },
-    "title": "Egzersiz Takvimi",
+    "title": "Egzersiz takvimi",
     "legend": {
       "completed": "Tamamlandı",
       "notCompleted": "Tamamlanmadı",
       "scheduled": "Yapılacak",
       "today": "Bugün"
     },
-    "selectDaysButton": "Egzersiz Günleri Seç"
+    "selectDaysButton": "Egzersiz günleri Seç"
   },
   "scheduleModal": {
-    "title": "Egzersiz Günleri",
+    "title": "Egzersiz günleri",
     "subtitleMin": "En az 3 gün seçiniz",
     "subtitleHint": "Egzersiz yapmak istediğiniz günlerin üzerine tıklayınız",
     "weekShort": {
@@ -91,7 +91,7 @@
     "subtitle": "Egzersiz yapabilmek için uygun bir gruba dahil olmanız gerekiyor."
   },
   "typeModal": {
-    "title": "Egzersiz Türü Seçimi",
+    "title": "Egzersiz türü seçimi",
     "description": "Bugünkü egzersizinizi ayakta mı yoksa oturarak mı yapmak istediğinizi seçiniz.",
     "standing": "Ayakta",
     "seated": "Oturarak",

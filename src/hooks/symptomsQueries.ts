@@ -1,5 +1,6 @@
 import {
   keepPreviousData,
+  QueryClient,
   QueryKey,
   useMutation,
   useQuery,
@@ -19,31 +20,35 @@ import {
   getLatestSymptomsByDate,
   getWeeklyStepGoal,
   getWeeklyStepsTotal,
+  adminGetSymptomsSummaryByDateRange,
+  adminGetWeeklyStepGoalByRange,
+  adminGetDoneStepGoalsUntil,
 } from '../api/symptoms/symptomsService';
 import {saveSymptoms} from '../lib/health/healthConnectService';
 import {ymdLocal} from '../utils/dates';
-
-export type Symptoms = {
-  id?: number;
-  pulse?: number;
-  steps?: number;
-  totalCaloriesBurned?: number | null;
-  activeCaloriesBurned?: number | null;
-  sleepMinutes?: number | null;
-  createdAt?: Date | null;
-  updatedAt?: Date | null;
-};
+import apiClient from '../api/axios/axios';
 
 const toISODate = (d: Date) => d.toISOString().slice(0, 10);
 
-export const SYMPTOM_KEYS = {
+export const SYMPTOMS_KEYS = {
   root: ['symptoms'] as const,
 
   byDate: (dateStr: string) =>
-    [...SYMPTOM_KEYS.root, 'by-date', dateStr] as const,
+    [...SYMPTOMS_KEYS.root, 'by-date', dateStr] as const,
 
   adminByUserAndDate: (userId: number, dateStr: string) =>
-    [...SYMPTOM_KEYS.root, 'admin', 'user', userId, 'date', dateStr] as const,
+    [...SYMPTOMS_KEYS.root, 'admin', 'user', userId, 'date', dateStr] as const,
+
+  adminRoot: () => [...SYMPTOMS_KEYS.root, 'admin'] as const,
+  adminSummaryByRange: (userId: number, startISO?: string, endISO?: string) =>
+    [
+      ...SYMPTOMS_KEYS.adminRoot(),
+      'summary',
+      'by-range',
+      userId,
+      startISO,
+      endISO,
+    ] as const,
 };
 
 export function useSaveSymptomsToday() {
@@ -90,7 +95,7 @@ export function useAdminSymptomsByUserIdAndDate(
       Symptoms,
       AxiosError,
       Symptoms,
-      ReturnType<typeof SYMPTOM_KEYS.adminByUserAndDate>
+      ReturnType<typeof SYMPTOMS_KEYS.adminByUserAndDate>
     >,
     'queryKey' | 'queryFn' | 'enabled'
   >,
@@ -101,9 +106,9 @@ export function useAdminSymptomsByUserIdAndDate(
     Symptoms,
     AxiosError,
     Symptoms,
-    ReturnType<typeof SYMPTOM_KEYS.adminByUserAndDate>
+    ReturnType<typeof SYMPTOMS_KEYS.adminByUserAndDate>
   >({
-    queryKey: SYMPTOM_KEYS.adminByUserAndDate(userId ?? -1, dateStr),
+    queryKey: SYMPTOMS_KEYS.adminByUserAndDate(userId ?? -1, dateStr),
     enabled: !!userId && !!date,
     queryFn: async () => {
       if (!userId || !date) throw new Error('userId/date required');
@@ -149,6 +154,84 @@ export function useSymptomsByDate(
     retry: 0,
   });
 }
+
+export function useAdminSymptomsSummaryByDateRange(
+  userId?: number,
+  startDate?: Date,
+  endDate?: Date,
+  options?: Omit<
+    UseQueryOptions<
+      WeeklySymptomsSummary,
+      AxiosError,
+      WeeklySymptomsSummary,
+      ReturnType<typeof SYMPTOMS_KEYS.adminSummaryByRange>
+    >,
+    'queryKey' | 'queryFn' | 'enabled'
+  >,
+) {
+  // Key'lerde kullanılmak üzere ISO string'e çevir
+  const startISO = startDate?.toISOString().slice(0, 10);
+  const endISO = endDate?.toISOString().slice(0, 10);
+
+  return useQuery<
+    WeeklySymptomsSummary,
+    AxiosError,
+    WeeklySymptomsSummary,
+    ReturnType<typeof SYMPTOMS_KEYS.adminSummaryByRange>
+  >({
+    queryKey: SYMPTOMS_KEYS.adminSummaryByRange(userId ?? -1, startISO, endISO),
+
+    // enabled: Sadece tüm parametreler geçerliyse sorguyu çalıştır
+    enabled:
+      Number.isFinite(userId) &&
+      (userId as number) > 0 &&
+      startDate instanceof Date &&
+      endDate instanceof Date,
+
+    // queryFn: 'enabled' true ise bu fonksiyon çalışır
+    // ve parametrelerin 'undefined' olmadığından eminiz.
+    queryFn: () =>
+      adminGetSymptomsSummaryByDateRange(
+        userId as number,
+        startDate as Date,
+        endDate as Date,
+      ),
+
+    // Diğer admin hook'larınızdaki gibi ayarlar
+    staleTime: 5 * 60 * 1000, // 5 dakika
+    gcTime: 30 * 60 * 1000, // 30 dakika
+    retry: 1,
+    refetchOnWindowFocus: false, // Admin paneli için genelde false iyidir
+    ...options,
+  });
+}
+
+// 3. Yardımcı (Helper) Fonksiyonlar
+export const invalidateAdminSymptomsSummary = (
+  qc: QueryClient,
+  userId: number,
+) =>
+  qc.invalidateQueries({
+    // Bu userId'ye ait tüm 'summary' sorgularını geçersiz kıl
+    queryKey: SYMPTOMS_KEYS.adminSummaryByRange(userId),
+  });
+
+export const prefetchAdminSymptomsSummary = (
+  qc: QueryClient,
+  userId: number,
+  startDate: Date,
+  endDate: Date,
+) => {
+  const startISO = startDate.toISOString().slice(0, 10);
+  const endISO = endDate.toISOString().slice(0, 10);
+
+  return qc.prefetchQuery({
+    queryKey: SYMPTOMS_KEYS.adminSummaryByRange(userId, startISO, endISO),
+    queryFn: () =>
+      adminGetSymptomsSummaryByDateRange(userId, startDate, endDate),
+    staleTime: 5 * 60 * 1000,
+  });
+};
 
 export const STEP_GOAL_KEYS = {
   root: ['step-goal'] as const,
@@ -262,8 +345,20 @@ export const ADMIN_KEYS = {
     [...ADMIN_KEYS.root, 'steps', 'weekly', userId] as const,
   stepGoalWeekly: (userId: number) =>
     [...ADMIN_KEYS.root, 'step-goal', 'weekly', userId] as const,
+  stepGoalWeeklyByRange: (userId: number, startDate: Date, endDate: Date) =>
+    [
+      ...ADMIN_KEYS.root,
+      'step-goal',
+      'weekly',
+      'range',
+      userId,
+      startDate,
+      endDate,
+    ] as const,
   stepGoalDone: (userId: number) =>
     [...ADMIN_KEYS.root, 'step-goal', 'done', userId] as const,
+  stepGoalDoneUntil: (userId: number, date: Date) =>
+    [...ADMIN_KEYS.root, 'step-goal', 'done', 'until', userId, date] as const,
 };
 
 export const useAdminWeeklySteps = (
@@ -297,6 +392,24 @@ export const useAdminWeeklyStepGoal = (
   });
 };
 
+export const useAdminGetStepGoalForRange = (
+  userId: number,
+  startDate: Date,
+  endDate: Date,
+  options?: {enabled?: boolean},
+) => {
+  return useQuery<StepGoalDTO, Error>({
+    queryKey: ADMIN_KEYS.stepGoalWeeklyByRange(userId, startDate, endDate),
+    queryFn: () => adminGetWeeklyStepGoalByRange(userId, startDate, endDate),
+    enabled: (options?.enabled ?? true) && !!userId,
+    networkMode: 'offlineFirst',
+    staleTime: 5 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    retry: 1,
+    placeholderData: keepPreviousData,
+  });
+};
+
 export const useAdminDoneStepGoals = (
   userId: number,
   options?: {enabled?: boolean},
@@ -304,6 +417,23 @@ export const useAdminDoneStepGoals = (
   return useQuery<StepGoalDTO[], Error>({
     queryKey: ADMIN_KEYS.stepGoalDone(userId),
     queryFn: () => adminGetDoneStepGoals(userId),
+    enabled: (options?.enabled ?? true) && !!userId,
+    networkMode: 'offlineFirst',
+    staleTime: 5 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    retry: 1,
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useAdminDoneStepGoalsUntil = (
+  userId: number,
+  date: Date,
+  options?: {enabled?: boolean},
+) => {
+  return useQuery<StepGoalDTO[], Error>({
+    queryKey: ADMIN_KEYS.stepGoalDoneUntil(userId, date),
+    queryFn: () => adminGetDoneStepGoalsUntil(userId, date),
     enabled: (options?.enabled ?? true) && !!userId,
     networkMode: 'offlineFirst',
     staleTime: 5 * 60 * 1000,

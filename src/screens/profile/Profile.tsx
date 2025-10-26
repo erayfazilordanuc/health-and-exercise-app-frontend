@@ -76,7 +76,6 @@ import CustomAlertSingleton, {
   CustomAlertSingletonHandle,
 } from '../../components/CustomAlertSingleton';
 import {
-  SYMPTOM_KEYS,
   useCompleteStepGoal,
   useCreateStepGoal,
   useDoneStepGoals,
@@ -85,7 +84,7 @@ import {
   useWeeklyStepGoal,
   useWeeklySteps,
 } from '../../hooks/symptomsQueries';
-import NetInfo from '@react-native-community/netinfo';
+import NetInfo, {refresh} from '@react-native-community/netinfo';
 import {useQueryClient} from '@tanstack/react-query';
 import WeeklyStrip from '../../components/WeeklyStrip';
 import {isSameDay} from 'date-fns';
@@ -134,6 +133,9 @@ const Profile = () => {
   const [showDetail, setShowDetail] = useState(false);
   const [showHCAlert, setShowHCAlert] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showSleepTimeModal, setShowSleepTimeModal] = useState(false);
+  const [sleepHours, setSleepHours] = useState('');
+  const [sleepMinutes, setSleepMinutes] = useState('');
 
   const {data: weekly, isLoading: wLoading} = useWeeklyStepGoal({
     enabled: user?.role === 'ROLE_USER',
@@ -301,14 +303,12 @@ const Profile = () => {
   const initOnceRef = useRef(false);
   const syncInFlightRef = useRef(false);
   const initializeSymptoms = async () => {
-    // 1) beklenmeyen durumlara erken çık
     if (initOnceRef.current) return;
 
     if (!user || user.role !== 'ROLE_USER') return;
 
     if (!(symptomsDate && isTodayLocal(symptomsDate))) return;
 
-    // ✅ Sağlık uygulamaları check tamamlanmadan hiç başlama
     if (hcStateLoading) return;
 
     initOnceRef.current = true;
@@ -387,6 +387,19 @@ const Profile = () => {
     initializeSymptoms();
   }, [user, symptomsQ.data, hcStateLoading]);
 
+  const refreshSymptoms = async () => {
+    await symptomsQ.refetch();
+    if (isHealthConnectInstalled && isHealthConnectReady) {
+      const hc = await getSymptoms();
+      if (hc && symptoms) {
+        const combined = combineSymptoms(hc, symptomsQ.data);
+        if (combined) setSymptoms(combined);
+      }
+    } else {
+      const combined = combineSymptoms(symptomsQ.data);
+      if (combined) setSymptoms(combined);
+    }
+  };
   const onRefresh = async () => {
     setRefreshing(true);
     const net = await NetInfo.fetch();
@@ -399,19 +412,8 @@ const Profile = () => {
       if (dbUser) setUser(dbUser);
       if (user?.role === 'ROLE_ADMIN') return;
       await checkEssentialAppsStatus();
-      await symptomsQ.refetch();
       await refetchSteps();
-      if (isHealthConnectInstalled && isHealthConnectReady) {
-        const hc = await getSymptoms();
-        if (hc && symptoms) {
-          const combined = combineSymptoms(hc, symptomsQ.data);
-          if (combined) setSymptoms(combined);
-        }
-      } else {
-        const combined = combineSymptoms(symptomsQ.data);
-        if (combined) setSymptoms(combined);
-      }
-
+      await refreshSymptoms();
       // await syncSymptoms();
     } catch (e) {
       console.log(e);
@@ -1242,8 +1244,9 @@ const Profile = () => {
                   color="#FDEF22"
                   setAddModalFunction={setAddModalFunction}
                   setSymptom={setTotalSleepMinutes}
-                  onAdd={setIsAddModalVisible}
+                  // onAdd={setIsAddModalVisible}
                   // onAdd={setShowTimePicker}
+                  onAdd={setShowSleepTimeModal}
                   updateDisabled={
                     (healthConnectSymptoms?.sleepMinutes &&
                       healthConnectSymptoms?.sleepMinutes > 0) ||
@@ -1586,6 +1589,163 @@ const Profile = () => {
               </View>
             </View>
           </Modal>
+
+          <Modal
+            transparent={true}
+            visible={showSleepTimeModal}
+            animationType="fade"
+            onRequestClose={() => setShowSleepTimeModal(false)}>
+            <View className="flex-1 justify-center items-center bg-black/25">
+              <View
+                className="w-4/5 rounded-3xl p-5 py-6 items-center"
+                style={{backgroundColor: colors.background.primary}}>
+                <Text
+                  className="text-lg font-bold mb-4 text-center"
+                  style={{color: colors.text.primary}}>
+                  {t('sleepModal.title')}
+                </Text>
+                <View className="flex-row items-center justify-center w-full px-4 mb-4">
+                  {/* Saat Input */}
+                  <TextInput
+                    placeholder={t('sleepModal.hours')} // Çeviri anahtarını güncelleyin
+                    placeholderTextColor={'gray'}
+                    selectionColor={'#7AADFF'}
+                    keyboardType="number-pad" // decimal-pad yerine number-pad daha uygun
+                    value={sleepHours} // State'i kullan
+                    onChangeText={text =>
+                      setSleepHours(text.replace(/[^0-9]/g, ''))
+                    } // State'i güncelle
+                    maxLength={2} // Maksimum 2 rakam
+                    // `flex-1` kaldırıldı, `w-2/5` ve `text-center` eklendi
+                    className="font-rubik text-lg rounded-2xl px-4 py-3 text-center w-2/5"
+                    style={{
+                      backgroundColor: colors.background.secondary,
+                      color: colors.text.primary,
+                    }}
+                  />
+
+                  {/* Ayırıcı */}
+                  <Text
+                    style={{color: colors.text.primary, fontSize: 18}}
+                    className="font-rubik-medium mx-3">
+                    :
+                  </Text>
+
+                  {/* Dakika Input */}
+                  <TextInput
+                    placeholder={t('sleepModal.minutes')} // Çeviri anahtarını güncelleyin
+                    placeholderTextColor={'gray'}
+                    selectionColor={'#7AADFF'}
+                    keyboardType="number-pad" // decimal-pad yerine number-pad daha uygun
+                    value={sleepMinutes} // State'i kullan
+                    onChangeText={text =>
+                      setSleepMinutes(text.replace(/[^0-9]/g, ''))
+                    } // State'i güncelle
+                    maxLength={2} // Maksimum 2 rakam
+                    className="font-rubik text-lg rounded-2xl px-4 py-3 text-center w-2/5"
+                    style={{
+                      backgroundColor: colors.background.secondary,
+                      color: colors.text.primary,
+                    }}
+                  />
+                </View>
+                <View className="flex-row justify-between w-full">
+                  {!updateLoading ? (
+                    <>
+                      <TouchableOpacity
+                        onPress={async () => {
+                          if (parseInt(sleepMinutes) > 60) {
+                            ToastAndroid.show(
+                              t('toasts.maxMinutes'),
+                              ToastAndroid.SHORT,
+                            );
+                            return;
+                          }
+
+                          if (parseInt(sleepHours) > 24) {
+                            ToastAndroid.show(
+                              t('toasts.maxHours'),
+                              ToastAndroid.SHORT,
+                            );
+                            return;
+                          }
+
+                          if (
+                            sleepHours.length < 1 &&
+                            sleepMinutes.length < 1
+                          ) {
+                            ToastAndroid.show(
+                              t('toasts.enterAValue'),
+                              ToastAndroid.SHORT,
+                            );
+                            return;
+                          }
+
+                          setUpdateLoading(true);
+                          let hours =
+                            sleepHours.length === 0 ? 0 : parseInt(sleepHours);
+                          let minutes =
+                            sleepMinutes.length === 0
+                              ? 0
+                              : parseInt(sleepMinutes);
+                          let totalSleep = hours * 60 + minutes;
+
+                          const updatedSymptoms: Symptoms = {
+                            ...symptoms,
+                          };
+
+                          updatedSymptoms.sleepMinutes = totalSleep;
+
+                          const savedSymptoms =
+                            await saveSymptomsToday.mutateAsync(
+                              updatedSymptoms,
+                            );
+
+                          if (savedSymptoms) {
+                            setSymptoms(savedSymptoms);
+                            setTotalSleepMinutes(totalSleep);
+                          }
+
+                          setUpdateLoading(false);
+                          setShowSleepTimeModal(false);
+                          setSleepHours('');
+                          setSleepMinutes('');
+                        }}
+                        className="flex-1 p-2 rounded-2xl items-center mx-1"
+                        style={{backgroundColor: '#0EC946'}}>
+                        <Text className="font-rubik text-lg text-white">
+                          {t('addValueModal.update')}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setShowSleepTimeModal(false);
+                          setSleepHours('');
+                          setSleepMinutes('');
+                        }}
+                        className="flex-1 p-2 rounded-2xl items-center mx-1"
+                        style={{backgroundColor: colors.background.secondary}}>
+                        <Text
+                          className="font-rubik text-lg"
+                          style={{color: colors.text.primary}}>
+                          {t('addValueModal.cancel')}
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <View className="flex flex-row items-center justify-center w-full">
+                      <ActivityIndicator
+                        className="mt-2 self-center"
+                        size="large"
+                        color="#16d750" // {colors.primary[300] ?? colors.primary}
+                      />
+                    </View>
+                  )}
+                </View>
+              </View>
+            </View>
+          </Modal>
+
           {/* <DatePicker
             modal
             open={showTimePicker}
@@ -1861,7 +2021,7 @@ const Profile = () => {
         transparent={true}
         visible={showHCAlert}
         animationType="fade"
-        onRequestClose={() => setIsAddModalVisible(false)}>
+        onRequestClose={() => setShowHCAlert(false)}>
         <View className="flex-1 justify-center items-center bg-black/40">
           <View
             className="w-11/12 rounded-3xl p-5 pt-6 pb-4 items-center"

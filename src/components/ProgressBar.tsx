@@ -14,6 +14,8 @@ type ProgressBarProps = {
   iconSource: any;
   color: string;
   updateDisabled?: boolean;
+  bgDense?: boolean;
+  age?: number;
   setAddModalFunction?: React.Dispatch<
     React.SetStateAction<{
       setSymptom?: React.Dispatch<React.SetStateAction<number>>;
@@ -23,7 +25,7 @@ type ProgressBarProps = {
   onAdd?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const MAX_SLEEP_HOURS = 16;
+const MAX_SLEEP_HOURS = 10;
 const MAX_SLEEP_MINUTES = MAX_SLEEP_HOURS * 60;
 const INITIAL_MAX_STEPS = 2500;
 const INITIAL_MAX_CALORIES = 2000;
@@ -54,6 +56,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   iconSource,
   color,
   updateDisabled,
+  bgDense,
+  age,
   setAddModalFunction,
   setSymptom,
   onAdd,
@@ -78,7 +82,19 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       if (value > maxCalories) maxCalories += 500;
       ratio = Math.min((value / maxCalories) * 100, 100);
     } else if (iconSource === icons.sleep) {
-      ratio = Math.min((value / MAX_SLEEP_MINUTES) * 100, 100);
+      if (age) {
+        let dayConstant = 1;
+        if (value > 24) dayConstant = 7;
+        if (age > 6 && age < 12) {
+          ratio = Math.min((value / (12 * 60 * dayConstant)) * 100, 100);
+        } else if (age < 18) {
+          ratio = Math.min((value / (10 * 60 * dayConstant)) * 100, 100);
+        } else {
+          ratio = Math.min((value / (9 * 60 * dayConstant)) * 100, 100);
+        }
+      } else {
+        ratio = Math.min((value / MAX_SLEEP_MINUTES) * 100, 100);
+      }
     } else {
       ratio = Math.min(value, 100);
     }
@@ -87,7 +103,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 
   const getDisplayText = (): string => {
     if (value == null || value == 0) return ''; // 'Veri yok';
-    if (iconSource === icons.man_walking) return `${value} adım`;
+    if (iconSource === icons.man_walking)
+      return `${value} ${t('labels.steps').toLowerCase()}`;
     if (iconSource === icons.sleep) {
       const hours = Math.floor(value / 60); // toplam dakikadan saat çıkar
       const minutes = Math.round(value % 60); // kalan dakikayı al
@@ -113,14 +130,14 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           />
           <Text
             className="pl-2 font-rubik"
-            style={{fontSize: 15, color: colors.text.primary}}>
+            style={{fontSize: 14, color: colors.text.primary}}>
             {label}
           </Text>
         </View>
 
         <Text
-          className="text-sm font-rubik mr-2"
-          style={{color: colors.text.primary}}>
+          className="font-rubik mr-2"
+          style={{color: colors.text.primary, fontSize: 12}}>
           {getDisplayText()}
         </Text>
 
@@ -150,7 +167,11 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         // value != null &&
         <View
           className="w-full h-1 rounded-full overflow-hidden"
-          style={{backgroundColor: colors.background.secondary}}>
+          style={{
+            backgroundColor: bgDense
+              ? colors.background.primary
+              : colors.background.secondary,
+          }}>
           <View
             className="h-1 rounded-full"
             style={{

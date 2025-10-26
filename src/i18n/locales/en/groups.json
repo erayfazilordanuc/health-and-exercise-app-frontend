@@ -39,7 +39,7 @@
     "create": {
       "title": "Create Group",
       "name": "Group Name",
-      "exerciseEnabled": "Exercise Enabled"
+      "exerciseEnabled": "Exercise enabled"
     }
   },
   "alerts": {
@@ -68,11 +68,12 @@
       "you": "You"
     },
     "sections": {
-      "lastMessage": "Last Message",
+      "lastMessage": "Last message",
       "youPrefix": "You: ",
       "settings": "Group Settings",
-      "joinRequests": "Join Requests",
+      "joinRequests": "Join requests",
       "members": "Members",
+      "membersExist": "People",
       "sort": {
         "sortTitle": "Sort",
         "asc": "Ascending",
@@ -83,7 +84,7 @@
       }
     },
     "settings": {
-      "exercise": "Exercise Enabled",
+      "exercise": "Exercise enabled",
       "confirmEnable": "Are you sure you want to enable exercise for this group?",
       "confirmDisable": "Are you sure you want to disable exercise for this group?",
       "disableWarning": "This will prevent exercise data from being recorded for users.",

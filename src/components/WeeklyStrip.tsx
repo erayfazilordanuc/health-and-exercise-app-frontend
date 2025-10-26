@@ -109,6 +109,16 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
     return mid.toLocaleDateString(locale, {month: 'long', year: 'numeric'});
   }, [weekStart, locale]);
 
+  const selectedDateLabel = React.useMemo(() => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    };
+
+    return selectedDate.toLocaleDateString(locale, options);
+  }, [selectedDate, locale]);
+
   const canGoPrevWeek = React.useMemo(() => {
     if (!minDate) return true;
     const prevStart = addDays(weekStart, -7);
@@ -154,8 +164,9 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
 
         <Text
           className="font-rubik-medium"
-          style={{color: colors.text.primary, fontSize: 16}}>
-          {monthLabel.toUpperCase()}
+          style={{color: colors.text.primary, fontSize: 17}}>
+          {/* {monthLabel.toUpperCase()} */}
+          {selectedDateLabel}
         </Text>
 
         <TouchableOpacity
@@ -196,7 +207,7 @@ const WeeklyStrip: React.FC<WeeklyStripProps> = ({
               <View
                 className="rounded-full items-center justify-center"
                 style={{
-                  height: 40,
+                  height: 38,
                   width: 38,
                   backgroundColor: selected
                     ? colors.primary[200] || '#0077FF'

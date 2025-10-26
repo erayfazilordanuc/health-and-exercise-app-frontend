@@ -263,6 +263,30 @@ export const adminGetLatestSymptomsByUserIdAndDate = async (
   return response;
 };
 
+export const adminGetSymptomsSummaryByDateRange = async (
+  userId: number,
+  startDate: Date,
+  endDate: Date,
+): Promise<WeeklySymptomsSummary> => {
+  const startStr = startDate.toISOString().slice(0, 10);
+  const endStr = endDate.toISOString().slice(0, 10);
+  const urlPath = `/symptoms/user/id/${userId}/range`;
+
+  console.log(
+    `Admin: ${userId} için ${startStr} - ${endStr} aralığı isteniyor...`,
+  );
+
+  const response = await apiClient.get(urlPath, {
+    params: {
+      startDate: startStr,
+      endDate: endStr,
+    },
+  });
+
+  console.log('get symptoms summary', response);
+  return response.data as WeeklySymptomsSummary;
+};
+
 export const createStepGoal = async (goal: number): Promise<StepGoalDTO> => {
   const res = await apiClient.put('/symptoms/step-goal', null, {
     params: {goal},
@@ -312,10 +336,51 @@ export const adminGetWeeklyStepGoal = async (
   return res.data;
 };
 
+export const adminGetWeeklyStepGoalByRange = async (
+  userId: number,
+  startDate?: Date,
+  endDate?: Date,
+): Promise<StepGoalDTO> => {
+  const startStr = (startDate ? startDate : new Date())
+    .toISOString()
+    .slice(0, 10);
+  const endStr = (endDate ? endDate : new Date()).toISOString().slice(0, 10);
+  const urlPath = `/symptoms/user/id/${userId}/step-goal/weekly/range`;
+
+  const response = await apiClient.get(urlPath, {
+    params: {
+      startDate: startStr,
+      endDate: endStr,
+    },
+  });
+
+  console.log('weekly step goal by range response', response);
+
+  return response.data;
+};
+
 // Tamamlanan hedefler listesi – admin, belirli kullanıcı
 export const adminGetDoneStepGoals = async (
   userId: number,
 ): Promise<StepGoalDTO[]> => {
   const res = await apiClient.get(`/symptoms/user/id/${userId}/step-goal/done`);
   return res.data;
+};
+
+export const adminGetDoneStepGoalsUntil = async (
+  userId: number,
+  date: Date,
+): Promise<StepGoalDTO[]> => {
+  const untilStr = date.toISOString().slice(0, 10);
+  const urlPath = `/symptoms/user/id/${userId}/step-goal/done`;
+
+  const response = await apiClient.get(urlPath, {
+    params: {
+      date: untilStr,
+    },
+  });
+
+  console.log('done step goals until response', response);
+
+  return response.data;
 };

@@ -115,9 +115,14 @@ export const getTodaysProgress = async (force?: boolean) => {
   }
 };
 
-export const getTodaysProgressByUserId = async (userId: number) => {
+export const getProgressByUserIdAndDate = async (
+  userId: number,
+  date: Date,
+) => {
   try {
-    const response = await apiClient.get(`/exercises/daily/progress/${userId}`);
+    const response = await apiClient.get(
+      `/exercises/${date.toISOString().slice(0, 10)}/progress/${userId}`,
+    );
     console.log('daily progress by user id', response);
 
     if (response.status >= 200 && response.status < 300) {

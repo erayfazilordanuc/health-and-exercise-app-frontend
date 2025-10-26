@@ -38,24 +38,23 @@ import Notifications from '../screens/profile/settings/Notifications';
 import Groups from '../screens/groups/Groups';
 import Group from '../screens/groups/Group';
 import Chat from '../screens/groups/Chat';
-import Member from '../screens/groups/Member';
+import Member from '../screens/groups/admin/Member';
 import {useNotificationNavigation} from '../hooks/useNotificationNavigation';
 import {useUser} from '../contexts/UserContext';
 import ExercisesUser from '../screens/exercises/user/ExercisesUser';
 import ExercisesAdmin from '../screens/exercises/admin/ExercisesAdmin';
 import EditExercise from '../screens/exercises/admin/EditExercise';
-import Achievements from '../screens/groups/ExerciseProgress';
 import Workout from '../screens/exercises/user/Exercise';
 import ExerciseDetail from '../screens/exercises/user/ExerciseDetail';
 import Exercise from '../screens/exercises/user/Exercise';
 import DeviceInfo from 'react-native-device-info';
 import sessionManager from '../session/sessionManager';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import ExerciseProgress from '../screens/groups/ExerciseProgress';
 import {useTranslation} from 'react-i18next';
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 import Appearance from '../screens/profile/settings/Appearance';
 import Account from '../screens/profile/settings/Account';
+import MemberActivitySummary from '../screens/groups/admin/MemberActivitySummary';
 
 const Tab = createBottomTabNavigator();
 
@@ -383,6 +382,21 @@ function GroupsStack() {
           }}
         />
         <GroupsNativeStack.Screen
+          name="MemberActivitySummary"
+          component={MemberActivitySummary}
+          options={{
+            headerShown: false,
+            header: () => (
+              <CustomHeader
+                title={t('stacks.groups.member')}
+                icon={icons.notes}
+                className="border-primary-300"
+                backArrowEnable={true}
+              />
+            ),
+          }}
+        />
+        <GroupsNativeStack.Screen
           name="Chat"
           component={Chat}
           options={{
@@ -397,7 +411,7 @@ function GroupsStack() {
             ),
           }}
         />
-        <GroupsNativeStack.Screen
+        {/* <GroupsNativeStack.Screen
           name="ExerciseProgress"
           component={ExerciseProgress}
           options={{
@@ -426,7 +440,7 @@ function GroupsStack() {
               />
             ),
           }}
-        />
+        /> */}
       </GroupsNativeStack.Navigator>
     </>
   );

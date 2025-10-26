@@ -50,6 +50,7 @@ type GroupsStackParamList = {
   Groups: any;
   Group: {groupId: number; fromNotification: boolean};
   Member: {memberId: number; fromNotification: boolean};
+  MemberActivitySummary: {memberId: number};
   Chat: {
     roomId: number;
     sender: string;

@@ -51,7 +51,7 @@
     "completed": "Başarıyla tamamlandı!",
     "goal": "Hedef: {{value}} adım",
     "progress": "İlerleme: {{value}} adım",
-    "badgesTitle": "Hedef Başarım Rozetleri:",
+    "badgesTitle": "Hedef başarım rozetleri:",
     "addGoalCta": "Bu Hafta İçin Hedef Ekle",
     "inputPlaceholder": "Örn: 15000 adım",
     "save": "Kaydet",
@@ -83,6 +83,11 @@
     "update": "Güncelle",
     "cancel": "İptal"
   },
+  "sleepModal": {
+    "title": "Uyku süresi",
+    "hours": "Saat",
+    "minutes": "Dakika"
+  },
   "datePicker": {
     "title": "Uyku sürenizi seçiniz",
     "confirm": "Onayla",
@@ -101,7 +106,9 @@
     "tooLowForHistory": "Girdiğiniz değer önceki ilerlemenize göre çok düşük",
     "alreadySaved": "Verileriniz zaten güncel.",
     "saveSuccessful": "Bilgiler başarıyla kaydedildi",
-    "saveUnsuccessful": "Bilgiler kaydedilemedi"
+    "saveUnsuccessful": "Bilgiler kaydedilemedi",
+    "maxMinutes": "Lütfen geçerli bir dakika değeri giriniz",
+    "maxHours": "Lütfen geçerli bir saat değeri giriniz"
   },
   "weeklyStrip": {
     "prevWeek": "Önceki hafta",

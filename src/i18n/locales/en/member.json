@@ -3,12 +3,14 @@
     "title": "Patient:"
   },
   "sections": {
-    "patientInfo": "Patient Information",
-    "lastMessage": "Last Message",
-    "calendar": "Exercise Calendar",
+    "patientInfo": "Patient information",
+    "lastMessage": "Last message",
+    "exerciseProgress": "Exercise progress",
+    "weeklySummary": "Weekly Activity Summary",
+    "calendar": "Exercise calendar",
     "symptoms": "Symptoms",
-    "weeklyStepGoal": "Weekly Step Goal",
-    "weeklySessions": "Weekly Session Stats"
+    "weeklyStepGoal": "Weekly step goal",
+    "weeklySessions": "Weekly session stats"
   },
   "fields": {
     "fullName": "Full Name:",
@@ -31,8 +33,8 @@
       "green": "Green-Yellow",
       "red": "Red-Orange"
     },
-    "showDetail": "Show Details",
-    "hideDetail": "Hide Details"
+    "showDetail": "Show details",
+    "hideDetail": "Hide details"
   },
   "bmiLevel": {
     "underweight": "Underweight",
@@ -49,19 +51,28 @@
     "blockedDetail": "Required consents to access the user's data are missing."
   },
   "calendar": {
+    "inactiveDay": "No exercise for today",
     "legend": {
+      "hasDone": "done",
       "done": "Completed",
-      "notDone": "Not Completed",
-      "todo": "To Do",
+      "notDone": "Not completed",
+      "todo": "To do",
       "today": "Today"
     },
     "dateLabel": "{{date}}"
   },
   "symptoms": {
+    "sum": "Symptoms summary",
+    "avgPulse": "Average pulse",
+    "maxPulse": "Max pulse",
+    "minPulse": "Min pulse",
     "pulse": "Pulse",
-    "calories": "Calories Burned",
+    "totalCalories": "Total calories burned",
+    "calories": "Calories burned",
+    "totalSteps": "Total steps",
     "steps": "Steps",
-    "sleep": "Sleep",
+    "totalSleep": "Total sleep time",
+    "sleep": "Sleep time",
     "empty": "No symptom record found."
   },
   "steps": {
@@ -69,12 +80,17 @@
     "noGoal": "No goal set.",
     "goal": "Goal: {{goal}} steps",
     "progress": "Progress: {{steps}} steps",
-    "badges": "Goal Achievement Badges:"
+    "badges": "Goal achievement badges:"
   },
   "sessions": {
     "count": "App opens: {{count}}",
     "total": "Total usage time: {{duration}}",
     "empty": "No session record found."
+  },
+  "summary": {
+    "dateRange": "Date range",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week"
   },
   "dailyStatusText": "{{date}}\nI rate my mood today as {{score}}/9."
 }

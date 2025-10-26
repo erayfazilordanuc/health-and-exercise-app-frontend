@@ -61,17 +61,17 @@
         "7": "Sun"
       }
     },
-    "title": "Exercise Calendar",
+    "title": "Exercise calendar",
     "legend": {
       "completed": "Completed",
       "notCompleted": "Not completed",
       "scheduled": "Scheduled",
       "today": "Today"
     },
-    "selectDaysButton": "Select Exercise Days"
+    "selectDaysButton": "Select exercise days"
   },
   "scheduleModal": {
-    "title": "Exercise Days",
+    "title": "Exercise days",
     "subtitleMin": "Please select at least 3 days",
     "subtitleHint": "Tap the days you want to exercise",
     "weekShort": {
@@ -91,7 +91,7 @@
     "subtitle": "You need to join an eligible group to do exercises."
   },
   "typeModal": {
-    "title": "Choose Exercise Type",
+    "title": "Choose exercise type",
     "description": "Please choose whether you want to do today's exercise standing or seated.",
     "standing": "Standing",
     "seated": "Seated",

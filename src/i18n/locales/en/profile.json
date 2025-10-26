@@ -51,7 +51,7 @@
     "completed": "Completed successfully!",
     "goal": "Goal: {{value}} steps",
     "progress": "Progress: {{value}} steps",
-    "badgesTitle": "Goal Achievement Badges:",
+    "badgesTitle": "Goal achievement badges:",
     "addGoalCta": "Add Goal For This Week",
     "inputPlaceholder": "e.g. 15000 steps",
     "save": "Save",
@@ -83,6 +83,11 @@
     "update": "Update",
     "cancel": "Cancel"
   },
+  "sleepModal": {
+    "title": "Uyku süresi",
+    "hours": "Hours",
+    "minutes": "Minutes"
+  },
   "datePicker": {
     "title": "Select your sleep duration",
     "confirm": "Confirm",
@@ -101,7 +106,9 @@
     "tooLowForHistory": "The value you entered is too low based on your previous progress",
     "alreadySaved": "Your information is already up to date.",
     "saveSuccessful": "Information saved successfully",
-    "saveUnsuccessful": "Information save unsuccessful"
+    "saveUnsuccessful": "Information save unsuccessful",
+    "maxMinutes": "Please enter a valid minute value",
+    "maxHours": "Please enter a valid time value"
   },
   "weeklyStrip": {
     "prevWeek": "Previous week",

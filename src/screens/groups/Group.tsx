@@ -299,10 +299,11 @@ const Group = () => {
         )}
         {item.role === 'ROLE_USER' && user && user.role === 'ROLE_ADMIN' && (
           <TouchableOpacity
-            className="px-4 rounded-xl"
+            className="rounded-2xl"
             style={{
               backgroundColor: colors.background.primary,
               paddingVertical: 5,
+              paddingHorizontal: 10,
             }}
             onPress={() => {
               if (user && user.role === 'ROLE_ADMIN') {
@@ -827,20 +828,21 @@ const Group = () => {
         <View
           className="flex flex-col justify-start pl-4 p-3 mt-3" // border
           style={{
-            borderRadius: 17,
+            borderRadius: 18,
             backgroundColor: colors.background.primary,
             borderColor: colors.primary[300],
           }}>
-          <View className="flex flex-row justify-between">
+          <View className="flex flex-row justify-between items-center">
             <Text
               className="font-rubik ml-1"
               style={{fontSize: 20, color: colors.text.primary}}>
               {t('groupDetail.sections.members')}
             </Text>
             <Text
-              className="font-rubik text-2xl mr-3"
+              className="font-rubik text-lg mr-3"
               style={{color: colors.text.primary}}>
               {groupSize}
+              {' ' + t('groupDetail.sections.membersExist')}
             </Text>
           </View>
 
@@ -864,6 +866,7 @@ const Group = () => {
           />
         </View>
       </ScrollView>
+
       {user && user.role === 'ROLE_USER' && (
         <View className="absolute bottom-20 right-3 items-center"></View>
       )}

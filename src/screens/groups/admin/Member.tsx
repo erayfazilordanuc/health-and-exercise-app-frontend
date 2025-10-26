@@ -12,7 +12,14 @@ import {
   ActivityIndicator,
   ToastAndroid,
 } from 'react-native';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {
+  act,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
   RouteProp,
@@ -20,59 +27,61 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import {useTheme} from '../../themes/ThemeProvider';
-import {getUser, getUserById} from '../../api/user/userService';
+import {useTheme} from '../../../themes/ThemeProvider';
+import {getUser, getUserById} from '../../../api/user/userService';
 import {
   getGroupAdmin,
   getGroupById,
   getGroupSize,
-} from '../../api/group/groupService';
+} from '../../../api/group/groupService';
 import {setGestureState} from 'react-native-reanimated';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
-import icons from '../../constants/icons';
-import ProgressBar from '../../components/ProgressBar';
+import icons from '../../../constants/icons';
+import ProgressBar from '../../../components/ProgressBar';
 import {
   getLastMessageBySenderAndReceiver,
   getNextRoomId,
   isRoomExistBySenderAndReceiver,
-} from '../../api/message/messageService';
-import {useUser} from '../../contexts/UserContext';
-import CustomWeeklyProgressCalendar from '../../components/CustomWeeklyProgressCalendar';
-import {
-  getTodaysProgressByUserId,
-  getWeeklyActiveDaysProgressByUserId,
-} from '../../api/exercise/progressService';
+} from '../../../api/message/messageService';
+import {useUser} from '../../../contexts/UserContext';
+import CustomWeeklyProgressCalendar from '../../../components/CustomWeeklyProgressCalendar';
+import {getWeeklyActiveDaysProgressByUserId} from '../../../api/exercise/progressService';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
-import {isAuthRequiredError} from '../../api/errors/errors';
+import {isAuthRequiredError} from '../../../api/errors/errors';
 import {
   useAdminDoneStepGoals,
   useAdminSymptomsByUserIdAndDate,
   useAdminWeeklyStepGoal,
   useAdminWeeklySteps,
-} from '../../hooks/symptomsQueries';
-import {useWeeklyActiveDaysProgressByUserId} from '../../hooks/progressQueries';
-import {useUserById} from '../../hooks/userQueries';
-import {getRoomIdByUsers, MSG_KEYS} from '../../hooks/messageQueries';
+} from '../../../hooks/symptomsQueries';
+import {
+  useExerciseProgressByUserIdAndDate,
+  useWeeklyActiveDaysProgressByUserId,
+} from '../../../hooks/progressQueries';
+import {useUserById} from '../../../hooks/userQueries';
+import {getRoomIdByUsers, MSG_KEYS} from '../../../hooks/messageQueries';
 import {useQueryClient} from '@tanstack/react-query';
 import DatePicker from 'react-native-date-picker';
 import NetInfo from '@react-native-community/netinfo';
-import {useUserSessions} from '../../hooks/sessionQueries';
+import {useUserSessions} from '../../../hooks/sessionQueries';
 import {subDays} from 'date-fns';
-import {SessionList} from '../../components/SessionList';
-import WeeklyStrip from '../../components/WeeklyStrip';
+import {SessionList} from '../../../components/SessionList';
+import WeeklyStrip from '../../../components/WeeklyStrip';
 import {
   scheduleQueryKey,
   useExerciseSchedule,
   useExerciseScheduleAdmin,
-} from '../../hooks/exerciseQueries';
-import {parseTheme} from '../../themes/themes';
-import ColorCircle from '../../components/ColorCircle';
-import {calcPercent} from '../../api/exercise/exerciseService';
-import {useGroupById} from '../../hooks/groupQueries';
-import {AvatarKey, AVATARS} from '../../constants/avatars';
+} from '../../../hooks/exerciseQueries';
+import {parseTheme} from '../../../themes/themes';
+import ColorCircle from '../../../components/ColorCircle';
+import {calcPercent} from '../../../api/exercise/exerciseService';
+import {useGroupById} from '../../../hooks/groupQueries';
+import {AvatarKey, AVATARS} from '../../../constants/avatars';
 import {useTranslation} from 'react-i18next'; // ⬅️ eklendi
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
+import {color} from 'react-native-elements/dist/helpers';
+import {isTodayLocal} from '../../../utils/dates';
 
 const Member = () => {
   type MemberRouteProp = RouteProp<GroupsStackParamList, 'Member'>;
@@ -110,16 +119,6 @@ const Member = () => {
   } = useExerciseScheduleAdmin(memberId, {enabled: !!memberId});
   console.log(activeDays);
 
-  const {data: weeklySteps} = useAdminWeeklySteps(memberId, {
-    enabled: !!memberId,
-  });
-  const {data: weeklyGoal} = useAdminWeeklyStepGoal(memberId, {
-    enabled: !!memberId,
-  });
-  const {data: doneGoals} = useAdminDoneStepGoals(memberId, {
-    enabled: !!memberId,
-  });
-
   const tabBarHeight = useBottomTabBarHeight();
   const scrollRef = useRef<ScrollView>(null);
   const [symptomsSectionY, setSymptomsSectionY] = useState(0);
@@ -142,10 +141,7 @@ const Member = () => {
     d.setDate(d.getDate() - 84);
     return d;
   }, []);
-  const [symptomsDate, setSymptomsDate] = useState(today);
-  const [progressDate, setProgressDate] = useState(today);
-  const canGoPrev = progressDate > minDate;
-  const canGoNext = progressDate < today;
+  const [selectedDate, setSelectedDate] = useState(today);
 
   const day = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -170,23 +166,17 @@ const Member = () => {
     error: symptomsError,
     refetch: refetchSymptoms,
     isFetching,
-  } = useAdminSymptomsByUserIdAndDate(memberId, symptomsDate);
+  } = useAdminSymptomsByUserIdAndDate(memberId, selectedDate);
 
   const [isAllInitialized, setIsAllInitialized] = useState(false);
 
-  useEffect(() => {
-    scrollToSymptoms();
-  }, [symptoms]);
-
   const {
-    data: weeklyExerciseProgress = [],
+    data: progress,
     isLoading: isProgressLoading,
     isError: isProgressError,
     error: progressError,
     refetch: refetchProgress,
-  } = useWeeklyActiveDaysProgressByUserId(memberId, progressDate, {
-    staleTime: 60_000,
-  });
+  } = useExerciseProgressByUserIdAndDate(memberId, selectedDate);
 
   useEffect(() => {
     setAllLoading(isSessionsLoading || isSymptomsLoading || isProgressLoading);
@@ -260,7 +250,6 @@ const Member = () => {
       setRefreshing(true);
       await fetchLastMessage();
       await Promise.all([refetchSymptoms(), refetchProgress()]);
-      console.log(weeklyExerciseProgress);
       await qc.invalidateQueries({
         queryKey: scheduleQueryKey(memberId),
         exact: true,
@@ -296,18 +285,6 @@ const Member = () => {
     return d;
   }, []);
 
-  function getWeeklyStats(sessions: SessionDTO[]) {
-    const sessionCount = sessions.length;
-
-    const totalMinutes =
-      sessions.reduce((acc, s) => acc + s.activeMs, 0) / 60000;
-
-    return {
-      sessionCount,
-      totalMinutes: Math.round(totalMinutes),
-    };
-  }
-
   function formatMinutes(totalMinutes: number): string {
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
@@ -323,23 +300,6 @@ const Member = () => {
       console.log('theme object', themeObj);
       return themeObj;
     }
-  };
-
-  const completedCount = () => {
-    if (!doneGoals) return 0;
-
-    const base = doneGoals.length;
-
-    if (
-      weeklySteps != null &&
-      weeklyGoal &&
-      weeklySteps > weeklyGoal.goal &&
-      !weeklyGoal.isDone
-    ) {
-      return base + 1;
-    }
-
-    return base;
   };
 
   const calculateBmi = () => {
@@ -361,6 +321,19 @@ const Member = () => {
       return result;
     }
     return '';
+  };
+
+  const getDay = () => {
+    return selectedDate.getDay() === 0 ? 7 : selectedDate.getDay();
+  };
+
+  const isActiveDay = () => {
+    console.log('aahahhahad', activeDays, selectedDate.getDay());
+    return activeDays?.includes(getDay());
+  };
+
+  const isToday = () => {
+    return isTodayLocal(selectedDate);
   };
 
   return (
@@ -412,7 +385,7 @@ const Member = () => {
           />
         }>
         <View
-          className="flex flex-column justify-start pl-5 pb-3 px-3 mb-3"
+          className="flex flex-column justify-start pl-5 pb-2 px-3 mb-3"
           style={{
             borderRadius: 17,
             backgroundColor: colors.background.primary,
@@ -423,13 +396,14 @@ const Member = () => {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginTop: 12,
+              marginTop: 8,
             }}>
             {!showDetail ? (
               <View className="flex flex-row items-center justify-start mt-1">
                 <TouchableOpacity
-                  className="mb-1 py-3 px-4"
+                  className="mb-1 px-3"
                   style={{
+                    paddingVertical: 8,
                     borderRadius: 13,
                     backgroundColor: colors.background.third,
                   }}
@@ -447,7 +421,7 @@ const Member = () => {
               </View>
             ) : (
               <View className="flex-col items-start justify-end">
-                <View className="flex-row items-center">
+                <View className="flex-row items-center mt-2">
                   <Text
                     className="font-rubik-medium text-lg"
                     style={{color: colors.text.primary}}>
@@ -614,7 +588,7 @@ const Member = () => {
           {showDetail && (
             <View className="flex flex-row items-center justify-start">
               <TouchableOpacity
-                className="mb-1 py-3 px-4"
+                className="mb-1 py-2 px-4"
                 style={{
                   borderRadius: 13,
                   backgroundColor: colors.background.third,
@@ -633,7 +607,7 @@ const Member = () => {
         </View>
 
         <View
-          className="flex flex-column justify-start pl-5 p-3 pb-4 mb-3"
+          className="flex flex-column justify-start pl-5 p-3 pb-3 mb-3"
           style={{
             borderRadius: 17,
             backgroundColor: colors.background.primary,
@@ -647,7 +621,7 @@ const Member = () => {
               </Text>
             )}
             <TouchableOpacity
-              className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center mt-1 mr-1"
+              className="py-2 px-3 bg-blue-500 rounded-2xl flex items-center justify-center mr-1"
               style={{backgroundColor: colors.background.third}}
               onPress={async () => {
                 if (!admin || !member) return;
@@ -698,7 +672,8 @@ const Member = () => {
           )}
         </View>
 
-        {isAllInitialized ? (
+        {
+          // isAllInitialized ? (
           !accessAuthorized ? (
             <View
               className="p-3 rounded-2xl"
@@ -716,279 +691,20 @@ const Member = () => {
             </View>
           ) : (
             <>
-              {group?.exerciseEnabled &&
-                weeklyExerciseProgress &&
-                activeDays && (
-                  <View
-                    className="flex flex-col px-3 py-3 mb-3"
-                    style={{
-                      borderRadius: 17,
-                      backgroundColor: colors.background.primary,
-                    }}>
-                    <View className="flex flex-row items-center justify-between mb-2">
-                      <Text
-                        className="font-rubik ml-2"
-                        style={{fontSize: 17, color: colors.text.primary}}>
-                        {t('sections.calendar')}
-                      </Text>
-                      <View className="flex flex-row items-center justify-between">
-                        <View className="flex-row items-center">
-                          <TouchableOpacity
-                            className="rounded-lg"
-                            style={{
-                              paddingTop: 5,
-                              paddingBottom: 8,
-                              paddingHorizontal: 8,
-                              backgroundColor: colors.background.secondary,
-                              opacity: canGoPrev ? 1 : 0.4,
-                            }}
-                            disabled={!canGoPrev}
-                            onPress={() => {
-                              const d = new Date(progressDate);
-                              d.setHours(12, 0, 0, 0);
-                              d.setDate(d.getDate() - 7);
-                              setProgressDate(d);
-                            }}>
-                            <Text
-                              style={{
-                                fontSize: 15,
-                                fontWeight: '700',
-                                color: colors.text.primary,
-                              }}>
-                              ‹
-                            </Text>
-                          </TouchableOpacity>
-
-                          {/* Orta: bugüne dön (tek dokunuş) */}
-                          <View
-                            className="px-3 mx-1"
-                            style={{
-                              borderRadius: 10,
-                              paddingVertical: 5,
-                              backgroundColor: colors.background.secondary,
-                            }}>
-                            <Text
-                              className="font-rubik"
-                              style={{
-                                color: colors.text.primary,
-                                fontSize: 14,
-                                lineHeight: 18,
-                              }}>
-                              {new Date(progressDate).toLocaleDateString(
-                                c('locale'),
-                                {day: 'numeric', month: 'long'},
-                              )}
-                              {'\n'}
-                              <Text
-                                className="text-center"
-                                style={{fontSize: 12, opacity: 0.85}}>
-                                {new Date(progressDate).toLocaleDateString(
-                                  c('locale'),
-                                  {year: 'numeric'},
-                                )}
-                              </Text>
-                            </Text>
-                            {/* <Text
-                                                className="font-rubik"
-                                                style={{color: colors.text.primary, fontSize: 12}}>
-                                                {new Date(progressDate).toLocaleDateString(
-                                                  t('common:locale'),
-                                                  {
-                                                    day: 'numeric',
-                                                    month: 'long',
-                                                    year: 'numeric',
-                                                  },
-                                                )}
-                                              </Text> */}
-                          </View>
-
-                          <TouchableOpacity
-                            className="rounded-lg"
-                            style={{
-                              paddingTop: 5,
-                              paddingBottom: 8,
-                              paddingHorizontal: 8,
-                              backgroundColor: colors.background.secondary,
-                              opacity: canGoNext ? 1 : 0.4,
-                            }}
-                            disabled={!canGoNext}
-                            onPress={() => {
-                              const d = new Date(progressDate);
-                              d.setHours(12, 0, 0, 0);
-                              d.setDate(d.getDate() + 7);
-                              if (d > today) d.setTime(today.getTime());
-                              setProgressDate(d);
-                            }}>
-                            <Text
-                              style={{
-                                fontSize: 15,
-                                fontWeight: '700',
-                                color: colors.text.primary,
-                              }}>
-                              ›
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    </View>
-                    <CustomWeeklyProgressCalendar
-                      weeklyPercents={weeklyExerciseProgress.map(calcPercent)}
-                      activeDays={activeDays}
-                      weekDate={progressDate}
-                    />
-                    <View className="flex flex-row items-center justify-between">
-                      <View className="flex flex-row items-center justify-start ml-2 mt-3 my-1">
-                        <View className="flex-col items-start space-x-2 mr-3">
-                          <View className="flex flex-row items-center space-x-2">
-                            <View
-                              className="p-2 rounded-full"
-                              style={{backgroundColor: '#14E077'}}
-                            />
-                            <Text
-                              className="text-xs font-rubik ml-1"
-                              style={{color: colors.text.primary}}>
-                              {t('calendar.legend.done')}
-                            </Text>
-                          </View>
-                          <View className="flex-row items-center space-x-2 mt-2">
-                            <View
-                              className="p-2 rounded-full"
-                              style={{backgroundColor: '#fd5353'}}
-                            />
-                            <Text
-                              className="text-xs font-rubik ml-1"
-                              style={{color: colors.text.primary}}>
-                              {t('calendar.legend.notDone')}
-                            </Text>
-                          </View>
-                        </View>
-                        <View className="flex-col items-start space-x-2">
-                          <View className="flex-row items-center space-x-2">
-                            <View
-                              className="p-2 rounded-full"
-                              style={{
-                                backgroundColor: '#4f9cff',
-                              }}
-                            />
-                            <Text
-                              className="text-xs font-rubik ml-1"
-                              style={{color: colors.text.primary}}>
-                              {t('calendar.legend.todo')}
-                            </Text>
-                          </View>
-                          <View className="flex-row items-center space-x-2 mt-2">
-                            <View
-                              className="p-2 rounded-full"
-                              style={{backgroundColor: '#B9E2FE'}}
-                            />
-                            <Text
-                              className="text-xs font-rubik ml-1"
-                              style={{color: colors.text.primary}}>
-                              {t('calendar.legend.today')}
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                      {member?.groupId &&
-                        [3, 6, 22, 27, 8].includes(member?.groupId) && (
-                          <TouchableOpacity
-                            className="px-3 py-2 rounded-xl mt-2"
-                            style={{backgroundColor: colors.background.third}}
-                            onPress={() => {
-                              navigation.navigate('ExerciseProgress', {
-                                member: member,
-                                weeklyProgress: weeklyExerciseProgress,
-                              });
-                            }}>
-                            <Text
-                              className="text-lg font-rubik"
-                              style={{color: colors.primary[200]}}>
-                              {t('buttons.details')}
-                            </Text>
-                          </TouchableOpacity>
-                        )}
-                    </View>
-                  </View>
-                )}
-
               <View
                 onLayout={e => setSymptomsSectionY(e.nativeEvent.layout.y)}
-                className="flex flex-col pb-1 pt-2 px-5 mb-3"
+                className="flex flex-col pb-1 pt-2 px-3 mb-3"
                 style={{
                   borderRadius: 17,
                   backgroundColor: colors.background.primary,
                 }}>
-                {symptoms ? (
-                  <>
-                    <Text
-                      className="font-rubik pt-2"
-                      style={{fontSize: 18, color: colors.text.primary}}>
-                      {t('sections.symptoms')}
-                    </Text>
-                    <ProgressBar
-                      value={symptoms?.pulse}
-                      label={t('symptoms.pulse')}
-                      iconSource={icons.pulse}
-                      color="#FF3F3F"
-                    />
-                    {symptoms?.totalCaloriesBurned &&
-                    symptoms?.totalCaloriesBurned > 0 ? (
-                      <ProgressBar
-                        value={symptoms?.totalCaloriesBurned}
-                        label={t('symptoms.calories')}
-                        iconSource={icons.kcal}
-                        color="#FF9900"
-                      />
-                    ) : (
-                      symptoms?.activeCaloriesBurned &&
-                      symptoms?.activeCaloriesBurned > 0 && (
-                        <ProgressBar
-                          value={symptoms?.activeCaloriesBurned}
-                          label={t('symptoms.calories')}
-                          iconSource={icons.kcal}
-                          color="#FF9900"
-                        />
-                      )
-                    )}
-                    <ProgressBar
-                      value={symptoms?.steps}
-                      label={t('symptoms.steps')}
-                      iconSource={icons.man_walking}
-                      color="#2CA4FF"
-                    />
-                    <ProgressBar
-                      value={
-                        symptoms?.sleepMinutes
-                          ? symptoms?.sleepMinutes
-                          : undefined
-                      }
-                      label={t('symptoms.sleep')}
-                      iconSource={icons.sleep}
-                      color="#FDEF22"
-                    />
-                  </>
-                ) : isSymptomsLoading ? (
-                  <View className="flex flex-row items-center justify-center w-full py-20">
-                    <ActivityIndicator
-                      className="mt-2 self-center"
-                      size="large"
-                      color={colors.primary[200]}
-                    />
-                  </View>
-                ) : (
-                  <Text
-                    className="font-rubik py-2"
-                    style={{fontSize: 18, color: colors.text.primary}}>
-                    {t('symptoms.empty')}
-                  </Text>
-                )}
-
-                <View className="mt-1">
+                <View className="mb-1">
                   <WeeklyStrip
-                    selectedDate={symptomsDate}
+                    selectedDate={selectedDate}
                     onSelect={d => {
                       d.setHours(12, 0, 0, 0);
-                      setSymptomsDate(d);
+                      setSelectedDate(d);
+                      scrollToSymptoms();
                     }}
                     minDate={monthAgo}
                     maxDate={new Date()}
@@ -996,128 +712,175 @@ const Member = () => {
                     colors={colors}
                   />
                 </View>
-              </View>
-
-              <View
-                className="flex-col rounded-2xl px-4 py-3 mb-3"
-                style={{backgroundColor: colors.background.primary}}>
-                <Text
-                  className="font-rubik text-xl ml-1 mb-3"
-                  style={{color: colors.text.primary}}>
-                  {t('sections.weeklyStepGoal')}
-                </Text>
-                {weeklyGoal ? (
+                {group?.exerciseEnabled && (
                   <View
-                    className="flex-col rounded-2xl pl-3 pr-7 py-2 mb-2 self-start"
-                    style={{backgroundColor: colors.background.secondary}}>
-                    {weeklySteps && weeklySteps > weeklyGoal.goal && (
-                      <View className="flex-row items-center justify-start mb-2">
+                    className="flex-row items-center justify-between mt-1 mb-3 pl-3 pr-2 rounded-2xl"
+                    style={{
+                      backgroundColor: colors.background.secondary,
+                      paddingVertical: 8,
+                    }}>
+                    <Text
+                      className="font-rubik ml-1"
+                      style={{fontSize: 17, color: colors.text.primary}}>
+                      {t('sections.exerciseProgress')}
+                    </Text>
+                    {isActiveDay() ? (
+                      <View
+                        className="flex flex-row justify-center items-center px-3 py-2"
+                        style={{
+                          borderRadius: 17,
+                          backgroundColor:
+                            calcPercent(progress) === 100
+                              ? '#3BC476'
+                              : isToday()
+                              ? colors.primary[200]
+                              : '#fd5353',
+                        }}>
                         <Text
-                          className="font-rubik text-lg ml-2"
-                          style={{color: '#16d750'}}>
-                          {t('steps.completed')}
+                          className="text-md font-rubik"
+                          style={{
+                            color: colors.background.third,
+                          }}>
+                          {/* {calcPercent(progress) === 100 ? (
+                            t('calendar.legend.done')
+                          ) : (
+                            <>
+                              {c('locale') === 'tr-TR' && '%'}
+                              {calcPercent(progress)}
+                              {c('locale') !== 'tr-TR' && '%'}
+                            </>
+                          )} */}
+                          {c('locale') === 'tr-TR' && '%'}
+                          {calcPercent(progress)}
+                          {c('locale') !== 'tr-TR' && '%'}{' '}
+                          {calcPercent(progress) === 100
+                            ? t('calendar.legend.done')
+                            : t('calendar.legend.hasDone')}
                         </Text>
-                        <Image
-                          source={icons.check}
-                          className="size-5 ml-2"
-                          tintColor={'#16d750'}
-                        />
+
+                        {/* <Image
+                          source={icons.gymnastic_1}
+                          className="size-10 ml-2"
+                          tintColor={colors.background.third}
+                        /> */}
                       </View>
+                    ) : (
+                      <Text
+                        className="font-rubik"
+                        style={{
+                          fontSize: 11.3,
+                          color: colors.text.primary,
+                        }}>
+                        {t('calendar.inactiveDay')}
+                      </Text>
                     )}
-                    <Text
-                      className="font-rubik text-lg ml-2 mb-2"
-                      style={{color: colors.text.primary}}>
-                      {t('steps.goal', {goal: weeklyGoal.goal})}
-                    </Text>
-                    <Text
-                      className="font-rubik text-lg ml-2"
-                      style={{color: colors.text.primary}}>
-                      {t('steps.progress', {steps: weeklySteps || 0})}
-                    </Text>
-                  </View>
-                ) : (
-                  <View
-                    className="flex-col rounded-2xl p-3 mb-2 self-start"
-                    style={{backgroundColor: colors.background.secondary}}>
-                    <Text
-                      className="font-rubik text-lg ml-3 mr-3"
-                      style={{color: colors.text.primary}}>
-                      {t('steps.noGoal')}
-                    </Text>
                   </View>
                 )}
 
-                <View className="flex-row items-center justify-start self-start my-1">
-                  <Text
-                    className="font-rubik text-lg ml-3 mr-1"
-                    style={{color: colors.text.primary}}>
-                    {t('steps.badges')}{' '}
-                  </Text>
-                  <Image source={icons.badge1_colorful} className="size-7" />
-                  <Text
-                    className="font-rubik text-lg ml-1"
-                    style={{color: colors.text.primary}}>
-                    {doneGoals && doneGoals.length
-                      ? weeklySteps &&
-                        weeklyGoal &&
-                        weeklySteps > weeklyGoal.goal &&
-                        !weeklyGoal.isDone
-                        ? doneGoals?.length + 1
-                        : doneGoals?.length
-                      : 0}
-                  </Text>
-                </View>
-              </View>
-
-              {
                 <View
-                  className="flex flex-col pb-2 pt-1 px-5"
-                  style={{
-                    borderRadius: 17,
-                    backgroundColor: colors.background.primary,
-                  }}>
-                  {sessions && sessions.length > 0 ? (
-                    <View className="pb-1">
+                  className="rounded-2xl py-1 px-4 mb-2"
+                  style={{backgroundColor: colors.background.secondary}}>
+                  {symptoms ? (
+                    <View>
                       <Text
                         className="font-rubik pt-2"
-                        style={{fontSize: 18, color: colors.text.primary}}>
-                        {t('sections.weeklySessions')}
+                        style={{fontSize: 17, color: colors.text.primary}}>
+                        {t('sections.symptoms')}
                       </Text>
-                      <Text
-                        className="font-rubik pt-2"
-                        style={{fontSize: 15, color: colors.text.primary}}>
-                        {t('sessions.count', {
-                          count: getWeeklyStats(sessions).sessionCount,
-                        })}
-                      </Text>
-                      <Text
-                        className="font-rubik pt-2"
-                        style={{fontSize: 15, color: colors.text.primary}}>
-                        {t('sessions.total', {
-                          duration: formatMinutes(
-                            getWeeklyStats(sessions).totalMinutes,
-                          ),
-                        })}
-                      </Text>
+                      <ProgressBar
+                        value={symptoms?.pulse}
+                        label={t('symptoms.pulse')}
+                        iconSource={icons.pulse}
+                        color="#FF3F3F"
+                        bgDense={true}
+                      />
+                      {symptoms?.totalCaloriesBurned &&
+                      symptoms?.totalCaloriesBurned > 0 ? (
+                        <ProgressBar
+                          value={symptoms?.totalCaloriesBurned}
+                          label={t('symptoms.calories')}
+                          iconSource={icons.kcal}
+                          color="#FF9900"
+                          bgDense={true}
+                        />
+                      ) : (
+                        symptoms?.activeCaloriesBurned &&
+                        symptoms?.activeCaloriesBurned > 0 && (
+                          <ProgressBar
+                            value={symptoms?.activeCaloriesBurned}
+                            label={t('symptoms.calories')}
+                            iconSource={icons.kcal}
+                            color="#FF9900"
+                            bgDense={true}
+                          />
+                        )
+                      )}
+                      <ProgressBar
+                        value={symptoms?.steps}
+                        label={t('symptoms.steps')}
+                        iconSource={icons.man_walking}
+                        color="#2CA4FF"
+                        bgDense={true}
+                      />
+                      <ProgressBar
+                        value={
+                          symptoms?.sleepMinutes
+                            ? symptoms?.sleepMinutes
+                            : undefined
+                        }
+                        label={t('symptoms.sleep')}
+                        iconSource={icons.sleep}
+                        color="#FDEF22"
+                        bgDense={true}
+                      />
+                    </View>
+                  ) : isSymptomsLoading ? (
+                    <View className="flex flex-row items-center justify-center w-full py-1">
+                      <ActivityIndicator
+                        className="self-center"
+                        size={28}
+                        color={colors.primary[200]}
+                      />
                     </View>
                   ) : (
                     <Text
-                      className="font-rubik pt-2"
-                      style={{fontSize: 18, color: colors.text.primary}}>
-                      {t('sessions.empty')}
+                      className="font-rubik py-1"
+                      style={{fontSize: 16, color: colors.text.primary}}>
+                      {t('symptoms.empty')}
                     </Text>
                   )}
                 </View>
-              }
+              </View>
+
+              {accessAuthorized && (
+                <TouchableOpacity
+                  className="px-4 rounded-2xl self-end"
+                  style={{
+                    backgroundColor: theme.colors.isLight
+                      ? colors.background.primary
+                      : colors.background.secondary,
+                    paddingVertical: 8,
+                  }}
+                  onPress={() =>
+                    navigation.navigate('MemberActivitySummary', {memberId})
+                  }>
+                  <Text
+                    className="text-lg font-rubik"
+                    style={{color: colors.primary[200]}}>
+                    {t('sections.weeklySummary')}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </>
           )
-        ) : (
-          <View
-            className="flex flex-row justify-center items-center pt-6"
-            style={{backgroundColor: 'transparent'}}>
-            <ActivityIndicator size="large" color={colors.primary[300]} />
-          </View>
-        )}
+          // ) : (
+          //   <View
+          //     className="flex flex-row justify-center items-center pt-6"
+          //     style={{backgroundColor: 'transparent'}}>
+          //     <ActivityIndicator size="large" color={colors.primary[300]} />
+          //   </View>
+          // )
+        }
       </ScrollView>
     </View>
   );

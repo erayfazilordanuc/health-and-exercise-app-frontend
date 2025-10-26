@@ -66,7 +66,6 @@ import {Dumbbell, Armchair} from 'lucide-react-native';
 import {isTodayExerciseDay, isTodayLocal} from '../../../utils/dates';
 import {getDbUser} from '../../../api/user/userService';
 import {useTranslation} from 'react-i18next';
-import ExerciseProgress from '../../groups/ExerciseProgress';
 
 const {height, width} = Dimensions.get('window');
 

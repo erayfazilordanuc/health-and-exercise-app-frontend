@@ -24,7 +24,7 @@
     "detail": "Detay"
   },
   "request": {
-    "cardTitle": "Gönderilen İstek",
+    "cardTitle": "Gönderilen istek",
     "group": "Grup:",
     "nurse": "Hemşire:",
     "status": "Durum:",
@@ -33,13 +33,13 @@
   },
   "modals": {
     "join": {
-      "title": "Gruba Katıl",
+      "title": "Gruba katıl",
       "confirmText": " grubuna katılmak istediğinize emin misiniz?"
     },
     "create": {
       "title": "Grup Oluşturma",
       "name": "Grup İsmi",
-      "exerciseEnabled": "Egzersiz Etkinliği"
+      "exerciseEnabled": "Egzersiz etkinliği"
     }
   },
   "alerts": {
@@ -68,11 +68,12 @@
       "you": "Siz"
     },
     "sections": {
-      "lastMessage": "En Son Mesaj",
+      "lastMessage": "En son mesaj",
       "youPrefix": "Siz: ",
       "settings": "Grup Ayarları",
       "joinRequests": "Gruba katılma istekleri",
       "members": "Üyeler",
+      "membersExist": "Kişi",
       "sort": {
         "sortTitle": "Sırala",
         "asc": "Artan",
@@ -83,7 +84,7 @@
       }
     },
     "settings": {
-      "exercise": "Egzersiz Etkinliği",
+      "exercise": "Egzersiz etkinliği",
       "confirmEnable": "Grup için egzersiz yapma özelliğini etkinleştirmek istediğinize emin misiniz?",
       "confirmDisable": "Grup için egzersiz yapma özelliğini devre dışı bırakmak istediğinize emin misiniz?",
       "disableWarning": "Bu işlem egzersiz yapan kullanıcıların verilerinin kaydedilmemesine sebep olacaktır.",
