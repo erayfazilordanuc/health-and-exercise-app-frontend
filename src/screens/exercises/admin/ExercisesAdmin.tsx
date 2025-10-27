@@ -10,19 +10,21 @@ import {
   RefreshControl,
   BackHandler,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState, useTransition} from 'react';
 import {useTheme} from '../../../themes/ThemeProvider';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {getAllExercises} from '../../../api/exercise/exerciseService';
 import LinearGradient from 'react-native-linear-gradient';
 import {useAllExercises} from '../../../hooks/exerciseQueries';
+import {useTranslation} from 'react-i18next';
 
 const ExercisesAdmin = () => {
   const {colors, theme} = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
   const [refreshing, setRefreshing] = useState(false);
+  const {t} = useTranslation('exercise');
   // const [exercises, setExercises] = useState<ExerciseDTO[]>([]);
 
   // const fetchAllExercises = async () => {
@@ -90,7 +92,7 @@ const ExercisesAdmin = () => {
               : colors.background.secondary,
             fontSize: 24,
           }}>
-          Egzersizler
+          {t('admin.title')}
         </Text>
       </View>
       {!isLoading ? (
@@ -158,12 +160,12 @@ const ExercisesAdmin = () => {
             <View
               className="flex-1 items-center justify-center rounded-2xl mb-36 py-5"
               style={{
-                backgroundColor: colors.background.secondary,
+                backgroundColor: colors.background.primary,
               }}>
               <Text
                 className="font-rubik text-lg text-center"
                 style={{color: colors.text.primary}}>
-                Henüz bir egzersiz mevcut değil
+                {t('admin.noExercise')}
               </Text>
             </View>
           )}
@@ -200,7 +202,7 @@ const ExercisesAdmin = () => {
           <Text
             className="font-rubik text-lg"
             style={{color: colors.background.secondary}}>
-            Egzersiz Ekle
+            {t('admin.addExercise')}
           </Text>
         </TouchableOpacity>
       </View>

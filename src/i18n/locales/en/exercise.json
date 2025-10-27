@@ -103,5 +103,73 @@
     "networkError": "An error occurred, please check your internet connection",
     "minThreeDays": "Please select at least 3 days",
     "tryAgainLater": "Please wait and try again"
+  },
+  "admin": {
+    "title": "Exercises",
+    "noExercise": "No exercises available yet",
+    "addExercise": "Add Exercise",
+    "editExercise": {
+      "title": "Edit Exercise",
+      "labels": {
+        "exerciseName": "Exercise Name",
+        "exerciseDescription": "Exercise Description",
+        "exercisePoints": "Exercise Points",
+        "exerciseVideos": "Exercise Videos",
+        "videoName": "Video name",
+        "videoIndex": "Video {0}",
+        "newVideo": "New Video",
+        "saving": "Videolar kaydediliyor",
+        "notLogout": "Lütfen ekrandan ayrılmayınız"
+      },
+      "uploadModal": {
+        "percent": "%{percent}"
+      },
+      "buttons": {
+        "save": "Save",
+        "delete": "Delete",
+        "uploadVideo": "Upload video",
+        "addVideo": "Add video",
+        "deleteExercise": "Delete Exercise"
+      },
+      "placeholders": {
+        "enterName": "Enter name",
+        "enterDescription": "Enter description",
+        "enterPoints": "Enter points"
+      },
+      "toasts": {
+        "fillAllFields": "Please fill in all fields",
+        "generalError": "An error occurred",
+        "videoNameRequired": "Please add a name to every video",
+        "videoUploadFailed": "Video could not be uploaded",
+        "exerciseSaved": "Exercise saved successfully",
+        "permissionDenied": "Access to videos was denied",
+        "videoDuplicate": "This video is already added",
+        "videoDeleted": "Video deleted"
+      },
+      "alerts": {
+        "deleteVideo": {
+          "message": "Are you sure you want to delete the video?"
+        },
+        "deleteExercise": {
+          "message": "Are you sure you want to delete the exercise?"
+        }
+      },
+      "permissions": {
+        "video": {
+          "title": "Video Access",
+          "message": "Allow the app to access videos from your gallery.",
+          "allow": "Allow",
+          "cancel": "Cancel"
+        }
+      },
+      "logs": {
+        "videoSelectFailed": "Video could not be selected",
+        "videoDuplicate": "This video is already in the list:",
+        "deleted": "deleted",
+        "videoDeleteFailed": "Video could not be deleted",
+        "thumbInvalidUrl": "Invalid URL skipped:",
+        "thumbFailed": "Thumbnail could not be created:"
+      }
+    }
   }
 }

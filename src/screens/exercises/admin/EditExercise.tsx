@@ -50,6 +50,7 @@ import {activate, deactivate} from '@thehale/react-native-keep-awake';
 import {getVideoDuration} from 'react-native-video-duration';
 import LinearGradient from 'react-native-linear-gradient';
 import {useCreateExercise} from '../../../hooks/exerciseQueries';
+import {useTranslation} from 'react-i18next';
 
 type EditExerciseRouteProp = RouteProp<ExercisesStackParamList, 'EditExercise'>;
 const EditExercise = () => {
@@ -57,6 +58,7 @@ const EditExercise = () => {
   const {colors, theme} = useTheme();
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation<ExercisesScreenNavigationProp>();
+  const {t} = useTranslation('exercise');
 
   const {params} = useRoute<EditExerciseRouteProp>();
   const {exercise} = params;
@@ -542,7 +544,7 @@ const EditExercise = () => {
               : colors.background.secondary,
             fontSize: 24,
           }}>
-          Egzersiz Düzenle
+          {t('admin.editExercise.title')}
         </Text>
         {!loading ? (
           <TouchableOpacity
@@ -552,7 +554,7 @@ const EditExercise = () => {
             <Text
               className="text-lg font-rubik"
               style={{color: colors.background.secondary}}>
-              Kaydet
+              {t('admin.editExercise.buttons.save')}
             </Text>
           </TouchableOpacity>
         ) : (
@@ -582,7 +584,7 @@ const EditExercise = () => {
           <Text
             className="font-rubik text-2xl mb-3"
             style={{color: colors.text.primary}}>
-            Egzersiz İsmi
+            {t('admin.editExercise.labels.exerciseName')}
           </Text>
           <View
             className="flex flex-row justify-between mb-1 rounded-2xl pl-3"
@@ -612,7 +614,7 @@ const EditExercise = () => {
           <Text
             className="font-rubik text-2xl mb-3"
             style={{color: colors.text.primary}}>
-            Egzersiz Açıklaması
+            {t('admin.editExercise.labels.exerciseDescription')}
           </Text>
           <View
             className="flex flex-row justify-between mb-1 rounded-2xl pl-3"
@@ -646,7 +648,7 @@ const EditExercise = () => {
             <Text
               className="font-rubik text-2xl mr-6"
               style={{color: colors.text.primary}}>
-              Egzersiz Puanı
+              {t('admin.editExercise.labels.exercisePoints')}
             </Text>
             <TextInput
               value={
@@ -674,7 +676,7 @@ const EditExercise = () => {
           <Text
             className="font-rubik text-2xl mb-4"
             style={{color: colors.text.primary}}>
-            Egzersiz Videoları
+            {t('admin.editExercise.labels.exerciseVideos')}
           </Text>
 
           {editedExercise?.videos &&
@@ -687,7 +689,7 @@ const EditExercise = () => {
                 <Text
                   className="font-rubik text-xl ml-2 mb-2 mr-5"
                   style={{color: colors.text.primary}}>
-                  Video ismi
+                  {t('admin.editExercise.labels.videoName')}
                 </Text>
                 <TextInput
                   value={editedExercise.videos[index].name}
@@ -759,7 +761,7 @@ const EditExercise = () => {
                       <Text
                         className="font-rubik text-center text-md"
                         style={{color: colors.background.secondary}}>
-                        Sil
+                        {t('admin.editExercise.buttons.delete')}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -789,7 +791,7 @@ const EditExercise = () => {
               <Text
                 className="font-rubik text-xl ml-2 mb-2 mr-5"
                 style={{color: colors.text.primary}}>
-                Video ismi
+                {t('admin.editExercise.labels.videoName')}
               </Text>
               <TextInput
                 value={newVideos[index].name ? newVideos[index].name : ''}
@@ -864,7 +866,7 @@ const EditExercise = () => {
                     <Text
                       className="font-rubik text-center text-md"
                       style={{color: colors.text.primary}}>
-                      Yeni Video
+                      {t('admin.editExercise.labels.newVideo')}
                     </Text>
                     <TouchableOpacity
                       className="px-4 py-1 rounded-xl"
@@ -875,7 +877,7 @@ const EditExercise = () => {
                       <Text
                         className="font-rubik text-center text-md"
                         style={{color: colors.background.secondary}}>
-                        Sil
+                        {t('admin.editExercise.buttons.delete')}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -902,7 +904,7 @@ const EditExercise = () => {
                         style={{
                           color: colors.text.primary,
                         }}>
-                        Video yükle
+                        {t('admin.editExercise.buttons.uploadVideo')}
                       </Text>
                       <Image
                         source={icons.plus_sign}
@@ -920,7 +922,7 @@ const EditExercise = () => {
                     <Text
                       className="font-rubik text-center text-md"
                       style={{color: colors.background.secondary}}>
-                      Sil
+                      {t('admin.editExercise.buttons.delete')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -935,7 +937,7 @@ const EditExercise = () => {
             <Text
               className="font-rubik text-md pl-1"
               style={{color: colors.text.primary}}>
-              Video ekle
+              {t('admin.editExercise.buttons.addVideo')}
             </Text>
             <Image
               source={icons.plus_sign}
@@ -951,7 +953,7 @@ const EditExercise = () => {
           <Text
             className="font-rubik text-md pl-1"
             style={{color: colors.background.secondary}}>
-            Egzersizi Sil
+            {t('admin.editExercise.buttons.deleteExercise')}
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -978,7 +980,7 @@ const EditExercise = () => {
               <Text
                 className="font-rubik-semibold text-2xl mb-4 text-center"
                 style={{color: colors.primary[200]}}>
-                Videolar Kaydediliyor
+                {t('admin.editExercise.labels.saving')}
               </Text>
 
               <Text
@@ -990,7 +992,9 @@ const EditExercise = () => {
               <Text
                 className="font-rubik-bold text-3xl mt-1 mb-3"
                 style={{color: colors.primary[200]}}>
-                %{videoUploadPercent}
+                {t('admin.editExercise.uploadModal.percent', {
+                  percent: videoUploadPercent.toFixed(0),
+                })}
               </Text>
 
               <View className="w-full items-center mb-4">
@@ -1006,7 +1010,7 @@ const EditExercise = () => {
               <Text
                 className="font-rubik text-sm text-center"
                 style={{color: colors.text.third}}>
-                Lütfen ekrandan ayrılmayınız
+                {t('admin.editExercise.labels.notLogout')}
               </Text>
             </View>
           </View>

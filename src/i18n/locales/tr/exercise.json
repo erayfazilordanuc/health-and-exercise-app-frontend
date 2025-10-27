@@ -103,5 +103,73 @@
     "networkError": "Bir hata oluştu, internet bağlantınızı kontrol edin",
     "minThreeDays": "Lütfen en az 3 gün seçiniz",
     "tryAgainLater": "Lütfen bekleyip tekrar deneyiniz"
+  },
+  "admin": {
+    "title": "Egzersizler",
+    "noExercise": "Henüz bir egzersiz mevcut değil",
+    "addExercise": "Egzersiz ekle",
+    "editExercise": {
+      "title": "Egzersiz Düzenle",
+      "labels": {
+        "exerciseName": "Egzersiz İsmi",
+        "exerciseDescription": "Egzersiz Açıklaması",
+        "exercisePoints": "Egzersiz Puanı",
+        "exerciseVideos": "Egzersiz Videoları",
+        "videoName": "Video ismi",
+        "videoIndex": "Video {0}",
+        "newVideo": "Yeni Video",
+        "saving": "Videolar kaydediliyor",
+        "notLogout": "Lütfen ekrandan ayrılmayınız"
+      },
+      "uploadModal": {
+        "percent": "{percent}%"
+      },
+      "buttons": {
+        "save": "Kaydet",
+        "delete": "Sil",
+        "uploadVideo": "Video yükle",
+        "addVideo": "Video ekle",
+        "deleteExercise": "Egzersizi Sil"
+      },
+      "placeholders": {
+        "enterName": "İsim girin",
+        "enterDescription": "Açıklama girin",
+        "enterPoints": "Puan giriniz"
+      },
+      "toasts": {
+        "fillAllFields": "Lütfen tüm boşlukları doldurun",
+        "generalError": "Bir hata oluştu",
+        "videoNameRequired": "Lütfen her videoya bir isim ekleyiniz",
+        "videoUploadFailed": "Video yüklenemedi",
+        "exerciseSaved": "Egzersiz başarıyla kaydedildi",
+        "permissionDenied": "Videolara erişim reddedildi",
+        "videoDuplicate": "Bu video zaten ekli",
+        "videoDeleted": "Video silindi"
+      },
+      "alerts": {
+        "deleteVideo": {
+          "message": "Videoyu silmek istediğinize emin misiniz?"
+        },
+        "deleteExercise": {
+          "message": "Egzersizi silmek istediğinize emin misiniz?"
+        }
+      },
+      "permissions": {
+        "video": {
+          "title": "Video Erişimi",
+          "message": "Uygulamanın galerinizdeki videolara erişmesine izin verin.",
+          "allow": "İzin ver",
+          "cancel": "İptal"
+        }
+      },
+      "logs": {
+        "videoSelectFailed": "Video seçilemedi",
+        "videoDuplicate": "Bu video zaten listede:",
+        "deleted": "silindi",
+        "videoDeleteFailed": "Video silinemedi",
+        "thumbInvalidUrl": "Geçersiz URL atlandı:",
+        "thumbFailed": "Thumbnail oluşturulamadı:"
+      }
+    }
   }
 }

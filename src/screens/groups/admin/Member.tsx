@@ -729,12 +729,13 @@ const Member = () => {
                         className="flex flex-row justify-center items-center px-3 py-2"
                         style={{
                           borderRadius: 17,
-                          backgroundColor:
-                            calcPercent(progress) === 100
-                              ? '#3BC476'
-                              : isToday()
-                              ? colors.primary[200]
-                              : '#fd5353',
+                          backgroundColor: isProgressLoading
+                            ? colors.text.secondary
+                            : calcPercent(progress) === 100
+                            ? '#3BC476'
+                            : isToday()
+                            ? colors.primary[200]
+                            : '#fd5353',
                         }}>
                         <Text
                           className="text-md font-rubik"
