@@ -704,7 +704,7 @@ const Member = () => {
                     onSelect={d => {
                       d.setHours(12, 0, 0, 0);
                       setSelectedDate(d);
-                      scrollToSymptoms();
+                      if (showDetail) scrollToSymptoms();
                     }}
                     minDate={monthAgo}
                     maxDate={new Date()}
@@ -724,7 +724,7 @@ const Member = () => {
                       style={{fontSize: 17, color: colors.text.primary}}>
                       {t('sections.exerciseProgress')}
                     </Text>
-                    {isActiveDay() ? (
+                    {isActiveDay() && isProgressLoading ? (
                       <View
                         className="flex flex-row justify-center items-center px-3 py-2"
                         style={{
@@ -767,7 +767,7 @@ const Member = () => {
                       </View>
                     ) : (
                       <Text
-                        className="font-rubik"
+                        className="font-rubik mr-1"
                         style={{
                           fontSize: 11.3,
                           color: colors.text.primary,
