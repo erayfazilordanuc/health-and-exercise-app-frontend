@@ -724,7 +724,13 @@ const Member = () => {
                       style={{fontSize: 17, color: colors.text.primary}}>
                       {t('sections.exerciseProgress')}
                     </Text>
-                    {isActiveDay() && isProgressLoading ? (
+                    {isProgressLoading ? (
+                      <ActivityIndicator
+                        className="self-center mr-10"
+                        size={20}
+                        color={colors.primary[200]}
+                      />
+                    ) : isActiveDay() ? (
                       <View
                         className="flex flex-row justify-center items-center px-3 py-2"
                         style={{
