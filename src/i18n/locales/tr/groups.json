@@ -81,6 +81,11 @@
         "role": "Rol",
         "name": "İsim",
         "username": "Kullanıcı Adı"
+      },
+      "search": {
+        "button": "Ara",
+        "cancel": "İptal",
+        "placeholder": "Üyelerde ara"
       }
     },
     "settings": {

@@ -13,6 +13,7 @@
     "weeklySessions": "Haftalık oturum bilgileri"
   },
   "fields": {
+    "id": "Id:",
     "fullName": "Adı Soyadı:",
     "username": "Kullanıcı Adı:",
     "E-posta": "E-posta:",

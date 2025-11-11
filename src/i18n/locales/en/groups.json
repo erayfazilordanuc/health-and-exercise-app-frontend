@@ -81,6 +81,11 @@
         "role": "Role",
         "name": "Name",
         "username": "Username"
+      },
+      "search": {
+        "button": "Search",
+        "cancel": "Cancel",
+        "placeholder": "Search in members"
       }
     },
     "settings": {

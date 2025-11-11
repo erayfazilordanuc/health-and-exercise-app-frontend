@@ -13,6 +13,7 @@
     "weeklySessions": "Weekly session stats"
   },
   "fields": {
+    "id": "Id:",
     "fullName": "Full Name:",
     "username": "Username:",
     "email": "Email:",

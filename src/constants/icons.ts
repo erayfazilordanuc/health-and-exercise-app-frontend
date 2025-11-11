@@ -128,6 +128,7 @@ import appearance from '../assets/icons/appearance.png';
 import account from '../assets/icons/account.png';
 import editAccount from '../assets/icons/editAccount.png';
 import measurements from '../assets/icons/measurements.png';
+import close from '../assets/icons/close.png';
 
 export default {
   google,
@@ -260,4 +261,5 @@ export default {
   account,
   editAccount,
   measurements,
+  close,
 };

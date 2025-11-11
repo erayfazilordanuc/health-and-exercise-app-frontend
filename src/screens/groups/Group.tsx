@@ -11,6 +11,7 @@ import {
   ToastAndroid,
   RefreshControl,
   Switch,
+  TextInput,
 } from 'react-native';
 // import {List, Surface, Switch, TouchableRipple} from 'react-native-paper';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
@@ -47,7 +48,7 @@ import {
 } from '../../hooks/groupQueries';
 import {useQueryClient} from '@tanstack/react-query';
 import {useUser} from '../../contexts/UserContext';
-import {join, update} from 'lodash';
+import {join, set, update} from 'lodash';
 import NetInfo from '@react-native-community/netinfo';
 import {getRoomIdByUsers, MSG_KEYS} from '../../hooks/messageQueries';
 import CustomAlertSingleton, {
@@ -57,6 +58,7 @@ import {AvatarKey, AVATARS} from '../../constants/avatars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
 import {MemberSort} from '../../types/enums';
+import {normalize} from 'react-native-elements';
 
 const Group = () => {
   const insets = useSafeAreaInsets();
@@ -91,6 +93,33 @@ const Group = () => {
     isLoading: isUsersLoading,
     refetch: refetchGroupUsers,
   } = useGroupUsers(groupId);
+
+  const normalizeText = (text: string | null | undefined): string => {
+    if (!text) return '';
+
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ı/g, 'i');
+  };
+
+  const [filteredMembers, setFilteredMembers] = useState<User[] | null>(
+    members || null,
+  );
+
+  const textInputRef = useRef<TextInput>(null);
+  const [searching, setSearching] = useState(false);
+  const [searchedValue, setSearchedValue] = useState('');
+  const searchMembers = (value: string) => {
+    if (members) {
+      const filtered = members.filter(member =>
+        normalizeText(member.fullName).includes(normalizeText(value)),
+      );
+      setFilteredMembers(filtered);
+    }
+  };
+
   const [admin, setAdmin] = useState<User | null>();
   const [groupSize, setGroupSize] = useState(0);
   const [isLeaveAlertVisible, setIsLeaveAlertVisible] = useState(false);
@@ -373,6 +402,7 @@ const Group = () => {
           backgroundColor: 'transparent', // colors.background.secondary,
           // paddingTop: insets.top / 2,
         }}
+        keyboardShouldPersistTaps="handled"
         // contentContainerClassName="pb-24"
         contentContainerStyle={{paddingBottom: insets.bottom + 90}}
         refreshControl={
@@ -836,23 +866,98 @@ const Group = () => {
             <Text
               className="font-rubik ml-1"
               style={{fontSize: 20, color: colors.text.primary}}>
-              {t('groupDetail.sections.members')}
+              {groupSize}
+              {' ' + t('groupDetail.sections.members')}
             </Text>
-            <Text
+            <TouchableOpacity
+              className="flex-row items-center pb-2 pt-1 px-3 rounded-2xl"
+              style={{backgroundColor: colors.background.third}}
+              onPress={() => {
+                setSearching(!searching);
+              }}>
+              {!searching && (
+                <Image
+                  source={icons.search}
+                  className="size-5 mr-2"
+                  tintColor={colors.text.secondary} // Daha soluk bir renk
+                />
+              )}
+              <Text
+                className="font-rubik text-lg mt-1"
+                style={{color: colors.text.primary}}>
+                {searching
+                  ? t('groupDetail.sections.search.cancel')
+                  : t('groupDetail.sections.search.button')}
+              </Text>
+            </TouchableOpacity>
+            {/* <Text
               className="font-rubik text-lg mr-3"
               style={{color: colors.text.primary}}>
               {groupSize}
               {' ' + t('groupDetail.sections.membersExist')}
-            </Text>
+            </Text> */}
           </View>
 
+          {searching && (
+            <View
+              className="flex-row items-center mt-3 pl-4 px-3 py-1 rounded-2xl"
+              style={{
+                backgroundColor: colors.background.secondary,
+              }}>
+              <TextInput
+                ref={textInputRef}
+                className="font-rubik text-md flex-1"
+                style={{
+                  color: colors.text.primary,
+                }}
+                placeholder={t('groupDetail.sections.search.placeholder')}
+                placeholderTextColor={colors.text.third}
+                value={searchedValue}
+                onChangeText={(value: string) => {
+                  setSearchedValue(value);
+                  searchMembers(value);
+                }}
+                autoCapitalize="none"
+                autoCorrect={false}
+                selectionColor={colors.primary[200]}
+              />
+
+              {searchedValue.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSearchedValue('');
+                    searchMembers('');
+                    textInputRef.current?.focus();
+                  }}
+                  style={{
+                    backgroundColor: colors.background.primary,
+                    padding: 9,
+                  }}
+                  className="ml-2 rounded-2xl">
+                  <Image
+                    source={icons.close}
+                    className="size-4"
+                    tintColor={'#fd5353'}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
           <View className="mt-3">
-            {members &&
-              members.map((user: User) => (
-                <View key={user.id?.toString() ?? user.username}>
-                  {renderItem({item: user})}
-                </View>
-              ))}
+            {searching && searchedValue.length > 0
+              ? filteredMembers &&
+                filteredMembers.map((user: User) => (
+                  <View key={user.id?.toString() ?? user.username}>
+                    {renderItem({item: user})}
+                  </View>
+                ))
+              : members &&
+                members.map((user: User) => (
+                  <View key={user.id?.toString() ?? user.username}>
+                    {renderItem({item: user})}
+                  </View>
+                ))}
           </View>
         </View>
         <View className="mt-4 w-1/2">

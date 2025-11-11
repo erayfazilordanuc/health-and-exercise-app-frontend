@@ -420,8 +420,23 @@ const Member = () => {
                 </TouchableOpacity>
               </View>
             ) : (
-              <View className="flex-col items-start justify-end">
-                <View className="flex-row items-center mt-2">
+              <View className="flex-col items-start justify-end pt-1">
+                {admin?.username === 'ordanuc' && (
+                  <View className="flex-row items-center mb-1">
+                    <Text
+                      className="font-rubik-medium text-lg"
+                      style={{color: colors.text.primary}}>
+                      {t('fields.id')}
+                      {'  '}
+                    </Text>
+                    <Text
+                      className="font-rubik text-lg"
+                      style={{color: colors.text.primary}}>
+                      {member?.id}
+                    </Text>
+                  </View>
+                )}
+                <View className="flex-row items-center">
                   <Text
                     className="font-rubik-medium text-lg"
                     style={{color: colors.text.primary}}>
