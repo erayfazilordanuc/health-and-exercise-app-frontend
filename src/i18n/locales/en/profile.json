@@ -33,6 +33,7 @@
     "stepUnit": "steps",
     "stepCount": "Step Count",
     "sleepUnits": "hours",
+    "sleepUnits2": "min",
     "synchronized": "Synchronized",
     "sync": "Sync",
     "syncDataPermissionInfo": "To sync your data, you need to grant the required permissions to Health Connect."

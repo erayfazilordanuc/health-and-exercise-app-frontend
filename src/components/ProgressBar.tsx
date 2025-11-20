@@ -108,7 +108,9 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     if (iconSource === icons.sleep) {
       const hours = Math.floor(value / 60); // toplam dakikadan saat çıkar
       const minutes = Math.round(value % 60); // kalan dakikayı al
-      return `${hours} saat ${minutes} dk`;
+      return `${hours} ${t('labels.sleepUnits')} ${minutes} ${t(
+        'labels.sleepUnits2',
+      )}`;
     }
     if (iconSource === icons.pulse) return `${value} bpm`;
     if (iconSource === icons.kcal) return `${value} kcal`;

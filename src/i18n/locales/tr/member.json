@@ -10,7 +10,9 @@
     "calendar": "Egzersiz takvimi",
     "symptoms": "Bulgular",
     "weeklyStepGoal": "Haftalık adım hedefi",
-    "weeklySessions": "Haftalık oturum bilgileri"
+    "weeklySessions": "Haftalık oturum bilgileri",
+    "sessionUnit": "saat",
+    "sessionUnit2": "dk"
   },
   "fields": {
     "id": "Id:",

@@ -33,6 +33,7 @@
     "stepUnit": "adım",
     "stepCount": "Adım Sayısı",
     "sleepUnits": "saat",
+    "sleepUnits2": "dk",
     "synchronized": "Senkronize",
     "sync": "Senkronize et",
     "syncDataPermissionInfo": "Verilerinizi senkronize edebilmek için Health Connect uygulamasına gerekli izinleri vermeniz gerekiyor."

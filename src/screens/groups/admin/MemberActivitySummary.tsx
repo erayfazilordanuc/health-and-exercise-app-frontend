@@ -293,9 +293,11 @@ const MemberActivitySummary = () => {
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     if (hours > 0) {
-      return `${hours} sa ${minutes} dk`;
+      return `${hours} ${t('sections.sessionUnit')} ${minutes} ${t(
+        'sections.sessionUnit2',
+      )}`;
     }
-    return `${minutes} dk`;
+    return `${minutes} ${t('sections.sessionUnit2')}`;
   }
 
   const getMembersTheme = () => {

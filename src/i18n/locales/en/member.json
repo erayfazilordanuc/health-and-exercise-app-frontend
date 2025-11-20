@@ -10,7 +10,9 @@
     "calendar": "Exercise calendar",
     "symptoms": "Symptoms",
     "weeklyStepGoal": "Weekly step goal",
-    "weeklySessions": "Weekly session stats"
+    "weeklySessions": "Weekly session stats",
+    "sessionUnit": "hours",
+    "sessionUnit2": "min"
   },
   "fields": {
     "id": "Id:",
