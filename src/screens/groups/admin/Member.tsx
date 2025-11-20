@@ -682,7 +682,7 @@ const Member = () => {
               style={{color: colors.text.primary}}>
               {lastMessage.receiver === admin?.username
                 ? member?.fullName + ' : ' + lastMessage.message
-                : 'Siz : ' + lastMessage.message}
+                : `${t('fields.you')} : ${lastMessage.message}`}
             </Text>
           )}
         </View>
