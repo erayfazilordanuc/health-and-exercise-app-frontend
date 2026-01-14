@@ -85,16 +85,32 @@ staff full visibility into recovery.
 
 
 ## App Images
+<img width="1280" height="720" alt="Introduction" src="https://github.com/user-attachments/assets/28db542b-5f96-4c49-bfa7-675d92df81e3" /> <br>
+<img width="1280" height="720" alt="Themes" src="https://github.com/user-attachments/assets/86b291b6-df12-43b7-9cdb-83f2af19ad86" /> <br>
+
 ### User Module
-<img src="https://github.com/user-attachments/assets/0212ace4-e755-41fa-aa47-2e7af36ac769" width="200" />
-<img src="https://github.com/user-attachments/assets/fe1c89c2-986c-497a-8b34-96af84b20dde" width="200" />
-<img src="https://github.com/user-attachments/assets/3f00d5c7-d0b2-40cb-985b-b789c4d1f439" width="200" />
-<img src="https://github.com/user-attachments/assets/4158aaf1-0b72-4ddf-9082-82c9b6a13ffc" width="200" />
-<img src="https://github.com/user-attachments/assets/1a0f8cf6-2b4e-499b-ad68-c9c114c87711" width="200" />
+
+<img src="https://github.com/user-attachments/assets/ce837b02-87fa-4cc1-8c5c-8c51ec6146de" width="200" />
+<img src="https://github.com/user-attachments/assets/67cdce0c-d7d8-47eb-a566-ff0ee4e60889" width="200" />
+<img src="https://github.com/user-attachments/assets/c9ab0abb-9d53-4477-b695-f124f5c51f4d" width="200" />
+<img src="https://github.com/user-attachments/assets/58bd1930-a120-4b07-a9e4-7292d8ea39c9" width="200" />
+<img src="https://github.com/user-attachments/assets/a048e211-e8ed-4d2b-bbbf-138790d092bc" width="200" />
+
+<br>
+<img src="https://github.com/user-attachments/assets/f149ff27-562e-4867-9b7e-a64bb55d3f71" width="200" />
+<br>
+<img src="https://github.com/user-attachments/assets/ecff253c-485f-44e7-8bf2-5fef0877833b" width="200" />
+<img width="200" alt="chat_patient" src="https://github.com/user-attachments/assets/ee4fce5d-e39d-444a-93da-c741a06f9345" /> <br>
 
 ### Admin Module
-<img src="https://github.com/user-attachments/assets/11a37875-b9ab-4215-afec-1b7d215edfa9" width="200" />
-<img src="https://github.com/user-attachments/assets/01852a36-b375-4b28-87e5-50851821ae9c" width="200" />
-<img src="https://github.com/user-attachments/assets/5ddb6aad-7f2a-47db-b3d0-65ba76429468" width="200" />
-<img src="https://github.com/user-attachments/assets/6651198c-81c0-4669-9996-bfdf47645994" width="200" />
-<img src="https://github.com/user-attachments/assets/bfba83c9-f1f0-4b41-8c73-1a5404941e58" width="200" />
+
+<img src="https://github.com/user-attachments/assets/31585c97-8072-47b1-baa9-5515ee27493e" width="200" />
+<img width="200"  alt="member" src="https://github.com/user-attachments/assets/83d14f58-abaa-4192-ad76-a981c57a5b23" />
+<img src="https://github.com/user-attachments/assets/49218cc9-a6a2-4921-af2f-18bccbcb2684" width="200" />
+<img src="https://github.com/user-attachments/assets/d79eb2d3-c6da-451f-902b-bb79635666b8" width="200" />
+<img src="https://github.com/user-attachments/assets/0eb8b688-5ef6-4907-9fe8-f73599dbc416" width="200" />
+<img src="https://github.com/user-attachments/assets/a372ee7f-3faa-44b4-8386-ce5ce4099a58" width="200" />
+
+
+
+
