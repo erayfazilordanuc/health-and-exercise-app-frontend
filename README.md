@@ -85,7 +85,8 @@ staff full visibility into recovery.
 
 
 ## App Images
-<img width="1280" height="720" alt="Introduction" src="https://github.com/user-attachments/assets/28db542b-5f96-4c49-bfa7-675d92df81e3" /> <br>
+
+<img width="1280" height="720" alt="Introduction" src="https://github.com/user-attachments/assets/28db542b-5f96-4c49-bfa7-675d92df81e3" /> <br><br>
 <img width="1280" height="720" alt="Themes" src="https://github.com/user-attachments/assets/86b291b6-df12-43b7-9cdb-83f2af19ad86" /> <br>
 
 ### User Module
